@@ -403,9 +403,9 @@ phydbl RATES_Lk_Rates_Core(phydbl br_r_a, phydbl br_r_d, phydbl nd_r_a, phydbl n
 
 	if(err)
 	  {
-	    PhyML_Printf("\n== Run: %d",tree->mcmc->run);
-	    PhyML_Printf("\n== br_r_d=%f mean=%f sd=%f min_r=%f max_r=%f dt_d=%f",br_r_d,mean,sd,min_r,max_r,dt_d);
-	    PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+	    PhyML_Printf("\n. Run: %d",tree->mcmc->run);
+	    PhyML_Printf("\n. br_r_d=%f mean=%f sd=%f min_r=%f max_r=%f dt_d=%f",br_r_d,mean,sd,min_r,max_r,dt_d);
+	    PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
 	    Exit("\n");
 	  }
 	break;
@@ -2487,7 +2487,7 @@ void RATES_Update_Cur_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
       
       if(b)
 	{
-	  b->l->v                      = tree->rates->cur_l[d->num];
+	  b->l->v                         = tree->rates->cur_l[d->num];
 	  tree->rates->u_cur_l[b->num] = tree->rates->cur_l[d->num];
 	  b->gamma_prior_mean          = tree->rates->cur_gamma_prior_mean[d->num];
 	  b->gamma_prior_var           = tree->rates->cur_gamma_prior_var[d->num];
@@ -3510,6 +3510,7 @@ void RATES_Set_Clock_And_Nu_Max(t_tree *tree)
       
       dt = FABS(min_t);
       max_clock = l_max / dt; 
+      
       nu   = 1.E-10;
       step = 1.E-1;
       do
