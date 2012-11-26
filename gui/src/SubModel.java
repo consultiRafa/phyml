@@ -154,7 +154,7 @@ public class SubModel extends JPanel implements ActionListener {
 		oRPLab.setVisible(b);
 		curTextField.setVisible(b);
 		optRateBox.setVisible(b);
-		freqPanel.setCompVisible(b);
+		//freqPanel.setCompVisible(b);
 	}
 
 	/**
