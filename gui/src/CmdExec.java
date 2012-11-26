@@ -1,4 +1,3 @@
-
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
@@ -35,6 +34,7 @@ public class CmdExec extends Thread {
 			String line1 = null;
 			while ((line1 = input.readLine()) != null) {
 				StandardOutPanel.setInput(line1);
+        Thread.sleep(20);
 			}
 			exitStatus = process.waitFor();
 			System.out.println("Exit Status: " + exitStatus);
