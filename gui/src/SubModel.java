@@ -1,4 +1,3 @@
-
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -78,6 +77,7 @@ public class SubModel extends JPanel implements ActionListener {
 		setOptimiseRateOff(true);
 		setOptimiseRate("NO");
 		freqPanel = new FreqPanel();
+    freqPanel.setCompVisible(false);
 		sMLab = new JLabel("Substitution model");
 		cMLab = new JLabel("Current model");
 		oRPLab = new JLabel("Optimise rate parameter");
@@ -339,11 +339,12 @@ public class SubModel extends JPanel implements ActionListener {
 			curTextField.setEnabled(false);
 			equiBox.setEnabled(false);
 			freqPanel.setCompEnabled(false);
-			freqPanel.setCompVisible(false);
+			//freqPanel.setCompVisible(false);
 		}else if(i==2){
 			curTextField.setEnabled(false);
 			equiBox.setEnabled(true);
-			freqPanel.setCompVisible(false);
+			//freqPanel.setCompVisible(false);
+      freqPanel.setCompEnabled(false);
 		}
 	}
 	/**
