@@ -65,11 +65,12 @@ void PhyTime_XML(char *xml_file)
   mod   = (t_mod *)Make_Model_Basic();
   s_opt = (t_opt *)Make_Optimiz();
   m4mod = (m4 *)M4_Make_Light();
-  Set_Defaults_Input(io);                                                                          //model - GUINDON!!!!
+  Set_Defaults_Input(io);                                                                          
   Set_Defaults_Model(mod);
   Set_Defaults_Optimiz(s_opt);  
   io -> mod = mod;
   mod = io -> mod;
+  mod -> s_opt = s_opt;
   
   ////////////////////////////////////////////////////////////////////////////
   //////////////////////reading tree topology:////////////////////////////////
@@ -351,12 +352,38 @@ void PhyTime_XML(char *xml_file)
 	    }
 	  while(n_r -> child);	   
 	  n_r = n_r -> next;
-
 	}
+      else if(!strcmp(n_r -> name, "ratematrices"))//initializing rate matrix:
+        {
+          if(n_r -> child) 
+            {
+              Make_Ratematrice_From_XML_Node(n_r -> child, io, mod);
+              n_r = n_r -> next;
+            } 
+          else n_r = n_r -> next;
+        }
+      else if(!strcmp(n_r -> name, "equfreqs"))//initializing frequencies:
+        {
+           if(n_r -> child) 
+             {
+               Make_Efrq_From_XML_Node(n_r -> child , io, mod);
+               n_r = n_r -> next;
+             }
+           else n_r = n_r -> next;
+        }
+      else if(!strcmp(n_r -> name, "siterates"))//initializing site rates:
+        {
+          if(n_r -> child) 
+            {
+              Make_RAS_From_XML_Node(n_r, io -> mod);
+              n_r = n_r -> next;
+            }
+          else n_r = n_r -> next;
+        }
       else if (n_r -> next) n_r = n_r -> next;
       else break;
     }
-  while(n_r);
+  while(1);
 
   io -> rates -> calib = last_calib;
   while(io -> rates -> calib -> prev) io -> rates -> calib = io -> rates -> calib -> prev;
@@ -380,7 +407,7 @@ void PhyTime_XML(char *xml_file)
 
  ////////////////////////////////////////////////////////////////////////////
  ////////////////////////////////////////////////////////////////////////////   
-
+  
   //START analysis:
   r_seed = (io -> r_seed < 0)?(time(NULL)):(io -> r_seed);
   srand(r_seed); 
@@ -394,7 +421,6 @@ void PhyTime_XML(char *xml_file)
   Free_Seq(io -> data, cdata -> n_otu);
   io -> mod -> io = io;
   Check_Ambiguities(cdata, io -> mod -> io -> datatype, io -> state_len);            
-  mod -> s_opt = s_opt;
   Make_Model_Complete(mod);                           
   Init_Model(cdata, mod, io);
   if(io -> mod -> use_m4mod) M4_Init_Model(mod -> m4mod, cdata, mod);
@@ -403,8 +429,8 @@ void PhyTime_XML(char *xml_file)
   tree -> mod         = mod;                                                                    
   tree -> io          = io;
   tree -> data        = cdata;
-  tree -> n_pattern   = tree -> data -> crunch_len / tree -> io -> state_len; 
-
+  tree -> n_pattern   = tree -> data -> crunch_len / tree -> io -> state_len;
+  
   Set_Both_Sides(YES, tree);
   Prepare_Tree_For_Lk(tree);
   TIMES_Set_All_Node_Priors(tree);
@@ -435,7 +461,7 @@ void PhyTime_XML(char *xml_file)
 		      
       // Set vector of mean branch lengths for the Normal approximation of the likelihood 
       RATES_Set_Mean_L(tree);
-		      
+	      
       // Estimate the matrix of covariance for the Normal approximation of the likelihood
       PhyML_Printf("\n");
       PhyML_Printf("\n. Computing Hessian...");												    
@@ -469,7 +495,7 @@ void PhyTime_XML(char *xml_file)
       tree -> io -> lk_approx = user_lk_approx;	
 										
     }
-
+ 
   tree -> rates -> model = io -> rates -> model;
   													  
   PhyML_Printf("\n. Selected model '%s' \n", RATES_Get_Model_Name(io -> rates -> model));
@@ -488,8 +514,7 @@ void PhyTime_XML(char *xml_file)
   	
   MCMC_Complete_MCMC(tree -> mcmc, tree);
 
-  tree -> mcmc -> is_burnin = NO;
- 
+  tree -> mcmc -> is_burnin = NO; 
 
   MCMC(tree);                                            																
   MCMC_Close_MCMC(tree -> mcmc);																	
@@ -516,6 +541,7 @@ void PhyTime_XML(char *xml_file)
  	
   /* return 1;    */
 }
+
 
 
 
