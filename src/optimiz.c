@@ -2375,8 +2375,8 @@ void Optimize_Pinv(t_tree *mixt_tree, int verbose)
 	      
 	      if(verbose)
 		{
-		  Print_Lk(mixt_tree,"[Pinv             ]");
-		  PhyML_Printf("[%10f]",tree->mod->lambda->v);
+		  Print_Lk(mixt_tree,"[P-inv              ]"); 
+		  PhyML_Printf("[%10f]",tree->mod->ras->pinvar->v);
 		}
 	    }
 	}

@@ -352,8 +352,10 @@ typedef struct __Node {
   struct __Node                *next_mixt; /*! Next mixture tree*/
   struct __Node                *prev_mixt; /*! Parent mixture tree */
 
-  struct __Calibration             *calib;
-  
+  struct __Calibration            **calib;
+  short int             *calib_applies_to;
+  int                             n_calib;
+
   int                           *bip_size; /*! Size of each of the three lists from bip_node */
   int                                 num; /*! t_node number */
   int                                 tax; /*! tax = 1 -> external node, else -> internal t_node */
@@ -476,7 +478,7 @@ typedef struct __Edge {
 /*!********************************************************/
 
 typedef struct __Tree{
-
+ 
   struct __Node                       *n_root; /*! root t_node */
   struct __Edge                       *e_root; /*! t_edge on which lies the root */
   struct __Node                     **a_nodes; /*! array of nodes that defines the tree topology */
@@ -1415,7 +1417,9 @@ typedef struct __Calibration {
   phydbl *proba; // Probability of this calibration (set by the user and fixed throughout)
   phydbl lower; // lower bound
   phydbl upper; // upper bound
-  short int is_active; // Is this calibration in use or not
+  int cur_applies_to;
+  struct __Node **all_applies_to;
+  int n_all_applies_to;
   struct __Calibration *next;
   struct __Calibration *prev;
 }t_cal;
