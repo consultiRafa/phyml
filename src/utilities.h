@@ -352,7 +352,8 @@ typedef struct __Node {
   struct __Node                *next_mixt; /*! Next mixture tree*/
   struct __Node                *prev_mixt; /*! Parent mixture tree */
 
-
+  struct __Calibration             *calib;
+  
   int                           *bip_size; /*! Size of each of the three lists from bip_node */
   int                                 num; /*! t_node number */
   int                                 tax; /*! tax = 1 -> external node, else -> internal t_node */
@@ -1053,7 +1054,9 @@ typedef struct __SPR{
   struct __Edge  *b_init_target;
   struct __Node          **path;
   phydbl          init_target_l;
+  phydbl          init_target_v;
   phydbl               l0,l1,l2;
+  phydbl               v0,v1,v2;
   phydbl                    lnL;
   int                depth_path;
   int                      pars;
@@ -1409,8 +1412,7 @@ typedef struct __XML_attr {
 /*!********************************************************/
 
 typedef struct __Calibration {
-  phydbl proba; // Probability of this calibration (set by the user and fixed throughout)
-  int node_num; // Calibration interval applies to this node
+  phydbl *proba; // Probability of this calibration (set by the user and fixed throughout)
   phydbl lower; // lower bound
   phydbl upper; // upper bound
   short int is_active; // Is this calibration in use or not

@@ -525,6 +525,13 @@ phydbl Br_Len_Brent(phydbl prop_min, phydbl prop_max, t_edge *b_fcus, t_tree *tr
                        tree->mod->s_opt->brent_it_max,
                        tree->mod->s_opt->quickdirty,
                        Wrap_Lk_At_Given_Edge,loc_b,loc_tree,NULL);
+
+      Generic_Brent_Lk(&(b_fcus->gamma_prior_mean),
+                       0.0,1000.,
+                       tree->mod->s_opt->min_diff_lk_local,
+                       tree->mod->s_opt->brent_it_max,
+                       tree->mod->s_opt->quickdirty,
+                       Wrap_Lk_At_Given_Edge,loc_b,loc_tree,NULL);
     }
   else
     {      
@@ -635,16 +642,6 @@ void Optimize_Br_Len_Serie(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tree)
   if(tree->io->mod->s_opt->opt_bl == YES)
     {
       Br_Len_Brent(l_infb,l_infa,b_fcus,tree);
-    }
-
-  if(tree->mod->s_opt->opt_gamma_br_len == YES)
-    {      
-      Generic_Brent_Lk(&(b_fcus->gamma_prior_var),
-		       0.0,1000.,
-		       tree->mod->s_opt->min_diff_lk_local,
-		       tree->mod->s_opt->brent_it_max,
-		       tree->mod->s_opt->quickdirty,
-		       Wrap_Lk_At_Given_Edge,b_fcus,tree,NULL);
     }
 
 /*   Generic_Brent_Lk(&(b_fcus->l->v), */

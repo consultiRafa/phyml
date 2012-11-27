@@ -872,9 +872,13 @@ void Init_One_Spr(t_spr *a_spr)
   a_spr->depth_path      = 0;
   a_spr->dist            = 0;
   a_spr->init_target_l   = -1.;
+  a_spr->init_target_v   = -1.;
   a_spr->l0              = -1.;
   a_spr->l1              = -1.;
   a_spr->l2              = -1.;
+  a_spr->v0              = -1.;
+  a_spr->v1              = -1.;
+  a_spr->v2              = -1.;
   a_spr->n_link          = NULL;
   a_spr->n_opp_to_link   = NULL;
   a_spr->b_opp_to_link   = NULL;

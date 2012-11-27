@@ -578,7 +578,7 @@ int Mov_Backward_Topo_Bl(t_tree *tree, phydbl lk_old, t_edge **tested_b, int n_t
 
   l_init = (phydbl **)mCalloc(2*tree->n_otu-3,sizeof(phydbl *));
 
-  For(i,2*tree->n_otu-3) l_init[i] = MIXT_Get_Lengths_Of_This_Edge(tree->a_edges[i]);
+  For(i,2*tree->n_otu-3) l_init[i] = MIXT_Get_Lengths_Of_This_Edge(tree->a_edges[i],tree);
   
   step = 2;
   do

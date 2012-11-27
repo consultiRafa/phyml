@@ -3293,9 +3293,8 @@ int Test_All_Spr_Targets(t_edge *b_pulled, t_node *n_link, t_tree *tree)
   b_target = b_residual = NULL;
   n_opp_to_link  = (n_link == b_pulled->rght)?(b_pulled->left):(b_pulled->rght);
 
-  init_len_pulled = MIXT_Get_Lengths_Of_This_Edge(b_pulled);
-
-
+  init_len_pulled = MIXT_Get_Lengths_Of_This_Edge(b_pulled,tree);
+  
   dir1 = dir2 = -1;
   For(i,3)
     if(n_link->v[i] != n_opp_to_link)
@@ -3308,18 +3307,17 @@ int Test_All_Spr_Targets(t_edge *b_pulled, t_node *n_link, t_tree *tree)
     {
       n_v1        = n_link->v[dir1];
       n_v2        = n_link->v[dir2];
-      init_len_v1 = MIXT_Get_Lengths_Of_This_Edge(n_link->b[dir1]);
-      init_len_v2 = MIXT_Get_Lengths_Of_This_Edge(n_link->b[dir2]);
+      init_len_v1 = MIXT_Get_Lengths_Of_This_Edge(n_link->b[dir1],tree);
+      init_len_v2 = MIXT_Get_Lengths_Of_This_Edge(n_link->b[dir2],tree);
     }
   else
     {
       n_v1        = n_link->v[dir2];
       n_v2        = n_link->v[dir1];
-      init_len_v1 = MIXT_Get_Lengths_Of_This_Edge(n_link->b[dir2]);
-      init_len_v2 = MIXT_Get_Lengths_Of_This_Edge(n_link->b[dir1]);
+      init_len_v1 = MIXT_Get_Lengths_Of_This_Edge(n_link->b[dir2],tree);
+      init_len_v2 = MIXT_Get_Lengths_Of_This_Edge(n_link->b[dir1],tree);
     }
     
-
   if(!(n_v1->tax && n_v2->tax)) /*! Pruning is meaningless otherwise */
     {
       Prune_Subtree(n_link,n_opp_to_link,&b_target,&b_residual,tree);
@@ -3356,10 +3354,10 @@ int Test_All_Spr_Targets(t_edge *b_pulled, t_node *n_link, t_tree *tree)
       /* n_link->b[dir2]->l->v = init_len_v2;  */
       /* b_pulled->l->v = init_len_pulled; */
       
-      MIXT_Set_Lengths_Of_This_Edge(init_len_v1,n_link->b[dir1]);
-      MIXT_Set_Lengths_Of_This_Edge(init_len_v2,n_link->b[dir2]);
-      MIXT_Set_Lengths_Of_This_Edge(init_len_pulled,b_pulled);
-      
+      MIXT_Set_Lengths_Of_This_Edge(init_len_v1,n_link->b[dir1],tree);
+      MIXT_Set_Lengths_Of_This_Edge(init_len_v2,n_link->b[dir2],tree);
+      MIXT_Set_Lengths_Of_This_Edge(init_len_pulled,b_pulled,tree);
+
       Update_PMat_At_Given_Edge(n_link->b[dir1],tree);
       Update_PMat_At_Given_Edge(n_link->b[dir2],tree);
       Update_PMat_At_Given_Edge(b_pulled,tree);
@@ -3462,6 +3460,7 @@ void Test_One_Spr_Target_Recur(t_node *a, t_node *d, t_edge *pulled, t_node *lin
 phydbl Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_edge *b_residual, t_tree *tree)
 {
   phydbl *init_target_len, *init_arrow_len, *init_residual_len;
+  phydbl *init_target_var, *init_arrow_var, *init_residual_var;
   int i,dir_v0,dir_v1,dir_v2;
   phydbl *l0,*l1,*l2;
   t_node *v1, *v2;
@@ -3490,11 +3489,10 @@ phydbl Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
   /* init_arrow_len    = b_arrow->l->v; */
   /* init_residual_len = b_residual->l->v; */
 
-  init_target_len   = MIXT_Get_Lengths_Of_This_Edge(b_target);
-  init_arrow_len    = MIXT_Get_Lengths_Of_This_Edge(b_arrow);
-  init_residual_len = MIXT_Get_Lengths_Of_This_Edge(b_residual);
+  init_target_len   = MIXT_Get_Lengths_Of_This_Edge(b_target,tree);
+  init_arrow_len    = MIXT_Get_Lengths_Of_This_Edge(b_arrow,tree);
+  init_residual_len = MIXT_Get_Lengths_Of_This_Edge(b_residual,tree);
 
-  
   if(tree->mod->s_opt->spr_lnL)
     {
       MIXT_Set_Alias_Subpatt(YES,tree);      
@@ -3521,16 +3519,16 @@ phydbl Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
       else                        dir_v0 = i;
     }
 
-  l0 = MIXT_Get_Lengths_Of_This_Edge(n_link->b[dir_v0]);
+  l0 = MIXT_Get_Lengths_Of_This_Edge(n_link->b[dir_v0],tree);
   if(n_link->v[dir_v1]->num > n_link->v[dir_v2]->num)
     {
-      l1 = MIXT_Get_Lengths_Of_This_Edge(n_link->b[dir_v2]);
-      l2 = MIXT_Get_Lengths_Of_This_Edge(n_link->b[dir_v1]);
+      l1 = MIXT_Get_Lengths_Of_This_Edge(n_link->b[dir_v2],tree);
+      l2 = MIXT_Get_Lengths_Of_This_Edge(n_link->b[dir_v1],tree);
     }
   else
     {
-      l1 = MIXT_Get_Lengths_Of_This_Edge(n_link->b[dir_v1]);
-      l2 = MIXT_Get_Lengths_Of_This_Edge(n_link->b[dir_v2]);
+      l1 = MIXT_Get_Lengths_Of_This_Edge(n_link->b[dir_v1],tree);
+      l2 = MIXT_Get_Lengths_Of_This_Edge(n_link->b[dir_v2],tree);
     }
 
   move = tree->spr_list[tree->size_spr_list];
@@ -3550,6 +3548,14 @@ phydbl Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
       move->l0            = l0[i];
       move->l1            = l1[i];
       move->l2            = l2[i];
+
+      if(tree->mod->gamma_mgf_bl == YES)
+        {
+          move->v0            = l0[i+1];
+          move->v1            = l1[i+1];
+          move->v2            = l2[i+1];
+        }
+
       move->b_target      = b_target;
       move->n_link        = n_link;
       move->b_opp_to_link = b_arrow;
@@ -3573,8 +3579,7 @@ phydbl Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
 	  move     = move->next;
 	}
 
-      i++;
-
+      i+=2;
     }
   while(tree);
 
@@ -3590,10 +3595,10 @@ phydbl Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
   /* b_arrow->l->v    = init_arrow_len; */
   /* b_residual->l->v = init_residual_len; */
 
-  MIXT_Set_Lengths_Of_This_Edge(init_target_len,b_target);
-  MIXT_Set_Lengths_Of_This_Edge(init_arrow_len,b_arrow);
-  MIXT_Set_Lengths_Of_This_Edge(init_residual_len,b_residual);
-  
+  MIXT_Set_Lengths_Of_This_Edge(init_target_len,b_target,tree);
+  MIXT_Set_Lengths_Of_This_Edge(init_arrow_len,b_arrow,tree);
+  MIXT_Set_Lengths_Of_This_Edge(init_residual_len,b_residual,tree);
+
   Prune_Subtree(n_link,
 		(n_link==b_arrow->left)?(b_arrow->rght):(b_arrow->left),
 		&b_target,
@@ -3863,7 +3868,7 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
 	      Fast_Br_Len(init_target,tree,NO);
 
 	      /*! Record branch length at prune site */
-	      recorded_l = MIXT_Get_Lengths_Of_This_Edge(init_target);
+	      recorded_l = MIXT_Get_Lengths_Of_This_Edge(init_target,tree);
 
 
 	      /*! Make sure recorded_l has been updated beforehand */ 
@@ -3892,7 +3897,7 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
 	    }
 	  else
 	    {
-	      MIXT_Set_Lengths_Of_This_Edge(recorded_l,init_target);
+	      MIXT_Set_Lengths_Of_This_Edge(recorded_l,init_target,tree);
 
 	      orig_move = move;
 	      orig_tree = tree;
@@ -3944,15 +3949,38 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
 	    {
 	      move->n_link->b[dir_v0]->l->v = move->l0;
 	      
+              if(tree->io->mod->gamma_mgf_bl == YES)
+                {
+                  move->n_link->b[dir_v0]->gamma_prior_mean = move->l0;
+                  move->n_link->b[dir_v0]->gamma_prior_var  = move->v0;
+                }
+
 	      if(move->n_link->v[dir_v1]->num > move->n_link->v[dir_v2]->num)
 		{
 		  move->n_link->b[dir_v2]->l->v = move->l1;
 		  move->n_link->b[dir_v1]->l->v = move->l2;
+
+                  if(tree->io->mod->gamma_mgf_bl == YES)
+                    {
+                      move->n_link->b[dir_v2]->gamma_prior_mean = move->l1;
+                      move->n_link->b[dir_v2]->gamma_prior_var  = move->v1;
+                      move->n_link->b[dir_v1]->gamma_prior_mean = move->l2;
+                      move->n_link->b[dir_v1]->gamma_prior_var  = move->v2;
+                    }
+
 		}
 	      else
 		{
 		  move->n_link->b[dir_v1]->l->v = move->l1;
 		  move->n_link->b[dir_v2]->l->v = move->l2;
+
+                  if(tree->io->mod->gamma_mgf_bl == YES)
+                    {
+                      move->n_link->b[dir_v1]->gamma_prior_mean = move->l1;
+                      move->n_link->b[dir_v1]->gamma_prior_var  = move->v1;
+                      move->n_link->b[dir_v2]->gamma_prior_mean = move->l2;
+                      move->n_link->b[dir_v2]->gamma_prior_var  = move->v2;
+                    }
 		}
 
 
@@ -3996,15 +4024,32 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
 	    {
 	      move->l0 = move->n_link->b[dir_v0]->l->v;
 	      
+              if(tree->io->mod->gamma_mgf_bl == YES)
+                {
+                  move->v0 = move->n_link->b[dir_v0]->gamma_prior_var;
+                }
+
 	      if(move->n_link->v[dir_v1]->num > move->n_link->v[dir_v2]->num)
 		{
 		  move->l1 = move->n_link->b[dir_v2]->l->v;
 		  move->l2 = move->n_link->b[dir_v1]->l->v;
+
+                  if(tree->io->mod->gamma_mgf_bl == YES)
+                    {
+                      move->v1 = move->n_link->b[dir_v2]->gamma_prior_var;
+                      move->v2 = move->n_link->b[dir_v1]->gamma_prior_var;
+                    }
 		}
 	      else
 		{
 		  move->l1 = move->n_link->b[dir_v1]->l->v;
 		  move->l2 = move->n_link->b[dir_v2]->l->v;
+
+                  if(tree->io->mod->gamma_mgf_bl == YES)
+                    {
+                      move->v1 = move->n_link->b[dir_v2]->gamma_prior_var;
+                      move->v2 = move->n_link->b[dir_v1]->gamma_prior_var;
+                    }
 		}
 	      
 	      if(tree->next) 
@@ -4146,7 +4191,10 @@ int Try_One_Spr_Move_Triple(t_spr *move, t_tree *tree)
   orig_move = move;
   do
     {
-      init_target->l->v = move->init_target_l;
+      init_target->l->v             = move->init_target_l;
+      init_target->gamma_prior_mean = move->init_target_l;
+      init_target->gamma_prior_var  = move->init_target_v;
+
       if(tree->next) 
 	{
 	  init_target = init_target->next;
@@ -4180,16 +4228,37 @@ int Try_One_Spr_Move_Triple(t_spr *move, t_tree *tree)
   do
     {
       move->n_link->b[dir_v0]->l->v = move->l0;
+      if(tree->io->mod->gamma_mgf_bl == YES)
+        {
+          move->n_link->b[dir_v0]->gamma_prior_mean = move->l0;
+          move->n_link->b[dir_v0]->gamma_prior_var  = move->v0;
+        }
 
       if(move->n_link->v[dir_v1]->num > move->n_link->v[dir_v2]->num)
 	{
 	  move->n_link->b[dir_v2]->l->v = move->l1;
 	  move->n_link->b[dir_v1]->l->v = move->l2;
+
+          if(tree->io->mod->gamma_mgf_bl == YES)
+            {
+              move->n_link->b[dir_v2]->gamma_prior_mean = move->l1;
+              move->n_link->b[dir_v2]->gamma_prior_var  = move->v1;
+              move->n_link->b[dir_v1]->gamma_prior_mean = move->l2;
+              move->n_link->b[dir_v1]->gamma_prior_var  = move->v2;
+            }
 	}
       else
 	{
 	  move->n_link->b[dir_v1]->l->v = move->l1;
 	  move->n_link->b[dir_v2]->l->v = move->l2;
+
+          if(tree->io->mod->gamma_mgf_bl == YES)
+            {
+              move->n_link->b[dir_v1]->gamma_prior_mean = move->l1;
+              move->n_link->b[dir_v1]->gamma_prior_var  = move->v1;
+              move->n_link->b[dir_v2]->gamma_prior_mean = move->l2;
+              move->n_link->b[dir_v2]->gamma_prior_var  = move->v2;
+            }
 	}
 
       if(tree->next) 
@@ -4223,11 +4292,11 @@ int Try_One_Spr_Move_Triple(t_spr *move, t_tree *tree)
       if(FABS(tree->c_lnL - move->lnL) > tree->mod->s_opt->min_diff_lk_move)
 	{
 	  PhyML_Printf("\n== c_lnL = %f move_lnL = %f", tree->c_lnL,move->lnL);
-          printf("\n. %f %f  %f %f",
-                 tree->next->c_lnL,
-                 tree->next->next->c_lnL,
-                 tree->next->next->c_lnL,
-                 tree->next->next->next->c_lnL);
+          /* printf("\n. %f %f  %f %f", */
+          /*        tree->next->c_lnL, */
+          /*        tree->next->next->c_lnL, */
+          /*        tree->next->next->c_lnL, */
+          /*        tree->next->next->next->c_lnL); */
           PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
 	  Exit("\n");
 	}

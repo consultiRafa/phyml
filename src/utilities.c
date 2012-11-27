@@ -1468,7 +1468,7 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
     }
 
   /* l1  = b_fcus->l->v; */
-  l1  = MIXT_Get_Lengths_Of_This_Edge(b_fcus);
+  l1  = MIXT_Get_Lengths_Of_This_Edge(b_fcus,tree);
   Swap(v3,b_fcus->left,b_fcus->rght,v2,tree);
   /***********/
 
@@ -1503,7 +1503,7 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
    }
 
   /* l2  = b_fcus->l->v; */
-  l2  = MIXT_Get_Lengths_Of_This_Edge(b_fcus);
+  l2  = MIXT_Get_Lengths_Of_This_Edge(b_fcus,tree);
   Swap(v4,b_fcus->left,b_fcus->rght,v2,tree);
   /***********/
 
@@ -1550,7 +1550,7 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
     }
   
   /* l0 = b_fcus->l->v; */
-  l0  = MIXT_Get_Lengths_Of_This_Edge(b_fcus);
+  l0  = MIXT_Get_Lengths_Of_This_Edge(b_fcus,tree);
   /***********/
   
   b_fcus->nni->lk0 = lk0;

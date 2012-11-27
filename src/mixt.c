@@ -468,25 +468,35 @@ void MIXT_Turn_Branches_OnOff(int onoff, t_tree *mixt_tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-phydbl *MIXT_Get_Lengths_Of_This_Edge(t_edge *mixt_b)
+phydbl *MIXT_Get_Lengths_Of_This_Edge(t_edge *mixt_b, t_tree *mixt_tree)
 {
   phydbl *lens;
   t_edge *b;
+  t_tree *tree;
   int n_lens;
 
   lens = NULL;
   n_lens = 0;
 
-  b = mixt_b;
-  do
+  b = mixt_b; 
+  tree = mixt_tree;
+ do
     {
       
-      if(!lens) lens = (phydbl *)mCalloc(1,sizeof(phydbl));
-      else      lens = (phydbl *)realloc(lens,(n_lens+1)*sizeof(phydbl));
+      if(!lens) lens = (phydbl *)mCalloc(2,sizeof(phydbl));
+      else      lens = (phydbl *)realloc(lens,(n_lens+2)*sizeof(phydbl));
 
       lens[n_lens] = b->l->v;
-      n_lens++;
+      
+      if(tree->mod->gamma_mgf_bl == YES)
+        {
+          lens[n_lens]   = b->gamma_prior_mean;
+          lens[n_lens+1] = b->gamma_prior_var;
+        }
+
+      n_lens+=2;
       b = b->next;
+      tree = tree->next;
     }
   while(b);
 
@@ -496,19 +506,29 @@ phydbl *MIXT_Get_Lengths_Of_This_Edge(t_edge *mixt_b)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void MIXT_Set_Lengths_Of_This_Edge(phydbl *lens, t_edge *mixt_b)
+void MIXT_Set_Lengths_Of_This_Edge(phydbl *lens, t_edge *mixt_b, t_tree *mixt_tree)
 {
   t_edge *b;
   int n_lens;
+  t_tree *tree;
 
   n_lens = 0;
 
+  tree = mixt_tree;
   b = mixt_b;
   do
     {
       b->l->v = lens[n_lens];
-      n_lens++;
+      
+      if(tree->mod->gamma_mgf_bl == YES)
+        {
+          b->gamma_prior_mean = lens[n_lens];
+          b->gamma_prior_var  = lens[n_lens+1];
+        }
+
+      n_lens+=2;
       b = b->next;
+      tree = tree->next;
     }
   while(b);
 }

@@ -346,7 +346,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   result = 0;
 
   /*! Initialization */
-  bl_init = MIXT_Get_Lengths_Of_This_Edge(b_fcus);
+  bl_init = MIXT_Get_Lengths_Of_This_Edge(b_fcus,tree);
   lk_init = tree->c_lnL;
   lk_temp = UNLIKELY;
 
@@ -379,10 +379,10 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   e4 = b_fcus->rght->b[b_fcus->r_v2];
 
   /*! record initial branch lengths */
-  len_e1 = MIXT_Get_Lengths_Of_This_Edge(e1);
-  len_e2 = MIXT_Get_Lengths_Of_This_Edge(e2);
-  len_e3 = MIXT_Get_Lengths_Of_This_Edge(e3);
-  len_e4 = MIXT_Get_Lengths_Of_This_Edge(e4);
+  len_e1 = MIXT_Get_Lengths_Of_This_Edge(e1,tree);
+  len_e2 = MIXT_Get_Lengths_Of_This_Edge(e2,tree);
+  len_e3 = MIXT_Get_Lengths_Of_This_Edge(e3,tree);
+  len_e4 = MIXT_Get_Lengths_Of_This_Edge(e4,tree);
 
   /*! Optimize branch lengths and update likelihoods for
     the original configuration.
@@ -452,11 +452,11 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
 
 
   /*! Go back to initial branch lengths */
-  MIXT_Set_Lengths_Of_This_Edge(len_e1,e1);
-  MIXT_Set_Lengths_Of_This_Edge(len_e2,e2);
-  MIXT_Set_Lengths_Of_This_Edge(len_e3,e3);
-  MIXT_Set_Lengths_Of_This_Edge(len_e4,e4);
-  MIXT_Set_Lengths_Of_This_Edge(bl_init,b_fcus);
+  MIXT_Set_Lengths_Of_This_Edge(len_e1,e1,tree);
+  MIXT_Set_Lengths_Of_This_Edge(len_e2,e2,tree);
+  MIXT_Set_Lengths_Of_This_Edge(len_e3,e3,tree);
+  MIXT_Set_Lengths_Of_This_Edge(len_e4,e4,tree);
+  MIXT_Set_Lengths_Of_This_Edge(bl_init,b_fcus,tree);
   Update_PMat_At_Given_Edge(e1,tree);
   Update_PMat_At_Given_Edge(e2,tree);
   Update_PMat_At_Given_Edge(e3,tree);
@@ -557,11 +557,11 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   Swap(v3,b_fcus->left,b_fcus->rght,v2,tree);
 
   /*! Go back to initial branch lengths */
-  MIXT_Set_Lengths_Of_This_Edge(len_e1,e1);
-  MIXT_Set_Lengths_Of_This_Edge(len_e2,e2);
-  MIXT_Set_Lengths_Of_This_Edge(len_e3,e3);
-  MIXT_Set_Lengths_Of_This_Edge(len_e4,e4);
-  MIXT_Set_Lengths_Of_This_Edge(bl_init,b_fcus);
+  MIXT_Set_Lengths_Of_This_Edge(len_e1,e1,tree);
+  MIXT_Set_Lengths_Of_This_Edge(len_e2,e2,tree);
+  MIXT_Set_Lengths_Of_This_Edge(len_e3,e3,tree);
+  MIXT_Set_Lengths_Of_This_Edge(len_e4,e4,tree);
+  MIXT_Set_Lengths_Of_This_Edge(bl_init,b_fcus,tree);
 
   Update_PMat_At_Given_Edge(e1,tree);
   Update_PMat_At_Given_Edge(e2,tree);
@@ -659,11 +659,11 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   /***********/
 
   /*! restore the initial branch length values */
-  MIXT_Set_Lengths_Of_This_Edge(len_e1,e1);
-  MIXT_Set_Lengths_Of_This_Edge(len_e2,e2);
-  MIXT_Set_Lengths_Of_This_Edge(len_e3,e3);
-  MIXT_Set_Lengths_Of_This_Edge(len_e4,e4);
-  MIXT_Set_Lengths_Of_This_Edge(bl_init,b_fcus);
+  MIXT_Set_Lengths_Of_This_Edge(len_e1,e1,tree);
+  MIXT_Set_Lengths_Of_This_Edge(len_e2,e2,tree);
+  MIXT_Set_Lengths_Of_This_Edge(len_e3,e3,tree);
+  MIXT_Set_Lengths_Of_This_Edge(len_e4,e4,tree);
+  MIXT_Set_Lengths_Of_This_Edge(bl_init,b_fcus,tree);
 
   /*! recompute likelihoods */
   Update_PMat_At_Given_Edge(e1,tree);
