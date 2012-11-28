@@ -1648,12 +1648,12 @@ void TIMES_Set_Calibration(t_tree *tree)
   cal = tree->rates->calib;
   while(cal)
     {
-      if(cal->is_active == YES)
-        {
+      /* if(cal->is_active == YES) */
+      /*   { */
           /* tree->rates->t_has_prior[cal->node_num] = YES; */
           /* tree->rates->t_prior_min[cal->node_num] = cal->lower; */
           /* tree->rates->t_prior_max[cal->node_num] = cal->upper;           */
-        }
+        /* } */
       cal = cal->next;
     }
 
