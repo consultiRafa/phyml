@@ -678,8 +678,11 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
 #ifndef PHYTIME
 	  if(!tree->n_root)
 	    {
-              if(tree->is_mixt_tree == NO) mean_len = fils->b[0]->l->v;
-              else mean_len = MIXT_Get_Mean_Edge_Len(fils->b[0]);
+              if(tree->is_mixt_tree == NO) 
+                {
+                  mean_len = fils->b[0]->l->v;
+                }
+              else mean_len = MIXT_Get_Mean_Edge_Len(fils->b[0],tree);
 	      sprintf(*s_tree+(int)strlen(*s_tree),format,mean_len);
 	    }
 	  else
@@ -687,15 +690,21 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
 	      if(pere == tree->n_root)
 		{
 		  phydbl root_pos = (fils == tree->n_root->v[0])?(tree->n_root_pos):(1.-tree->n_root_pos);
-
-                  if(tree->is_mixt_tree == NO) mean_len = tree->e_root->l->v;
-                  else mean_len = MIXT_Get_Mean_Edge_Len(tree->e_root);                  
+                  if(tree->is_mixt_tree == NO) 
+                    {
+                      mean_len = tree->e_root->l->v;
+                    }
+                  else mean_len = MIXT_Get_Mean_Edge_Len(tree->e_root,tree);                  
 		  sprintf(*s_tree+(int)strlen(*s_tree),format,mean_len * root_pos);
 		}
 	      else
 		{
-                  if(tree->is_mixt_tree == NO) mean_len = fils->b[0]->l->v;
-                  else mean_len = MIXT_Get_Mean_Edge_Len(fils->b[0]);
+                  if(tree->is_mixt_tree == NO) 
+                    {
+                      mean_len = fils->b[0]->l->v;
+                    }
+
+                  else mean_len = MIXT_Get_Mean_Edge_Len(fils->b[0],tree);
                   sprintf(*s_tree+(int)strlen(*s_tree),format,mean_len);
 		}
 	    }
@@ -816,8 +825,11 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
 #ifndef PHYTIME
 	  if(!tree->n_root)
 	    {
-              if(tree->is_mixt_tree == NO) mean_len = fils->b[p]->l->v;
-              else mean_len = MIXT_Get_Mean_Edge_Len(fils->b[p]);
+              if(tree->is_mixt_tree == NO) 
+                {
+                  mean_len = fils->b[p]->l->v;
+                }
+              else mean_len = MIXT_Get_Mean_Edge_Len(fils->b[p],tree);
 	      sprintf(*s_tree+(int)strlen(*s_tree),format,mean_len);
 	    }
 	  else
@@ -826,14 +838,20 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
 		{
 		  phydbl root_pos = (fils == tree->n_root->v[0])?(tree->n_root_pos):(1.-tree->n_root_pos);
 
-                  if(tree->is_mixt_tree == NO) mean_len = tree->e_root->l->v;
-                  else mean_len = MIXT_Get_Mean_Edge_Len(tree->e_root);                  
+                  if(tree->is_mixt_tree == NO) 
+                    {
+                      mean_len = tree->e_root->l->v;
+                    }
+                  else mean_len = MIXT_Get_Mean_Edge_Len(tree->e_root,tree);                  
 		  sprintf(*s_tree+(int)strlen(*s_tree),format,mean_len * root_pos);
 		}
 	      else
 		{
-                  if(tree->is_mixt_tree == NO) mean_len = fils->b[p]->l->v;
-                  else mean_len = MIXT_Get_Mean_Edge_Len(fils->b[p]);
+                  if(tree->is_mixt_tree == NO) 
+                    {
+                      mean_len = fils->b[p]->l->v;
+                    }
+                  else mean_len = MIXT_Get_Mean_Edge_Len(fils->b[p],tree);
                   sprintf(*s_tree+(int)strlen(*s_tree),format,mean_len);
 		}
 	    }
@@ -2644,6 +2662,8 @@ void Print_Fp_Out(FILE *fp_out, time_t t_beg, time_t t_end, t_tree *tree, option
     }
 
   if(tree->mod->ras->invar) PhyML_Fprintf(fp_out,"\n. Proportion of invariant: \t\t%.3f",tree->mod->ras->pinvar->v);
+
+  if(tree->mod->gamma_mgf_bl == YES) PhyML_Fprintf(fp_out,"\n. Variance of branch lengths: \t\t%f",tree->mod->l_var);
 
   /*was before Discrete gamma model ; moved here FLT*/
   if((tree->mod->whichmodel == K80)   ||

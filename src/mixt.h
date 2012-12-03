@@ -66,6 +66,6 @@ void MIXT_Chain_Sprs(t_tree *tree);
 void MIXT_Chain_Nodes(t_tree *tree);
 void MIXT_Chain_Edges(t_tree *tree);
 void MIXT_Chain_Triplets(t_tree *tree);
-phydbl MIXT_Get_Mean_Edge_Len(t_edge *mixt_b);
+phydbl MIXT_Get_Mean_Edge_Len(t_edge *mixt_b, t_tree *tree);
 
 #endif

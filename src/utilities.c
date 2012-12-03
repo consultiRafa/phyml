@@ -4317,16 +4317,17 @@ void Copy_Tree(t_tree *ori, t_tree *cpy)
 
   For(i,2*ori->n_otu-3) 
     {
-      cpy->a_edges[i]->l->v        = ori->a_edges[i]->l->v;
-      cpy->a_edges[i]->left        = cpy->a_nodes[ori->a_edges[i]->left->num];
-      cpy->a_edges[i]->rght        = cpy->a_nodes[ori->a_edges[i]->rght->num];
-      cpy->a_edges[i]->l_v1        = ori->a_edges[i]->l_v1;
-      cpy->a_edges[i]->l_v2        = ori->a_edges[i]->l_v2;
-      cpy->a_edges[i]->r_v1        = ori->a_edges[i]->r_v1;
-      cpy->a_edges[i]->r_v2        = ori->a_edges[i]->r_v2;
-      cpy->a_edges[i]->l_r         = ori->a_edges[i]->l_r;
-      cpy->a_edges[i]->r_l         = ori->a_edges[i]->r_l;
-      cpy->a_edges[i]->does_exist  = ori->a_edges[i]->does_exist;
+      cpy->a_edges[i]->l->v             = ori->a_edges[i]->l->v;
+      cpy->a_edges[i]->left             = cpy->a_nodes[ori->a_edges[i]->left->num];
+      cpy->a_edges[i]->rght             = cpy->a_nodes[ori->a_edges[i]->rght->num];
+      cpy->a_edges[i]->l_v1             = ori->a_edges[i]->l_v1;
+      cpy->a_edges[i]->l_v2             = ori->a_edges[i]->l_v2;
+      cpy->a_edges[i]->r_v1             = ori->a_edges[i]->r_v1;
+      cpy->a_edges[i]->r_v2             = ori->a_edges[i]->r_v2;
+      cpy->a_edges[i]->l_r              = ori->a_edges[i]->l_r;
+      cpy->a_edges[i]->r_l              = ori->a_edges[i]->r_l;
+      cpy->a_edges[i]->does_exist       = ori->a_edges[i]->does_exist;
+      cpy->a_edges[i]->l_var            = ori->a_edges[i]->l_var;
     }
 
 
@@ -4604,8 +4605,11 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
     }
 #endif
 
-  if(b1->l->onoff == ON) b1->l->v += b2->l->v;
-  
+  if(b1->l->onoff == ON) 
+    {
+      b1->l->v += b2->l->v;
+    }
+
   (v1 == b1->left)?
     (Make_Edge_Dirs(b1,v1,v2,tree)):
     (Make_Edge_Dirs(b1,v2,v1,tree));
@@ -4757,10 +4761,13 @@ void Graft_Subtree(t_edge *target, t_node *link, t_edge *residual, t_tree *tree)
 	v1->v[i] = link;
 	break;
       }
+  
+  if(target->l->onoff == ON)   
+    target->l->v /= 2.;
 
-  if(target->l->onoff == ON)   target->l->v /= 2.;
-  if(residual->l->onoff == ON) residual->l->v = target->l->v;
-
+  if(residual->l->onoff == ON) 
+    residual->l->v = target->l->v;
+  
   Make_Edge_Dirs(target,target->left,target->rght,tree);
   Make_Edge_Dirs(residual,residual->left,residual->rght,tree);
   Make_Edge_Dirs(b_up,b_up->left,b_up->rght,tree);
@@ -5372,9 +5379,8 @@ void Record_Br_Len(t_tree *mixt_tree)
     {
       For(i,2*tree->n_otu-3) 
 	{
-	  tree->a_edges[i]->l_old->v             = tree->a_edges[i]->l->v;
-	  tree->a_edges[i]->gamma_prior_mean_old = tree->a_edges[i]->gamma_prior_mean;
-	  tree->a_edges[i]->gamma_prior_var_old  = tree->a_edges[i]->gamma_prior_var;
+	  tree->a_edges[i]->l_old->v  = tree->a_edges[i]->l->v;
+	  tree->a_edges[i]->l_var_old = tree->a_edges[i]->l_var;
 	}
 
       tree = tree->next;
@@ -5400,9 +5406,8 @@ void Restore_Br_Len(t_tree *mixt_tree)
     {
       For(i,2*tree->n_otu-3) 
 	{
-	  tree->a_edges[i]->l->v             = tree->a_edges[i]->l_old->v;
-	  tree->a_edges[i]->gamma_prior_mean = tree->a_edges[i]->gamma_prior_mean_old;
-	  tree->a_edges[i]->gamma_prior_var  = tree->a_edges[i]->gamma_prior_var_old;
+	  tree->a_edges[i]->l->v  = tree->a_edges[i]->l_old->v;
+	  tree->a_edges[i]->l_var = tree->a_edges[i]->l_var_old;
 	}
 
       tree = tree->next;
@@ -6449,17 +6454,43 @@ void Evolve(calign *data, t_mod *mod, t_tree *tree)
 {
   int root_state, root_rate_class;
   int site,i;
+  phydbl *orig_l;
+  phydbl shape,scale,var,mean;
+
+  orig_l = (phydbl *)mCalloc(2*tree->n_otu-3,sizeof(phydbl));
+  For(i,2*tree->n_otu-3) orig_l[i] = tree->a_edges[i]->l->v;
 
   data->n_otu = tree->n_otu;
 
   if(mod->use_m4mod) tree->write_labels = YES;
   
-  /* Get the change probability matrices */
-  Set_Model_Parameters(mod);
-  For(i,2*tree->n_otu-3) Update_PMat_At_Given_Edge(tree->a_edges[i],tree);
 
   For(site,data->init_len)
     {
+      /* Get the change probability matrices */
+      For(i,2*tree->n_otu-3)        
+        {
+          /* var   = mod->l_var ; */
+
+          /* shape = POW(MAX(orig_l[i],1.E-6),2) / var; */
+          /* scale = var / MAX(orig_l[i],1.E-6); */
+
+          /* tree->a_edges[i]->l->v = Rgamma(shape,scale); */
+
+          var   = mod->l_var;
+          mean  = 1.0;
+          
+          shape = mean * mean / var;
+          scale = var / mean;
+          
+          tree->a_edges[i]->l->v = orig_l[i] * Rgamma(shape,scale);
+          printf("\n. %f %f",tree->a_edges[i]->l->v, orig_l[i]);
+        }
+
+
+      Set_Model_Parameters(mod);      
+      For(i,2*tree->n_otu-3) Update_PMat_At_Given_Edge(tree->a_edges[i],tree);
+
       root_state = root_rate_class = -1;
 
       /* Pick the root nucleotide/aa */
@@ -6485,6 +6516,7 @@ void Evolve(calign *data, t_mod *mod, t_tree *tree)
       data->wght[site] = 1;
     }
   data->crunch_len = data->init_len;
+  Print_CSeq(stdout,NO,data);
 }
 
 //////////////////////////////////////////////////////////////
@@ -8354,12 +8386,12 @@ void Check_Br_Len_Bounds(t_tree *mixt_tree)
   
   do
     {
-      
       b = NULL;
       
       For(i,2*tree->n_otu-3)
         {
           b = tree->a_edges[i];
+    
           if(b->l->v > tree->mod->l_max) b->l->v = tree->mod->l_max;
           if(b->l->v < tree->mod->l_min) b->l->v = tree->mod->l_min;
         }

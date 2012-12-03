@@ -467,10 +467,8 @@ typedef struct __Edge {
   int                            n_labels; /*! number of labels */
   int                             n_jumps; /*! number of jumps of substitution rates */
 
-  phydbl                 gamma_prior_mean; /* Branch length has a gamma distributed prior with this mean */
-  phydbl                  gamma_prior_var; /* Branch length has a gamma distributed prior with this var */
-  phydbl             gamma_prior_mean_old; /* (Backup) Branch length has a gamma distributed prior with this mean */
-  phydbl              gamma_prior_var_old; /* (Backup) Branch length has a gamma distributed prior with this var */
+  phydbl                            l_var; /* Branch length has a gamma distributed prior with this var */
+  phydbl                        l_var_old; /* (Backup) Branch length has a gamma distributed prior with this var */
 
   phydbl                      bin_cod_num;
 }t_edge;
@@ -825,7 +823,7 @@ typedef struct __Model {
   short int                 log_l; /*! Edge lengths are actually log(Edge lengths) if log_l == YES !*/
   phydbl                    l_min; /*! Minimum branch length !*/
   phydbl                    l_max; /*! Maximum branch length !*/
-
+  phydbl                    l_var; /*! Variance of branch lengths (used in conjunction with gamma_mgf_bl == YES */
   int                gamma_mgf_bl; /*! P = \int_0^inf exp(QL) p(L) where L=\int_0^t R(s) ds and p(L) is the gamma density. Set to NO by default !*/
 
   int              n_mixt_classes; /* Number of classes in the mixture model. */

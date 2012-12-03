@@ -108,6 +108,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
       {"parvals",             required_argument,NULL,71},
       {"constrained_lens",    no_argument,NULL,72},
       {"xml",                 required_argument,NULL,73},
+      {"l_var",               required_argument,NULL,74},
       {0,0,0,0}
     };
 
@@ -126,6 +127,11 @@ int Read_Command_Line(option *io, int argc, char **argv)
 
       switch(c)
 	{
+	case 74:
+          {
+            io->mod->l_var = String_To_Dbl(optarg);
+            break;
+          }
 	case 73:
 	  {
 #ifndef SERGEII

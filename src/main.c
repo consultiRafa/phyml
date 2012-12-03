@@ -32,7 +32,7 @@ the GNU public licence. See http://www.opensource.org for details.
 
 
 
-#ifdef PHYML
+#if (defined PHYML || EVOLVE)
 
 int main(int argc, char **argv)
 {  
@@ -69,6 +69,11 @@ int main(int argc, char **argv)
 
   io = (option *)Get_Input(argc,argv);
   if(!io) return(-1);
+
+
+  #ifdef EVOLVE
+  io->colalias = NO;
+  #endif
 
   r_seed = (io->r_seed < 0)?(time(NULL)):(io->r_seed);
   srand(r_seed);
@@ -174,6 +179,7 @@ int main(int argc, char **argv)
 		  Unscale_Br_Len_Multiplier_Tree(tree);
 
 		  
+#ifdef PHYML
 		  /* ///////////////////////////////////////// */
 		  /* Make_Mixtmod(3,tree); */
 		  
@@ -185,6 +191,7 @@ int main(int argc, char **argv)
 		      Lk(NULL,tree);
 		      MIXT_Set_Alias_Subpatt(NO,tree);
 		    }
+
 
 		  if(tree->mod->s_opt->opt_topo)
 		    {
@@ -209,6 +216,12 @@ int main(int argc, char **argv)
 
 		  Br_Len_Involving_Invar(tree);
 		  Rescale_Br_Len_Multiplier_Tree(tree);
+                  
+#elif defined EVOLVE
+                  Evolve(tree->data,tree->mod,tree);
+                  Exit("\n");
+#endif
+
 
 		  if(!tree->n_root) Get_Best_Root_Position(tree);
 
@@ -477,6 +490,10 @@ int main(int argc, char **argv)
   Get_Input(argc,argv);
   return 1;
 }
+
+
+
+
 
 
 

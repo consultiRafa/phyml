@@ -195,7 +195,7 @@ void aLRT(t_tree *tree)
     default : return;
     }
 
-  if(tree->io->quiet == NO) PhyML_Printf("\n\n. Calculating fast branch support (using '%s').",method);
+  if(tree->io->quiet == NO) PhyML_Printf("\n\n. Calculating fast branch supports (using '%s').",method);
   Free(method);
 
   MIXT_Set_Alias_Subpatt(YES,tree);

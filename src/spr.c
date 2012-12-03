@@ -3166,13 +3166,12 @@ void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
   else
     {
       /* printf("\n. -1"); fflush(NULL); */
-      /* if(!Check_Lk_At_Given_Edge(tree)) Exit("\n"); */
-
+      /* if(!Check_Lk_At_Given_Edge(NO,tree)) Exit("\n"); */
 
       if(!link->tax) Test_All_Spr_Targets(b,link,tree);
-            
+
       /* printf("\n. 0"); fflush(NULL); */
-      /* if(!Check_Lk_At_Given_Edge(tree)) Exit("\n"); */
+      /* if(!Check_Lk_At_Given_Edge(NO,tree)) Exit("\n"); */
       
       if(tree->n_moves)
 	{
@@ -3241,12 +3240,12 @@ void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
 	      /* tree->both_sides = NO; */
 
 	      /* printf("\n. 1"); fflush(NULL); */
-	      /* if(!Check_Lk_At_Given_Edge(tree)) Exit("\n"); */
+	      /* if(!Check_Lk_At_Given_Edge(YES,tree)) Exit("\n"); */
 
 	      best_move = Evaluate_List_Of_Regraft_Pos_Triple(tree->spr_list,n_moves,tree);
 	      
 	      /* printf("\n. 2"); fflush(NULL); */
-	      /* if(!Check_Lk_At_Given_Edge(tree)) Exit("\n"); */
+	      /* if(!Check_Lk_At_Given_Edge(YES,tree)) Exit("\n"); */
 
 	      if((best_move > -1) && (tree->spr_list[best_move]->lnL > tree->best_lnL + tree->mod->s_opt->min_diff_lk_move))
 	      /* if((best_move > -1) && (tree->spr_list[best_move]->lnL > tree->best_lnL - tree->mod->s_opt->max_delta_lnL_spr))  */
@@ -3289,6 +3288,7 @@ int Test_All_Spr_Targets(t_edge *b_pulled, t_node *n_link, t_tree *tree)
     }
 
 
+
   init_lnL = tree->c_lnL;
   b_target = b_residual = NULL;
   n_opp_to_link  = (n_link == b_pulled->rght)?(b_pulled->left):(b_pulled->rght);
@@ -3320,12 +3320,13 @@ int Test_All_Spr_Targets(t_edge *b_pulled, t_node *n_link, t_tree *tree)
     
   if(!(n_v1->tax && n_v2->tax)) /*! Pruning is meaningless otherwise */
     {
+
       Prune_Subtree(n_link,n_opp_to_link,&b_target,&b_residual,tree);
-      
+            
       if(tree->mod->s_opt->spr_lnL)
 	{
 	  Fast_Br_Len(b_target,tree,NO);
-/* 	  Update_PMat_At_Given_Edge(b_target,tree); */
+	  /* Update_PMat_At_Given_Edge(b_target,tree); */
 	}
       
 
@@ -3392,7 +3393,7 @@ int Test_All_Spr_Targets(t_edge *b_pulled, t_node *n_link, t_tree *tree)
 	  }
       
       /* printf("\n. 000000"); fflush(NULL); */
-      /* if(!Check_Lk_At_Given_Edge(tree)) Exit("\n"); */
+      /* if(!Check_Lk_At_Given_Edge(NO,tree)) Exit("\n"); */
     }
 
   tree->c_lnL = init_lnL;
@@ -3460,7 +3461,6 @@ void Test_One_Spr_Target_Recur(t_node *a, t_node *d, t_edge *pulled, t_node *lin
 phydbl Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_edge *b_residual, t_tree *tree)
 {
   phydbl *init_target_len, *init_arrow_len, *init_residual_len;
-  phydbl *init_target_var, *init_arrow_var, *init_residual_var;
   int i,dir_v0,dir_v1,dir_v2;
   phydbl *l0,*l1,*l2;
   t_node *v1, *v2;
@@ -3633,9 +3633,9 @@ void Speed_Spr_Loop(t_tree *tree)
   tree->mod->s_opt->quickdirty     = 0;
 
   if((tree->mod->s_opt->print) && (!tree->io->quiet)) PhyML_Printf("\n\n. Maximizing likelihood (using SPR moves)...\n");
-  
+
   SPR_Shuffle(tree);
-	  
+
   Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->mod->s_opt->print));
   tree->best_lnL = tree->c_lnL;
  
@@ -3689,6 +3689,7 @@ void Speed_Spr_Loop(t_tree *tree)
     }
   while(FABS(lk_old - tree->c_lnL) > tree->mod->s_opt->min_diff_lk_local);
   /*****************************/
+
 
   /*****************************/
   do
@@ -3870,7 +3871,6 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
 	      /*! Record branch length at prune site */
 	      recorded_l = MIXT_Get_Lengths_Of_This_Edge(init_target,tree);
 
-
 	      /*! Make sure recorded_l has been updated beforehand */ 
 	      orig_move = move;
 	      orig_tree = tree;
@@ -3878,8 +3878,10 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
 	      do
 		{
 		  move->init_target_l = recorded_l[n];
-		  n++;
+		  move->init_target_v = recorded_l[n+1];
+		  n+=2;
 
+                  
 		  if(tree->next) 
 		    {
 		      move = move->next;
@@ -3905,7 +3907,8 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
 	      do
 		{
 		  move->init_target_l = recorded_l[n];
-		  n++;
+		  move->init_target_v = recorded_l[n+1];
+		  n+=2;
 
 		  if(tree->next) 
 		    {
@@ -3934,7 +3937,7 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
 	  
 	  /* Regraft subtree */
 	  Graft_Subtree(move->b_target,move->n_link,b_residual,tree);
-	  
+	            
 	  dir_v1 = dir_v2 = dir_v0 = -1;
 	  For(j,3)
 	    {
@@ -3947,13 +3950,8 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
 	  orig_move = move;
 	  do
 	    {
-	      move->n_link->b[dir_v0]->l->v = move->l0;
-	      
-              if(tree->io->mod->gamma_mgf_bl == YES)
-                {
-                  move->n_link->b[dir_v0]->gamma_prior_mean = move->l0;
-                  move->n_link->b[dir_v0]->gamma_prior_var  = move->v0;
-                }
+	      move->n_link->b[dir_v0]->l->v = move->l0;	      
+              move->n_link->b[dir_v0]->l_var = move->v0;
 
 	      if(move->n_link->v[dir_v1]->num > move->n_link->v[dir_v2]->num)
 		{
@@ -3962,12 +3960,9 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
 
                   if(tree->io->mod->gamma_mgf_bl == YES)
                     {
-                      move->n_link->b[dir_v2]->gamma_prior_mean = move->l1;
-                      move->n_link->b[dir_v2]->gamma_prior_var  = move->v1;
-                      move->n_link->b[dir_v1]->gamma_prior_mean = move->l2;
-                      move->n_link->b[dir_v1]->gamma_prior_var  = move->v2;
+                      move->n_link->b[dir_v2]->l_var  = move->v1;
+                      move->n_link->b[dir_v1]->l_var  = move->v2;
                     }
-
 		}
 	      else
 		{
@@ -3976,15 +3971,12 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
 
                   if(tree->io->mod->gamma_mgf_bl == YES)
                     {
-                      move->n_link->b[dir_v1]->gamma_prior_mean = move->l1;
-                      move->n_link->b[dir_v1]->gamma_prior_var  = move->v1;
-                      move->n_link->b[dir_v2]->gamma_prior_mean = move->l2;
-                      move->n_link->b[dir_v2]->gamma_prior_var  = move->v2;
+                      move->n_link->b[dir_v1]->l_var  = move->v1;
+                      move->n_link->b[dir_v2]->l_var  = move->v2;
                     }
 		}
-
-
-	      if(tree->next) 
+              
+              if(tree->next) 
 		{
 		  move = move->next;
 		  tree = tree->next;
@@ -4006,7 +3998,7 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
 	  /* Update_P_Lk(tree,move->b_opp_to_link,move->n_link); */
 	  /* MIXT_Set_Alias_Subpatt(NO,tree); */
 	  /* move->lnL = Lk(move->b_opp_to_link,tree); */
-	  
+
 	  MIXT_Set_Alias_Subpatt(YES,tree);
 	  move->lnL = Triple_Dist(move->n_link,tree,YES);
 	  MIXT_Set_Alias_Subpatt(NO,tree);
@@ -4023,11 +4015,8 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
 	  do
 	    {
 	      move->l0 = move->n_link->b[dir_v0]->l->v;
+              move->v0 = move->n_link->b[dir_v0]->l_var;
 	      
-              if(tree->io->mod->gamma_mgf_bl == YES)
-                {
-                  move->v0 = move->n_link->b[dir_v0]->gamma_prior_var;
-                }
 
 	      if(move->n_link->v[dir_v1]->num > move->n_link->v[dir_v2]->num)
 		{
@@ -4036,8 +4025,8 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
 
                   if(tree->io->mod->gamma_mgf_bl == YES)
                     {
-                      move->v1 = move->n_link->b[dir_v2]->gamma_prior_var;
-                      move->v2 = move->n_link->b[dir_v1]->gamma_prior_var;
+                      move->v1 = move->n_link->b[dir_v2]->l_var;
+                      move->v2 = move->n_link->b[dir_v1]->l_var;
                     }
 		}
 	      else
@@ -4047,11 +4036,18 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
 
                   if(tree->io->mod->gamma_mgf_bl == YES)
                     {
-                      move->v1 = move->n_link->b[dir_v2]->gamma_prior_var;
-                      move->v2 = move->n_link->b[dir_v1]->gamma_prior_var;
+                      move->v1 = move->n_link->b[dir_v1]->l_var;
+                      move->v2 = move->n_link->b[dir_v2]->l_var;
                     }
 		}
-	      
+
+              /* printf("\n. %f %f %f %f",move->l0,move->l1,move->l2,move->lnL); */
+              /* For(j,2*tree->n_otu-3) */
+              /*   printf("\n== %d %f %f", */
+              /*          j, */
+              /*          tree->a_edges[j]->gamma_prior_mean, */
+              /*          tree->a_edges[j]->l_var); */
+              
 	      if(tree->next) 
 		{
 		  move = move->next;
@@ -4192,9 +4188,8 @@ int Try_One_Spr_Move_Triple(t_spr *move, t_tree *tree)
   do
     {
       init_target->l->v             = move->init_target_l;
-      init_target->gamma_prior_mean = move->init_target_l;
-      init_target->gamma_prior_var  = move->init_target_v;
-
+      init_target->l_var  = move->init_target_v;
+      
       if(tree->next) 
 	{
 	  init_target = init_target->next;
@@ -4228,12 +4223,8 @@ int Try_One_Spr_Move_Triple(t_spr *move, t_tree *tree)
   do
     {
       move->n_link->b[dir_v0]->l->v = move->l0;
-      if(tree->io->mod->gamma_mgf_bl == YES)
-        {
-          move->n_link->b[dir_v0]->gamma_prior_mean = move->l0;
-          move->n_link->b[dir_v0]->gamma_prior_var  = move->v0;
-        }
-
+      move->n_link->b[dir_v0]->l_var = move->v0;
+      
       if(move->n_link->v[dir_v1]->num > move->n_link->v[dir_v2]->num)
 	{
 	  move->n_link->b[dir_v2]->l->v = move->l1;
@@ -4241,10 +4232,8 @@ int Try_One_Spr_Move_Triple(t_spr *move, t_tree *tree)
 
           if(tree->io->mod->gamma_mgf_bl == YES)
             {
-              move->n_link->b[dir_v2]->gamma_prior_mean = move->l1;
-              move->n_link->b[dir_v2]->gamma_prior_var  = move->v1;
-              move->n_link->b[dir_v1]->gamma_prior_mean = move->l2;
-              move->n_link->b[dir_v1]->gamma_prior_var  = move->v2;
+              move->n_link->b[dir_v2]->l_var  = move->v1;
+              move->n_link->b[dir_v1]->l_var  = move->v2;
             }
 	}
       else
@@ -4254,13 +4243,11 @@ int Try_One_Spr_Move_Triple(t_spr *move, t_tree *tree)
 
           if(tree->io->mod->gamma_mgf_bl == YES)
             {
-              move->n_link->b[dir_v1]->gamma_prior_mean = move->l1;
-              move->n_link->b[dir_v1]->gamma_prior_var  = move->v1;
-              move->n_link->b[dir_v2]->gamma_prior_mean = move->l2;
-              move->n_link->b[dir_v2]->gamma_prior_var  = move->v2;
+              move->n_link->b[dir_v1]->l_var  = move->v1;
+              move->n_link->b[dir_v2]->l_var  = move->v2;
             }
 	}
-
+      
       if(tree->next) 
 	{
 	  move = move->next;
@@ -4291,7 +4278,15 @@ int Try_One_Spr_Move_Triple(t_spr *move, t_tree *tree)
 
       if(FABS(tree->c_lnL - move->lnL) > tree->mod->s_opt->min_diff_lk_move)
 	{
+          int i;
 	  PhyML_Printf("\n== c_lnL = %f move_lnL = %f", tree->c_lnL,move->lnL);
+          printf("\n== l0=%f l1=%f l2=%f v0=%f v1=%f v2=%f",move->l0,move->l1,move->l2,move->v0,move->v1,move->v2);
+          For(i,2*tree->n_otu-3)
+            printf("\n== %d %f %f",
+                   i,
+                   tree->a_edges[i]->l->v,
+                   tree->a_edges[i]->l_var);
+
           /* printf("\n. %f %f  %f %f", */
           /*        tree->next->c_lnL, */
           /*        tree->next->next->c_lnL, */
@@ -4453,6 +4448,9 @@ void Include_One_Spr_To_List_Of_Spr(t_spr *move, t_tree *tree)
 	  move_list->l0            = move->l0;
 	  move_list->l1            = move->l1;
 	  move_list->l2            = move->l2;
+	  move_list->v0            = move->v0;
+	  move_list->v1            = move->v1;
+	  move_list->v2            = move->v2;
 	  move_list->b_target      = move->b_target;
 	  move_list->n_link        = move->n_link;
 	  move_list->n_opp_to_link = move->n_opp_to_link;
@@ -4626,7 +4624,6 @@ void SPR_Shuffle(t_tree *mixt_tree)
   /*! Get the number of classes in each mixture */
   orig_catg = MIXT_Get_Number_Of_Classes_In_All_Mixtures(mixt_tree);
 
-
   /*! Record values of mod->invar in every tree 
    */
   orig_inv  = MIXT_Record_Has_Invariants(mixt_tree);
@@ -4676,8 +4673,6 @@ void SPR_Shuffle(t_tree *mixt_tree)
 
   do
     {
-
-
       Set_Both_Sides(YES,mixt_tree);
       Lk(NULL,mixt_tree);
       Pars(NULL,mixt_tree);
@@ -4697,7 +4692,6 @@ void SPR_Shuffle(t_tree *mixt_tree)
 			    mixt_tree->a_nodes[0]->b[0],
 			    mixt_tree);
       
-
       if(mixt_tree->n_improvements < 20 || mixt_tree->max_spr_depth  < 5 ||
 	 (FABS(lk_old-mixt_tree->c_lnL) < 1.)) break;
     }

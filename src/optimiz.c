@@ -517,36 +517,33 @@ phydbl Br_Len_Brent(phydbl prop_min, phydbl prop_max, t_edge *b_fcus, t_tree *tr
 
   if(b_fcus->l->onoff == OFF) return loc_tree->c_lnL;
 
-  if(tree->mod->gamma_mgf_bl == YES)
-    {
-      Generic_Brent_Lk(&(b_fcus->gamma_prior_var),
-                       0.0,1000.,
-                       tree->mod->s_opt->min_diff_lk_local,
-                       tree->mod->s_opt->brent_it_max,
-                       tree->mod->s_opt->quickdirty,
-                       Wrap_Lk_At_Given_Edge,loc_b,loc_tree,NULL);
+  Generic_Brent_Lk(&(b_fcus->l->v),
+                   b_fcus->l->v*prop_min,
+                   b_fcus->l->v*prop_max,
+                   tree->mod->s_opt->min_diff_lk_local,
+                   tree->mod->s_opt->brent_it_max,
+                   tree->mod->s_opt->quickdirty,
+                   Wrap_Lk_At_Given_Edge,
+                   loc_b,loc_tree,NULL);
 
-      Generic_Brent_Lk(&(b_fcus->gamma_prior_mean),
-                       0.0,1000.,
-                       tree->mod->s_opt->min_diff_lk_local,
-                       tree->mod->s_opt->brent_it_max,
-                       tree->mod->s_opt->quickdirty,
-                       Wrap_Lk_At_Given_Edge,loc_b,loc_tree,NULL);
-    }
-  else
-    {      
-      /* prop_min = tree->mod->l_min/b_fcus->l->v; */
-      /* prop_max = tree->mod->l_max/b_fcus->l->v; */
-      Generic_Brent_Lk(&(b_fcus->l->v),
-                       b_fcus->l->v*prop_min,
-                       b_fcus->l->v*prop_max,
-                       tree->mod->s_opt->min_diff_lk_local,
-                       tree->mod->s_opt->brent_it_max,
-                       tree->mod->s_opt->quickdirty,
-                       Wrap_Lk_At_Given_Edge,
-                       loc_b,loc_tree,NULL);
 
-    }
+
+  /* if(tree->mod->gamma_mgf_bl == YES) */
+  /*   { */
+  /*     if(b_fcus->num == 0) */
+  /*       { */
+  /*         Generic_Brent_Lk(&(b_fcus->l_var), */
+  /*                          1.E-4,100., */
+  /*                          tree->mod->s_opt->min_diff_lk_local, */
+  /*                          tree->mod->s_opt->brent_it_max, */
+  /*                          tree->mod->s_opt->quickdirty, */
+  /*                          Wrap_Lk_At_Given_Edge,loc_b,loc_tree,NULL); */
+  /*                          /\* Wrap_Lk,NULL,loc_tree,NULL); *\/ */
+  /*       } */
+  /*   } */
+
+  
+
   return loc_tree->c_lnL;
 }
 
@@ -630,33 +627,40 @@ void Optimize_Br_Len_Serie(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tree)
       if(tree->c_lnL < lk_init - tree->mod->s_opt->min_diff_lk_local)
 	{
 	  PhyML_Printf("\n== %f -- %f",lk_init,tree->c_lnL);
-	  Warn_And_Exit("\n== Err in Optimize_Br_Len_Serie\n");
+	  Warn_And_Exit("\n== Err. in Optimize_Br_Len_Serie\n");
 	}
 
       return;
     }
 
-  l_infa = tree->mod->l_max/b_fcus->l->v;
-  l_infb = tree->mod->l_min/b_fcus->l->v;
-  
-  if(tree->io->mod->s_opt->opt_bl == YES)
+  if(tree->mod->gamma_mgf_bl == YES && b_fcus->num == 0)
     {
-      Br_Len_Brent(l_infb,l_infa,b_fcus,tree);
+      Generic_Brent_Lk(&(tree->mod->l_var),
+		       1.E-6,1.E+0,
+		       tree->mod->s_opt->min_diff_lk_local,
+		       tree->mod->s_opt->brent_it_max,
+		       tree->mod->s_opt->quickdirty,
+		       Wrap_Lk,NULL,tree,NULL);
+            
+      if(tree->c_lnL < lk_init - tree->mod->s_opt->min_diff_lk_local)
+	{
+	  PhyML_Printf("\n== %f -- %f",lk_init,tree->c_lnL);
+	  Warn_And_Exit("\n== Err. in Optimize_Br_Len_Serie (variance)\n");
+	}
     }
 
-/*   Generic_Brent_Lk(&(b_fcus->l->v), */
-/* 		   l_infa,l_infb, */
-/* 		   tree->mod->s_opt->min_diff_lk_local, */
-/* 		   tree->mod->s_opt->brent_it_max, */
-/* 		   tree->mod->s_opt->quickdirty, */
-/* 		   Wrap_Lk_At_Given_Edge,b_fcus,tree,NULL); */
-  
+  l_infa = tree->mod->l_max/b_fcus->l->v;
+  l_infb = tree->mod->l_min/b_fcus->l->v;
+
+  if(tree->io->mod->s_opt->opt_bl == YES)
+    Br_Len_Brent(l_infb,l_infa,b_fcus,tree);
+
 
   if(tree->c_lnL < lk_init - tree->mod->s_opt->min_diff_lk_local)
     {
       PhyML_Printf("\n== %f %f %f",l_infa,l_infb,b_fcus->l->v);
       PhyML_Printf("\n== %f -- %f",lk_init,tree->c_lnL);
-      Warn_And_Exit("\n== Err in Optimize_Br_Len_Serie\n");
+      Warn_And_Exit("\n== Err. in Optimize_Br_Len_Serie\n");
     }
     
   if(d->tax) return;

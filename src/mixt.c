@@ -480,19 +480,16 @@ phydbl *MIXT_Get_Lengths_Of_This_Edge(t_edge *mixt_b, t_tree *mixt_tree)
 
   b = mixt_b; 
   tree = mixt_tree;
- do
+  do
     {
       
       if(!lens) lens = (phydbl *)mCalloc(2,sizeof(phydbl));
       else      lens = (phydbl *)realloc(lens,(n_lens+2)*sizeof(phydbl));
-
+      
       lens[n_lens] = b->l->v;
       
-      if(tree->mod->gamma_mgf_bl == YES)
-        {
-          lens[n_lens]   = b->gamma_prior_mean;
-          lens[n_lens+1] = b->gamma_prior_var;
-        }
+      if(tree->mod->gamma_mgf_bl == YES) lens[n_lens+1] = b->l_var;
+      else                               lens[n_lens+1] = -1.;
 
       n_lens+=2;
       b = b->next;
@@ -520,11 +517,7 @@ void MIXT_Set_Lengths_Of_This_Edge(phydbl *lens, t_edge *mixt_b, t_tree *mixt_tr
     {
       b->l->v = lens[n_lens];
       
-      if(tree->mod->gamma_mgf_bl == YES)
-        {
-          b->gamma_prior_mean = lens[n_lens];
-          b->gamma_prior_var  = lens[n_lens+1];
-        }
+      if(tree->mod->gamma_mgf_bl == YES) b->l_var  = lens[n_lens+1];
 
       n_lens+=2;
       b = b->next;
@@ -1856,23 +1849,25 @@ void MIXT_Set_Pars_Thresh(t_tree *mixt_tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-phydbl MIXT_Get_Mean_Edge_Len(t_edge *mixt_b)
+phydbl MIXT_Get_Mean_Edge_Len(t_edge *mixt_b, t_tree *mixt_tree)
 {
   phydbl sum;
   int n;
-  scalar_dbl *l;
+  t_tree *tree;
+  t_edge *b;
 
-  l   = mixt_b->l;
-  
-  sum = .0;
-  n   = 0 ;
+  b    = mixt_b;
+  tree = mixt_tree;
+  sum  = .0;
+  n    = 0 ;
   do 
     {
-      sum += l->v;
+      sum += b->l->v;
       n++;
-      l = l->next;
+      b    = b->next;
+      tree = tree->next;
     }
-  while(l);
+  while(b);
   
   return(sum / (phydbl)n);
 

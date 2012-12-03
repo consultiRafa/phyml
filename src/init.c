@@ -155,8 +155,7 @@ void Init_Edge_Light(t_edge *b, int num)
   b->topo_dist_btw_edges  = 0;
   b->has_zero_br_len      = NO;
   b->n_jumps              = 0;
-  b->gamma_prior_mean     = 1.E-0;
-  b->gamma_prior_var      = 1.E-1;
+  b->l_var                = 1.E-2;
   b->does_exist           = YES;
   b->l->v                 = -1.;
   b->bin_cod_num          = -1.;
@@ -577,7 +576,8 @@ void Set_Defaults_Model(t_mod *mod)
   mod->kappa->v                = 4.0;
   mod->ras->alpha->v           = 1.0;
   mod->lambda->v               = 1.0;
-  mod->ras->pinvar->v               = 0.0;
+  mod->ras->pinvar->v          = 0.0;
+  mod->l_var                   = 1.E-2;
 
   mod->bootstrap               = 0;
   mod->ras->invar              = NO;
@@ -596,12 +596,13 @@ void Set_Defaults_Model(t_mod *mod)
   mod->ras->free_mixt_rates     = NO;
   mod->gamma_mgf_bl             = NO;
   mod->br_len_multiplier->v     = 1.0;
+
   
   mod->ras->parent_class_number = 0;
 
 #ifndef PHYTIME
   mod->l_min = 1.E-8;
-  mod->l_max = 100.0;
+  mod->l_max = 10.0;
 #else
   mod->l_min = 1.E-8;
   mod->l_max = 2.0;
@@ -3107,9 +3108,6 @@ void M4_Init_Model(m4 *m4mod, calign *data, t_mod *mod)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

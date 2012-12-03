@@ -679,9 +679,6 @@ phydbl RATES_Average_Rate(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
-
-
 phydbl RATES_Average_Substitution_Rate(t_tree *tree)
 {
   phydbl sum_r,sum_dt;
@@ -709,7 +706,6 @@ phydbl RATES_Average_Substitution_Rate(t_tree *tree)
 	  t     = tree->rates->nd_t[tree->a_edges[i]->left->num];
 	  t_anc = tree->rates->nd_t[tree->a_edges[i]->rght->num];
 	  u = tree->a_edges[i]->l->v;
-	  if(tree->rates->model == GUINDON) u = tree->a_edges[i]->gamma_prior_mean;
 	  sum_r += u;
 	  sum_dt += FABS(t-t_anc);
 	}
@@ -718,7 +714,6 @@ phydbl RATES_Average_Substitution_Rate(t_tree *tree)
       sum_dt += FABS(tree->rates->nd_t[tree->n_root->v[1]->num] - tree->rates->nd_t[tree->n_root->num]);
 
       u = tree->e_root->l->v;
-      if(tree->rates->model == GUINDON) u = tree->e_root->gamma_prior_mean;
       sum_r += u;	 
     }
   return(sum_r / sum_dt);
@@ -2415,15 +2410,14 @@ void RATES_Update_Cur_Bl(t_tree *tree)
       t2 = tree->rates->nd_t[tree->n_root->v[1]->num];
       t0 = tree->rates->nd_t[tree->n_root->num];
 
-      tree->e_root->gamma_prior_mean = 
+      tree->e_root->l->v = 
 	(t1-t0)/(t1+t2-2.*t0)*tree->rates->cur_gamma_prior_mean[n0->num] +
 	(t2-t0)/(t1+t2-2.*t0)*tree->rates->cur_gamma_prior_mean[n1->num];
       
-      tree->e_root->gamma_prior_var = 
+      tree->e_root->l_var = 
 	POW((t1-t0)/(t1+t2-2.*t0),2)*tree->rates->cur_gamma_prior_var[n0->num] +
 	POW((t2-t0)/(t1+t2-2.*t0),2)*tree->rates->cur_gamma_prior_var[n1->num];
 
-      tree->e_root->l->v = tree->e_root->gamma_prior_mean; // Required for having proper branch lengths in Write_Tree function
 
       /* printf("\n. ROOT: %f %f %f %f", */
       /* 	     tree->rates->cur_gamma_prior_mean[n0->num], */
@@ -2487,15 +2481,14 @@ void RATES_Update_Cur_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
       
       if(b)
 	{
-	  b->l->v                         = tree->rates->cur_l[d->num];
+	  b->l->v                      = tree->rates->cur_l[d->num];
 	  tree->rates->u_cur_l[b->num] = tree->rates->cur_l[d->num];
-	  b->gamma_prior_mean          = tree->rates->cur_gamma_prior_mean[d->num];
-	  b->gamma_prior_var           = tree->rates->cur_gamma_prior_var[d->num];
+	  b->l_var                     = tree->rates->cur_gamma_prior_var[d->num];
 	}
       
-      if(b && (isnan(b->l->v) || isnan(b->gamma_prior_var) || isnan(b->gamma_prior_mean)))
+      if(b && (isnan(b->l->v) || isnan(b->l_var)))
 	{
-	  PhyML_Printf("\n. dt=%G rr=%G cr=%G ra=%G rd=%G nu=%G %f %f ",dt,rr,cr,ra,rd,nu,b->gamma_prior_var,b->gamma_prior_mean);	  
+	  PhyML_Printf("\n. dt=%G rr=%G cr=%G ra=%G rd=%G nu=%G %f %f ",dt,rr,cr,ra,rd,nu,b->l_var,b->l->v);	  
 	  PhyML_Printf("\n. ta=%G td=%G ra*cr=%G rd*cr=%G sd=%G",
 		       ta,td,ra*cr,rd*cr,
 		       SQRT(dt*nu)*cr);
