@@ -35,7 +35,7 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
 {
 
   phydbl times_partial_proba, times_tot_proba, *t_prior_min, *t_prior_max;
-  int i, j, k, tot_num_comb;
+  int i, k, tot_num_comb;
   t_cal *calib;
  
   times_partial_proba = 1;
@@ -51,27 +51,23 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
 
   For(i, tot_num_comb)
     {
-      j = 0;
       times_partial_proba = 1;
       do
         {
           if(calib -> next)  
             { 
               k = (i % Number_Of_Comb(calib)) / Number_Of_Comb(calib -> next);
-              t_prior_min[calib -> all_applies_to[k] -> num] = calib -> lower;
-              t_prior_max[calib -> all_applies_to[k] -> num] = calib -> upper; 
-              times_partial_proba *= calib -> proba[calib -> all_applies_to[k] -> num];
-              j++;
               calib = calib -> next;
             }
           else            
             { 
               k = (i % calib -> n_all_applies_to);
-              t_prior_min[calib -> all_applies_to[k] -> num] = calib -> lower;
-              t_prior_max[calib -> all_applies_to[k] -> num] = calib -> upper;
-              times_partial_proba *= calib -> proba[calib -> all_applies_to[k] -> num];
+              
               break;           
-            } 
+            }
+          t_prior_min[calib -> all_applies_to[k] -> num] = calib -> lower;
+          t_prior_max[calib -> all_applies_to[k] -> num] = calib -> upper;
+          times_partial_proba *= calib -> proba[calib -> all_applies_to[k] -> num];
         }
       while(calib); 
       TIMES_Set_All_Node_Priors(tree);    
@@ -434,7 +430,7 @@ void PhyTime_XML(char *xml_file)
                   tree -> rates -> t_prior_min[node_num] = low;
                   tree -> rates -> t_prior_max[node_num] = up;
                   tree -> rates -> t_has_prior[node_num] = YES;
-                 //////////////////////////////////////////////////////////////////////////////////////////////////////
+                  //////////////////////////////////////////////////////////////////////////////////////////////////////
                   if(n_r -> child -> next) n_r -> child = n_r -> child -> next;
                   else break;
 		}

@@ -3589,6 +3589,10 @@ void Read_Clade_Priors(char *file_name, t_tree *tree)
 	      tree->rates->t_prior_min[node_num] = MIN(prior_low,prior_up);
 	      tree->rates->t_prior_max[node_num] = MAX(prior_low,prior_up);
 
+
+              /* Sergei to add stuff here re calibration object */
+
+
 	      if(FABS(prior_low - prior_up) < 1.E-6 && tree->a_nodes[node_num]->tax == YES)
 		tree->rates->nd_t[node_num] = prior_low;
 
