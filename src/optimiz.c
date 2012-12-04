@@ -636,7 +636,7 @@ void Optimize_Br_Len_Serie(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tree)
   if(tree->mod->gamma_mgf_bl == YES && b_fcus->num == 0)
     {
       Generic_Brent_Lk(&(tree->mod->l_var),
-		       1.E-6,1.E+0,
+		       1.E-10,1.E+3,
 		       tree->mod->s_opt->min_diff_lk_local,
 		       tree->mod->s_opt->brent_it_max,
 		       tree->mod->s_opt->quickdirty,

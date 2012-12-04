@@ -389,9 +389,9 @@ phydbl Lk(t_edge *b, t_tree *tree)
   For(i,2*tree->n_otu-3) 
     {
       tree->a_edges[i]->l_var = POW(tree->a_edges[i]->l->v,2) * tree->mod->l_var;
-      if(tree->a_edges[i]->l_var < 1.E-7) tree->a_edges[i]->l_var = 1.E-7;
-      if(tree->a_edges[i]->l_var > 1.E+2) tree->a_edges[i]->l_var = 1.E+2;
-      printf("\n. var = %G (len=%f,fact=%f)",tree->a_edges[i]->l_var,tree->a_edges[i]->l->v,tree->mod->l_var);
+      if(tree->a_edges[i]->l_var < 1.E-10) tree->a_edges[i]->l_var = 1.E-10;
+      if(tree->a_edges[i]->l_var > 1.E+2)  tree->a_edges[i]->l_var = 1.E+2;
+      /* printf("\n. var = %G (len=%f,fact=%f)",tree->a_edges[i]->l_var,tree->a_edges[i]->l->v,tree->mod->l_var); */
     }
 
   Check_Br_Len_Bounds(tree);
