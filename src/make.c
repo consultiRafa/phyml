@@ -1001,13 +1001,19 @@ t_rate *RATES_Make_Rate_Struct(int n_otu)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-t_cal *Make_Calib()
-{
-  t_cal *cal;
-  cal = (t_cal *)mCalloc(1,sizeof(t_cal));
-  return(cal);
-}
 
+t_cal *Make_Calib(int n_otu)
+{
+  t_cal *calib;
+  int i;
+  i = 0;
+  calib                        = (t_cal *)mCalloc(1, sizeof(t_cal));
+  calib -> proba               = (phydbl *)mCalloc(2 * n_otu - 1, sizeof(phydbl));
+  calib -> all_applies_to      = (t_node **)mCalloc(2 * n_otu - 1, sizeof(t_node *));
+  For(i, 2 * n_otu - 1)   
+  calib -> all_applies_to[i]   = (t_node *)mCalloc(1, sizeof(t_node)); 
+  return(calib);
+}
 
 
 

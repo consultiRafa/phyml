@@ -1416,6 +1416,7 @@ typedef struct __Calibration {
   phydbl lower; // lower bound
   phydbl upper; // upper bound
   int cur_applies_to;
+  phydbl calib_proba;
   struct __Node **all_applies_to;
   int n_all_applies_to;
   struct __Calibration *next;
