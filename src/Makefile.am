@@ -274,6 +274,7 @@ times.c times.h\
 tiporder.c tiporder.h\
 mg.c mg.h\
 m4.c m4.h\
+sergeii.c sergeii.h\
 xml.c xml.h
 phyml_mpi_LDADD = -lm
 else
@@ -371,6 +372,7 @@ make.c make.h\
 nexus.c nexus.h\
 init.c init.h\
 xml.c xml.h\
+sergeii.c sergeii.h\
 mixt.c mixt.h
 evolve_LDADD = -lm 
 else
@@ -402,6 +404,7 @@ make.c make.h\
 nexus.c nexus.h\
 init.c init.h\
 xml.c xml.h\
+sergeii.c sergeii.h\
 mixt.c mixt.h
 phyml_LDADD = -lm 
 endif

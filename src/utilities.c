@@ -6484,7 +6484,6 @@ void Evolve(calign *data, t_mod *mod, t_tree *tree)
           scale = var / mean;
           
           tree->a_edges[i]->l->v = orig_l[i] * Rgamma(shape,scale);
-          printf("\n. %f %f",tree->a_edges[i]->l->v, orig_l[i]);
         }
 
 

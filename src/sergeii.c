@@ -20,6 +20,9 @@ int Number_Of_Comb(t_cal *calib)
 {
 
   int num_comb;
+
+  if(!calib) return(1);
+  
   num_comb = 1;
   do
     {
@@ -31,15 +34,48 @@ int Number_Of_Comb(t_cal *calib)
   return(num_comb);
 }
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Set_Current_Calibration(int row, t_tree *tree)
+{
+  t_cal *calib;
+  phydbl *t_prior_min, *t_prior_max; 
+  short int *t_has_prior;
+  int k;
+
+  calib = tree -> rates -> calib;
+  t_prior_min = tree -> rates -> t_prior_min;
+  t_prior_max = tree -> rates -> t_prior_max;
+  t_has_prior = tree -> rates -> t_has_prior;
+  k = -1;
+  do
+    {
+      k = (row % Number_Of_Comb(calib)) / Number_Of_Comb(calib -> next);
+      
+      t_prior_min[calib -> all_applies_to[k] -> num] = calib -> lower;
+      t_prior_max[calib -> all_applies_to[k] -> num] = calib -> upper;
+      t_has_prior[calib -> all_applies_to[k] -> num] = YES;
+      times_partial_proba *= calib -> proba[calib -> all_applies_to[k] -> num]; 
+      
+      if(calib->next) calib = calib->next;
+      else break;
+      
+      //printf("\n. '%f' \n", times_partial_proba);         
+    }
+  while(calib); 
+  //PhyML_Printf("\n");
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
 {
 
   phydbl times_partial_proba, times_tot_proba, *t_prior_min, *t_prior_max; 
-  short int *t_has_prior;
   int i, j, k, tot_num_comb;
-  t_cal *calib;
  
-
   times_partial_proba = 1;
   times_tot_proba = 0;
   j = 0;
@@ -55,44 +91,14 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
     {
       times_partial_proba = 1;
       //PhyML_Printf("\n");
-      do
-        {
-          if(calib -> next)  
-            { 
-              k = (i % Number_Of_Comb(calib)) / Number_Of_Comb(calib -> next);
-              //PhyML_Printf(" '%d' ", calib -> all_applies_to[k] -> num);
-              t_prior_min[calib -> all_applies_to[k] -> num] = calib -> lower;
-              t_prior_max[calib -> all_applies_to[k] -> num] = calib -> upper;
-              t_has_prior[calib -> all_applies_to[k] -> num] = YES;
-              times_partial_proba *= calib -> proba[calib -> all_applies_to[k] -> num]; 
-              //printf("\n. '%f' \n", times_partial_proba); 
-              //PhyML_Printf(" '%d' ", k);    
-              calib = calib -> next;
-            }
-          else            
-            { 
-              k = (i % calib -> n_all_applies_to);             
-              //PhyML_Printf(" '%d' ", calib -> all_applies_to[k] -> num);
-              t_prior_min[calib -> all_applies_to[k] -> num] = calib -> lower;
-              t_prior_max[calib -> all_applies_to[k] -> num] = calib -> upper;
-              t_has_prior[calib -> all_applies_to[k] -> num] = YES;
-              times_partial_proba *= calib -> proba[calib -> all_applies_to[k] -> num]; 
-              //printf("\n. '%f' \n", times_partial_proba);     
-              //PhyML_Printf(" '%d' ", k);
-              break;           
-            }
-           //printf("\n. '%f' \n", times_partial_proba);         
-        }
-      while(calib); 
-      //PhyML_Printf("\n");
-  
+
+      Set_Current_Calibration(i,tree);
       TIMES_Set_All_Node_Priors(tree); 
 
       //For(j, 2 * tree -> n_otu - 1) PhyML_Printf(" Node num:'%d' Min:'%f' Max'%f' \n", j, t_prior_min[j], t_prior_max[j]); 
       //PhyML_Printf("\n");
   
       times_tot_proba += (times_partial_proba * EXP(TIMES_Lk_Yule_Order(tree)));
-      while(calib -> prev) calib = calib -> prev;
     }
 
   //printf("\n. '%f' \n", LOG(times_tot_proba));
@@ -571,6 +577,7 @@ void PhyTime_XML(char *xml_file)
   Set_Both_Sides(YES, tree);
   Prepare_Tree_For_Lk(tree);
   //For(i, 2 * tree -> n_otu - 1) printf(" '%f' '%f' \n", tree -> rates -> t_prior_min[i],  tree -> rates -> t_prior_max[i]);
+  Set_Current_Calibration(0,tree);
   TIMES_Set_All_Node_Priors(tree); 
   //For(i, 2 * tree -> n_otu - 1) printf(" '%f' '%f' \n", tree -> rates -> t_prior_min[i],  tree -> rates -> t_prior_max[i]);
   //Exit("\n");
