@@ -440,9 +440,9 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	  }
 	case 37 :
 	  {
-	    io->mod->s_opt->opt_cov_free_rates = 1;
-	    io->mod->m4mod->use_cov_alpha      = 0;
-	    io->mod->m4mod->use_cov_free       = 1;
+	    io->mod->s_opt->opt_cov_free_rates = YES;
+	    io->mod->m4mod->use_cov_alpha      = NO;
+	    io->mod->m4mod->use_cov_free       = YES;
 	    break;
 	  }
 	case 36 :

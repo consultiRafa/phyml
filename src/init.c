@@ -1032,9 +1032,10 @@ void Init_Model(calign *data, t_mod *mod, option *io)
             }          
         }
 
-      if((mod->whichmodel == GTR)    || 
-	 (mod->whichmodel == CUSTOM) || 
-	 (mod->whichmodel == HKY85)) 
+      if(((mod->whichmodel == GTR)    || 
+          (mod->whichmodel == CUSTOM) || 
+          (mod->whichmodel == HKY85)) &&
+         (mod->use_m4mod == NO))
 	{
 	  mod->update_eigen = YES;
 	  Update_Eigen(mod);
@@ -1231,7 +1232,6 @@ void Init_Model(calign *data, t_mod *mod, option *io)
       PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
-  
   if(!mod->use_m4mod) Set_Model_Parameters(mod);      
 		  
   Init_Eigen_Struct(mod->eigen);
@@ -3068,8 +3068,8 @@ void M4_Init_Model(m4 *m4mod, calign *data, t_mod *mod)
   else if(mod->io->datatype == AA) m4mod->n_o = 20;
   else 
     {
-      PhyML_Printf("\n. Not implemented yet.");
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Not implemented yet.");
+      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
 
@@ -3093,6 +3093,7 @@ void M4_Init_Model(m4 *m4mod, calign *data, t_mod *mod)
   
   For(i,(int)(m4mod->n_h*(m4mod->n_h-1)/2)) m4mod->h_rr[i] = 1.;
   fq = (phydbl)(1./m4mod->n_h);
+  
 
   if(mod->s_opt->opt_cov_delta) m4mod->delta = 1.0;
   if(mod->s_opt->opt_cov_alpha) m4mod->alpha = 1.0;

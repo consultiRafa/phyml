@@ -88,6 +88,7 @@ make.c make.h\
 mixt.c mixt.h\
 init.c init.h\
 nexus.c nexus.h\
+sergeii.c sergeii.h\
 xml.c xml.h
 phytime_LDADD = -lm
 else 

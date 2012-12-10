@@ -554,8 +554,8 @@ void Update_Qmat_Generic(phydbl *rr, phydbl *pi, int ns, phydbl *qmat)
   
   if(rr[(int)(ns*(ns-1)/2)-1] < 0.00001) 
     {
-      PhyML_Printf("\n. rr[%d]=%f",(int)(ns*(ns-1)/2)-1,rr[(int)(ns*(ns-1)/2)-1]);
-      PhyML_Printf("\n. Err in file %s at line %d\n\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== rr[%d]=%f",(int)(ns*(ns-1)/2)-1,rr[(int)(ns*(ns-1)/2)-1]);
+      PhyML_Printf("\n== Err in file %s at line %d\n\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
 
@@ -839,6 +839,7 @@ void Update_Eigen(t_mod *mod)
   phydbl scalar;
   int i;
   
+
   if(mod->is_mixt_mod) 
     {
       MIXT_Update_Eigen(mod);
@@ -847,7 +848,7 @@ void Update_Eigen(t_mod *mod)
 
   if(mod->update_eigen) 
     {
-      if(!mod->use_m4mod)
+      if(mod->use_m4mod == NO)
 	{
 	  if(mod->io->datatype == NT)
 	    {

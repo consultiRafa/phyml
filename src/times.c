@@ -80,6 +80,15 @@ int TIMES_main(int argc, char **argv)
   /* r_seed = 1308263660; */
   /* r_seed = 1313356025; */
 
+
+  phydbl mean;
+  phydbl T,A,B,u;
+  T = 40.;
+  A = 1.0;
+  B = 5.0;
+  u = 1.E-2;
+  Integrated_Geometric_Brownian_Bridge_Mean(T,A,B,u,&mean);
+
   io->r_seed = r_seed;
 
   srand(r_seed); rand();
