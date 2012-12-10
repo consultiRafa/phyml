@@ -739,6 +739,7 @@ typedef struct __RateMatrix {
   vect_dbl                   *qmat;
   vect_dbl              *qmat_buff;
   phydbl                     proba;
+  phydbl            proba_unscaled;
 
   struct __RateMatrix        *next;
   struct __RateMatrix        *prev;
@@ -770,9 +771,10 @@ typedef struct __RAS {
 
 typedef struct __EquFreq {
   /*! Equilibrium frequencies */
-  vect_dbl           *pi; /*! states frequencies */
-  vect_dbl  *pi_unscaled; /*! states frequencies (unscaled) */
-  phydbl           proba;
+  vect_dbl             *pi; /*! states frequencies */
+  vect_dbl    *pi_unscaled; /*! states frequencies (unscaled) */
+  phydbl             proba;
+  phydbl    proba_unscaled;
 
   struct __EquFreq   *next;
   struct __EquFreq   *prev;

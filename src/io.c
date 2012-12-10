@@ -1295,52 +1295,7 @@ align **Get_Seq(option *io)
     }
   else
     {
-      int i,j;
-      char **buff;
-      int *remove;
-      int n_unkn,n_removed,pos;
-
-      buff = (char **)mCalloc(io->n_otu,sizeof(char *));
-      For(i,io->n_otu) buff[i] = (char *)mCalloc(io->data[0]->len,sizeof(char));
-      remove = (int *)mCalloc(io->data[0]->len,sizeof(int));
-
-      n_removed = 0;
-
-      For(i,io->data[0]->len)
-	{
-	  For(j,io->n_otu)
-	    {
-	      if((io->data[j]->state[i] == '?') || (io->data[j]->state[i] == '-')) io->data[j]->state[i] = 'X';
-	      if((io->datatype == NT) && (io->data[j]->state[i] == 'N')) io->data[j]->state[i] = 'X';
-	      if(io->data[j]->state[i] == 'U') io->data[j]->state[i] = 'T';
-	    }
-
-	  n_unkn = 0;
-	  For(j,io->n_otu) if(io->data[j]->state[i] == 'X') n_unkn++;
-
-	  if(n_unkn == io->n_otu)
-	    {
-	      remove[i] = 1;
-	      n_removed++;
-	    }
-
-	  For(j,io->n_otu) buff[j][i] = io->data[j]->state[i];
-	}
-
-      pos = 0;
-      For(i,io->data[0]->len)
-	{
-/* 	  if(!remove[i]) */
-/* 	    { */
-	      For(j,io->n_otu) io->data[j]->state[pos] = buff[j][i];
-	      pos++;
-/* 	    } */
-	}
-
-      For(i,io->n_otu) io->data[i]->len = pos;
-      For(i,io->n_otu) Free(buff[i]);
-      Free(buff);
-      Free(remove);
+      Post_Process_Data(io);
     }
 
 
@@ -1350,6 +1305,22 @@ align **Get_Seq(option *io)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+void Post_Process_Data(option *io)
+{      
+  int i,j;
+  
+  For(i,io->data[0]->len)
+    {
+      For(j,io->n_otu)
+        {
+          if((io->data[j]->state[i] == '?') || (io->data[j]->state[i] == '-')) io->data[j]->state[i] = 'X';
+          if((io->datatype == NT) && (io->data[j]->state[i] == 'N')) io->data[j]->state[i] = 'X';
+          if(io->data[j]->state[i] == 'U') io->data[j]->state[i] = 'T';
+        }
+    }
+  
+  For(i,io->n_otu) io->data[i]->len = io->data[0]->len;
+}
 
 /* align **Get_Seq_Nexus(option *io) */
 /* { */

@@ -81,5 +81,6 @@ void Make_Ratematrice_From_XML_Node(xml_node *instance, option *io, t_mod *mod);
 void Make_Efrq_From_XML_Node(xml_node *instance, option *io, t_mod *mod);
 void Make_Topology_From_XML_Node(xml_node *instance, option *io, t_mod *mod);
 void Make_RAS_From_XML_Node(xml_node *parent, t_mod *mod);
+void Post_Process_Data(option *io);
 
 #endif
