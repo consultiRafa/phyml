@@ -659,12 +659,12 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
             }
           
           sum_probas += 
-            /* mixt_tree->mod->ras->gamma_r_proba->v[tree->mod->ras->parent_class_number] * */
-            /* tree->mod->r_mat->proba * */
-            /* tree->mod->e_frq->proba ; */
             mixt_tree->mod->ras->gamma_r_proba->v[tree->mod->ras->parent_class_number] *
-            mixt_tree->mod->r_mat->proba->v[tree->mod->r_mat->parent_class_number] *
-            mixt_tree->mod->e_frq->proba->v[tree->mod->e_frq->parent_class_number] ;
+            tree->mod->r_mat->proba->v *
+            tree->mod->e_frq->proba->v ;
+            /* mixt_tree->mod->ras->gamma_r_proba->v[tree->mod->ras->parent_class_number] * */
+            /* mixt_tree->mod->r_mat->proba->v[tree->mod->r_mat->parent_class_number] * */
+            /* mixt_tree->mod->e_frq->proba->v[tree->mod->e_frq->parent_class_number] ; */
           
           tree = tree->next;
         }
@@ -882,8 +882,11 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
               site_lk += 
                 mixt_tree->site_lk_cat[class] * 
                 mixt_tree->mod->ras->gamma_r_proba->v[tree->mod->ras->parent_class_number] *
-                mixt_tree->mod->r_mat->proba->v[tree->mod->r_mat->parent_class_number] *
-                mixt_tree->mod->e_frq->proba->v[tree->mod->e_frq->parent_class_number] *
+                mixt_tree->mod->r_mat->proba->v *
+                mixt_tree->mod->e_frq->proba->v / 
+                /* mixt_tree->mod->ras->gamma_r_proba->v[tree->mod->ras->parent_class_number] * */
+                /* mixt_tree->mod->r_mat->proba->v[tree->mod->r_mat->parent_class_number] * */
+                /* mixt_tree->mod->e_frq->proba->v[tree->mod->e_frq->parent_class_number] * */
                 sum_probas;
 
 
@@ -1879,29 +1882,3 @@ phydbl MIXT_Get_Mean_Edge_Len(t_edge *mixt_b, t_tree *mixt_tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void MIXT_Set_Rmat_Parent_Class_Number(t_tree *mixt_tree)
-{
-  t_tree *tree;
-  int class;
-
-  tree  = mixt_tree;
-  class = -1;
-  do
-    {
-      if(tree->is_mixt_tree == YES)
-        {
-          class = 0;
-          tree  = tree->next;
-          if(!(tree && tree->is_mixt_tree == NO)) break;
-        }
-      
-      tree->mod->rmat_parent_class_number = class;
-      class++;
-      tree = tree->next;
-      
-    }
-  while(tree);
-  
-
-
-}
