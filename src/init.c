@@ -87,7 +87,6 @@ void Init_Efrq(t_efrq *f)
 {
   f->next = NULL;
   f->prev = NULL;
-  f->proba = 1.0;
 }
 
 //////////////////////////////////////////////////////////////
@@ -549,7 +548,6 @@ void Set_Defaults_Input(option* io)
 
 void Init_Rmat(t_rmat *rmat)
 {
-  rmat->proba = 1.0;
   rmat->n_diff_rr = 1;
 }
 

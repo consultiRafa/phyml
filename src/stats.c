@@ -4177,9 +4177,6 @@ void Integrated_Geometric_Brownian_Bridge_Mean(phydbl T, phydbl A, phydbl B, phy
  *mean /= T;
  *mean *= EXP(A);
 
- printf("\n. mean2 = %f",*mean);
- Exit("\n");
-
  }
  
 //////////////////////////////////////////////////////////////
