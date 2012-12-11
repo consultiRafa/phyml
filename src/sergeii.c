@@ -130,7 +130,7 @@ void PhyTime_XML(char *xml_file)
 
   FILE *f;
   char **clade, *clade_name, **mon_list;
-  phydbl low, up, times_tot_proba;
+  phydbl low, up; //times_tot_proba;
   int i, j, n_taxa, clade_size, node_num, n_mon, tot_num_cal;
   xml_node *n_r, *n_t, *n_m, *n_cur;
   t_cal *last_calib; 
@@ -145,7 +145,7 @@ void PhyTime_XML(char *xml_file)
   char *most_likely_tree;
   int user_lk_approx;
   t_tree *tree;
-  t_node **a_nodes, *node;
+  t_node **a_nodes; //*node;
   m4 *m4mod;
  
 
@@ -251,18 +251,8 @@ void PhyTime_XML(char *xml_file)
       else data[i] -> state = (char *)mCalloc(T_MAX_SEQ,sizeof(char));
     }
   io -> data = data;
-  tree -> data = data;
+  //tree -> data = data;
 
-  //memory for compressed sequences:
-  cdata         = (calign *)mCalloc(1,sizeof(calign));
-  c_seq   = (align **)mCalloc(io -> n_otu,sizeof(align *));
-  For(i, io -> n_otu)
-    {
-      c_seq[i]          = (align *)mCalloc(1,sizeof(align));
-      c_seq[i] -> name  = (char *)mCalloc(T_MAX_NAME,sizeof(char));
-      c_seq[i] -> state = (char *)mCalloc(io -> state_len + 1,sizeof(char));
-    }
-  cdata -> c_seq = c_seq;
  
   //memory for clade:
   clade_name = (char *)mCalloc(T_MAX_NAME,sizeof(char));
@@ -378,6 +368,7 @@ void PhyTime_XML(char *xml_file)
 	    }
 
 	  //checking if a sequences of the same lengths:
+
 	  i = 1;
 	  For(i, n_taxa) if(strlen(io -> data[0] -> state) != strlen(io -> data[i] -> state))
 	    {
@@ -395,9 +386,12 @@ void PhyTime_XML(char *xml_file)
 	    {
 	      PhyML_Printf("\n==Number of taxa is not the same as a number of tips. Check your data...\n");
 	      Exit("\n");
-	    }   
+	    }
 
-	  n_r = n_r -> next;
+          //deleting '-', etc. from sequences:
+          io -> data[0] -> len = strlen(io -> data[0] -> state);
+          Post_Process_Data(io);   
+ 	  n_r = n_r -> next;
 	}
       else if(!strcmp(n_r -> name, "calibration"))//looking for a node <calibration>.
 	{
@@ -541,7 +535,7 @@ void PhyTime_XML(char *xml_file)
   while(tree -> rates -> calib -> prev) tree -> rates -> calib = tree -> rates -> calib -> prev;
   */
   ////////////////////////////////////////////////////////////////////////////////////////////////////
-
+  //printf(" '%s' ", io -> data[0] -> state);
   //For(i, 2 * tree -> n_otu - 1) printf(" '%f' '%f' \n", tree -> rates -> t_prior_min[i],  tree -> rates -> t_prior_max[i]);
   //TIMES_Set_All_Node_Priors(tree); 
   //For(i, 2 * tree -> n_otu - 1) printf(" '%f' '%f' \n", tree -> rates -> t_prior_min[i],  tree -> rates -> t_prior_max[i]);
@@ -578,7 +572,19 @@ void PhyTime_XML(char *xml_file)
   PhyML_Printf("\n. Pid: %d\n",getpid()); 
   PhyML_Printf("\n. Compressing sequences...\n");
   data = io -> data;
-  data[0] -> len = strlen(data[0] -> state);
+  data[0] -> len = strlen(data[0] -> state); 
+  ////////////////////////////////////////////////////////////////////////////
+  //memory for compressed sequences:
+  cdata         = (calign *)mCalloc(1,sizeof(calign));
+  c_seq   = (align **)mCalloc(io -> n_otu,sizeof(align *));
+  For(i, io -> n_otu)
+    {
+      c_seq[i]          = (align *)mCalloc(1,sizeof(align));
+      c_seq[i] -> name  = (char *)mCalloc(T_MAX_NAME,sizeof(char));
+      c_seq[i] -> state = (char *)mCalloc(data[0] -> len + 1,sizeof(char));
+    }
+  cdata -> c_seq = c_seq;
+  ////////////////////////////////////////////////////////////////////////////
   cdata = Compact_Data(data, io);
   Free_Seq(io -> data, cdata -> n_otu);
   io -> mod -> io = io;
@@ -608,9 +614,10 @@ void PhyTime_XML(char *xml_file)
 
   PhyML_Printf("\n");														
   PhyML_Printf("\n. Input tree with calibration information ('almost' compatible with MCMCtree).\n");
-  PhyML_Printf("\n. %s \n", Write_Tree(tree, YES));
-
+  PhyML_Printf("\n. %s \n", Write_Tree(tree, NO));
+  Exit("\n");
   tree -> write_br_lens = YES;
+
 
   // Work with log of branch lengths?
   if(tree -> mod -> log_l == YES) Log_Br_Len(tree);
@@ -675,7 +682,7 @@ void PhyTime_XML(char *xml_file)
 
   tree -> mcmc = MCMC_Make_MCMC_Struct();
  
-  MCMC_Copy_MCMC_Struct(tree -> io -> mcmc, tree -> mcmc, "phytime"); 
+  MCMC_Copy_MCMC_Struct(tree -> io -> mcmc, tree -> mcmc, "sergeii"); 
 
   tree -> mod -> m4mod = m4mod;
   	

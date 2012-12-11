@@ -614,7 +614,7 @@ char *Write_Tree(t_tree *tree, int custom)
   s[(int)strlen(s)-1]=')';
   s[(int)strlen(s)]=';';
 
-  return s;
+  return s;      
 }
 
 //////////////////////////////////////////////////////////////
@@ -970,7 +970,7 @@ void R_wtree_Custom(t_node *pere, t_node *fils, int *available, char **s_tree, i
 
 	  strcat(*s_tree,":");
 	  (*pos)++;
-
+ 
 #ifndef PHYTIME
 	  if(!tree->n_root)
 	    {
@@ -1067,7 +1067,7 @@ void R_wtree_Custom(t_node *pere, t_node *fils, int *available, char **s_tree, i
 	      else p=i;
 	    }
 	}
-
+ 
       ori_len = *pos;
       
       if(p < 0)
