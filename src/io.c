@@ -948,26 +948,13 @@ void R_wtree_Custom(t_node *pere, t_node *fils, int *available, char **s_tree, i
 	}
       else
 	{
-	  PhyML_Printf("\n. Unknown tree format.");
-	  PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
-	  PhyML_Printf("\n. s=%s\n",*s_tree);
+	  PhyML_Printf("\n== Unknown tree format.");
+	  PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+	  PhyML_Printf("\n== s=%s\n",*s_tree);
 	}
 
       if((fils->b) && (fils->b[0]) && (tree->write_br_lens == YES))
 	{
-	  /* if(tree->print_labels) */
-	  /*   { */
-	  /*     if(fils->b[0]->n_labels < 10) */
-	  /* 	For(i,fils->b[0]->n_labels)  */
-	  /* 	  { */
-	  /* 	    (*pos) += sprintf(*s_tree+*pos,"#%s",fils->b[0]->labels[i]); */
-	  /* 	  } */
-	  /*     else */
-	  /* 	{ */
-	  /* 	  (*pos) += sprintf(*s_tree+*pos,"#%d_labels",fils->b[0]->n_labels); */
-	  /* 	} */
-	  /*   } */
-
 	  strcat(*s_tree,":");
 	  (*pos)++;
  
@@ -1021,17 +1008,18 @@ void R_wtree_Custom(t_node *pere, t_node *fils, int *available, char **s_tree, i
 
       if(*available < 0)
 	{
-	  PhyML_Printf("\n. s=%s\n",*s_tree);
-	  PhyML_Printf("\n. len=%d\n",strlen(*s_tree));
-	  PhyML_Printf("\n. The sequence names in your input file might be too long.");
-	  PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+	  PhyML_Printf("\n== s=%s\n",*s_tree);
+	  PhyML_Printf("\n== len=%d\n",strlen(*s_tree));
+	  PhyML_Printf("\n== The sequence names in your input file might be too long.");
+	  PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
 	  Warn_And_Exit("");
 	}
 
-      if(*available < (int)T_MAX_NAME/2)
+      if(*available < (int)T_MAX_NAME)
 	{
-	  (*s_tree) = (char *)mRealloc(*s_tree,*pos+(int)T_MAX_NAME,sizeof(char));
-	  (*available) = (int)T_MAX_NAME;
+	  (*s_tree) = (char *)mRealloc(*s_tree,*pos+3*(int)T_MAX_NAME,sizeof(char));
+	  For(i,3*(int)T_MAX_NAME) (*s_tree)[(int)strlen(*s_tree)+i] = '\0';
+	  (*available) = 3*(int)T_MAX_NAME;
 	}
 /*       printf(" %s [%d,%d]",*s_tree,(int)strlen(*s_tree),*available); */
     }
@@ -1072,9 +1060,9 @@ void R_wtree_Custom(t_node *pere, t_node *fils, int *available, char **s_tree, i
       
       if(p < 0)
 	{
-	  PhyML_Printf("\n. fils=%p root=%p root->v[0]=%p root->v[1]=%p",fils,tree->n_root,tree->n_root->v[0],tree->n_root->v[1]);
-	  PhyML_Printf("\n. tree->e_root=%p fils->b[0]=%p fils->b[1]=%p fils->b[2]=%p",tree->e_root,fils->b[0],fils->b[1],fils->b[2]);		       
-	  PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+	  PhyML_Printf("\n== fils=%p root=%p root->v[0]=%p root->v[1]=%p",fils,tree->n_root,tree->n_root->v[0],tree->n_root->v[1]);
+	  PhyML_Printf("\n== tree->e_root=%p fils->b[0]=%p fils->b[1]=%p fils->b[2]=%p",tree->e_root,fils->b[0],fils->b[1],fils->b[2]);		       
+	  PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
 	  Warn_And_Exit("");
 	}
 
@@ -1094,19 +1082,6 @@ void R_wtree_Custom(t_node *pere, t_node *fils, int *available, char **s_tree, i
 	    }
 	  
 	  fflush(NULL);
-
-	  /* if((tree->print_labels) && (fils->b[p]->labels != NULL)) */
-	  /*   { */
-	  /*     if(fils->b[p]->n_labels < 10) */
-	  /* 	For(i,fils->b[p]->n_labels)  */
-	  /* 	  { */
-	  /* 	    (*pos) += sprintf(*s_tree+*pos,"#%s",fils->b[p]->labels[i]); */
-	  /* 	  } */
-	  /*     else */
-	  /* 	{ */
-	  /* 	  (*pos) += sprintf(*s_tree+*pos,"#%d_labels",fils->b[p]->n_labels); */
-	  /* 	} */
-	  /*   } */
 
 	  strcat(*s_tree,":");
 	  (*pos)++;
@@ -1160,14 +1135,15 @@ void R_wtree_Custom(t_node *pere, t_node *fils, int *available, char **s_tree, i
 
       if(*available < 0)
 	{
-	  PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+	  PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
 	  Warn_And_Exit("");
 	}
 
-      if(*available < (int)T_MAX_NAME/2)
+      if(*available < (int)T_MAX_NAME)
 	{
-	  (*s_tree) = (char *)mRealloc(*s_tree,*pos+(int)T_MAX_NAME,sizeof(char));
-	  (*available) = (int)T_MAX_NAME;
+	  (*s_tree) = (char *)mRealloc(*s_tree,*pos+3*(int)T_MAX_NAME,sizeof(char));
+	  For(i,3*(int)T_MAX_NAME) (*s_tree)[(int)strlen(*s_tree)+i] = '\0';
+	  (*available) = 3*(int)T_MAX_NAME;
 	}
 /*       printf(" %s [%d,%d]",*s_tree,(int)strlen(*s_tree),*available); */
     }

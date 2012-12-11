@@ -193,10 +193,6 @@ int main(int argc, char **argv)
 		    }
 
 
-                  printf("\n. %s",Write_Tree(tree,YES));
-                  Exit("\n");
-
-
 		  if(tree->mod->s_opt->opt_topo)
 		    {
 		      if(tree->mod->s_opt->topo_search      == NNI_MOVE) Simu_Loop(tree);
