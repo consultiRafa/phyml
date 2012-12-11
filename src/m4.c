@@ -334,7 +334,6 @@ void M4_Update_Qmat(m4 *m4mod, t_mod *mod)
   int i,j;
   int n_s, n_o, n_h;
   phydbl mr, sum;
-  phydbl scale;
 
   /* The number of states in M4 models is the product 
      of the number of hidden states (or classes) by the
@@ -440,7 +439,7 @@ void M4_Update_Qmat(m4 *m4mod, t_mod *mod)
 
   /* Print_Square_Matrix_Generic(n_o,m4mod->o_mats[0]); */
 
-  /* Multiply each of these matrix by a relative substitution rate */
+  /* Multiply each of these matrices by a relative substitution rate */
   for(i=1;i<m4mod->n_h;i++) For(j,n_o*n_o) m4mod->o_mats[i][j] = m4mod->o_mats[0][j]*m4mod->multipl[i];
   For(j,n_o*n_o) m4mod->o_mats[0][j] *= m4mod->multipl[0];
 
@@ -459,7 +458,8 @@ void M4_Update_Qmat(m4 *m4mod, t_mod *mod)
 	}
     }
 
-  /* Work out scaling factor */
+  /* Work out scaling factor such that the  expected number of observed state substitution
+     along a branch of length 1 is 1.*/
   mr = .0;
   For(i,n_s)
     {
@@ -501,25 +501,6 @@ void M4_Update_Qmat(m4 *m4mod, t_mod *mod)
      No need to 'add' these frequencies later on. */
 
   /* We are done with the non diagonal blocks */
-
-
-  /* Scaling matrix */
-  scale = 0.0;
-  For(i,n_s)
-    {
-      For(j,n_s)
-	{
-	  if((int)(i/n_o) == (j/n_o))
-	    {
-	      scale += 
-		m4mod->h_fq[(int)(j/n_o)] *
-		m4mod->o_fq[i%n_o] *
-		mod->r_mat->qmat->v[i*n_s+j];
-	    }
-	}
-    }
-  
-  For(i,n_s*n_s) mod->r_mat->qmat->v[i] /= scale;
 
 
   /* Diagonal cells */
