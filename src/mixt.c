@@ -61,6 +61,9 @@ void MIXT_Chain_All(t_tree *mixt_tree)
   while(curr);
 
 
+  Make_Rmat_Weight(mixt_tree);
+  Make_Efrq_Weight(mixt_tree);
+ 
 }
 
 //////////////////////////////////////////////////////////////
@@ -658,13 +661,10 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
               if(!(tree && tree->is_mixt_tree == NO)) break;
             }
           
-          sum_probas += 
+          sum_probas +=
             mixt_tree->mod->ras->gamma_r_proba->v[tree->mod->ras->parent_class_number] *
-            tree->mod->r_mat->proba->v *
-            tree->mod->e_frq->proba->v ;
-            /* mixt_tree->mod->ras->gamma_r_proba->v[tree->mod->ras->parent_class_number] * */
-            /* mixt_tree->mod->r_mat->proba->v[tree->mod->r_mat->parent_class_number] * */
-            /* mixt_tree->mod->e_frq->proba->v[tree->mod->e_frq->parent_class_number] ; */
+            tree->mod->r_mat_weight->v *
+            tree->mod->e_frq_weight->v ;
           
           tree = tree->next;
         }
@@ -783,6 +783,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
             }
           while(tree && tree->is_mixt_tree == NO);
 
+
           max_sum_scale =  (phydbl)BIG;
           min_sum_scale = -(phydbl)BIG;
 
@@ -836,6 +837,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
          
           fact_sum_scale = (int)((max_sum_scale + min_sum_scale) / 2);          
 
+
           /*! Populate the mixt_tree->site_lk_cat[class] table after
             scaling */
 
@@ -865,6 +867,8 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
           while(tree && tree->is_mixt_tree == NO);
 
 
+
+
           tree    = mixt_tree->next;
           b       = mixt_b->next;
           class   = 0;
@@ -879,18 +883,12 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
                   if(!(tree && tree->is_mixt_tree == NO)) break;
                 }
 
-              site_lk += 
-                mixt_tree->site_lk_cat[class] * 
+              site_lk +=
+                mixt_tree->site_lk_cat[class] *
                 mixt_tree->mod->ras->gamma_r_proba->v[tree->mod->ras->parent_class_number] *
-                mixt_tree->mod->r_mat->proba->v *
-                mixt_tree->mod->e_frq->proba->v / 
-                /* mixt_tree->mod->ras->gamma_r_proba->v[tree->mod->ras->parent_class_number] * */
-                /* mixt_tree->mod->r_mat->proba->v[tree->mod->r_mat->parent_class_number] * */
-                /* mixt_tree->mod->e_frq->proba->v[tree->mod->e_frq->parent_class_number] * */
+                tree->mod->r_mat_weight->v *
+                tree->mod->e_frq_weight->v /
                 sum_probas;
-
-
-              // TO DO: add correct weights here
 
               tree = tree->next;
               b    = b->next;
@@ -1881,4 +1879,5 @@ phydbl MIXT_Get_Mean_Edge_Len(t_edge *mixt_b, t_tree *mixt_tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
 

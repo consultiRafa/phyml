@@ -738,7 +738,6 @@ typedef struct __RateMatrix {
   vect_int           *n_rr_per_cat; /*! number of rate parameters in each category */
   vect_dbl                   *qmat;
   vect_dbl              *qmat_buff;
-  scalar_dbl                *proba;
 
   struct __RateMatrix        *next;
   struct __RateMatrix        *prev;
@@ -772,7 +771,6 @@ typedef struct __EquFreq {
   /*! Equilibrium frequencies */
   vect_dbl             *pi; /*! states frequencies */
   vect_dbl    *pi_unscaled; /*! states frequencies (unscaled) */
-  scalar_dbl        *proba;
   
   struct __EquFreq   *next;
   struct __EquFreq   *prev;
@@ -827,6 +825,9 @@ typedef struct __Model {
   int                gamma_mgf_bl; /*! P = \int_0^inf exp(QL) p(L) where L=\int_0^t R(s) ds and p(L) is the gamma density. Set to NO by default !*/
 
   int              n_mixt_classes; /* Number of classes in the mixture model. */
+
+  scalar_dbl        *r_mat_weight;
+  scalar_dbl        *e_frq_weight;
 
 }t_mod;
 

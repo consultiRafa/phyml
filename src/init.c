@@ -576,6 +576,8 @@ void Set_Defaults_Model(t_mod *mod)
   mod->lambda->v               = 1.0;
   mod->ras->pinvar->v          = 0.0;
   mod->l_var                   = 1.E-2;
+  mod->e_frq_weight->v         = 1.0;
+  mod->r_mat_weight->v         = 1.0;
 
   mod->bootstrap               = 0;
   mod->ras->invar              = NO;

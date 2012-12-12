@@ -3595,6 +3595,7 @@ option *Get_Input(int argc, char **argv)
   s_opt = (t_opt *)Make_Optimiz();
   m4mod = (m4 *)M4_Make_Light();
 
+
   Set_Defaults_Input(io);
   Set_Defaults_Model(mod);
   Set_Defaults_Optimiz(s_opt);
@@ -3602,6 +3603,9 @@ option *Get_Input(int argc, char **argv)
   io->mod->m4mod = m4mod;
   mod->io        = io;
   mod->s_opt     = s_opt;
+
+
+
 
 #ifdef MPI
   rv = Read_Command_Line(io,argc,argv);
