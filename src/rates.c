@@ -2474,6 +2474,7 @@ void RATES_Update_Cur_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 	  tree->rates->cur_gamma_prior_mean[d->num] = m;
 	  tree->rates->cur_gamma_prior_var[d->num]  = v;
 	  	  
+
 	  tree->rates->cur_l[d->num] = tree->rates->cur_gamma_prior_mean[d->num]; // Required for having proper branch lengths in Write_Tree function
 	}
       
