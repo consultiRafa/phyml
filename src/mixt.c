@@ -896,7 +896,6 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
             }
           while(tree && tree->is_mixt_tree == NO);
 
-
           /* Scaling for invariants */
           if(mixt_tree->mod->ras->invar == YES)
             {

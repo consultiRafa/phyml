@@ -143,6 +143,8 @@ void Optimize_Lambda(t_tree *mixt_tree, int verbose);
 void Optimize_Alpha(t_tree *mixt_tree, int verbose);
 void Optimize_Pinv(t_tree *mixt_tree, int verbose);
 void Optimize_State_Freqs(t_tree *mixt_tree, int verbose);
+void Optimize_Rmat_Weights(t_tree *mixt_tree, int verbose);
+void Optimize_Efrq_Weights(t_tree *mixt_tree, int verbose);
 
 #endif
 

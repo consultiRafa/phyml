@@ -3019,7 +3019,7 @@ void MCMC_Randomize_Node_Times(t_tree *tree)
 
   if(RATES_Check_Node_Times(tree))
     {
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
 }

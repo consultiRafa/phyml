@@ -739,6 +739,8 @@ void Optimiz_All_Free_Param(t_tree *tree, int verbose)
   Optimize_Pinv(tree,verbose);
   Optimize_Alpha(tree,verbose);
   Optimize_State_Freqs(tree,verbose);
+  Optimize_Rmat_Weights(tree,verbose);
+  Optimize_Efrq_Weights(tree,verbose);
 
   if((tree->mod->s_opt->opt_free_mixt_rates) && (tree->mod->ras->free_mixt_rates == YES))
     {
@@ -2526,6 +2528,79 @@ void Optimize_State_Freqs(t_tree *mixt_tree, int verbose)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void Optimize_Rmat_Weights(t_tree *mixt_tree, int verbose)
+{
+  t_tree *tree;
+  
+  Switch_Eigen(NO,mixt_tree->mod);
+
+  tree = mixt_tree;
+
+  do
+    {
+      if(tree->next) tree = tree->next;
+	     
+      Generic_Brent_Lk(&(tree->mod->r_mat_weight->v),
+                       0.,100.,
+                       tree->mod->s_opt->min_diff_lk_local,
+                       tree->mod->s_opt->brent_it_max,
+                       tree->mod->s_opt->quickdirty,
+                       Wrap_Lk,NULL,mixt_tree,NULL);
+
+      if(verbose)
+        {
+          Print_Lk(mixt_tree,"[Rate mat. weights  ]");
+        }
+
+      tree = tree->next;
+
+    }
+  while(tree);
+  
+  Switch_Eigen(NO,mixt_tree->mod);
+
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Optimize_Efrq_Weights(t_tree *mixt_tree, int verbose)
+{
+  t_tree *tree;
+  
+  Switch_Eigen(NO,mixt_tree->mod);
+
+  tree = mixt_tree;
+
+  do
+    {
+      if(tree->next) tree = tree->next;
+	     
+      Generic_Brent_Lk(&(tree->mod->e_frq_weight->v),
+                       0.,100.,
+                       tree->mod->s_opt->min_diff_lk_local,
+                       tree->mod->s_opt->brent_it_max,
+                       tree->mod->s_opt->quickdirty,
+                       Wrap_Lk,NULL,mixt_tree,NULL);
+
+      if(verbose)
+        {
+          Print_Lk(mixt_tree,"[Equ. freq. weights  ]");
+        }
+
+      tree = tree->next;
+
+    }
+  while(tree);
+  
+  Switch_Eigen(NO,mixt_tree->mod);
+
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 
 void Optimize_Lambda(t_tree *mixt_tree, int verbose)
 {

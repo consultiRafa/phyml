@@ -3784,6 +3784,7 @@ void Print_Data_Structure(int final, FILE *fp, t_tree *mixt_tree)
   int c,cc,cc_efrq,cc_rmat,cc_lens;
   char *param;
   int *link_efrq,*link_rmat,*link_lens;
+  phydbl sum_probas;
 
   
   PhyML_Fprintf(fp,"\n. Starting tree: %s",
@@ -3858,6 +3859,29 @@ void Print_Data_Structure(int final, FILE *fp, t_tree *mixt_tree)
 	      PhyML_Fprintf(fp,"\n   Optimise: \t\t\t\t%12s",mixt_tree->mod->s_opt->opt_pinvar==YES?"yes":"no");
 	    }
 	}
+
+
+      /*! Calculate the sum of the product of proba for each class in the mixture */
+      tree = mixt_tree->next;
+      sum_probas = 0.0;
+      
+      do
+        {
+          if(tree->mod->ras->invar == YES) 
+            {
+              tree = tree->next;
+              if(!(tree && tree->is_mixt_tree == NO)) break;
+            }
+          
+          sum_probas +=
+            mixt_tree->mod->ras->gamma_r_proba->v[tree->mod->ras->parent_class_number] *
+            tree->mod->r_mat_weight->v *
+            tree->mod->e_frq_weight->v ;
+          
+          tree = tree->next;
+        }
+      while(tree && tree->is_mixt_tree == NO);
+
       	  
       tree = mixt_tree;
       do
@@ -3869,8 +3893,8 @@ void Print_Data_Structure(int final, FILE *fp, t_tree *mixt_tree)
 
           if(mixt_tree->mod->ras->n_catg > 1)
             {
-              PhyML_Fprintf(fp,"\n. Relative substitution rate:\t%12f",mixt_tree->mod->ras->gamma_rr->v[tree->mod->ras->parent_class_number]);
-              PhyML_Fprintf(fp,"\n. Frequency:\t\t\t%12f",mixt_tree->mod->ras->gamma_r_proba->v[tree->mod->ras->parent_class_number]);
+              PhyML_Fprintf(fp,"\n   Relative substitution rate:\t%12f",mixt_tree->mod->ras->gamma_rr->v[tree->mod->ras->parent_class_number]);
+              PhyML_Fprintf(fp,"\n   Relative rate freq.:\t\t%12f",mixt_tree->mod->ras->gamma_r_proba->v[tree->mod->ras->parent_class_number]);
             }
 
 	  PhyML_Fprintf(fp,"\n   Substitution model:\t\t%12s",tree->mod->modelname->s);
@@ -3902,6 +3926,7 @@ void Print_Data_Structure(int final, FILE *fp, t_tree *mixt_tree)
                   PhyML_Fprintf(fp,"\n   Subst. rate G<->T:\t\t%12.2f",tree->mod->r_mat->rr->v[5]);
                 }
             }
+	  PhyML_Fprintf(fp,"\n   Rate matrix weight:\t\t%12f",tree->mod->r_mat_weight->v / sum_probas);
 
           if(tree->io->datatype == NT && 
              tree->mod->whichmodel != JC69 && 
@@ -3935,6 +3960,10 @@ void Print_Data_Structure(int final, FILE *fp, t_tree *mixt_tree)
 
               Free(s);
             }
+
+	  PhyML_Fprintf(fp,"\n   Equ. freq. weight:\t\t%12f",tree->mod->e_frq_weight->v/sum_probas);
+
+
 	  class++;
 	  
 	  tree = tree->next;
