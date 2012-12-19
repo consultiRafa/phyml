@@ -1029,15 +1029,22 @@ void Make_Rmat_Weight(t_tree *mixt_tree)
   t_tree *curr_mixt_tree, *tree, *buff_tree;
   t_rmat *curr_r_mat;
   scalar_dbl *match_weight;
+  scalar_dbl **all_r_mats;
+  int i,n_mats;
 
+  all_r_mats = (scalar_dbl **)mCalloc(1,sizeof(scalar_dbl *));
+  
   buff_tree = tree = curr_mixt_tree = mixt_tree;
   do // For each mixt_tree
     {
-
+      n_mats = 0;
       tree = curr_mixt_tree->next; // First tree in the mixture
       do // For each tree in curr_mixt_tree
         {
           curr_r_mat = tree->mod->r_mat;
+          all_r_mats[n_mats] = tree->mod->r_mat_weight;
+          n_mats += 1;
+          all_r_mats = (scalar_dbl **)realloc(all_r_mats,(n_mats+1)*sizeof(scalar_dbl *));
 
           if(tree != curr_mixt_tree->next)
             {              
@@ -1051,7 +1058,6 @@ void Make_Rmat_Weight(t_tree *mixt_tree)
                       match_weight = buff_tree->mod->r_mat_weight;
                       break;
                     }
-                  
                   buff_tree = buff_tree->next;
                 }
               
@@ -1059,27 +1065,30 @@ void Make_Rmat_Weight(t_tree *mixt_tree)
                 {
                   Free(tree->mod->r_mat_weight);
                   tree->mod->r_mat_weight = match_weight;
+                  n_mats -= 1;
                 }
             }
-
           tree = tree->next;
-
         }
       while(tree && tree->is_mixt_tree == NO);
+      
+      For(i,n_mats-1) 
+        {
+          all_r_mats[i]->next = all_r_mats[i+1];
+          all_r_mats[i+1]->prev = all_r_mats[i];
+        }
+
+      /* For(i,n_mats)  */
+      /*   { */
+      /*     printf("\n.M %p %p %p",all_r_mats[i],all_r_mats[i]->next,all_r_mats[i]->prev); */
+      /*   } */
+      /* printf("\n"); */
 
       curr_mixt_tree = curr_mixt_tree->next_mixt;
     }
   while(curr_mixt_tree);
 
-  tree = mixt_tree;
-  do // Link all the r_mat_weight elements
-    {
-      
-      tree->mod->r_mat_weight->next = tree->next ? tree->next->mod->r_mat_weight : NULL;
-      if(tree->mod->r_mat_weight->next) tree->mod->r_mat_weight->next->prev = tree->mod->r_mat_weight;
-      tree = tree->next;
-    }
-  while(tree);
+  Free(all_r_mats);
 }
 
 //////////////////////////////////////////////////////////////
@@ -1090,15 +1099,22 @@ void Make_Efrq_Weight(t_tree *mixt_tree)
   t_tree *curr_mixt_tree, *tree, *buff_tree;
   t_efrq *curr_e_frq;
   scalar_dbl *match_weight;
+  scalar_dbl **all_e_frqs;
+  int i,n_frqs;
 
+  all_e_frqs = (scalar_dbl **)mCalloc(1,sizeof(scalar_dbl *));
+  
   buff_tree = tree = curr_mixt_tree = mixt_tree;
   do // For each mixt_tree
     {
-
+      n_frqs = 0;
       tree = curr_mixt_tree->next; // First tree in the mixture
       do // For each tree in curr_mixt_tree
         {
           curr_e_frq = tree->mod->e_frq;
+          all_e_frqs[n_frqs] = tree->mod->e_frq_weight;
+          n_frqs += 1;
+          all_e_frqs = (scalar_dbl **)realloc(all_e_frqs,(n_frqs+1)*sizeof(scalar_dbl *));
 
           if(tree != curr_mixt_tree->next)
             {              
@@ -1112,37 +1128,37 @@ void Make_Efrq_Weight(t_tree *mixt_tree)
                       match_weight = buff_tree->mod->e_frq_weight;
                       break;
                     }
-                  
                   buff_tree = buff_tree->next;
                 }
               
-              if(match_weight) // Found this e_frq object before
+              if(match_weight)
                 {
                   Free(tree->mod->e_frq_weight);
                   tree->mod->e_frq_weight = match_weight;
+                  n_frqs -= 1;
                 }
             }
-
           tree = tree->next;
-
         }
       while(tree && tree->is_mixt_tree == NO);
+      
+      For(i,n_frqs-1) 
+        {
+          all_e_frqs[i]->next = all_e_frqs[i+1];
+          all_e_frqs[i+1]->prev = all_e_frqs[i];
+        }
+
+      /* For(i,n_frqs)  */
+      /*   { */
+      /*     printf("\n.F %p %p %p",all_e_frqs[i],all_e_frqs[i]->next,all_e_frqs[i]->prev); */
+      /*   } */
+      /* printf("\n"); */
 
       curr_mixt_tree = curr_mixt_tree->next_mixt;
     }
   while(curr_mixt_tree);
 
-
-  tree = mixt_tree;
-  do // Link all the e_frq_weight elements
-    {
-      
-      tree->mod->e_frq_weight->next = tree->next ? tree->next->mod->e_frq_weight : NULL;
-      if(tree->mod->e_frq_weight->next) tree->mod->e_frq_weight->next->prev = tree->mod->e_frq_weight;
-
-      tree = tree->next;
-    }
-  while(tree);
+  Free(all_e_frqs);
 }
 
 //////////////////////////////////////////////////////////////

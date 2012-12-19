@@ -666,6 +666,9 @@ void Set_Defaults_Optimiz(t_opt *s_opt)
   s_opt->wim_n_optim          = -1;
   s_opt->wim_n_best           = -1;
   s_opt->wim_inside_opt       =  0;
+
+  s_opt->opt_rmat_weight      = NO;
+  s_opt->opt_efrq_weight      = NO;
 }
 
 //////////////////////////////////////////////////////////////

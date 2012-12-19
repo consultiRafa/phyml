@@ -2532,28 +2532,35 @@ void Optimize_State_Freqs(t_tree *mixt_tree, int verbose)
 void Optimize_Rmat_Weights(t_tree *mixt_tree, int verbose)
 {
   t_tree *tree;
-  
+  scalar_dbl *r_mat_weight;
+
   Switch_Eigen(NO,mixt_tree->mod);
 
   tree = mixt_tree;
-
   do
     {
-      if(tree->next) tree = tree->next;
-	     
-      Generic_Brent_Lk(&(tree->mod->r_mat_weight->v),
-                       0.,100.,
-                       tree->mod->s_opt->min_diff_lk_local,
-                       tree->mod->s_opt->brent_it_max,
-                       tree->mod->s_opt->quickdirty,
-                       Wrap_Lk,NULL,mixt_tree,NULL);
-
-      if(verbose)
+      if(tree->next->mod->s_opt->opt_rmat_weight == YES)
         {
-          Print_Lk(mixt_tree,"[Rate mat. weights  ]");
+          r_mat_weight = tree->next->mod->r_mat_weight;
+          do
+            {
+              Generic_Brent_Lk(&(r_mat_weight->v),
+                               0.,100.,
+                               tree->mod->s_opt->min_diff_lk_local,
+                               tree->mod->s_opt->brent_it_max,
+                               tree->mod->s_opt->quickdirty,
+                               Wrap_Lk,NULL,mixt_tree,NULL);
+              
+              if(verbose)
+                {
+                  Print_Lk(mixt_tree,"[Rate mat. weights  ]");
+                }
+              
+              r_mat_weight = r_mat_weight->next;
+            }
+          while(r_mat_weight);
         }
-
-      tree = tree->next;
+      tree = tree->next_mixt;
 
     }
   while(tree);
@@ -2568,28 +2575,37 @@ void Optimize_Rmat_Weights(t_tree *mixt_tree, int verbose)
 void Optimize_Efrq_Weights(t_tree *mixt_tree, int verbose)
 {
   t_tree *tree;
-  
+  scalar_dbl *e_frq_weight;
+
   Switch_Eigen(NO,mixt_tree->mod);
 
   tree = mixt_tree;
-
   do
     {
-      if(tree->next) tree = tree->next;
-	     
-      Generic_Brent_Lk(&(tree->mod->e_frq_weight->v),
-                       0.,100.,
-                       tree->mod->s_opt->min_diff_lk_local,
-                       tree->mod->s_opt->brent_it_max,
-                       tree->mod->s_opt->quickdirty,
-                       Wrap_Lk,NULL,mixt_tree,NULL);
-
-      if(verbose)
+      if(tree->next->mod->s_opt->opt_efrq_weight == YES)
         {
-          Print_Lk(mixt_tree,"[Equ. freq. weights  ]");
+          
+          e_frq_weight = tree->next->mod->e_frq_weight;
+          do
+            {
+              Generic_Brent_Lk(&(e_frq_weight->v),
+                               0.,100.,
+                               tree->mod->s_opt->min_diff_lk_local,
+                               tree->mod->s_opt->brent_it_max,
+                               tree->mod->s_opt->quickdirty,
+                               Wrap_Lk,NULL,mixt_tree,NULL);
+              
+              if(verbose)
+                {
+                  Print_Lk(mixt_tree,"[Equ. frq. weights  ]");
+                }
+              
+              e_frq_weight = e_frq_weight->next;
+            }
+          while(e_frq_weight);
         }
 
-      tree = tree->next;
+      tree = tree->next_mixt;
 
     }
   while(tree);
@@ -2597,6 +2613,7 @@ void Optimize_Efrq_Weights(t_tree *mixt_tree, int verbose)
   Switch_Eigen(NO,mixt_tree->mod);
 
 }
+
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

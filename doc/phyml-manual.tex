@@ -5,8 +5,9 @@
 % \usepackage{color}
 \usepackage{xcolor}
 \usepackage{psfrag}
+\usepackage[fleqn]{amsmath}
 \usepackage[hyphens]{url}
-\usepackage{vmargin}
+% \usepackage{vmargin}
 \usepackage{cite}
 \usepackage{caption2}
 \usepackage{hyperref}
@@ -26,7 +27,7 @@
 }
 \newcommand{\x}[1]{\texttt{#1}}
 
-\setpapersize{A4}
+% \setpapersize{A4}
 % \hypersetup{colorlinks=true,linkcolor=blue,urlcolor=red,linkbordercolor=000}
 \hypersetup{colorlinks=true,linkcolor=blue,urlcolor=red}
 \renewcommand{\baselinestretch}{1.}
@@ -1121,7 +1122,7 @@ the possible combinations of 3 rates, 2 matrices and 2 vectors of frequencies.
 % \{R_3,M_2,F_1\}$ and $\mathcal{C}_{12} = \{R_3,M_2,F_2\}$.
  
 
-\subsection{Partitions in PhyML}\index{partitionned analysis}\index{data partitions}
+\subsection{Partitions}\index{partitionned analysis}\index{data partitions}
 
 We first introduce some terms of vocabulary that have not been presented before. A partitionned data
 set, also referred to as partition, is a  set of partition elements.  Typically, a partitionned data
@@ -1195,7 +1196,56 @@ $B$. The sections below  give more detailed information on the range of  models 
 set up the corresponding XML configuration files to implement them.
 
 
+\subsection{Combining mixture and partitions in PhyML: the  theory}
 
+The rationale behind mixture  models as implemented in PhyML lies in (1)  the definition of suitable
+rate matrices, equilibrium frequency vectors and relative rates of substitution and (2) the assembly
+of these  components so as  to create the  classes of a mixture.  The main idea  behind partitionned
+analysis in  PhyML lies  in (1)  the hypothesis of  statistical independance  of the  different data
+partition elements and (2) distinct data partition can share model components such as rate matrices,
+equilibrium frequencies or  distribution of rates across  sites. More formally, the  likelihood of a
+data set made of $n$ partition elements is written as follows:
+
+\begin{eqnarray*}
+\Pr(D^{(1)},D^{(2)},\ldots,D^{(n)}) &=& \prod_{i=1}^{n}  \prod_{s=1}^{L_i} \Pr(D^{(i)}_s) \\
+&=& \prod_{i=1}^{n}  \prod_{s=1}^{L_i} \sum_{c=1}^{K_i} \Pr(D^{(i)}_s|\mathcal{C}=c) \Pr(\mathcal{C}=c),
+\end{eqnarray*} 
+
+where $L_i$ is  the number of sites in partition  element $i$ and $K_i$ is the  number of classes in
+the mixture model that applies to this same partition  element. Each class of a mixture is made of a
+rate  matrix $M$,  a vector  of equilibrium  frequencies  $F$ and  a relative  rate of  substitution
+$R$. Branch  lengths, $L$ and  tree topology $\tau$  are also required  for the calculation  of the
+likelihood. Hence we have:
+
+\begin{eqnarray*}
+&& \Pr(D^{(1)},D^{(2)},\ldots,D^{(n)})  \\
+&&=  \prod_{i=1}^{n}  \prod_{s=1}^{L_i} \sum_{c=1}^{K_i} \Pr(D^{(i)}_s|\mathcal{C}=c) \Pr(\mathcal{C}=c) \\
+&&= \prod_{i=1}^{n}  \prod_{s=1}^{L_i} \sum_{m}^{\mathcal{M}_i} \sum_{f}^{\mathcal{F}_i} \sum_{r}^{\mathcal{R}_i}  \Pr(D^{(i)}_s|M_m^{(i)},F_f^{(i)},R_r^{(i)},L^{(i)},\tau) \Pr(M_m^{(i)},F_f^{(i)},R_r^{(i)}) \mathcal{I}(m,f,r,i)
+% &&= \prod_{i=1}^{n}  \prod_{s=1}^{L_i} \sum_{m}^{\mathcal{M}_i} \sum_{f}^{\mathcal{F}_i} \sum_{r}^{\mathcal{R}_i}
+% \Pr(D^{(i)}_s|M_m^{(i)},F_f^{(i)},R_r^{(i)},L^{(i)},\tau) \Pr(M_m^{(i)}) \Pr(F_f^{(i)}) \Pr(R_r^{(i)}) 
+\end{eqnarray*} 
+where $\mathcal{M}_i$, $\mathcal{F}_i$ and $\mathcal{R}_i$ are the number of rate matrices,
+vector of equilibrium frequencies and relative rates that apply to partition element $i$
+respectively. $\mathcal{I}(m,f,r,i)$ is an indicator function that takes value 1 if the combination
+$M_m$, $F_f$ and $R_r$ is acually defined in the model for this particular partition element
+$i$. Its value is 0 otherwise. In the example given in section \ref{sec:mixtures} $\{R_1,R_2,R_3\}$
+is the  set of substitution  rates, $\{M_1,M_2\}$ the set of rate matrices and $\{F_1,F_2\}$ the set  of vectors of equilibrium frequencies.  We then
+define the first class of the mixture model  as $\mathcal{C}_1 = \{R_1,M_1,F_1\}$, a second class as
+$\mathcal{C}_2  = \{R_2,M_1,F_1\}$ and the third as $\mathcal{C}_3  = \{R_3,M_2,F_2\}$. Hence, we
+have $\mathcal{I}(1,1,1,i)$, $\mathcal{I}(1,1,2,i)$ and $\mathcal{I}(2,2,3,i)$ equal to one while
+the nine other values that this indicator function takes, corresponding to the possible combinations of
+two vectors of frequencies, two  matrices and three rates, are all zero.
+
+As stated before, our implementation assumes that the different components of a mixture are
+independant. In other words, we have $\Pr(M_m^{(i)},F_f^{(i)},R_r^{(i)}) = \Pr(M_m^{(i)}) \times
+\Pr(F_f^{(i)}) \times \Pr(R_r^{(i)})$. In practice, the joint probability
+$\Pr(M_m^{(i)},F_f^{(i)},R_r^{(i)})$ is obtained as follows:
+\begin{eqnarray*}
+\Pr(M_m^{(i)},F_f^{(i)},R_r^{(i)}) = \frac{\Pr(M_m^{(i)}) \Pr(F_f^{(i)}) \Pr(R_r^{(i)})}{
+  \sum_{m,f,r} \Pr(M_m^{(i)}) \Pr(F_f^{(i)}) \Pr(R_r^{(i)}) \mathcal{I}(m,f,r,i)}
+\end{eqnarray*}
+The probabilities $\Pr(M_m^{(i)})$, $\Pr(F_f^{(i)})$ and $\Pr(R_r^{(i)})$, also called 'weights', can be fixed or estimated
+from the data.
 
 \subsection{The XML format and its use in PhyML}\label{sec:XML format}
 
@@ -1208,7 +1258,8 @@ markup either begin  with the character `\x{<}' and  end with a `\x{>}'. Strings
 are not markup are content:
 
 \vspace{0.2cm}
-\begin{Verbatim}[frame=single, label=XML markup and content example, samepage=true, baselinestretch=0.5]
+\begin{Verbatim}[frame=single, label=XML markup and content example, samepage=true,
+  baselinestretch=0.5, fontsize=\small]
 <markup> 
  content 
 </markup>
@@ -1231,7 +1282,8 @@ classes plus  a proportion of invariants.  The rate component of  the mixture ca
 using the following XML code:
 
 \vspace{0.2cm}
-\begin{Verbatim}[frame=single, label=$\Gamma4$+I rates, samepage=true, baselinestretch=0.5]
+\begin{Verbatim}[frame=single, label=$\Gamma4$+I rates, samepage=true, baselinestretch=0.5,
+  fontsize=\small, numbers=left]
 
 <siterates id="SiteRates1">
   <weights  id="Distrib" family="gamma+inv" alpha=".1" \
@@ -1266,7 +1318,8 @@ sites,  we can  now move  on  to build  the rest  of the  model.   The component
 substitution models:
 
 \vspace{0.2cm}
-\begin{Verbatim}[frame=single, label=Rate matrices, samepage=true, baselinestretch=0.5]
+\begin{Verbatim}[frame=single, label=Rate matrices, samepage=true, baselinestretch=0.5,
+  fontsize=\small, numbers=left]
 
 <ratematrices id="RateMatrices">
   <instance id="M1" model="HKY85" tstv="4.0" optimise.tstv="no"/>
@@ -1284,7 +1337,8 @@ The next ``ingredient'' in our phylogenetic model are vectors of nucleotide freq
 
 
 \vspace{0.2cm}
-\begin{Verbatim}[frame=single, label=Equilibrium frequencies, samepage=true, baselinestretch=0.5]
+\begin{Verbatim}[frame=single, label=Equilibrium frequencies, samepage=true, baselinestretch=0.5,
+  fontsize=\small, numbers=left]
 
 <equfreqs id="EquFreq">
   <instance id="F1"/>
@@ -1298,7 +1352,8 @@ vectors of equilibrium frequencies) into a mixture model. The \x{<partitionelem>
 defines one such model:
 
 \vspace{0.2cm}
-\begin{Verbatim}[frame=single, label=Mixture model, samepage=true, baselinestretch=0.5]
+\begin{Verbatim}[frame=single, label=Mixture model, samepage=true, baselinestretch=0.5,
+  fontsize=\small, numbers=left]
 
 <partitionelem id="Part1" file.name="./nucleic.txt" data.type="nt">
   <mixtureelem list="R1, R2, R3, R4, R5"/>
@@ -1337,7 +1392,7 @@ $\mathcal{C}_5 = \{R_5,M_2,F_2\}$.
 
 
 
-\subsection{Combining mixture and partition models in PhyML}\index{mixture
+\subsection{Setting up mixture and partition models in PhyML: the basics}\index{mixture
   models}\index{partitionned analysis}\index{data partitions}
 
 Mixture models are particularly relevant to the analysis of partitionned data. Indeed, some features
@@ -1351,7 +1406,8 @@ partition elements.
 Below is a simple example with a partitionned data set made of two elements:
 
 \vspace{0.2cm}
-\begin{Verbatim}[frame=single, label=Two sets of branch lengths (one per partition element), samepage=true, baselinestretch=0.5]
+\begin{Verbatim}[frame=single, label=Two sets of branch lengths (one per partition element),
+  samepage=true, baselinestretch=0.5, fontsize=\small, numbers=left]
 
 <branchlengths id="BranchLens">
   <instance id="L1"/>
@@ -1382,7 +1438,8 @@ Note that  a given partition element  can only have  one {\tt branchlengths} ins
 it. For instance, the example given below is not valid:
 
 \vspace{0.2cm}
-\begin{Verbatim}[frame=single, label=Invalid mixture, samepage=true, baselinestretch=0.5]
+\begin{Verbatim}[frame=single, label=Invalid mixture, samepage=true, baselinestretch=0.5,
+  fontsize=\small, numbers=left]
 
 <partitionelem id="Part1" file.name="./nucleic1.txt" data.type="nt">
   <mixtureelem list="R1, R2, R3, R4, R5"/>
@@ -1397,7 +1454,8 @@ of branch lengths have the same likelihood) \cite{matsen07}. But mostly, combini
 lengths with mixture of rates appears like a deadly combination. Consider for instance the following model:
 
 \vspace{0.2cm}
-\begin{Verbatim}[frame=single, label=Invalid mixture, samepage=true, baselinestretch=0.5]
+\begin{Verbatim}[frame=single, label=Invalid mixture, samepage=true, baselinestretch=0.5,
+  fontsize=\small, numbers=left]
 
 <partitionelem id="Part1" file.name="./nucleic1.txt" data.type="nt">
   <mixtureelem list="R1, R2, R3"/>
@@ -1416,7 +1474,8 @@ $\Gamma4+$I models instead using the following XML code:
 
 
 \vspace{0.2cm}
-\begin{Verbatim}[frame=single, label=Two distinct $\Gamma4+$I models, samepage=true, baselinestretch=0.5]
+\begin{Verbatim}[frame=single, label=Two distinct $\Gamma4+$I models, samepage=true,
+  baselinestretch=0.5, fontsize=\small, numbers=left]
 
 <siterates id="SiteRates1">
   <weights  id="Distrib1" family="gamma+inv" alpha=".1" \
@@ -1489,7 +1548,8 @@ Options:
   slower but more accurate) or no moves.
 \end{itemize}
 \vspace{0.2cm}
-\begin{Verbatim}[frame=single, label=Example of `topology' component, samepage=true, baselinestretch=0.5]
+\begin{Verbatim}[frame=single, label=Example of `topology' component, samepage=true,
+  baselinestretch=0.5, fontsize=\small, numbers=left]
 
 <topology>
   <instance id="T1" init.tree="bionj" optimise.tree="true" \
@@ -1508,7 +1568,7 @@ for amino-acid sequences. The default is \x{"LG"}.
   string of digits that define a custom substitution model. See Table \ref{tab:modelcode} on page
   \pageref{tab:modelcode} for more
   information about the model codes.
-\item \x{ratematrix.code="filename"}. When used in conjunction with \x{model=''customaa''},
+\item \x{ratematrix.code="filename"}. When used in conjunction with \x{model="customaa"},
   \x{filename} is the name of the file that gives the rates of substitution between amino-acids as
   well as their frequences at equilibrium using PAML rate matrix format. An example of such file is
   provided in {phyml/examples/X1.mat}.
@@ -1519,10 +1579,16 @@ for amino-acid sequences. The default is \x{"LG"}.
 \item \x{tstv="value"}. For \x{K80}, \x{HKY85} and \x{TN93} models only: set the transition/transversion to a
   given value.  
 \end{itemize}
-\vspace{0.2cm}
-\begin{Verbatim}[frame=single, label=Example of `ratematrices' component, samepage=true, baselinestretch=0.5]
 
-  <ratematrices id="RM1">
+The {\tt ratematrices} component has the attribute {\tt optimise.weights=yes/no} (default is {\tt
+  no}). If {\tt optimise.weights=yes}, then the probabilities (or weights) or each matrix in the
+set of matrices defined by this component, will be estimated from the data.
+
+\vspace{0.2cm}
+\begin{Verbatim}[frame=single, label=Example of `ratematrices' component, samepage=true,
+  baselinestretch=0.5, fontsize=\small, numbers=left]
+
+  <ratematrices id="RM1" optimise.weights="yes">
     <instance id="M1" model="custom" model.code="000000"/>
     <instance id="M2" model="GTR" optimise.rr="yes"/>
     <instance id="M3" model="WAG"/>
@@ -1541,10 +1607,17 @@ Options:
 \item \x{optimise.freqs="true|yes|false|no"}. Nucleotide frequencies can be optimised so as to maximise
   the likelihood (\x{optimise.freqs="yes|true"}).
 \end{itemize}
-\vspace{0.2cm}
-\begin{Verbatim}[frame=single, label=Example of `equfreqs' component, samepage=true, baselinestretch=0.5]
 
-  <equfreqs id="EF1">
+The {\tt equfreqs} component has the attribute {\tt optimise.weights=yes/no} (default is {\tt
+  no}). If {\tt optimise.weights=yes}, then the probabilities (or weights) or each vector of
+equilibrium frequencies in the
+set of vectors defined by this component, will be estimated from the data.
+
+\vspace{0.2cm}
+\begin{Verbatim}[frame=single, label=Example of `equfreqs' component, samepage=true,
+  baselinestretch=0.5, fontsize=\small, numbers=left]
+
+  <equfreqs id="EF1" optimise.weights="yes">
     <instance id="F1" base.freqs="0.25,0.25,0.25,0.25"/>
     <instance id="F2" aa.freqs="empirical"/>
     <instance id="F3" optimise.freq="yes"/>
@@ -1559,7 +1632,8 @@ Options:
   is set to \x{"yes"}.
 \end{itemize}
 \vspace{0.2cm}
-\begin{Verbatim}[frame=single, label=Example of `branchlengths' component, baselinestretch=0.5]
+\begin{Verbatim}[frame=single, label=Example of `branchlengths' component, baselinestretch=0.5,
+  fontsize=\small, numbers=left]
 
   <branchlengths id="BL1">
     <instance id="L1" optimise.lens="yes"/>
@@ -1589,7 +1663,8 @@ distribution of the relative rates. The available options for such element are:
 \item \x{optimise.pinv="yes|true|no|false"}. Optimise the proportion of invariable sites (or not).
 \end{itemize} 
 \vspace{0.2cm}
-\begin{Verbatim}[frame=single, label=Example of `siterates' component, samepage=true, baselinestretch=0.5]
+\begin{Verbatim}[frame=single, label=Example of `siterates' component, samepage=true,
+  baselinestretch=0.5, fontsize=\small, numbers=left]
 
   <siterates id="SR1">
     <instance id="R1" init.value="1.0"/>
@@ -1624,7 +1699,8 @@ below, the first class of the mixture is made of the following elements: \x{T1},
 
 
 \vspace{0.2cm}
-\begin{Verbatim}[frame=single, label=Example of `partitionelem' component, samepage=true, baselinestretch=0.5]
+\begin{Verbatim}[frame=single, label=Example of `partitionelem' component, samepage=true,
+  baselinestretch=0.5, fontsize=\small, numbers=left]
 
   <partitionelem id="partition1" file.name="./small_p1.nxs" \
    data.type="nt" interleaved="yes">
@@ -1662,7 +1738,8 @@ following elements: \x{T1, M1, F1, R1} and \x{L1}. The second class of the mixtu
 M1, F1, R2, L1} and so forth.
 
 \vspace{0.2cm}
-\begin{Verbatim}[frame=single, label=Simple PhyML XML example, samepage=true, baselinestretch=0.5]
+\begin{Verbatim}[frame=single, label=Simple PhyML XML example, samepage=true, baselinestretch=0.5,
+  fontsize=\small, numbers=left]
 
 <phyml runid="simple.example" output.file="p1.output">
 
@@ -1725,7 +1802,8 @@ class of the mixture are  set to be equal to that estimated from  the first part
 a NNI search algorithm.
 
 \vspace{0.2cm}
-\begin{Verbatim}[frame=single, label=Example of PhyML XML file, samepage=true, baselinestretch=0.5]
+\begin{Verbatim}[frame=single, label=Example of PhyML XML file, samepage=true, baselinestretch=0.5,
+  fontsize=\small, numbers=left]
 
 <phyml runid="nnisearch" output.file="small_p1_output">
 
@@ -1784,7 +1862,8 @@ a NNI search algorithm.
 \end{Verbatim}
 
 \vspace{0.2cm}
-\begin{Verbatim}[frame=single, label=Example of PhyML XML file (ctnd), samepage=true, baselinestretch=0.5]
+\begin{Verbatim}[frame=single, label=Example of PhyML XML file (ctnd), samepage=true,
+  baselinestretch=0.5, fontsize=\small, numbers=left]
 
   <partitionelem id="partition_elem1" file.name=\
   "./small_p1_pos1.seq" data.type="nt" interleaved="yes">

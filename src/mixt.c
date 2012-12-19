@@ -609,8 +609,8 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
   int ambiguity_check,state;
   int k,l;
   int dim1,dim2;
-  phydbl sum_probas;
-
+  phydbl r_mat_weight_sum, e_frq_weight_sum, sum_probas;
+  
   tree            = NULL;
   b               = NULL;
   cpy_mixt_tree   = mixt_tree;
@@ -646,30 +646,12 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
 
       sum_scale_left_cat = (phydbl *)mCalloc(MAX(mixt_tree->mod->ras->n_catg,mixt_tree->mod->n_mixt_classes),sizeof(phydbl));
       sum_scale_rght_cat = (phydbl *)mCalloc(MAX(mixt_tree->mod->ras->n_catg,mixt_tree->mod->n_mixt_classes),sizeof(phydbl));
+      
+      r_mat_weight_sum = MIXT_Get_Sum_Chained_Scalar_Dbl(mixt_tree->next->mod->r_mat_weight);
+      e_frq_weight_sum = MIXT_Get_Sum_Chained_Scalar_Dbl(mixt_tree->next->mod->e_frq_weight);
+      sum_probas       = MIXT_Get_Sum_Of_Probas_Across_Mixtures(r_mat_weight_sum, e_frq_weight_sum, mixt_tree);
 
       mixt_tree->c_lnL = .0;
-
-      tree    = mixt_tree->next;
-      sum_probas = 0.0;
-      
-      /*! Calculate the sum of the product of proba for each class in the mixture */
-      do
-        {
-          if(tree->mod->ras->invar == YES) 
-            {
-              tree = tree->next;
-              if(!(tree && tree->is_mixt_tree == NO)) break;
-            }
-          
-          sum_probas +=
-            mixt_tree->mod->ras->gamma_r_proba->v[tree->mod->ras->parent_class_number] *
-            tree->mod->r_mat_weight->v *
-            tree->mod->e_frq_weight->v ;
-          
-          tree = tree->next;
-        }
-      while(tree && tree->is_mixt_tree == NO);
-
       dim1 = mixt_tree->mod->ns;
       dim2 = mixt_tree->mod->ns;
 
@@ -886,9 +868,15 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
               site_lk +=
                 mixt_tree->site_lk_cat[class] *
                 mixt_tree->mod->ras->gamma_r_proba->v[tree->mod->ras->parent_class_number] *
-                tree->mod->r_mat_weight->v *
-                tree->mod->e_frq_weight->v /
+                tree->mod->r_mat_weight->v / r_mat_weight_sum *
+                tree->mod->e_frq_weight->v / e_frq_weight_sum /
                 sum_probas;
+                /* mixt_tree->site_lk_cat[class] * */
+                /* mixt_tree->mod->ras->gamma_r_proba->v[tree->mod->ras->parent_class_number]; */
+
+              /* printf("\n. %f %f %f %f ", */
+              /*        tree->mod->r_mat_weight->v,r_mat_weight_sum, */
+              /*        tree->mod->e_frq_weight->v,e_frq_weight_sum); */
 
               tree = tree->next;
               b    = b->next;
@@ -1878,5 +1866,76 @@ phydbl MIXT_Get_Mean_Edge_Len(t_edge *mixt_b, t_tree *mixt_tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+phydbl MIXT_Get_Sum_Chained_Scalar_Dbl(scalar_dbl *s)
+{
+  scalar_dbl *s_buff;
+  phydbl sum;
+
+  s_buff = s;
+  sum = .0;
+  do
+    {
+      sum += s_buff->v;
+      s_buff = s_buff->next;
+    }
+  while(s_buff);
+  
+  return sum;
+
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+phydbl MIXT_Get_Sum_Of_Probas_Across_Mixtures(phydbl r_mat_weight_sum, phydbl e_frq_weight_sum, t_tree *mixt_tree)
+{
+  t_tree *tree;
+  phydbl sum;
+
+  sum = .0;
+  tree = mixt_tree->next;
+  do
+    {
+      sum += 
+        mixt_tree->mod->ras->gamma_r_proba->v[tree->mod->ras->parent_class_number] *
+        tree->mod->r_mat_weight->v / r_mat_weight_sum *
+        tree->mod->e_frq_weight->v / e_frq_weight_sum;
+      
+      tree = tree->next; 
+      
+    }
+  while(tree && tree->is_mixt_tree == NO);
+
+  return(sum);  
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 
 

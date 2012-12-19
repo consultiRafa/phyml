@@ -3784,8 +3784,8 @@ void Print_Data_Structure(int final, FILE *fp, t_tree *mixt_tree)
   int c,cc,cc_efrq,cc_rmat,cc_lens;
   char *param;
   int *link_efrq,*link_rmat,*link_lens;
-  phydbl sum_probas;
-
+  phydbl r_mat_weight_sum, e_frq_weight_sum;
+  
   
   PhyML_Fprintf(fp,"\n. Starting tree: %s",
 	       mixt_tree->io->in_tree == 2?mixt_tree->io->in_tree_file:"BioNJ");
@@ -3860,28 +3860,8 @@ void Print_Data_Structure(int final, FILE *fp, t_tree *mixt_tree)
 	    }
 	}
 
-
-      /*! Calculate the sum of the product of proba for each class in the mixture */
-      tree = mixt_tree->next;
-      sum_probas = 0.0;
-      
-      do
-        {
-          if(tree->mod->ras->invar == YES) 
-            {
-              tree = tree->next;
-              if(!(tree && tree->is_mixt_tree == NO)) break;
-            }
-          
-          sum_probas +=
-            mixt_tree->mod->ras->gamma_r_proba->v[tree->mod->ras->parent_class_number] *
-            tree->mod->r_mat_weight->v *
-            tree->mod->e_frq_weight->v ;
-          
-          tree = tree->next;
-        }
-      while(tree && tree->is_mixt_tree == NO);
-
+      r_mat_weight_sum = MIXT_Get_Sum_Chained_Scalar_Dbl(mixt_tree->next->mod->r_mat_weight);
+      e_frq_weight_sum = MIXT_Get_Sum_Chained_Scalar_Dbl(mixt_tree->next->mod->e_frq_weight);
       	  
       tree = mixt_tree;
       do
@@ -3895,6 +3875,7 @@ void Print_Data_Structure(int final, FILE *fp, t_tree *mixt_tree)
             {
               PhyML_Fprintf(fp,"\n   Relative substitution rate:\t%12f",mixt_tree->mod->ras->gamma_rr->v[tree->mod->ras->parent_class_number]);
               PhyML_Fprintf(fp,"\n   Relative rate freq.:\t\t%12f",mixt_tree->mod->ras->gamma_r_proba->v[tree->mod->ras->parent_class_number]);
+              PhyML_Fprintf(fp,"\n   Rate class number:\t\t%12d",tree->mod->ras->parent_class_number);
             }
 
 	  PhyML_Fprintf(fp,"\n   Substitution model:\t\t%12s",tree->mod->modelname->s);
@@ -3926,7 +3907,11 @@ void Print_Data_Structure(int final, FILE *fp, t_tree *mixt_tree)
                   PhyML_Fprintf(fp,"\n   Subst. rate G<->T:\t\t%12.2f",tree->mod->r_mat->rr->v[5]);
                 }
             }
-	  PhyML_Fprintf(fp,"\n   Rate matrix weight:\t\t%12f",tree->mod->r_mat_weight->v / sum_probas);
+
+
+	  PhyML_Fprintf(fp,"\n   Rate matrix weight:\t\t%12f",tree->mod->r_mat_weight->v  / r_mat_weight_sum);
+
+
 
           if(tree->io->datatype == NT && 
              tree->mod->whichmodel != JC69 && 
@@ -3961,8 +3946,8 @@ void Print_Data_Structure(int final, FILE *fp, t_tree *mixt_tree)
               Free(s);
             }
 
-	  PhyML_Fprintf(fp,"\n   Equ. freq. weight:\t\t%12f",tree->mod->e_frq_weight->v/sum_probas);
 
+	  PhyML_Fprintf(fp,"\n   Equ. freq. weight:\t\t%12f",tree->mod->e_frq_weight->v / e_frq_weight_sum);
 
 	  class++;
 	  
@@ -4241,6 +4226,8 @@ void PhyML_XML(char *xml_filename)
   char *s;
   int lens_size;
   int first;
+  int *class_num;
+
 
   fp = fopen(xml_filename,"r");
   if(!fp)
@@ -4257,6 +4244,9 @@ void PhyML_XML(char *xml_filename)
       PhyML_Printf("\n== Encountered an issue while loading the XML file.\n");
       Exit("\n");
     }
+
+  class_num = (int *)mCalloc(N_MAX_MIXT_CLASSES,sizeof(int));
+  For(i,N_MAX_MIXT_CLASSES) class_num[i] = i;
 
   component = (char *)mCalloc(T_MAX_NAME,sizeof(char));
 
@@ -4701,11 +4691,9 @@ void PhyML_XML(char *xml_filename)
 
 		    if(!strcmp(parent->name,"ratematrices"))
 		      {
-
                         /* ! First time we process this 'instance' node which has this 'ratematrices' parent */
                         if(instance->ds->obj == NULL)
                           {
-
                             Make_Ratematrice_From_XML_Node(instance, io, mod);
 
                             ds = instance->ds;
@@ -4854,7 +4842,6 @@ void PhyML_XML(char *xml_filename)
 		      {
 			char *rate_value = NULL;			
 			/* scalar_dbl *r; */
-                        phydbl r;
                         phydbl val;
 
 			/*! First time we process this 'siterates' node, check that its format is valid.
@@ -4893,15 +4880,15 @@ void PhyML_XML(char *xml_filename)
                         
 			if(instance->ds->obj == NULL) 
 			  {
-                            r = val;
-			    instance->ds->obj = (phydbl *)(&r);
+			    instance->ds->obj = (phydbl *)(&val);
+			    instance->ds->next = (t_ds *)mCalloc(1,sizeof(t_ds));                            
+			    instance->ds->next->obj = (int *)(class_num + class_number);
+
+			    iomod->ras->gamma_rr->v[class_number] = val;
+
                             if(Are_Equal(val,0.0,1E-20) == NO) class_number++;
 			  }
-			else
-			  {
-			    r = *((phydbl *)instance->ds->obj);
-			  }
-		       
+		                              
 
                         /*! Note: ras is already connected to the relevant t_ds stucture. No need
                           to connect ras->gamma_rr or ras->p_invar */
@@ -4913,10 +4900,9 @@ void PhyML_XML(char *xml_filename)
 			  }
 			else
 			  {
-			    iomod->ras->gamma_rr->v[class_number-1] = r;
-			    mod->ras->parent_class_number = class_number-1;
+			    mod->ras->parent_class_number = *((int *)instance->ds->next->obj);
 			  }
-
+                        
 			xml_node *orig_w = NULL;
     			orig_w = XML_Search_Node_Attribute_Value("appliesto",instance->id,YES,instance->parent);
 			
@@ -4930,7 +4916,7 @@ void PhyML_XML(char *xml_filename)
 			      }
 			    else
 			      {
-				iomod->ras->gamma_r_proba->v[class_number] = String_To_Dbl(weight);
+				iomod->ras->gamma_r_proba->v[*((int *)instance->ds->next->obj)] = String_To_Dbl(weight);
 			      }
     			  }
 
@@ -5363,6 +5349,8 @@ void PhyML_XML(char *xml_filename)
   Free_Input(io);
   XML_Free_XML_Tree(root);
 
+  Free(class_num);
+
   fclose(fp);
 }
 
@@ -5566,7 +5554,19 @@ void Make_Ratematrice_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
         }
       
       Free(r_mat_file);
-    }  
+    }
+
+  char *buff;
+  
+  buff = XML_Get_Attribute_Value(instance->parent,"optimise.weights");
+  if(buff && (!strcmp(buff,"yes") || !strcmp(buff,"true")))
+    {
+      mod->s_opt->opt_rmat_weight = YES;
+    }
+  else
+    {
+      mod->s_opt->opt_rmat_weight = NO;
+    }
 }
 
 //////////////////////////////////////////////////////////////
@@ -5636,6 +5636,18 @@ void Make_Efrq_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
           mod->s_opt->opt_state_freq  = NO;
         }
     }  
+
+  
+  buff = XML_Get_Attribute_Value(instance->parent,"optimise.weights");
+  if(buff && (!strcmp(buff,"yes") || !strcmp(buff,"true")))
+    {
+      mod->s_opt->opt_efrq_weight = YES;
+    }
+  else
+    {
+      mod->s_opt->opt_efrq_weight = NO;
+    }
+
 }
 
 //////////////////////////////////////////////////////////////

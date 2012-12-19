@@ -79,6 +79,8 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define N_MAX_NEX_PARM  50
 #define T_MAX_TOKEN     200
 
+#define N_MAX_MIXT_CLASSES 1000
+
 #define NEXUS_COM    0
 #define NEXUS_PARM   1
 #define NEXUS_EQUAL  2
@@ -1017,6 +1019,9 @@ typedef struct __Optimiz { /*! parameters to be optimised (mostly used in 'optim
   int           wim_n_optim;
   int            wim_n_best;
   int        wim_inside_opt;
+
+  int       opt_rmat_weight;
+  int       opt_efrq_weight;
 }t_opt;
 
 /*!********************************************************/

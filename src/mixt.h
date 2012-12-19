@@ -67,5 +67,7 @@ void MIXT_Chain_Nodes(t_tree *tree);
 void MIXT_Chain_Edges(t_tree *tree);
 void MIXT_Chain_Triplets(t_tree *tree);
 phydbl MIXT_Get_Mean_Edge_Len(t_edge *mixt_b, t_tree *tree);
+phydbl MIXT_Get_Sum_Chained_Scalar_Dbl(scalar_dbl *s);
+phydbl MIXT_Get_Sum_Of_Probas_Across_Mixtures(phydbl r_mat_weight_sum, phydbl e_frq_weight_sum, t_tree *mixt_tree);
 
 #endif
