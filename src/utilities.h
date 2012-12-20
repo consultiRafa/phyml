@@ -1429,8 +1429,20 @@ typedef struct __Calibration {
   struct __Calibration *prev;
 }t_cal;
 
-
 /*!********************************************************/
+
+typedef struct __Phylogeo{
+  phydbl              *cov; // Covariance matrix
+  phydbl            *r_mat; // R matrix. Gives the rates of migrations between locations. See article.
+  phydbl            *g_mat; // G matrix. See article.
+  int               *occup; // Vector giving the number of lineages that occupy each location
+  phydbl              *loc; // Coordinates of the locations
+  int                n_loc; // Number of locations
+  int                n_dim; // Dimension of the data  
+  struct _Node **sorted_nd; // Table of nodes sorted wrt their heights.
+  phydbl               tau; // overall migration rate parameter
+}t_geo;
+
 /*!********************************************************/
 /*!********************************************************/
 /*!********************************************************/

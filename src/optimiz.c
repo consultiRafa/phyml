@@ -2536,10 +2536,12 @@ void Optimize_Rmat_Weights(t_tree *mixt_tree, int verbose)
 
   Switch_Eigen(NO,mixt_tree->mod);
 
+  if(mixt_tree->is_mixt_tree == NO) return;
+
   tree = mixt_tree;
   do
     {
-      if(tree->next->mod->s_opt->opt_rmat_weight == YES)
+      if(tree->next && tree->next->mod->s_opt->opt_rmat_weight == YES)
         {
           r_mat_weight = tree->next->mod->r_mat_weight;
           do
@@ -2579,10 +2581,12 @@ void Optimize_Efrq_Weights(t_tree *mixt_tree, int verbose)
 
   Switch_Eigen(NO,mixt_tree->mod);
 
+  if(mixt_tree->is_mixt_tree == NO) return;
+
   tree = mixt_tree;
   do
     {
-      if(tree->next->mod->s_opt->opt_efrq_weight == YES)
+      if(tree->next && tree->next->mod->s_opt->opt_efrq_weight == YES)
         {
           
           e_frq_weight = tree->next->mod->e_frq_weight;
