@@ -16,6 +16,10 @@
 #include "mpi_boot.h"
 #endif
 
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 int Number_Of_Comb(t_cal *calib)
 {
 
@@ -54,11 +58,18 @@ void Set_Current_Calibration(int row, t_tree *tree)
       k = (row % Number_Of_Comb(calib)) / Number_Of_Comb(calib -> next);      
       t_prior_min[calib -> all_applies_to[k] -> num] = calib -> lower;
       t_prior_max[calib -> all_applies_to[k] -> num] = calib -> upper;
-      t_has_prior[calib -> all_applies_to[k] -> num] = YES;
+      t_has_prior[calib -> all_applies_to[k] -> num] = YES; 
+      /*PhyML_Printf("\n. .......................................................................");
+      PhyML_Printf("\n");
+      PhyML_Printf("\n. Node number to which calibration applies to is: [%d]", calib -> all_applies_to[k] -> num);
+      PhyML_Printf("\n. Lower bound set to: %15f time units.", t_prior_min[calib -> all_applies_to[k] -> num]);
+      PhyML_Printf("\n. Upper bound set to: %15f time units.", t_prior_max[calib -> all_applies_to[k] -> num]);
+      PhyML_Printf("\n. .......................................................................");*/
       if(calib->next) calib = calib->next;
       else break;    
     }
-  while(calib); 
+  while(calib);
+  //while(calib -> prev) calib = calib -> prev;
 }
 
 //////////////////////////////////////////////////////////////
@@ -74,52 +85,41 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
  
 
   times_partial_proba = 1;
-  times_tot_proba = 0;
+  //times_tot_proba = 0;
   calib = tree -> rates -> calib;
   t_prior_min = tree -> rates -> t_prior_min;
   t_prior_max = tree -> rates -> t_prior_max;
   t_has_prior = tree -> rates -> t_has_prior;
   tot_num_comb = Number_Of_Comb(calib);
 
-  //PhyML_Printf("\n. Total number of combinations is: '%d'. \n\n", tot_num_comb);
-
   For(i, tot_num_comb)
     {
-      times_partial_proba = 1; //For(j, 2 * tree -> n_otu - 1) PhyML_Printf(" Node num:'%d' Min:'%f' Max'%f' \n", j, t_prior_min[j], t_prior_max[j]); 
-      //PhyML_Printf("\n");
-      do
-        {
-          k = (i % Number_Of_Comb(calib)) / Number_Of_Comb(calib -> next);
-          //PhyML_Printf(" '%d' ", calib -> all_applies_to[k] -> num);
-          t_prior_min[calib -> all_applies_to[k] -> num] = MIN(t_prior_min[calib -> all_applies_to[k] -> num], calib -> lower);
-          t_prior_max[calib -> all_applies_to[k] -> num] = MAX(t_prior_max[calib -> all_applies_to[k] -> num], calib -> upper);
-          t_has_prior[calib -> all_applies_to[k] -> num] = YES;
-          times_partial_proba *= calib -> proba[calib -> all_applies_to[k] -> num]; 
-          //printf("\n. '%f' \n", times_partial_proba); 
-          //PhyML_Printf(" '%d' ", k);    
-          if(calib -> next) calib = calib -> next;
-          else break;
-        }
-      while(calib);
-      //printf(" '%f' \n", times_partial_proba);   
-      //PhyML_Printf("\n");  
-      TIMES_Set_All_Node_Priors(tree); 
-      //For(j, 2 * tree -> n_otu - 1) PhyML_Printf(" Node num:'%d' Min:'%f' Max'%f' \n", j, t_prior_min[j], t_prior_max[j]); 
-      //PhyML_Printf("\n");  
-      times_tot_proba += (times_partial_proba * EXP(TIMES_Lk_Yule_Order(tree)));
-
       for(j = tree -> n_otu; j < 2 * tree -> n_otu - 1; j++) 
         {
           t_prior_min[j] = -BIG;
           t_prior_max[j] = BIG;
           t_has_prior[j] = NO; 
         }
-      //For(j, 2 * tree -> n_otu - 1) PhyML_Printf(" Node num:'%d' Min:'%f' Max'%f' \n", j, t_prior_min[j], t_prior_max[j]); 
+      times_partial_proba = 1; 
+      do
+        {
+          k = (i % Number_Of_Comb(calib)) / Number_Of_Comb(calib -> next);
+          t_prior_min[calib -> all_applies_to[k] -> num] = MAX(t_prior_min[calib -> all_applies_to[k] -> num], calib -> lower);
+          t_prior_max[calib -> all_applies_to[k] -> num] = MIN(t_prior_max[calib -> all_applies_to[k] -> num], calib -> upper);
+          t_has_prior[calib -> all_applies_to[k] -> num] = YES;
+          if((t_prior_min[calib -> all_applies_to[k] -> num] - t_prior_max[calib -> all_applies_to[k] -> num]) > 0) times_partial_proba = 0; 
+          else times_partial_proba *= calib -> proba[calib -> all_applies_to[k] -> num]; 
+          if(calib -> next) calib = calib -> next;
+          else break;
+        }
+      while(calib);
+      TIMES_Set_All_Node_Priors(tree); 
+      times_tot_proba += (times_partial_proba * EXP(TIMES_Lk_Yule_Order(tree)));
       while(calib -> prev) calib = calib -> prev;
     }
 
-  Set_Current_Calibration(0, tree);
-  //printf("\n. '%f' \n", LOG(times_tot_proba));
+  Set_Current_Calibration(0, tree);   
+  TIMES_Set_All_Node_Priors(tree);     
 
   return(LOG(times_tot_proba));
 }
@@ -357,6 +357,7 @@ void PhyTime_XML(char *xml_file)
 	      i = 0;
 	      do
 		{
+                  strcpy(io -> in_align_file, "sergeii"); 
 		  strcpy(io -> data[i] -> name, n_r -> child -> attr -> value);
 		  strcpy(io -> data[i] -> state, To_Upper_String(n_r -> child -> value));
 		  i++;
@@ -523,27 +524,7 @@ void PhyTime_XML(char *xml_file)
  
   tree -> rates -> calib = last_calib;
   while(tree -> rates -> calib -> prev) tree -> rates -> calib = tree -> rates -> calib -> prev;
-  /*
-  do
-    {
-      For(i,tree -> rates -> calib -> n_all_applies_to) printf("'%d'", tree -> rates -> calib -> all_applies_to[i] -> num);
-      if(tree -> rates -> calib -> next) tree -> rates -> calib = tree -> rates -> calib -> next;
-      else break;
-    }
-  while(tree -> rates -> calib);
 
-  while(tree -> rates -> calib -> prev) tree -> rates -> calib = tree -> rates -> calib -> prev;
-  */
-  ////////////////////////////////////////////////////////////////////////////////////////////////////
-  //printf(" '%s' ", io -> data[0] -> state);
-  //For(i, 2 * tree -> n_otu - 1) printf(" '%f' '%f' \n", tree -> rates -> t_prior_min[i],  tree -> rates -> t_prior_max[i]);
-  //TIMES_Set_All_Node_Priors(tree); 
-  //For(i, 2 * tree -> n_otu - 1) printf(" '%f' '%f' \n", tree -> rates -> t_prior_min[i],  tree -> rates -> t_prior_max[i]);
-  //times_tot_proba = TIMES_Calib_Cond_Prob(tree);
-  //printf("\n. Log of the TIMES density function value is:'%f' \n", times_tot_proba);
-  //Exit("\n");
-
-  ////////////////////////////////////////////////////////////////////////////////////////////////////  
   ////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////   
 
@@ -563,7 +544,6 @@ void PhyTime_XML(char *xml_file)
 
   ////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////   
-  
   //START analysis:
   r_seed = (io -> r_seed < 0)?(time(NULL)):(io -> r_seed);
   srand(r_seed); 
@@ -601,12 +581,8 @@ void PhyTime_XML(char *xml_file)
   
   Set_Both_Sides(YES, tree);
   Prepare_Tree_For_Lk(tree);
-  //For(i, 2 * tree -> n_otu - 1) printf(" '%f' '%f' \n", tree -> rates -> t_prior_min[i],  tree -> rates -> t_prior_max[i]);
   Set_Current_Calibration(0, tree);
-  //For(i, 2 * tree -> n_otu - 1) printf(" '%f' '%f' \n", tree -> rates -> t_prior_min[i],  tree -> rates -> t_prior_max[i]);
   TIMES_Set_All_Node_Priors(tree); 
-  //For(i, 2 * tree -> n_otu - 1) printf(" '%f' '%f' \n", tree -> rates -> t_prior_min[i],  tree -> rates -> t_prior_max[i]);
-  //Exit("\n");
   TIMES_Get_Number_Of_Time_Slices(tree);
   TIMES_Label_Edges_With_Calibration_Intervals(tree);
 
@@ -614,13 +590,14 @@ void PhyTime_XML(char *xml_file)
 
   PhyML_Printf("\n");														
   PhyML_Printf("\n. Input tree with calibration information ('almost' compatible with MCMCtree).\n");
-  PhyML_Printf("\n. %s \n", Write_Tree(tree, NO));
-  Exit("\n");
+  PhyML_Printf("\n. %s \n", Write_Tree(tree, YES));
+
   tree -> write_br_lens = YES;
 
 
   // Work with log of branch lengths?
   if(tree -> mod -> log_l == YES) Log_Br_Len(tree);
+
 
   if(io -> mcmc -> use_data == YES)																
     {
@@ -674,7 +651,8 @@ void PhyTime_XML(char *xml_file)
   													  
   PhyML_Printf("\n. Selected model '%s' \n", RATES_Get_Model_Name(io -> rates -> model));
 
-  if(tree -> rates -> model == GUINDON) tree -> mod -> gamma_mgf_bl = YES;														
+  if(tree -> rates -> model == GUINDON) tree -> mod -> gamma_mgf_bl = YES;
+														
   tree -> rates -> bl_from_rt = YES;
 
   if(tree -> io -> cstr_tree) Find_Surviving_Edges_In_Small_Tree(tree, tree -> io -> cstr_tree); 																				 
@@ -682,15 +660,15 @@ void PhyTime_XML(char *xml_file)
 
   tree -> mcmc = MCMC_Make_MCMC_Struct();
  
-  MCMC_Copy_MCMC_Struct(tree -> io -> mcmc, tree -> mcmc, "sergeii"); 
+  MCMC_Copy_MCMC_Struct(tree -> io -> mcmc, tree -> mcmc, "phytime"); 
 
   tree -> mod -> m4mod = m4mod;
   	
   MCMC_Complete_MCMC(tree -> mcmc, tree);
 
-  tree -> mcmc -> is_burnin = NO; 
-  
-  MCMC(tree);                                            																
+  tree -> mcmc -> is_burnin = NO;
+
+  MCMC(tree);                                            															
   MCMC_Close_MCMC(tree -> mcmc);																	
   MCMC_Free_MCMC(tree -> mcmc);														 				
   PhyML_Printf("\n");	

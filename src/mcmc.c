@@ -28,12 +28,12 @@ void MCMC(t_tree *tree)
 
   RATES_Set_Clock_And_Nu_Max(tree);
   RATES_Set_Birth_Rate_Boundaries(tree);
-
+ 
   if(tree->mcmc->randomize == YES)
     {
       MCMC_Randomize_Birth(tree);
       MCMC_Randomize_Nu(tree);
-      MCMC_Randomize_Node_Times(tree);
+      MCMC_Randomize_Node_Times(tree); 
       MCMC_Sim_Rate(tree->n_root,tree->n_root->v[0],tree);
       MCMC_Sim_Rate(tree->n_root,tree->n_root->v[1],tree);
       MCMC_Randomize_Node_Rates(tree);
@@ -54,19 +54,17 @@ void MCMC(t_tree *tree)
   
   Update_Ancestors(tree->n_root,tree->n_root->v[0],tree);
   Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
-  
 
-  For(i,2*tree->n_otu-2) tree->rates->br_do_updt[i] = YES;
+  For(i,2*tree->n_otu-2) tree->rates->br_do_updt[i] = YES;  
   RATES_Update_Cur_Bl(tree);
-  RATES_Lk_Rates(tree);
-  TIMES_Lk_Times(tree);
-  Set_Both_Sides(NO,tree);     
+  RATES_Lk_Rates(tree);	
+  TIMES_Lk_Times(tree); 
+  Set_Both_Sides(NO,tree);  
   if(tree->mcmc->use_data) Lk(NULL,tree);
   else tree->c_lnL = 0.0;
   Switch_Eigen(NO,tree->mod);
   MCMC_Print_Param(tree->mcmc,tree);
 
-       
   //////////////////
   if(tree->io->mutmap == YES)
     {
@@ -366,7 +364,7 @@ void MCMC(t_tree *tree)
 	    }
 	}
 
-      (void)signal(SIGINT,MCMC_Terminate); 
+      (void)signal(SIGINT,MCMC_Terminate);
     }
   while(tree->mcmc->run < tree->mcmc->chain_len);
 
@@ -2700,7 +2698,7 @@ void MCMC_Copy_MCMC_Struct(t_mcmc *ori, t_mcmc *cpy, char *filename)
       strcat(s,cpy->out_filename);
       strcat(s,".constree");
       cpy->out_fp_constree = fopen(s,"w");
-
+ 
       Free(s);
     }
   else 
@@ -2961,7 +2959,7 @@ void MCMC_Randomize_Node_Times(t_tree *tree)
 
   MCMC_Randomize_Node_Times_Top_Down(tree->n_root,tree->n_root->v[0],tree);
   MCMC_Randomize_Node_Times_Top_Down(tree->n_root,tree->n_root->v[1],tree);
-  
+
   min_node = -1;
   iter = 0;
   do

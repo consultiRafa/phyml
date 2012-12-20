@@ -988,6 +988,7 @@ phydbl TIMES_Lk_Yule_Order(t_tree *tree)
         {
           loglk  += (loglbda - lbda * FABS(t[j]));
           loglk -= LOG(EXP(-lbda*lower_bound) - EXP(-lbda*upper_bound)); // incorporate calibration boundaries here.
+    
         }
     }
 
@@ -995,7 +996,6 @@ phydbl TIMES_Lk_Yule_Order(t_tree *tree)
   upper_bound = FABS(tp_min[tree->n_root->num]);
   loglk += LOG(2) + loglbda - 2.*lbda * FABS(t[tree->n_root->num]);
   loglk -= LOG(EXP(-2.*lbda*lower_bound) - EXP(-2.*lbda*upper_bound));
-
 
   return(loglk);
 }
@@ -1010,6 +1010,7 @@ phydbl TIMES_Lk_Times(t_tree *tree)
   tree->rates->c_lnL_times =  TIMES_Lk_Yule_Order(tree);
   #elif SERGEII
   tree->rates->c_lnL_times = TIMES_Calib_Cond_Prob(tree);
+  //tree->rates->c_lnL_times =  TIMES_Lk_Yule_Order(tree);
   #endif
 
   if(isinf(tree->rates->c_lnL_times))

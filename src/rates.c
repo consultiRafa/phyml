@@ -2381,7 +2381,7 @@ void RATES_Update_Cur_Bl(t_tree *tree)
 
   RATES_Update_Cur_Bl_Pre(tree->n_root,tree->n_root->v[0],NULL,tree);
   RATES_Update_Cur_Bl_Pre(tree->n_root,tree->n_root->v[1],NULL,tree);
-
+  
   if(tree->mod->log_l == YES)
     {
       tree->e_root->l->v = 
