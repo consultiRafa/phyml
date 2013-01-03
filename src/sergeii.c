@@ -15,7 +15,35 @@
 #ifdef MPI
 #include "mpi_boot.h"
 #endif
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 
+int Check_Node_Time(t_tree *tree)
+{
+  phydbl *t_prior_min, *t_prior_max, *nd_t; 
+  int i, result;
+  t_prior_min = tree -> rates -> t_prior_min;
+  t_prior_max = tree -> rates -> t_prior_max;
+  nd_t = tree -> rates -> nd_t;
+  For(i, 2 * tree -> n_otu - 1)
+    {
+      if(nd_t[i] >= t_prior_min[i] && nd_t[i] <= t_prior_max[i])
+        {
+          result = TRUE;
+          //printf("\n. node number:'%d' time cur:'%f' time min:'%f' time max:'%f'", i, tree -> rates -> nd_t[i], tree -> rates -> t_prior_min[i], tree -> rates -> t_prior_max[i]);
+          //PhyML_Printf("\n\n==You have a mistake in calibration information.\n");
+          //PhyML_Printf("\n==Err in file %s at line %d\n",__FILE__,__LINE__);
+          //Exit("\n");
+        }
+      else
+        { 
+          result = FALSE;
+          //printf("\n. '%d' \n", i);
+          break;
+        }
+    }
+  return(result);
+}
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -114,6 +142,7 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
         }
       while(calib);
       TIMES_Set_All_Node_Priors(tree); 
+      if(Check_Node_Time(tree) != TRUE) times_partial_proba = 0;
       times_tot_proba += (times_partial_proba * EXP(TIMES_Lk_Yule_Order(tree)));
       while(calib -> prev) calib = calib -> prev;
     }
@@ -527,6 +556,21 @@ void PhyTime_XML(char *xml_file)
 
   ////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////   
+  /*Set_Current_Calibration(1, tree);
+  TIMES_Set_All_Node_Priors(tree);
+  MCMC_Randomize_Node_Times(tree); 
+  tree -> rates -> t_prior_min[109] = -10;
+  tree -> rates -> t_prior_max[109] = 0;
+  tree -> rates -> nd_t[109] = 1;
+  for(j = tree -> n_otu; j < 2*tree->n_otu-1; j++) printf("\n. node number:'%d' time:'%f'", j, tree -> rates -> nd_t[j]);
+  printf("\n. '%d' \n", Check_Node_Time(tree));
+  Exit("\n");
+  for(j = tree -> n_otu; j < 2*tree->n_otu-1; j++) printf("\n. node number:'%d' time min:'%f' time max:'%f'", j, tree -> rates -> t_prior_min[j], tree -> rates -> t_prior_max[j]); 
+  printf("\n\n");
+  Set_Current_Calibration(2, tree);
+  TIMES_Set_All_Node_Priors(tree); 
+  for(j = tree -> n_otu; j < 2*tree->n_otu-1; j++) printf("\n. node number:'%d' time min:'%f' time max:'%f'", j, tree -> rates -> t_prior_min[j], tree -> rates -> t_prior_max[j]); 
+  Exit("\n");*/
 
   //clear memory:
   free(clade_name);

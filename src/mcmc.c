@@ -949,7 +949,6 @@ void MCMC_One_Time(t_node *a, t_node *d, int traversal, t_tree *tree)
 	  /* 	 new_lnL_data,cur_lnL_data,t1_new,t1_cur,t_min,t_max); */
 	  tree->mcmc->acc_move[move_num]++;
 	}
-      
       if(t1_new < t0)
 	{
 	  t1_new = t0+1.E-4;
