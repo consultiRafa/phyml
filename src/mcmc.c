@@ -815,12 +815,10 @@ void MCMC_One_Time(t_node *a, t_node *d, int traversal, t_tree *tree)
   t_node *v2,*v3;
   phydbl K;
   int move_num;
-  
-  
+    
   if(d->tax) return; /* Won't change time at tip */
-  /* if(d == tree->n_root) return; /\* Won't change time at root. Use tree height move instead *\/ */
 
-  if(FABS(tree->rates->t_prior_min[d->num] - tree->rates->t_prior_max[d->num]) < 1.E-10) return;
+  /* if(FABS(tree->rates->t_prior_min[d->num] - tree->rates->t_prior_max[d->num]) < 1.E-10) return; */
 
   Record_Br_Len(tree);
   RATES_Record_Rates(tree);
@@ -858,12 +856,15 @@ void MCMC_One_Time(t_node *a, t_node *d, int traversal, t_tree *tree)
 	else    { b3 = d->b[i]; }
       }
   
-  t0 = (a)?(tree->rates->nd_t[a->num]):(tree->rates->t_prior_min[d->num]);
+  t0 = tree->rates->nd_t[a->num];
   t2 = tree->rates->nd_t[v2->num];
   t3 = tree->rates->nd_t[v3->num];
 
-  t_min = MAX(t0,tree->rates->t_prior_min[d->num]);
-  t_max = MIN(MIN(t2,t3),tree->rates->t_prior_max[d->num]);
+  /* t_min = MAX(t0,tree->rates->t_prior_min[d->num]); */
+  /* t_max = MIN(MIN(t2,t3),tree->rates->t_prior_max[d->num]); */
+
+  t_min = t0;
+  t_max = MIN(t2,t3);
 
   t_min += tree->rates->min_dt;
   t_max -= tree->rates->min_dt;
@@ -882,43 +883,48 @@ void MCMC_One_Time(t_node *a, t_node *d, int traversal, t_tree *tree)
     {
       tree->rates->nd_t[d->num] = t1_new;
 
-      /* Update branch lengths */
-      tree->rates->br_do_updt[d->num]  = YES;
-      tree->rates->br_do_updt[v2->num] = YES;
-      tree->rates->br_do_updt[v3->num] = YES;
-      RATES_Update_Cur_Bl(tree);
-
-      if(tree->mcmc->use_data)
-	{
-	  if(tree->io->lk_approx == EXACT)
-	    {
-	      Update_PMat_At_Given_Edge(b1,tree);
-	      Update_PMat_At_Given_Edge(b2,tree);
-	      Update_PMat_At_Given_Edge(b3,tree);
-	      Update_P_Lk(tree,b1,d);
-	    }
-	  new_lnL_data = Lk(b1,tree);
-
-	  /* /\* !!!!!!!!!!!!!!!!!!!!1 *\/ */
-	  /* if(FABS(Lk(tree) - new_lnL_data) > 1.E-5) */
-	  /*   { */
-	  /*     PhyML_Printf("\n. b1->l->v=%f b2->l->v=%f b3->l->v=%f",b1->l->v,b2->l->v,b3->l->v); */
-	  /*     PhyML_Printf("\n. a->num=%d d->num=%d root=%d (%d %d)",a->num,d->num,a==tree->n_root,tree->n_root->v[0]->num,tree->n_root->v[1]->num); */
-	  /*     PhyML_Printf("\n. t_min=%f t_max=%f",t_min,t_max); */
-	  /*     PhyML_Printf("\n. t1_new=%f t1_cur=%f",t1_new,t1_cur); */
-	  /*     PhyML_Printf("\n. %f %f",cur_lnL_data,tree->c_lnL); */
-	  /*     PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__); */
-	  /*     Warn_And_Exit(""); */
-	  /*   } */
-	}
-
-      new_lnL_rate = RATES_Lk_Rates(tree);
       new_lnL_time = TIMES_Lk_Times(tree);
-
-      if(tree->mcmc->use_data) ratio += (new_lnL_data - cur_lnL_data);
-      ratio += (new_lnL_rate - cur_lnL_rate);
       ratio += (new_lnL_time - cur_lnL_time);
 
+      if(isinf(new_lnL_time) == NO) // Proposed value of t is inside its boundary
+        {
+          /* Update branch lengths */
+          tree->rates->br_do_updt[d->num]  = YES;
+          tree->rates->br_do_updt[v2->num] = YES;
+          tree->rates->br_do_updt[v3->num] = YES;
+          RATES_Update_Cur_Bl(tree);
+          
+          new_lnL_rate = RATES_Lk_Rates(tree);
+          ratio += (new_lnL_rate - cur_lnL_rate);
+
+          if(tree->mcmc->use_data)
+            {
+              if(tree->io->lk_approx == EXACT)
+                {
+                  Update_PMat_At_Given_Edge(b1,tree);
+                  Update_PMat_At_Given_Edge(b2,tree);
+                  Update_PMat_At_Given_Edge(b3,tree);
+                  Update_P_Lk(tree,b1,d);
+                }
+              new_lnL_data = Lk(b1,tree);
+              
+              /* /\* !!!!!!!!!!!!!!!!!!!!1 *\/ */
+              /* if(FABS(Lk(tree) - new_lnL_data) > 1.E-5) */
+              /*   { */
+              /*     PhyML_Printf("\n. b1->l->v=%f b2->l->v=%f b3->l->v=%f",b1->l->v,b2->l->v,b3->l->v); */
+              /*     PhyML_Printf("\n. a->num=%d d->num=%d root=%d (%d %d)",a->num,d->num,a==tree->n_root,tree->n_root->v[0]->num,tree->n_root->v[1]->num); */
+              /*     PhyML_Printf("\n. t_min=%f t_max=%f",t_min,t_max); */
+              /*     PhyML_Printf("\n. t1_new=%f t1_cur=%f",t1_new,t1_cur); */
+              /*     PhyML_Printf("\n. %f %f",cur_lnL_data,tree->c_lnL); */
+              /*     PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__); */
+              /*     Warn_And_Exit(""); */
+              /*   } */
+            }
+          
+          if(tree->mcmc->use_data) ratio += (new_lnL_data - cur_lnL_data);
+        }
+      
+          
       ratio = EXP(ratio);
       alpha = MIN(1.,ratio);
       u = Uni();
@@ -929,19 +935,21 @@ void MCMC_One_Time(t_node *a, t_node *d, int traversal, t_tree *tree)
 	  tree->c_lnL              = cur_lnL_data;
 	  tree->rates->c_lnL_rates = cur_lnL_rate;
 	  tree->rates->c_lnL_times = cur_lnL_time;
-	  Restore_Br_Len(tree);
-	  RATES_Reset_Rates(tree);
-	  RATES_Reset_Times(tree);
 
-	  if(tree->io->lk_approx == EXACT && tree->mcmc->use_data) 
-	    {
-	      Update_PMat_At_Given_Edge(b1,tree);
-	      Update_PMat_At_Given_Edge(b2,tree);
-	      Update_PMat_At_Given_Edge(b3,tree);
-	      Update_P_Lk(tree,b1,d);
-	    }
-	  /* printf("\n. R new_lnL_data = %f cur_lnL_data = %f t_new=%f t_cur=%f tmin=%f tmax=%f", */
-	  /* 	 new_lnL_data,cur_lnL_data,t1_new,t1_cur,t_min,t_max); */
+          if(isinf(new_lnL_time) == NO)
+            {
+              Restore_Br_Len(tree);
+              RATES_Reset_Rates(tree);
+              RATES_Reset_Times(tree);
+              
+              if(tree->io->lk_approx == EXACT && tree->mcmc->use_data) 
+                {
+                  Update_PMat_At_Given_Edge(b1,tree);
+                  Update_PMat_At_Given_Edge(b2,tree);
+                  Update_PMat_At_Given_Edge(b3,tree);
+                  Update_P_Lk(tree,b1,d);
+                }
+            }
 	}
       else
 	{

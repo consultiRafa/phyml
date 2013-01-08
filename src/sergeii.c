@@ -142,8 +142,12 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
         }
       while(calib);
       TIMES_Set_All_Node_Priors(tree); 
-      if(Check_Node_Time(tree) != TRUE) times_partial_proba = 0;
+
+      if(Check_Node_Time(tree) != TRUE) times_partial_proba = 0;      
+      /* if(Check_Calibration_Consistency(tree) != TRUE) times_partial_proba = .0; */
+      
       times_tot_proba += (times_partial_proba * EXP(TIMES_Lk_Yule_Order(tree)));
+      
       while(calib -> prev) calib = calib -> prev;
     }
 

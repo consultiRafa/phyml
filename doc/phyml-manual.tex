@@ -1240,11 +1240,11 @@ As stated before, our implementation assumes that the different components of a 
 independant. In other words, we have $\Pr(M_m^{(i)},F_f^{(i)},R_r^{(i)}) = \Pr(M_m^{(i)}) \times
 \Pr(F_f^{(i)}) \times \Pr(R_r^{(i)})$. In practice, the joint probability
 $\Pr(M_m^{(i)},F_f^{(i)},R_r^{(i)})$ is obtained as follows:
-\begin{eqnarray*}
+\begin{eqnarray}\label{equ:weights}
 \Pr(M_m^{(i)},F_f^{(i)},R_r^{(i)}) = \frac{\Pr(M_m^{(i)}) \Pr(F_f^{(i)}) \Pr(R_r^{(i)})}{
   \sum_{m,f,r} \Pr(M_m^{(i)}) \Pr(F_f^{(i)}) \Pr(R_r^{(i)}) \mathcal{I}(m,f,r,i)}
-\end{eqnarray*}
-The probabilities $\Pr(M_m^{(i)})$, $\Pr(F_f^{(i)})$ and $\Pr(R_r^{(i)})$, also called 'weights', can be fixed or estimated
+\end{eqnarray}
+The probabilities $\Pr(M_m^{(i)})$, $\Pr(F_f^{(i)})$ and $\Pr(R_r^{(i)})$, also called `weights', can be fixed or estimated
 from the data.
 
 \subsection{The XML format and its use in PhyML}\label{sec:XML format}
@@ -1582,7 +1582,7 @@ for amino-acid sequences. The default is \x{"LG"}.
 
 The {\tt ratematrices} component has the attribute {\tt optimise.weights=yes/no} (default is {\tt
   no}). If {\tt optimise.weights=yes}, then the probabilities (or weights) or each matrix in the
-set of matrices defined by this component, will be estimated from the data.
+set of matrices defined by this component (see Equation \ref{equ:weights}), will be estimated from the data.
 
 \vspace{0.2cm}
 \begin{Verbatim}[frame=single, label=Example of `ratematrices' component, samepage=true,
@@ -1611,7 +1611,7 @@ Options:
 The {\tt equfreqs} component has the attribute {\tt optimise.weights=yes/no} (default is {\tt
   no}). If {\tt optimise.weights=yes}, then the probabilities (or weights) or each vector of
 equilibrium frequencies in the
-set of vectors defined by this component, will be estimated from the data.
+set of vectors defined by this component (see Equation \ref{equ:weights}), will be estimated from the data.
 
 \vspace{0.2cm}
 \begin{Verbatim}[frame=single, label=Example of `equfreqs' component, samepage=true,

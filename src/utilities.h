@@ -1432,15 +1432,17 @@ typedef struct __Calibration {
 /*!********************************************************/
 
 typedef struct __Phylogeo{
-  phydbl              *cov; // Covariance matrix
+  phydbl              *cov; // Covariance of migrations (n_dim x n_dim)
   phydbl            *r_mat; // R matrix. Gives the rates of migrations between locations. See article.
   phydbl            *g_mat; // G matrix. See article.
   int               *occup; // Vector giving the number of lineages that occupy each location
-  phydbl              *loc; // Coordinates of the locations
-  int                n_loc; // Number of locations
-  int                n_dim; // Dimension of the data  
+  phydbl          *ldscape; // Coordinates of the locations
+  phydbl              *loc; // Location for each lineage
+  int           ldscape_sz; // Landscape size: number of locations
+  int                n_dim; // Dimension of the data (e.g., longitude + lattitude -> n_dim = 2)  
   struct _Node **sorted_nd; // Table of nodes sorted wrt their heights.
   phydbl               tau; // overall migration rate parameter
+  phydbl              lbda; // Competition parameter
 }t_geo;
 
 /*!********************************************************/
