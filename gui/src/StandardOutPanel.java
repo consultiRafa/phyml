@@ -4,7 +4,8 @@ import java.awt.Rectangle;
 import javax.swing.DropMode;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextPane;
+import javax.swing.JTextArea;
+import javax.swing.text.DefaultCaret;
 
 /**
  * Extends JPanel and implements the components to display the standard output
