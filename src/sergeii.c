@@ -17,7 +17,8 @@
 #endif
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
+//Function checks if the randomized node times are within the 
+//upper and lower time limits.
 int Check_Node_Time(t_tree *tree)
 {
   phydbl *t_prior_min, *t_prior_max, *nd_t; 
@@ -47,7 +48,8 @@ int Check_Node_Time(t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
+//Function calculates the TOTAL number of calibration combinations, 
+//given the number of nodes to which each calibartion applies to.
 int Number_Of_Comb(t_cal *calib)
 {
 
@@ -67,7 +69,13 @@ int Number_Of_Comb(t_cal *calib)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
+//Function sets current calibartion in the following way:
+//Suppose we have a vector of calibrations C=(C1, C2, C3), each calibration  
+//applies to a set of nodes. we can reach each node number through the indeces (corresponds 
+//to the number the information was read). C1={0,1,2}, C2={0,1}, C3={0};
+//The total number of combinations is 3*2*1=6. The first combination with row number 0 
+//will be {0,0,0}, the second row will be {0,1,0} and so on. Calling the node numbers with 
+//the above indeces will return current calibration.   
 void Set_Current_Calibration(int row, t_tree *tree)
 {
 
@@ -102,7 +110,8 @@ void Set_Current_Calibration(int row, t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
+//Calculate the prior probability for node times taking into account the 
+//probailitis with which each calibration applies to the particular node.
 phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
 {
 
@@ -112,8 +121,8 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
   t_cal *calib;
  
 
-  times_partial_proba = 1;
-  //times_tot_proba = 0;
+  times_partial_proba = 1.0;
+  times_tot_proba = 0.0;
   calib = tree -> rates -> calib;
   t_prior_min = tree -> rates -> t_prior_min;
   t_prior_max = tree -> rates -> t_prior_max;
@@ -128,14 +137,14 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
           t_prior_max[j] = BIG;
           t_has_prior[j] = NO; 
         }
-      times_partial_proba = 1; 
+      times_partial_proba = 1.0; 
       do
         {
           k = (i % Number_Of_Comb(calib)) / Number_Of_Comb(calib -> next);
           t_prior_min[calib -> all_applies_to[k] -> num] = MAX(t_prior_min[calib -> all_applies_to[k] -> num], calib -> lower);
           t_prior_max[calib -> all_applies_to[k] -> num] = MIN(t_prior_max[calib -> all_applies_to[k] -> num], calib -> upper);
           t_has_prior[calib -> all_applies_to[k] -> num] = YES;
-          if((t_prior_min[calib -> all_applies_to[k] -> num] - t_prior_max[calib -> all_applies_to[k] -> num]) > 0) times_partial_proba = 0; 
+          if((t_prior_min[calib -> all_applies_to[k] -> num] > t_prior_max[calib -> all_applies_to[k] -> num])) times_partial_proba = 0.0; 
           else times_partial_proba *= calib -> proba[calib -> all_applies_to[k] -> num]; 
           if(calib -> next) calib = calib -> next;
           else break;
@@ -143,8 +152,7 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
       while(calib);
       TIMES_Set_All_Node_Priors(tree); 
 
-      if(Check_Node_Time(tree) != TRUE) times_partial_proba = 0;      
-      /* if(Check_Calibration_Consistency(tree) != TRUE) times_partial_proba = .0; */
+      if(Check_Node_Time(tree) != TRUE) times_partial_proba = 0.0;      
       
       times_tot_proba += (times_partial_proba * EXP(TIMES_Lk_Yule_Order(tree)));
       
