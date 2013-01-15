@@ -15,6 +15,7 @@
 #ifdef MPI
 #include "mpi_boot.h"
 #endif
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 //Function checks if the randomized node times are within the 
@@ -115,19 +116,23 @@ void Set_Current_Calibration(int row, t_tree *tree)
 phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
 {
 
-  phydbl times_partial_proba, times_tot_proba, *t_prior_min, *t_prior_max; 
+  phydbl *Yule_val, *times_partial_proba, times_tot_proba, *t_prior_min, *t_prior_max, min_value, K, ln_t; 
   short int *t_has_prior;
   int i, j, k, tot_num_comb;
   t_cal *calib;
  
 
-  times_partial_proba = 1.0;
+  //times_partial_proba = 1.0;
   times_tot_proba = 0.0;
   calib = tree -> rates -> calib;
   t_prior_min = tree -> rates -> t_prior_min;
   t_prior_max = tree -> rates -> t_prior_max;
   t_has_prior = tree -> rates -> t_has_prior;
   tot_num_comb = Number_Of_Comb(calib);
+
+  
+  Yule_val = (phydbl *)mCalloc(tot_num_comb, sizeof(phydbl));    
+  times_partial_proba = (phydbl *)mCalloc(tot_num_comb, sizeof(phydbl));   
 
   For(i, tot_num_comb)
     {
@@ -137,32 +142,47 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
           t_prior_max[j] = BIG;
           t_has_prior[j] = NO; 
         }
-      times_partial_proba = 1.0; 
+      times_partial_proba[i] = 1.0; 
       do
         {
           k = (i % Number_Of_Comb(calib)) / Number_Of_Comb(calib -> next);
           t_prior_min[calib -> all_applies_to[k] -> num] = MAX(t_prior_min[calib -> all_applies_to[k] -> num], calib -> lower);
           t_prior_max[calib -> all_applies_to[k] -> num] = MIN(t_prior_max[calib -> all_applies_to[k] -> num], calib -> upper);
           t_has_prior[calib -> all_applies_to[k] -> num] = YES;
-          if((t_prior_min[calib -> all_applies_to[k] -> num] > t_prior_max[calib -> all_applies_to[k] -> num])) times_partial_proba = 0.0; 
-          else times_partial_proba *= calib -> proba[calib -> all_applies_to[k] -> num]; 
+          if((t_prior_min[calib -> all_applies_to[k] -> num] > t_prior_max[calib -> all_applies_to[k] -> num])) times_partial_proba[i] = 0.0; 
+          else times_partial_proba[i] *= calib -> proba[calib -> all_applies_to[k] -> num]; 
           if(calib -> next) calib = calib -> next;
           else break;
         }
       while(calib);
       TIMES_Set_All_Node_Priors(tree); 
 
-      if(Check_Node_Time(tree) != TRUE) times_partial_proba = 0.0;      
-      
-      times_tot_proba += (times_partial_proba * EXP(TIMES_Lk_Yule_Order(tree)));
-      
+      if(Check_Node_Time(tree) != TRUE) times_partial_proba[i] = 0.0;      
+
+      Yule_val[i] = TIMES_Lk_Yule_Order(tree);
+
       while(calib -> prev) calib = calib -> prev;
     }
+ 
+  min_value = 0.0;
+  For(i, tot_num_comb) if(Yule_val[i] < min_value && Yule_val[i] > -INFINITY) min_value = Yule_val[i];
+
+  K = -600. - min_value;
+  times_tot_proba = 0.0;
+  For(i, tot_num_comb)
+    {
+      times_tot_proba += times_partial_proba[i] * EXP(Yule_val[i] + K);
+    }
+
 
   Set_Current_Calibration(0, tree);   
-  TIMES_Set_All_Node_Priors(tree);     
+  TIMES_Set_All_Node_Priors(tree); 
+    
+  ln_t = -K + LOG(times_tot_proba);
 
-  return(LOG(times_tot_proba));
+  free(Yule_val);
+  free(times_partial_proba);
+  return(ln_t);
 }
 
 
