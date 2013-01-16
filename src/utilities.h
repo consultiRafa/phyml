@@ -273,7 +273,7 @@ typedef	double phydbl;
 #define LOGSMALL -690.
 
 
-#ifndef PHYTIME
+#if !(defined PHYTIME || defined SERGEII)
 #define BL_MIN 1.E-8
 #define BL_MAX 100.
 #else
@@ -1579,7 +1579,7 @@ void Randomize_Sequence_Order(calign *cdata);
 void Update_Root_Pos(t_tree *tree);
 void Add_Root(t_edge *target,t_tree *tree);
 void Update_Ancestors(t_node *a,t_node *d,t_tree *tree);
-#if defined(PHYTIME)
+#if (defined PHYTIME || defined SERGEII)
 t_tree *Generate_Random_Tree_From_Scratch(int n_otu,int rooted);
 #endif
 void Random_Lineage_Rates(t_node *a,t_node *d,t_edge *b,phydbl stick_prob,phydbl *rates,int curr_rate,int n_rates,t_tree *tree);

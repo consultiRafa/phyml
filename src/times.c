@@ -136,6 +136,7 @@ int TIMES_main(int argc, char **argv)
 		  /* A user-given tree is used here instead of BioNJ */
 		  else             tree = Read_User_Tree(cdata,mod,io);
 
+
  		  if(io->fp_in_constraint_tree != NULL) 
 		    {
 		      io->cstr_tree        = Read_Tree_File_Phylip(io->fp_in_constraint_tree);		      
@@ -153,6 +154,7 @@ int TIMES_main(int argc, char **argv)
 
 		  time(&t_beg);
 		  time(&(tree->t_beg));
+
 
 		  tree->rates = RATES_Make_Rate_Struct(tree->n_otu);
 		  RATES_Init_Rate_Struct(tree->rates,io->rates,tree->n_otu);
@@ -186,6 +188,7 @@ int TIMES_main(int argc, char **argv)
 
 		  Prepare_Tree_For_Lk(tree);
 
+
 		  /* Read node age priors */
 		  Read_Clade_Priors(io->clade_list_file,tree);
 
@@ -201,6 +204,7 @@ int TIMES_main(int argc, char **argv)
                   PhyML_Printf("\n. Input tree with calibration information ('almost' compatible with MCMCtree).\n");
                   PhyML_Printf("\n%s\n",Write_Tree(tree,YES));
                   tree->write_br_lens = YES;
+
 
 		  /* Get_Edge_Binary_Coding_Number(tree); */
 		  /* Exit("\n"); */
@@ -229,6 +233,11 @@ int TIMES_main(int argc, char **argv)
 		      user_lk_approx = tree->io->lk_approx;
 		      tree->io->lk_approx = EXACT;
 		      
+                      /* printf("\n. %s",Write_Tree(tree,NO)); */
+                      /* Lk(NULL,tree); */
+                      /* printf("\n. %f",tree->c_lnL); */
+                      /* Exit("\n"); */
+
 		      /* MLE for branch lengths */
 		      PhyML_Printf("\n");
 		      Round_Optimize(tree,tree->data,ROUND_MAX);
@@ -1015,6 +1024,7 @@ phydbl TIMES_Lk_Times(t_tree *tree)
   tree->rates->c_lnL_times = TIMES_Calib_Cond_Prob(tree);
   //tree->rates->c_lnL_times =  TIMES_Lk_Yule_Order(tree);
   #endif
+
 
   if(isinf(tree->rates->c_lnL_times))
     {

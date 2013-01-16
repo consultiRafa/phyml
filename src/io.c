@@ -626,7 +626,7 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
   int i,p;
   char *format;
   int last_len;
-#ifndef PHYTIME
+#if !(defined PHYTIME || defined SERGEII)
   phydbl mean_len;
 #endif
 
@@ -675,7 +675,7 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
 	{
 	  (*s_tree)[(int)strlen(*s_tree)] = ':';
 
-#ifndef PHYTIME
+#if !(defined PHYTIME || defined SERGEII) 
 	  if(!tree->n_root)
 	    {
               if(tree->is_mixt_tree == NO) 
@@ -822,7 +822,7 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
 
 	  (*s_tree)[(int)strlen(*s_tree)] = ':';
 
-#ifndef PHYTIME
+#if !(defined PHYTIME || defined SERGEII)
 	  if(!tree->n_root)
 	    {
               if(tree->is_mixt_tree == NO) 
@@ -958,7 +958,7 @@ void R_wtree_Custom(t_node *pere, t_node *fils, int *available, char **s_tree, i
 	  strcat(*s_tree,":");
 	  (*pos)++;
  
-#ifndef PHYTIME
+#if !(defined PHYTIME || defined SERGEII)
 	  if(!tree->n_root)
 	    {
 	      (*pos) += sprintf(*s_tree+*pos,format,fils->b[0]->l->v);
@@ -1086,7 +1086,7 @@ void R_wtree_Custom(t_node *pere, t_node *fils, int *available, char **s_tree, i
 	  strcat(*s_tree,":");
 	  (*pos)++;
 
-#ifndef PHYTIME
+#if !(defined PHYTIME || defined SERGEII)
 	  if(!tree->n_root)
 	    {
 	      (*pos) += sprintf(*s_tree+*pos,format,fils->b[p]->l->v);
@@ -3374,8 +3374,7 @@ t_tree *Read_User_Tree(calign *cdata, t_mod *mod, option *io)
   tree = Read_Tree_File_Phylip(io->fp_in_tree);
   if(!tree) Exit("\n. Input tree not found...");
   /* Add branch lengths if necessary */
-  if(!tree->has_branch_lengths) Add_BioNJ_Branch_Lengths(tree,cdata,mod);
-
+  if(!tree->has_branch_lengths) Add_BioNJ_Branch_Lengths(tree,cdata,mod);  
   return tree;
 }
 
@@ -3609,7 +3608,7 @@ option *Get_Input(int argc, char **argv)
 
 #ifdef MPI
   rv = Read_Command_Line(io,argc,argv);
-#elif defined (PHYTIME)
+#elif (defined PHYTIME || defined SERGEII)
   rv = Read_Command_Line(io,argc,argv);
 #else
   putchar('\n');

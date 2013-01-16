@@ -382,7 +382,7 @@ phydbl Lk(t_edge *b, t_tree *tree)
 
   tree->old_lnL = tree->c_lnL;
   
-#ifdef PHYTIME
+#if (defined PHYTIME || defined SERGEII)
   if((tree->rates) && (tree->rates->bl_from_rt)) RATES_Update_Cur_Bl(tree);
 #endif
 

@@ -180,8 +180,7 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
     
   ln_t = -K + LOG(times_tot_proba);
 
-  free(Yule_val);
-  free(times_partial_proba);
+  free(Yule_val);  free(times_partial_proba);
   return(ln_t);
 }
 
@@ -216,7 +215,7 @@ void PhyTime_XML(char *xml_file)
   last_calib       = NULL;
   mod              = NULL;
   most_likely_tree = NULL;
-   
+  n_taxa = 0; 
 
   //file can/cannot be open:
   if ((f =(FILE *)fopen(xml_file, "r")) == NULL)
@@ -266,6 +265,7 @@ void PhyTime_XML(char *xml_file)
   else io -> tree  = Read_Tree(&n_t -> value);
   io -> n_otu = io -> tree -> n_otu;
   tree = io -> tree;
+
 
   //setting initial values to n_calib:
   For(i, 2 * tree -> n_otu - 2) 
@@ -657,7 +657,7 @@ void PhyTime_XML(char *xml_file)
   
   Set_Both_Sides(YES, tree);
   Prepare_Tree_For_Lk(tree);
-  Set_Current_Calibration(0, tree);
+   Set_Current_Calibration(0, tree);
   TIMES_Set_All_Node_Priors(tree); 
   TIMES_Get_Number_Of_Time_Slices(tree);
   TIMES_Label_Edges_With_Calibration_Intervals(tree);
@@ -681,7 +681,14 @@ void PhyTime_XML(char *xml_file)
       user_lk_approx = tree -> io -> lk_approx;													
       tree -> io -> lk_approx = EXACT;
 		      
-      // MLE for branch lengths 																
+      // MLE for branch lengths 																                      
+      /* printf("\n. %s",Write_Tree(tree,NO)); */
+      /* printf("\n. alpha %f",tree->mod->ras->alpha->v); */
+      /* printf("\n.  %f %f %f %f",tree->mod->e_frq->pi->v[0],tree->mod->e_frq->pi->v[1],tree->mod->e_frq->pi->v[2],tree->mod->e_frq->pi->v[3]); */
+      /* Lk(NULL,tree); */
+      /* printf("\n. %f",tree->c_lnL); */
+      /* Exit("\n"); */
+
       PhyML_Printf("\n");
       Round_Optimize(tree, tree -> data, ROUND_MAX);
 		      

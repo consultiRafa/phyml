@@ -600,7 +600,7 @@ void Set_Defaults_Model(t_mod *mod)
   
   mod->ras->parent_class_number = 0;
 
-#ifndef PHYTIME
+#if !(defined PHYTIME || defined SERGEII)
   mod->l_min = 1.E-8;
   mod->l_max = 10.0;
 #else
