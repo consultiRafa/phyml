@@ -96,12 +96,6 @@ void Set_Current_Calibration(int row, t_tree *tree)
       t_prior_min[calib -> all_applies_to[k] -> num] = calib -> lower;
       t_prior_max[calib -> all_applies_to[k] -> num] = calib -> upper;
       t_has_prior[calib -> all_applies_to[k] -> num] = YES; 
-      /*PhyML_Printf("\n. .......................................................................");
-      PhyML_Printf("\n");
-      PhyML_Printf("\n. Node number to which calibration applies to is: [%d]", calib -> all_applies_to[k] -> num);
-      PhyML_Printf("\n. Lower bound set to: %15f time units.", t_prior_min[calib -> all_applies_to[k] -> num]);
-      PhyML_Printf("\n. Upper bound set to: %15f time units.", t_prior_max[calib -> all_applies_to[k] -> num]);
-      PhyML_Printf("\n. .......................................................................");*/
       if(calib->next) calib = calib->next;
       else break;    
     }
@@ -538,7 +532,18 @@ void PhyTime_XML(char *xml_file)
                   //tree -> rates -> t_prior_min[node_num] = low;
                   //tree -> rates -> t_prior_max[node_num] = up;
                   //tree -> rates -> t_has_prior[node_num] = YES;
-                  //printf(" '%f' '%f' \n", tree -> rates -> t_prior_min[node_num], tree -> rates -> t_prior_max[node_num]);              
+                  //printf(" '%f' '%f' \n", tree -> rates -> t_prior_min[node_num], tree -> rates -> t_prior_max[node_num]);
+                  PhyML_Printf("\n. .......................................................................");
+                  PhyML_Printf("\n");
+                  PhyML_Printf("\n. Node number to which calibration applies to is: [%d]",node_num);
+                  PhyML_Printf("\n. Clade name: [%s]", clade_name);
+                  if(strcmp(clade_name, "@root@"))
+                    {
+                      For(i, clade_size) PhyML_Printf("\n. Taxon name: [%s]", clade[i]);
+                    }
+                  PhyML_Printf("\n. Lower bound set to: %15f time units.", low);
+                  PhyML_Printf("\n. Upper bound set to: %15f time units.", up);
+                  PhyML_Printf("\n. .......................................................................");            
                   //////////////////////////////////////////////////////////////////////////////////////////////////////
                   if(n_r -> child -> next) n_r -> child = n_r -> child -> next;
                   else break;
@@ -673,8 +678,7 @@ void PhyTime_XML(char *xml_file)
 
   // Work with log of branch lengths?
   if(tree -> mod -> log_l == YES) Log_Br_Len(tree);
-
-
+ 
   if(io -> mcmc -> use_data == YES)																
     {
       // Force the exact likelihood score 
@@ -691,10 +695,10 @@ void PhyTime_XML(char *xml_file)
 
       PhyML_Printf("\n");
       Round_Optimize(tree, tree -> data, ROUND_MAX);
-		      
+ 		      
       // Set vector of mean branch lengths for the Normal approximation of the likelihood 
       RATES_Set_Mean_L(tree);
-	      
+      
       // Estimate the matrix of covariance for the Normal approximation of the likelihood
       PhyML_Printf("\n");
       PhyML_Printf("\n. Computing Hessian...");												    
@@ -746,7 +750,7 @@ void PhyTime_XML(char *xml_file)
   MCMC_Copy_MCMC_Struct(tree -> io -> mcmc, tree -> mcmc, "phytime"); 
 
   tree -> mod -> m4mod = m4mod;
-  	
+	
   MCMC_Complete_MCMC(tree -> mcmc, tree);
 
   tree -> mcmc -> is_burnin = NO;
