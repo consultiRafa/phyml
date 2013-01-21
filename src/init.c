@@ -726,6 +726,7 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
       rates->model = NONE;
     }
 
+
   if(rates->model == NONE)
     rates->model_log_rates = NO;
   else if(rates->model == THORNE)
@@ -738,10 +739,11 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
     rates->model_log_rates = NO;
   else
     {
-      PhyML_Printf("\n. Please initialize model properly.");
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Please initialize model properly.");
+      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
+
 
   rates->met_within_gibbs = NO;
   rates->c_lnL_rates      = UNLIKELY;

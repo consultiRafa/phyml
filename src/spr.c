@@ -391,7 +391,7 @@ void Optim_SPR (t_tree *tree, int max_size, int method)
   */
 /*   PhyML_Printf("\n. Optimizing t_edge lengths."); */
   root = tree->a_nodes[0];
-  Optimize_Br_Len_Serie (root, root->v[0], root->b[0], tree);
+  Optimize_Br_Len_Serie (root, root->v[2], root->b[2], tree);
   Set_Both_Sides(YES,tree);
   cur_lk = Lk(NULL,tree);
   time(&(tree->t_current));
@@ -485,7 +485,7 @@ int Perform_SPR_Moves (t_tree *tree, int max_size)
   ** Calculate the average subtree distances.
   */
   root = tree->a_nodes[0];
-  PostOrder_v (tree, root->v[0], root->b[0]);
+  PostOrder_v (tree, root->v[2], root->b[2]);
 
   /*
   ** Initialize the array of optimization candidates.
@@ -622,7 +622,7 @@ int Perform_SPR_Moves (t_tree *tree, int max_size)
   Set_Both_Sides(YES,tree);
   cur_lk = Lk(NULL,tree);
   root = tree->a_nodes[0];
-  Optimize_Br_Len_Serie (root, root->v[0], root->b[0], tree);
+  Optimize_Br_Len_Serie (root, root->v[2], root->b[2], tree);
   Set_Both_Sides(YES,tree);
   cur_lk = Lk(NULL,tree);
   time(&(tree->t_current));
@@ -665,7 +665,7 @@ int Perform_Best_SPR (t_tree *tree, int max_size)
   ** Calculate the average subtree distances.
   */
   root = tree->a_nodes[0];
-  PostOrder_v (tree, root->v[0], root->b[0]);
+  PostOrder_v (tree, root->v[2], root->b[2]);
 
   /*
   ** Initialize the array of optimization candidates.
@@ -781,7 +781,7 @@ int Perform_Best_SPR (t_tree *tree, int max_size)
   Set_Both_Sides(YES,tree);
   cur_lk = Lk(NULL,tree);
   root = tree->a_nodes[0];
-  Optimize_Br_Len_Serie (root, root->v[0], root->b[0], tree);
+  Optimize_Br_Len_Serie (root, root->v[2], root->b[2], tree);
   Set_Both_Sides(YES,tree);
   cur_lk = Lk(NULL,tree);
   time(&(tree->t_current));
@@ -825,7 +825,7 @@ int Perform_One_SPR(t_tree *tree, int max_size)
   */
   
   root = tree->a_nodes[0];
-  PostOrder_v (tree, root->v[0], root->b[0]);
+  PostOrder_v (tree, root->v[2], root->b[2]);
 
   /*
   ** Initialize the array of optimization candidates.
@@ -960,7 +960,7 @@ int Perform_One_SPR(t_tree *tree, int max_size)
   Set_Both_Sides(YES,tree);
   cur_lk = Lk(NULL,tree);
   root = tree->a_nodes[0];
-  Optimize_Br_Len_Serie (root, root->v[0], root->b[0], tree);
+  Optimize_Br_Len_Serie (root, root->v[2], root->b[2], tree);
   Set_Both_Sides(YES,tree);
   cur_lk = Lk(NULL,tree);
   time(&(tree->t_current));
@@ -2376,7 +2376,7 @@ void Make_Move (_move_ *move, int type, t_tree *tree)
   ** Recalculate the average distances between all (non-overlapping) subtrees.
   */
   root = tree->a_nodes[0];
-  PostOrder_v (tree, root->v[0], root->b[0]);
+  PostOrder_v (tree, root->v[2], root->b[2]);
 }
 
 
@@ -2594,7 +2594,7 @@ int Find_Optim_Globl (t_tree *tree)
       Set_Both_Sides(YES,tree);
       Lk(NULL,tree);
       root = tree->a_nodes[0];
-      Optimize_Br_Len_Serie (root, root->v[0], root->b[0], tree);
+      Optimize_Br_Len_Serie (root, root->v[2], root->b[2], tree);
       Set_Both_Sides(YES,tree);
       new_lk = Lk (NULL,tree);
 
@@ -3742,13 +3742,14 @@ void Speed_Spr(t_tree *tree, int max_cycles)
       Spr(UNLIKELY,tree);
       
       if(!tree->mod->s_opt->spr_pars)
-	{ 
-	  /* Optimise branch lengths */
-	  Optimize_Br_Len_Serie(tree->a_nodes[0],
-				tree->a_nodes[0]->v[0],
-				tree->a_nodes[0]->b[0],
-				tree);
-	  
+	{
+
+          /* Optimise branch lengths */
+          Optimize_Br_Len_Serie(tree->a_nodes[0],
+                                tree->a_nodes[0]->v[0],
+                                tree->a_nodes[0]->b[0],
+                                tree);
+
 	  /* Update partial likelihoods */
 	  Set_Both_Sides(YES,tree);
 	  Lk(NULL,tree);

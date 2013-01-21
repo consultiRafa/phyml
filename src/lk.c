@@ -2573,7 +2573,7 @@ void Alias_Subpatt(t_tree *tree)
   
   if(tree->n_root)
     {
-      Alias_Subpatt_Post(tree->n_root,tree->n_root->v[0],tree);
+      Alias_Subpatt_Post(tree->n_root,tree->n_root->v[2],tree);
       Alias_Subpatt_Post(tree->n_root,tree->n_root->v[1],tree);
     }
   else

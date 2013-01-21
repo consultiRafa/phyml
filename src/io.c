@@ -92,17 +92,22 @@ t_tree *Read_Tree(char **s_tree)
     {
       tree->e_root = tree->a_edges[tree->num_curr_branch_available];
             
-      For(i,3) if(tree->n_root->v[0]->v[i] == tree->n_root) { tree->n_root->v[0]->v[i] = tree->n_root->v[1]; break; }
-      For(i,3) if(tree->n_root->v[1]->v[i] == tree->n_root) { tree->n_root->v[1]->v[i] = tree->n_root->v[0]; break; }
+      tree->n_root->v[2] = tree->n_root->v[0];
+      tree->n_root->v[0] = NULL;
 
-      Connect_One_Edge_To_Two_Nodes(tree->n_root->v[0],
+      tree->n_root->l[2] = tree->n_root->l[0];
+
+      For(i,3) if(tree->n_root->v[2]->v[i] == tree->n_root) { tree->n_root->v[2]->v[i] = tree->n_root->v[1]; break; }
+      For(i,3) if(tree->n_root->v[1]->v[i] == tree->n_root) { tree->n_root->v[1]->v[i] = tree->n_root->v[2]; break; }
+
+      Connect_One_Edge_To_Two_Nodes(tree->n_root->v[2],
       				    tree->n_root->v[1],
       				    tree->e_root,
       				    tree);
 
-      tree->e_root->l->v = tree->n_root->l[0] + tree->n_root->l[1];
+      tree->e_root->l->v = tree->n_root->l[2] + tree->n_root->l[1];
       if(tree->e_root->l->v > 0.0)
-	tree->n_root_pos = tree->n_root->l[0] / tree->e_root->l->v;
+	tree->n_root_pos = tree->n_root->l[2] / tree->e_root->l->v;
       else
 	tree->n_root_pos = .5;
     }
@@ -122,8 +127,8 @@ void R_rtree(char *s_tree_a, char *s_tree_d, t_node *a, t_tree *tree, int *n_int
 
   if(strstr(s_tree_a," ")) 
     {
-      PhyML_Printf("\n. [%s]",s_tree_a);
-      Warn_And_Exit("\n. Err: the tree must not contain a ' ' character\n");
+      PhyML_Printf("\n== [%s]",s_tree_a);
+      Warn_And_Exit("\n== Err: the tree must not contain a ' ' character\n");
     }
 
   if(s_tree_d[0] == '(')
@@ -582,7 +587,7 @@ char *Write_Tree(t_tree *tree, int custom)
 	}
       else
 	{
-	  R_wtree(tree->n_root,tree->n_root->v[0],&available,&s,tree);
+	  R_wtree(tree->n_root,tree->n_root->v[2],&available,&s,tree);
 	  R_wtree(tree->n_root,tree->n_root->v[1],&available,&s,tree);
 	}
     }
@@ -605,7 +610,7 @@ char *Write_Tree(t_tree *tree, int custom)
 	}
       else
 	{
-	  R_wtree_Custom(tree->n_root,tree->n_root->v[0],&available,&s,&pos,tree);
+	  R_wtree_Custom(tree->n_root,tree->n_root->v[2],&available,&s,&pos,tree);
 	  R_wtree_Custom(tree->n_root,tree->n_root->v[1],&available,&s,&pos,tree);
 	}
 
@@ -689,7 +694,7 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
 	    {
 	      if(pere == tree->n_root)
 		{
-		  phydbl root_pos = (fils == tree->n_root->v[0])?(tree->n_root_pos):(1.-tree->n_root_pos);
+		  phydbl root_pos = (fils == tree->n_root->v[2])?(tree->n_root_pos):(1.-tree->n_root_pos);
                   if(tree->is_mixt_tree == NO) 
                     {
                       mean_len = tree->e_root->l->v;
@@ -797,7 +802,7 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
       
       if(p < 0)
 	{
-	  PhyML_Printf("\n== fils=%p root=%p root->v[0]=%p root->v[1]=%p",fils,tree->n_root,tree->n_root->v[0],tree->n_root->v[1]);
+	  PhyML_Printf("\n== fils=%p root=%p root->v[2]=%p root->v[1]=%p",fils,tree->n_root,tree->n_root->v[2],tree->n_root->v[1]);
 	  PhyML_Printf("\n== tree->e_root=%p fils->b[0]=%p fils->b[1]=%p fils->b[2]=%p",tree->e_root,fils->b[0],fils->b[1],fils->b[2]);		       
 	  PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
 	  Exit("\n");
@@ -836,7 +841,7 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
 	    {
 	      if(pere == tree->n_root)
 		{
-		  phydbl root_pos = (fils == tree->n_root->v[0])?(tree->n_root_pos):(1.-tree->n_root_pos);
+		  phydbl root_pos = (fils == tree->n_root->v[2])?(tree->n_root_pos):(1.-tree->n_root_pos);
 
                   if(tree->is_mixt_tree == NO) 
                     {
@@ -967,7 +972,7 @@ void R_wtree_Custom(t_node *pere, t_node *fils, int *available, char **s_tree, i
 	    {
 	      if(pere == tree->n_root)
 		{
-		  phydbl root_pos = (fils == tree->n_root->v[0])?(tree->n_root_pos):(1.-tree->n_root_pos);
+		  phydbl root_pos = (fils == tree->n_root->v[2])?(tree->n_root_pos):(1.-tree->n_root_pos);
 		  (*pos) += sprintf(*s_tree+*pos,format,tree->e_root->l->v * root_pos);
 		}
 	      else
@@ -1060,7 +1065,7 @@ void R_wtree_Custom(t_node *pere, t_node *fils, int *available, char **s_tree, i
       
       if(p < 0)
 	{
-	  PhyML_Printf("\n== fils=%p root=%p root->v[0]=%p root->v[1]=%p",fils,tree->n_root,tree->n_root->v[0],tree->n_root->v[1]);
+	  PhyML_Printf("\n== fils=%p root=%p root->v[2]=%p root->v[1]=%p",fils,tree->n_root,tree->n_root->v[2],tree->n_root->v[1]);
 	  PhyML_Printf("\n== tree->e_root=%p fils->b[0]=%p fils->b[1]=%p fils->b[2]=%p",tree->e_root,fils->b[0],fils->b[1],fils->b[2]);		       
 	  PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
 	  Warn_And_Exit("");
@@ -1095,7 +1100,7 @@ void R_wtree_Custom(t_node *pere, t_node *fils, int *available, char **s_tree, i
 	    {
 	      if(pere == tree->n_root)
 		{
-		  phydbl root_pos = (fils == tree->n_root->v[0])?(tree->n_root_pos):(1.-tree->n_root_pos);
+		  phydbl root_pos = (fils == tree->n_root->v[2])?(tree->n_root_pos):(1.-tree->n_root_pos);
 		  (*pos) += sprintf(*s_tree+*pos,format,tree->e_root->l->v * root_pos);
 		}
 	      else

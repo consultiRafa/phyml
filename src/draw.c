@@ -134,9 +134,9 @@ void DR_Print_Tree_Postscript(int page_num, int render_name, FILE *fp, t_tree *t
   PhyML_Fprintf(fp,"newpath\n");
 
 
-  draw->ycoord[n_root->num] = (draw->ycoord[n_root->v[0]->num] + draw->ycoord[n_root->v[1]->num])/2.; 
+  draw->ycoord[n_root->num] = (draw->ycoord[n_root->v[2]->num] + draw->ycoord[n_root->v[1]->num])/2.; 
   draw->xcoord[n_root->num] = 0.0; 
-  DR_Print_Tree_Postscript_Pre(n_root,n_root->v[0],render_name,fp,draw,tree);
+  DR_Print_Tree_Postscript_Pre(n_root,n_root->v[2],render_name,fp,draw,tree);
   DR_Print_Tree_Postscript_Pre(n_root,n_root->v[1],render_name,fp,draw,tree);
 
 
@@ -307,9 +307,9 @@ void DR_Get_X_Coord_Pre(t_node *a, t_node *d, t_edge *b, tdraw *w, int fixed_tip
 
 void DR_Get_X_Coord(int fixed_tips, tdraw *w, t_tree *tree)
 {
-  if(!(tree->n_root->v[0]->tax && fixed_tips == YES)) w->xcoord[tree->n_root->v[0]->num] = tree->n_root->v[0]->dist_to_root * (phydbl)w->tree_box_width/w->max_dist_to_root;
+  if(!(tree->n_root->v[2]->tax && fixed_tips == YES)) w->xcoord[tree->n_root->v[2]->num] = tree->n_root->v[2]->dist_to_root * (phydbl)w->tree_box_width/w->max_dist_to_root;
   if(!(tree->n_root->v[1]->tax && fixed_tips == YES)) w->xcoord[tree->n_root->v[1]->num] = tree->n_root->v[1]->dist_to_root * (phydbl)w->tree_box_width/w->max_dist_to_root;
-  DR_Get_X_Coord_Pre(tree->n_root,tree->n_root->v[0],NULL,w,fixed_tips,tree);
+  DR_Get_X_Coord_Pre(tree->n_root,tree->n_root->v[2],NULL,w,fixed_tips,tree);
   DR_Get_X_Coord_Pre(tree->n_root,tree->n_root->v[1],NULL,w,fixed_tips,tree);
   w->xcoord[tree->n_root->num] = 0;
 }
@@ -323,9 +323,9 @@ void DR_Get_Y_Coord(int fixed_tips, tdraw *w, t_tree *tree)
 {
   phydbl next_y_slot;
   next_y_slot = .0;
-  DR_Get_Y_Coord_Post(tree->n_root,tree->n_root->v[0],NULL,&next_y_slot,fixed_tips,w,tree);
+  DR_Get_Y_Coord_Post(tree->n_root,tree->n_root->v[2],NULL,&next_y_slot,fixed_tips,w,tree);
   DR_Get_Y_Coord_Post(tree->n_root,tree->n_root->v[1],NULL,&next_y_slot,fixed_tips,w,tree);
-  w->ycoord[tree->n_root->num] = (int)((w->ycoord[tree->n_root->v[0]->num] + w->ycoord[tree->n_root->v[0]->num]) / 2.);
+  w->ycoord[tree->n_root->num] = (int)((w->ycoord[tree->n_root->v[2]->num] + w->ycoord[tree->n_root->v[2]->num]) / 2.);
 }
 
 //////////////////////////////////////////////////////////////

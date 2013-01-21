@@ -24,6 +24,7 @@ the GNU public licence. See http://www.opensource.org for details.
 #include "alrt.h"
 #include "mixt.h"
 #include "sergeii.h"
+#include "geo.h"
 
 #ifdef MPI
 #include "mpi_boot.h"
@@ -103,6 +104,7 @@ int main(int argc, char **argv)
       Print_Settings(io);
       mod = io->mod;
         
+
       if(io->data)
 	{
 	  if(io->n_data_sets > 1) PhyML_Printf("\n. Data set [#%d]\n",num_data_set+1);
@@ -192,6 +194,12 @@ int main(int argc, char **argv)
 		      MIXT_Set_Alias_Subpatt(NO,tree);
 		    }
 
+
+          /* BFGS(tree,tree->mod->m4mod->o_rr,5,1.e-5,1.e-5, */
+          /*      &Return_Abs_Lk, */
+          /*      &Num_Derivative_Several_Param, */
+          /*      &Lnsrch,&failed); */
+          
 
 		  if(tree->mod->s_opt->opt_topo)
 		    {
@@ -491,11 +499,13 @@ int main(int argc, char **argv)
   return 1;
 }
 
-
-
-
-
-
+#elif(GEO)
+#include "geo.h"
+int main(int argc, char **argv)
+{
+  GEO_Main(argc,argv);
+  return 1;
+}
 
 #endif
 

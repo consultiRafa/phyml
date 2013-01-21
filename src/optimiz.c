@@ -977,7 +977,6 @@ void Optimiz_All_Free_Param(t_tree *tree, int verbose)
 }
 
 
-
 #define ITMAX 200
 #define EPS   3.0e-8
 #define TOLX (4*EPS)
@@ -1147,6 +1146,173 @@ void BFGS(t_tree *tree,
 //////////////////////////////////////////////////////////////
 
 
+#define ITMAX 2000
+#define EPS   3.0e-8
+#define TOLX (4*EPS)
+#define STPMX 100.0
+static phydbl sqrarg;
+#define SQR(a) ((sqrarg=(a)) < SMALL ? 0.0 : sqrarg*sqrarg)
+
+void BFGS_Nonaligned(t_tree *tree, 
+                     phydbl **p, 
+                     int n, 
+                     phydbl gtol, 
+                     phydbl step_size,
+                     phydbl(*func)(t_tree *tree), 
+                     int(*dfunc_nonaligned)(t_tree *tree,phydbl **param,int n_param,phydbl stepsize,phydbl(*func)(t_tree *tree),phydbl *derivatives), 
+                     int(*lnsrch_nonaligned)(t_tree *tree, int n, phydbl **xold, phydbl fold,phydbl *g, phydbl *p, phydbl *x,phydbl *f, phydbl stpmax, int *check),
+                     int *failed)
+{
+  
+  int check,i,its,j;
+  phydbl den,fac,fad,fae,fp,stpmax,sum=0.0,sumdg,sumxi,temp,test,fret;
+  phydbl *dg,*g,*hdg,**hessin,*pnew,*xi;
+  
+  hessin = (phydbl **)mCalloc(n,sizeof(phydbl *));
+  For(i,n) hessin[i] = (phydbl *)mCalloc(n,sizeof(phydbl));
+  dg   = (phydbl *)mCalloc(n,sizeof(phydbl ));
+  g    = (phydbl *)mCalloc(n,sizeof(phydbl ));
+  pnew = (phydbl *)mCalloc(n,sizeof(phydbl ));
+  hdg  = (phydbl *)mCalloc(n,sizeof(phydbl ));
+  xi   = (phydbl *)mCalloc(n,sizeof(phydbl ));
+  
+
+  PhyML_Printf("\n. ENTER BFGS WITH: %f\n",Lk(NULL,tree));
+
+  fp=(*func)(tree);
+  (*dfunc_nonaligned)(tree,p,n,step_size,func,g);
+
+  for (i=0;i<n;i++) 
+    {
+      for (j=0;j<n;j++) hessin[i][j]=0.0;
+      hessin[i][i]=1.0;
+      xi[i] = -g[i];
+      sum += (*(p[i]))*(*(p[i]));
+    }
+
+  /* stpmax=STPMX*MAX(SQRT(sum),(phydbl)n); */
+  stpmax = 0.01*MAX(SQRT(sum),(phydbl)n);
+  printf("\n. stpmax = %f",stpmax);
+  for(its=1;its<=ITMAX;its++) 
+    {
+
+      lnsrch_nonaligned(tree,n,p,fp,g,xi,pnew,&fret,stpmax,&check);
+
+      PhyML_Printf("BFGS -> %f\n",tree->c_lnL);
+
+      fp = fret;
+      
+      for (i=0;i<n;i++) 
+	{
+	  xi[i]=pnew[i]-(*(p[i]));
+	  (*(p[i]))=pnew[i];
+	}
+
+      test=0.0;
+      for (i=0;i<n;i++) 
+	{
+	  temp=FABS(xi[i])/MAX(FABS(*(p[i])),1.0);
+	  /* printf("\n. x[i]=%G p[i]=%f",xi[i],*(p[i])); */
+	  if (temp > test) test=temp;
+	}
+      if (test < TOLX) 
+	{
+	  (*func)(tree);
+	  For(i,n) Free(hessin[i]);
+	  free(hessin);
+	  free(xi);
+	  free(pnew);
+	  free(hdg);
+	  free(g);
+	  free(dg);   
+
+	  if(its == 1) 
+	    {
+/* 	      PhyML_Printf("\n. WARNING : BFGS failed ! \n"); */
+	      *failed = 1;
+	    }
+	  return;
+	}
+
+      for (i=0;i<n;i++) dg[i]=g[i];
+
+      (*dfunc_nonaligned)(tree,p,n,step_size,func,g);
+
+      test=0.0;
+      den=MAX(fret,1.0);
+      for (i=0;i<n;i++) 
+	{
+	  temp=FABS(g[i])*MAX(FABS(*(p[i])),1.0)/den;
+	  if (temp > test) test=temp;
+	}
+      if (test < gtol) 
+	{
+	  (*func)(tree);
+	  For(i,n) Free(hessin[i]);
+	  free(hessin);
+	  free(xi);
+	  free(pnew);
+	  free(hdg);
+	  free(g);
+	  free(dg);   
+	  return;
+	}
+
+    for (i=0;i<n;i++) dg[i]=g[i]-dg[i];
+
+    for (i=0;i<n;i++) 
+      {
+	hdg[i]=0.0;
+	for (j=0;j<n;j++) hdg[i] += hessin[i][j]*dg[j];
+      }
+
+    fac=fae=sumdg=sumxi=0.0;
+    for (i=0;i<n;i++) 
+      {
+	fac += dg[i]*xi[i];
+	fae += dg[i]*hdg[i];
+	sumdg += SQR(dg[i]);
+	sumxi += SQR(xi[i]);
+      }
+    
+    if(fac*fac > EPS*sumdg*sumxi) 
+      {
+	fac=1.0/fac;
+	fad=1.0/fae;
+	for (i=0;i<n;i++) dg[i]=fac*xi[i]-fad*hdg[i];
+	for (i=0;i<n;i++) 
+	  {
+	    for (j=0;j<n;j++) 
+	      {
+		hessin[i][j] += fac*xi[i]*xi[j]
+		  -fad*hdg[i]*hdg[j]+fae*dg[i]*dg[j];
+	      }
+	  }
+      }
+    for (i=0;i<n;i++) 
+      {
+	xi[i]=0.0;
+	for (j=0;j<n;j++) xi[i] -= hessin[i][j]*g[j];
+      }
+    }
+  PhyML_Printf("\n. Too many iterations in BFGS...\n");
+  *failed = 1;
+  For(i,n) Free(hessin[i]);
+  free(hessin);
+  free(xi);
+  free(pnew);
+  free(hdg);
+  free(g);
+  free(dg);   
+}
+
+#undef ITMAX
+#undef EPS
+#undef TOLX
+#undef STPMX
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 
 #define ALF 1.0e-4
 #define TOLX 1.0e-7
@@ -1243,6 +1409,105 @@ int Lnsrch(t_tree *tree, int n, phydbl *xold, phydbl fold,
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+#define ALF 1.0e-4
+#define TOLX 1.0e-7
+
+int Lnsrch_Nonaligned(t_tree *tree, int n, phydbl **xold, phydbl fold, 
+                      phydbl *g, phydbl *p, phydbl *x,
+                      phydbl *f, phydbl stpmax, int *check)
+{
+  int i;
+  phydbl a,alam,alam2,alamin,b,disc,f2,fold2,rhs1,rhs2,slope,sum,temp,test,tmplam;
+  phydbl *local_xold;
+
+  alam = alam2 = f2 = fold2 = tmplam = .0;
+
+  local_xold = (phydbl *)mCalloc(n,sizeof(phydbl));
+  For(i,n) local_xold[i] = *(xold[i]);
+
+  *check=0;
+  for(sum=0.0,i=0;i<n;i++) sum += p[i]*p[i];
+  sum=SQRT(sum);
+  if(sum > stpmax)
+    for(i=0;i<n;i++) p[i] *= stpmax/sum;
+  for(slope=0.0,i=0;i<n;i++)
+    slope += g[i]*p[i];
+  test=0.0;
+  for(i=0;i<n;i++) 
+    {
+      temp=FABS(p[i])/MAX(FABS(local_xold[i]),1.0);
+      if (temp > test) test=temp;
+    }
+  alamin=TOLX/test;
+  alam=1.0;
+  for (;;) 
+    {
+      for(i=0;i<n;i++) 
+	{
+	  x[i]=FABS(local_xold[i]+alam*p[i]);
+          /* printf("\n. x[i]=%f init=%f alam=%f p[i]=%f",x[i],local_xold[i],alam,p[i]); */
+	  //
+	  *(xold[i]) = x[i];
+	}
+
+      if(i==n) 
+	{
+	  *f=Return_Abs_Lk(tree);
+	}
+      else *f=1.+fold+ALF*alam*slope;
+
+      if (alam < alamin)
+	{
+	  *check=1;
+	  For(i,n) *(xold[i]) = local_xold[i];
+	  Free(local_xold);
+	  return 0;
+	} 
+      else if (*f <= fold+ALF*alam*slope) 
+	{
+	  For(i,n) *(xold[i]) = local_xold[i];
+	  Free(local_xold); 
+	  return 0;
+	}
+      else 
+	{
+/* 	  if (alam == 1.0) */
+	  if ((alam < 1.0+SMALL) && (alam > 1.0-SMALL))
+	    tmplam = -slope/(2.0*(*f-fold-slope));
+	  else 
+	    {
+	      rhs1 = *f-fold-alam*slope;
+	      rhs2=f2-fold2-alam2*slope;
+	      a=(rhs1/(alam*alam)-rhs2/(alam2*alam2))/(alam-alam2);
+	      b=(-alam2*rhs1/(alam*alam)+alam*rhs2/(alam2*alam2))/(alam-alam2);
+	      if (a < SMALL && a > -SMALL) tmplam = -slope/(2.0*b);
+	      else 
+		{
+		  disc=b*b-3.0*a*slope;
+		  if (disc<0.0) tmplam = 0.5*alam;
+		  else if(b <= 0.0) tmplam=(-b+SQRT(disc))/(3.0*a);
+		  else tmplam = -slope/(b+SQRT(disc));
+		}
+	      if (tmplam>0.5*alam) tmplam=0.5*alam;
+	    }
+	}
+      alam2=alam;
+      f2 = *f;
+      fold2=fold;
+      alam=MAX(tmplam,0.1*alam);
+    }
+  Free(local_xold);
+  return 1;
+}
+
+#undef ALF
+#undef TOLX
+#undef NRANSI
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 
 
 int Dist_F_Brak(phydbl *ax, phydbl *bx, phydbl *cx, phydbl *F, phydbl *param, t_mod *mod)
@@ -2138,12 +2403,12 @@ void Round_Optimize_Node_Heights(t_tree *tree)
 
 void Opt_Node_Heights_Recurr(t_tree *tree)
 {
-  Opt_Node_Heights_Recurr_Pre(tree->n_root,tree->n_root->v[0],tree);
+  Opt_Node_Heights_Recurr_Pre(tree->n_root,tree->n_root->v[2],tree);
   Opt_Node_Heights_Recurr_Pre(tree->n_root,tree->n_root->v[1],tree);
 
   Generic_Brent_Lk(&(tree->rates->nd_t[tree->n_root->num]),
 		   MIN(tree->rates->t_prior_max[tree->n_root->num],
-		       MIN(tree->rates->nd_t[tree->n_root->v[0]->num],
+		       MIN(tree->rates->nd_t[tree->n_root->v[2]->num],
 			   tree->rates->nd_t[tree->n_root->v[1]->num])),
 		   tree->rates->t_prior_min[tree->n_root->num],
 		   tree->mod->s_opt->min_diff_lk_local,

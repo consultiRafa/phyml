@@ -111,12 +111,12 @@ the GNU public licence. See http://www.opensource.org for details.
 /*     } */
 
 /*   PhyML_Printf("\n. Getting ancestors"); fflush(NULL); */
-/*   Update_Ancestors(ref_tree->n_root,ref_tree->n_root->v[0],ref_tree); */
+/*   Update_Ancestors(ref_tree->n_root,ref_tree->n_root->v[2],ref_tree); */
 /*   Update_Ancestors(ref_tree->n_root,ref_tree->n_root->v[1],ref_tree); */
 
 /*   For(i,n_trees)    */
 /*     { */
-/*       Update_Ancestors(list_tree[i]->n_root,list_tree[i]->n_root->v[0],list_tree[i]); */
+/*       Update_Ancestors(list_tree[i]->n_root,list_tree[i]->n_root->v[2],list_tree[i]); */
 /*       Update_Ancestors(list_tree[i]->n_root,list_tree[i]->n_root->v[1],list_tree[i]); */
 /*       list_tree[i]->n_root->anc = NULL; */
 /*     } */
@@ -303,7 +303,7 @@ int TIPO_main(int argc, char **argv)
 /* Z_scores have already been recorder here */
 void TIPO_Get_Min_Number_Of_Tip_Permut(t_tree *tree)
 {
-  Update_Ancestors(tree->n_root,tree->n_root->v[0],tree);
+  Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
   Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
 
   Free_Bip(tree);
@@ -325,7 +325,7 @@ void TIPO_Get_Tips_Y_Rank(t_tree *tree)
   phydbl curr_rank;
 
   curr_rank = .0;
-  TIPO_Get_Tips_Y_Rank_Pre(tree->n_root,tree->n_root->v[0],&curr_rank,tree);
+  TIPO_Get_Tips_Y_Rank_Pre(tree->n_root,tree->n_root->v[2],&curr_rank,tree);
   TIPO_Get_Tips_Y_Rank_Pre(tree->n_root,tree->n_root->v[1],&curr_rank,tree);
   
   if(curr_rank != tree->n_otu)
@@ -369,11 +369,11 @@ void TIPO_Get_All_Y_Rank(t_tree *tree)
 {
   tree->sum_y_dist_sq = .0;
   tree->sum_y_dist    = .0;
-  TIPO_Get_All_Y_Rank_Pre(tree->n_root,tree->n_root->v[0],tree);
+  TIPO_Get_All_Y_Rank_Pre(tree->n_root,tree->n_root->v[2],tree);
   TIPO_Get_All_Y_Rank_Pre(tree->n_root,tree->n_root->v[1],tree);
-  tree->n_root->y_rank = (tree->n_root->v[0]->y_rank+tree->n_root->v[1]->y_rank)/2.;
-  tree->n_root->y_rank_min = MIN(tree->n_root->v[0]->y_rank_min,tree->n_root->v[1]->y_rank_min);
-  tree->n_root->y_rank_max = MAX(tree->n_root->v[0]->y_rank_max,tree->n_root->v[1]->y_rank_max);
+  tree->n_root->y_rank = (tree->n_root->v[2]->y_rank+tree->n_root->v[1]->y_rank)/2.;
+  tree->n_root->y_rank_min = MIN(tree->n_root->v[2]->y_rank_min,tree->n_root->v[1]->y_rank_min);
+  tree->n_root->y_rank_max = MAX(tree->n_root->v[2]->y_rank_max,tree->n_root->v[1]->y_rank_max);
 }
 
 //////////////////////////////////////////////////////////////
@@ -564,7 +564,7 @@ void TIPO_Minimize_Tip_Order_Score(int n_trees, t_tree **list_tree, t_tree *ref_
 
 void TIPO_Print_Tip_Ordered(t_tree *tree)
 {
-  TIPO_Print_Tip_Ordered_Pre(tree->n_root,tree->n_root->v[0],tree);
+  TIPO_Print_Tip_Ordered_Pre(tree->n_root,tree->n_root->v[2],tree);
   TIPO_Print_Tip_Ordered_Pre(tree->n_root,tree->n_root->v[1],tree);
 }
 
@@ -677,7 +677,7 @@ phydbl TIPO_Untangle_Tree(t_tree *tree)
     {
       conflict= NO;
       /* Recusrssive untangling of the tree */ 
-      TIPO_Untangle_Node(tree->n_root,tree->n_root->v[0],node_table,&conflict,tree);
+      TIPO_Untangle_Node(tree->n_root,tree->n_root->v[2],node_table,&conflict,tree);
       TIPO_Untangle_Node(tree->n_root,tree->n_root->v[1],node_table,&conflict,tree);
       n_trials++;
 
@@ -1258,7 +1258,7 @@ void TIPO_Normalize_Zscores(t_tree *tree)
 phydbl TIPO_Lk(t_tree *tree)
 {
   tree->geo_lnL = 0.0;
-  TIPO_Lk_Post(tree->n_root,tree->n_root->v[0],tree);
+  TIPO_Lk_Post(tree->n_root,tree->n_root->v[2],tree);
   TIPO_Lk_Post(tree->n_root,tree->n_root->v[1],tree);
   TIPO_Lk_Core(NULL,tree->n_root,tree);
   return(tree->geo_lnL);

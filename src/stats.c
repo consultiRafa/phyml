@@ -527,8 +527,8 @@ phydbl Log_Dnorm_Trunc(phydbl x, phydbl mean, phydbl sd, phydbl lo, phydbl up, i
 
   if(*err == YES)
     {
-      PhyML_Printf("\n. mean=%f sd=%f lo=%f up=%f cdf_lo=%G CDF_up=%G log_dens=%G",mean,sd,lo,up,cdf_lo,cdf_up,log_dens);
-      PhyML_Printf("\n. Warning in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== mean=%f sd=%f lo=%f up=%f cdf_lo=%G CDF_up=%G log_dens=%G",mean,sd,lo,up,cdf_lo,cdf_up,log_dens);
+      PhyML_Printf("\n== Warning in file %s at line %d\n",__FILE__,__LINE__);
       *err = YES;
     }
 
@@ -4373,7 +4373,60 @@ phydbl t1354 = 0.1000000e7 * t1250 - 0.2889000000e10 * t94 - 0.600000e6 * t1235 
 *var = -0.1000000000e-18 * t2 * (t891 + t853 + t1296 + t81 + t1070 + t928 + t1314 + t148 + t760 + t203 + t814 + t1224 + t686 + t1354 + t1162 + t321 + t1006 + t559 + t530 + t967 + t260 + t397 + t1262 + t644 + t1333 + t1194 + t354 + t602 + t1124 + t723 + t490 + t444);
 
 }
- 
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+int Sample_i_With_Proba_pi(phydbl *pi, int len)
+{
+  phydbl *cum_pi;
+  int i;
+  phydbl u;
+
+  cum_pi = (phydbl *)mCalloc(len,sizeof(phydbl));
+  
+  For(i,len) cum_pi[i] = pi[i];
+  for(i=1;i<len;i++) cum_pi[i] += cum_pi[i-1];
+
+  if((cum_pi[i-1] > 1. + 1.E-10) || (cum_pi[i-1] < 1. - 1.E-10))
+    {
+      PhyML_Printf("\n== Sum of probabilities is different from 1.0.");
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+      Exit("\n");
+    }
+
+  i = 0;
+  u = Uni();
+  For(i,len) if(cum_pi[i] > u) break;
+
+  if(i == len)
+    {
+      PhyML_Printf("\n== Len = %d",len);
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+      Exit("\n");
+    }
+  Free(cum_pi);
+
+  return(i);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
  
  
  

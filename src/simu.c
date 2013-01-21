@@ -468,7 +468,7 @@ void Make_N_Swap(t_tree *tree,t_edge **b, int beg, int end)
 
       if(tree->n_root)
 	{
-	  tree->n_root->v[0] = tree->e_root->left;
+	  tree->n_root->v[2] = tree->e_root->left;
 	  tree->n_root->v[1] = tree->e_root->rght;
 	}
 

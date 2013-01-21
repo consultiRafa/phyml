@@ -445,7 +445,7 @@ void Free_Model_Basic(t_mod *mixt_mod)
   Free_Scalar_Dbl(mixt_mod->r_mat_weight);
   Free_String(mixt_mod->modelname);
   Free_String(mixt_mod->custom_mod_string);
-  Free(mixt_mod->aa_rate_mat_file);
+  Free_String(mixt_mod->aa_rate_mat_file);
 
   mod = mixt_mod;
   do

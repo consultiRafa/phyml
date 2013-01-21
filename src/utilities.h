@@ -166,7 +166,7 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define  DIST_MAX            2.00
 #define  AROUND_LK           50.0
 #define  PROP_STEP            1.0
-#define  T_MAX_ALPHABET       100
+#define  T_MAX_ALPHABET        22
 #define  MDBL_MIN         FLT_MIN
 #define  MDBL_MAX         FLT_MAX
 #define  POWELL_ITMAX         200
@@ -1432,17 +1432,19 @@ typedef struct __Calibration {
 /*!********************************************************/
 
 typedef struct __Phylogeo{
-  phydbl              *cov; // Covariance of migrations (n_dim x n_dim)
-  phydbl            *r_mat; // R matrix. Gives the rates of migrations between locations. See article.
-  phydbl            *g_mat; // G matrix. See article.
-  int               *occup; // Vector giving the number of lineages that occupy each location
-  phydbl          *ldscape; // Coordinates of the locations
-  phydbl              *loc; // Location for each lineage
-  int           ldscape_sz; // Landscape size: number of locations
-  int                n_dim; // Dimension of the data (e.g., longitude + lattitude -> n_dim = 2)  
-  struct _Node **sorted_nd; // Table of nodes sorted wrt their heights.
-  phydbl               tau; // overall migration rate parameter
-  phydbl              lbda; // Competition parameter
+  phydbl               *cov; // Covariance of migrations (n_dim x n_dim)
+  phydbl             *r_mat; // R matrix. Gives the rates of migrations between locations. See article.
+  phydbl             *f_mat; // F matrix. See article.
+  int                *occup; // Vector giving the number of lineages that occupy each location
+  phydbl           *ldscape; // Coordinates of the locations
+  int                  *loc; // Location for each lineage
+  int            ldscape_sz; // Landscape size: number of locations
+  int                 n_dim; // Dimension of the data (e.g., longitude + lattitude -> n_dim = 2) 
+
+ 
+  struct __Node **sorted_nd; // Table of nodes sorted wrt their heights.
+  phydbl                tau; // overall migration rate parameter
+  phydbl               lbda; // Competition parameter
 }t_geo;
 
 /*!********************************************************/
@@ -1514,6 +1516,8 @@ void Br_Len_Not_Involving_Invar(t_tree *tree);
 void Getstring_Stdin(char *s);
 phydbl Num_Derivatives_One_Param(phydbl(*func)(t_tree *tree),t_tree *tree,phydbl f0,phydbl *param,phydbl stepsize,phydbl *err,int precise);
 int Num_Derivative_Several_Param(t_tree *tree,phydbl *param,int n_param,phydbl stepsize,phydbl(*func)(t_tree *tree),phydbl *derivatives);
+int Num_Derivative_Several_Param_Nonaligned(t_tree *tree, phydbl **param, int n_param, phydbl stepsize,
+                                            phydbl (*func)(t_tree *tree), phydbl *derivatives);
 int Compare_Two_States(char *state1,char *state2,int state_size);
 void Copy_One_State(char *from,char *to,int state_size);
 void Copy_Dist(phydbl **cpy,phydbl **orig,int n);
@@ -1692,6 +1696,7 @@ void Set_D_States(calign *data, int datatype, int stepsize);
 #include "make.h"
 #include "nexus.h"
 #include "init.h"
+#include "geo.h"
 
 #ifdef MPI
 #include "mpi_boot.h"

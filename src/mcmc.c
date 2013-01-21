@@ -34,7 +34,7 @@ void MCMC(t_tree *tree)
       MCMC_Randomize_Birth(tree);
       MCMC_Randomize_Nu(tree);
       MCMC_Randomize_Node_Times(tree); 
-      MCMC_Sim_Rate(tree->n_root,tree->n_root->v[0],tree);
+      MCMC_Sim_Rate(tree->n_root,tree->n_root->v[2],tree);
       MCMC_Sim_Rate(tree->n_root,tree->n_root->v[1],tree);
       MCMC_Randomize_Node_Rates(tree);
       MCMC_Randomize_Clock_Rate(tree); /* Clock Rate must be the last parameter to be randomized */
@@ -52,7 +52,7 @@ void MCMC(t_tree *tree)
 
   MCMC_Initialize_Param_Val(tree->mcmc,tree);
   
-  Update_Ancestors(tree->n_root,tree->n_root->v[0],tree);
+  Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
   Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
 
   For(i,2*tree->n_otu-2) tree->rates->br_do_updt[i] = YES;  
@@ -319,7 +319,7 @@ void MCMC(t_tree *tree)
       	      RATES_Posterior_One_Rate(tree->n_root,tree->n_root->v[secod],YES,tree);
       	    }
 
-	  /* MCMC_Sim_Rate(tree->n_root,tree->n_root->v[0],tree); */
+	  /* MCMC_Sim_Rate(tree->n_root,tree->n_root->v[2],tree); */
 	  /* MCMC_Sim_Rate(tree->n_root,tree->n_root->v[1],tree); */
       	  /* if(tree->mcmc->use_data == YES) Lk(NULL,tree); */
 	  /* RATES_Lk_Rates(tree); */
@@ -912,7 +912,7 @@ void MCMC_One_Time(t_node *a, t_node *d, int traversal, t_tree *tree)
               /* if(FABS(Lk(tree) - new_lnL_data) > 1.E-5) */
               /*   { */
               /*     PhyML_Printf("\n. b1->l->v=%f b2->l->v=%f b3->l->v=%f",b1->l->v,b2->l->v,b3->l->v); */
-              /*     PhyML_Printf("\n. a->num=%d d->num=%d root=%d (%d %d)",a->num,d->num,a==tree->n_root,tree->n_root->v[0]->num,tree->n_root->v[1]->num); */
+              /*     PhyML_Printf("\n. a->num=%d d->num=%d root=%d (%d %d)",a->num,d->num,a==tree->n_root,tree->n_root->v[2]->num,tree->n_root->v[1]->num); */
               /*     PhyML_Printf("\n. t_min=%f t_max=%f",t_min,t_max); */
               /*     PhyML_Printf("\n. t1_new=%f t1_cur=%f",t1_new,t1_cur); */
               /*     PhyML_Printf("\n. %f %f",cur_lnL_data,tree->c_lnL); */
@@ -1046,7 +1046,7 @@ void MCMC_Root_Time(t_tree *tree)
   new_lnL_time   = cur_lnL_time;
 
   
-  v2 = root->v[0];
+  v2 = root->v[2];
   v3 = root->v[1];
 
   b1 = tree->e_root;
@@ -1178,17 +1178,17 @@ void MCMC_Tree_Height(t_tree *tree)
 
   Scale_Subtree_Height(tree->n_root,mult,floor,&n_nodes,tree);
   
-  For(i,2*tree->n_otu-1)
-    {
-      if(tree->rates->nd_t[i] > tree->rates->t_prior_max[i] ||
-  	 tree->rates->nd_t[i] < tree->rates->t_prior_min[i])
-  	{
-  	  RATES_Reset_Times(tree);
-  	  Restore_Br_Len(tree);
-  	  tree->mcmc->run_move[tree->mcmc->num_move_tree_height]++;
-	  return;
-  	}
-    }
+  /* For(i,2*tree->n_otu-1) */
+  /*   { */
+  /*     if(tree->rates->nd_t[i] > tree->rates->t_prior_max[i] || */
+  /* 	 tree->rates->nd_t[i] < tree->rates->t_prior_min[i]) */
+  /* 	{ */
+  /* 	  RATES_Reset_Times(tree); */
+  /* 	  Restore_Br_Len(tree); */
+  /* 	  tree->mcmc->run_move[tree->mcmc->num_move_tree_height]++; */
+  /*         return; */
+  /* 	} */
+  /*   } */
   
   For(i,2*tree->n_otu-2) tree->rates->br_do_updt[i] = YES;
   RATES_Update_Cur_Bl(tree);
@@ -2124,7 +2124,7 @@ void MCMC_Print_Param(t_mcmc *mcmc, t_tree *tree)
 	    {
 	      for(i=tree->n_otu;i<2*tree->n_otu-1;i++)
 	  	{
-	  	  if(tree->a_nodes[i] == tree->n_root->v[0])
+	  	  if(tree->a_nodes[i] == tree->n_root->v[2])
 		    PhyML_Fprintf(fp,"T%d%s\t",i,"[LeftRoot]");
 		  else if(tree->a_nodes[i] == tree->n_root->v[1])
 		    PhyML_Fprintf(fp,"T%d%s\t",i,"[RightRoot]");
@@ -2140,7 +2140,7 @@ void MCMC_Print_Param(t_mcmc *mcmc, t_tree *tree)
 /* 	    { */
 /* 	      For(i,2*tree->n_otu-1) */
 /* 	  	{ */
-/* 	  	  if(tree->a_nodes[i] == tree->n_root->v[0]) */
+/* 	  	  if(tree->a_nodes[i] == tree->n_root->v[2]) */
 /* 	  	    PhyML_Fprintf(fp,"R%d[LeftRoot]\t",i); */
 /* 	  	  else if(tree->a_nodes[i] == tree->n_root->v[1]) */
 /* 	  	    PhyML_Fprintf(fp,"R%d[RightRoot]\t",i); */
@@ -2158,7 +2158,7 @@ void MCMC_Print_Param(t_mcmc *mcmc, t_tree *tree)
 	    {
 	      For(i,2*tree->n_otu-2)
 	  	{
-	  	  if(tree->a_nodes[i] == tree->n_root->v[0])
+	  	  if(tree->a_nodes[i] == tree->n_root->v[2])
 	  	    PhyML_Fprintf(fp,"B%d[LeftRoot]\t",i);
 	  	  else if(tree->a_nodes[i] == tree->n_root->v[1])
 	  	    PhyML_Fprintf(fp,"B%d[RightRoot]\t",i);
@@ -2174,7 +2174,7 @@ void MCMC_Print_Param(t_mcmc *mcmc, t_tree *tree)
       /* 	    { */
       /* 	      For(i,2*tree->n_otu-2) */
       /* 	  	{ */
-      /* 	  	  if(tree->a_nodes[i] == tree->n_root->v[0]) */
+      /* 	  	  if(tree->a_nodes[i] == tree->n_root->v[2]) */
       /* 	  	    PhyML_Fprintf(fp,"G%d[LeftRoot]\t",i); */
       /* 	  	  else if(tree->a_nodes[i] == tree->n_root->v[1]) */
       /* 	  	    PhyML_Fprintf(fp,"G%d[RightRoot]\t",i); */
@@ -2847,7 +2847,7 @@ void MCMC_Randomize_Rates(t_tree *tree)
 /*       if(tree->rates->br_r[i] > tree->rates->max_rate) tree->rates->br_r[i] = tree->rates->max_rate;  */
 /*     } */
 
-  MCMC_Randomize_Rates_Pre(tree->n_root,tree->n_root->v[0],tree);
+  MCMC_Randomize_Rates_Pre(tree->n_root,tree->n_root->v[2],tree);
   MCMC_Randomize_Rates_Pre(tree->n_root,tree->n_root->v[1],tree);
 }
 
@@ -2964,7 +2964,7 @@ void MCMC_Randomize_Node_Times(t_tree *tree)
   
   tree->rates->nd_t[tree->n_root->num] = u;
 
-  MCMC_Randomize_Node_Times_Top_Down(tree->n_root,tree->n_root->v[0],tree);
+  MCMC_Randomize_Node_Times_Top_Down(tree->n_root,tree->n_root->v[2],tree);
   MCMC_Randomize_Node_Times_Top_Down(tree->n_root,tree->n_root->v[1],tree);
 
   min_node = -1;
@@ -2998,7 +2998,7 @@ void MCMC_Randomize_Node_Times(t_tree *tree)
 	    }
 	}
 
-      MCMC_Randomize_Node_Times_Bottom_Up(tree->n_root,tree->n_root->v[0],tree);
+      MCMC_Randomize_Node_Times_Bottom_Up(tree->n_root,tree->n_root->v[2],tree);
       MCMC_Randomize_Node_Times_Bottom_Up(tree->n_root,tree->n_root->v[1],tree);
       
       iter++;
@@ -3019,7 +3019,7 @@ void MCMC_Randomize_Node_Times(t_tree *tree)
 
 
 /*   PhyML_Printf("\n. Needed %d iterations to randomize node heights.",iter); */
-/*   TIMES_Print_Node_Times(tree->n_root,tree->n_root->v[0],tree); */
+/*   TIMES_Print_Node_Times(tree->n_root,tree->n_root->v[2],tree); */
 /*   TIMES_Print_Node_Times(tree->n_root,tree->n_root->v[1],tree); */
 
   if(RATES_Check_Node_Times(tree))
@@ -3752,7 +3752,7 @@ void MCMC_All_Rates(t_tree *tree)
   Record_Br_Len(tree);
   RATES_Record_Rates(tree);
   
-  MCMC_Sim_Rate(tree->n_root,tree->n_root->v[0],tree);
+  MCMC_Sim_Rate(tree->n_root,tree->n_root->v[2],tree);
   MCMC_Sim_Rate(tree->n_root,tree->n_root->v[1],tree);
 
   new_lnL_data = Lk(NULL,tree);

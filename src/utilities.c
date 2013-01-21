@@ -204,8 +204,8 @@ calign *Compact_Data(align **data, option *io)
   
   if(data[0]->len%io->state_len)
     {
-      PhyML_Printf("\n. Sequence length is not a multiple of %d\n",io->state_len);
-      Warn_And_Exit("");
+      PhyML_Printf("\n== Sequence length is not a multiple of %d\n",io->state_len);
+      Exit("\n");
     }
   
   compress = io->colalias;
@@ -214,9 +214,9 @@ calign *Compact_Data(align **data, option *io)
 
   if(!io->quiet && !compress) 
     { 
-      PhyML_Printf("\n. WARNING: sequences are not compressed !\n");
+      PhyML_Printf("\n== WARNING: sequences are not compressed !\n");
     }
-  
+
   Fors(site,data[0]->len,io->state_len)
     {
       if(io->rm_ambigu)
@@ -3098,7 +3098,6 @@ phydbl Num_Derivatives_One_Param(phydbl (*func)(t_tree *tree), t_tree *tree,
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 int Num_Derivative_Several_Param(t_tree *tree, phydbl *param, int n_param, phydbl stepsize,
 				  phydbl (*func)(t_tree *tree), phydbl *derivatives)
 {
@@ -3113,6 +3112,31 @@ int Num_Derivative_Several_Param(t_tree *tree, phydbl *param, int n_param, phydb
 						 tree,
 						 f0,
 						 param+i,
+						 stepsize,
+						 &err,
+						 0
+						 );
+    }
+  return 1;
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+int Num_Derivative_Several_Param_Nonaligned(t_tree *tree, phydbl **param, int n_param, phydbl stepsize,
+                                            phydbl (*func)(t_tree *tree), phydbl *derivatives)
+{
+  int i;
+  phydbl err,f0;
+
+  f0 = (*func)(tree);
+
+  For(i,n_param)
+    {
+      derivatives[i] = Num_Derivatives_One_Param(func,
+						 tree,
+						 f0,
+						 param[i],
 						 stepsize,
 						 &err,
 						 0
@@ -6081,7 +6105,7 @@ void Update_Root_Pos(t_tree *tree)
 {
   if(tree->n_root_pos > -1.0)
     {
-      tree->n_root->l[0] = tree->e_root->l->v * tree->n_root_pos;
+      tree->n_root->l[2] = tree->e_root->l->v * tree->n_root_pos;
       tree->n_root->l[1] = tree->e_root->l->v * (1.-tree->n_root_pos);
     }
   else
@@ -6118,10 +6142,11 @@ void Add_Root(t_edge *target, t_tree *tree)
   tree->n_root->tax = 0;
 
   /* Set the position of the root */
-  tree->n_root->v[0] = tree->e_root->left;
+  tree->n_root->v[0] = NULL;
+  tree->n_root->v[2] = tree->e_root->left;
   tree->n_root->v[1] = tree->e_root->rght;
 
-  tree->n_root->b[0] = tree->e_root;
+  tree->n_root->b[2] = tree->e_root;
   tree->n_root->b[1] = tree->e_root;
 
   if(tree->n_root_pos > -1.0)
@@ -6132,17 +6157,17 @@ void Add_Root(t_edge *target, t_tree *tree)
 /*       tree->n_root->l[0] = tree->e_root->l->v * (tree->n_root_pos/(1.+tree->n_root_pos)); */
 /*       tree->n_root->l[1] = tree->e_root->l->v - tree->n_root->l[0]; */
 
-      tree->n_root->l[0] = tree->e_root->l->v * tree->n_root_pos;
+      tree->n_root->l[2] = tree->e_root->l->v * tree->n_root_pos;
       tree->n_root->l[1] = tree->e_root->l->v * (1. - tree->n_root_pos);
     }
   else
     {
-      tree->n_root->l[0] = tree->e_root->l->v / 2.;
+      tree->n_root->l[2] = tree->e_root->l->v / 2.;
       tree->n_root->l[1] = tree->e_root->l->v / 2.;
       tree->n_root_pos = 0.5;
     }
   
-  Update_Ancestors(tree->n_root,tree->n_root->v[0],tree);
+  Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
   Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
   tree->n_root->anc = NULL;
 }
@@ -6294,8 +6319,8 @@ t_tree *Generate_Random_Tree_From_Scratch(int n_otu, int rooted)
   For(i,2*tree->n_otu-2) tmp[i] = tree->rates->nd_t[i];
 
   /* Unroot the tree */
-  root->v[1]->v[0] = root->v[2];
-  root->v[2]->v[0] = root->v[1];
+  root->v[2]->v[0] = root->v[2];
+  root->v[1]->v[0] = root->v[1];
 
   n_internal = n_external = 0;
   For(i,2*tree->n_otu-2)
@@ -7362,11 +7387,11 @@ void Dist_To_Root_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 
 void Dist_To_Root(t_node *n_root, t_tree *tree)
 {  
-  n_root->v[0]->dist_to_root = tree->rates->cur_l[n_root->v[0]->num];
+  n_root->v[2]->dist_to_root = tree->rates->cur_l[n_root->v[2]->num];
   n_root->v[1]->dist_to_root = tree->rates->cur_l[n_root->v[1]->num];
-  /* n_root->v[0]->dist_to_root = tree->e_root->l->v * tree->n_root_pos; */
+  /* n_root->v[2]->dist_to_root = tree->e_root->l->v * tree->n_root_pos; */
   /* n_root->v[1]->dist_to_root = tree->e_root->l->v * (1. - tree->n_root_pos); */
-  Dist_To_Root_Pre(n_root,n_root->v[0],NULL,tree);
+  Dist_To_Root_Pre(n_root,n_root->v[2],NULL,tree);
   Dist_To_Root_Pre(n_root,n_root->v[1],NULL,tree);
 }
 
@@ -7543,7 +7568,7 @@ int Edge_Num_To_Node_Num(int edge_num, t_tree *tree)
 
 void Branch_Lengths_To_Time_Lengths(t_tree *tree)
 {
-  Branch_Lengths_To_Time_Lengths_Pre(tree->n_root,tree->n_root->v[0],tree);
+  Branch_Lengths_To_Time_Lengths_Pre(tree->n_root,tree->n_root->v[2],tree);
   Branch_Lengths_To_Time_Lengths_Pre(tree->n_root,tree->n_root->v[1],tree);
 }
 
@@ -7573,7 +7598,7 @@ void Branch_Lengths_To_Time_Lengths_Pre(t_node *a, t_node *d, t_tree *tree)
 
 void Branch_Lengths_To_Rate_Lengths(t_tree *tree)
 {
-  Branch_Lengths_To_Rate_Lengths_Pre(tree->n_root,tree->n_root->v[0],tree);
+  Branch_Lengths_To_Rate_Lengths_Pre(tree->n_root,tree->n_root->v[2],tree);
   Branch_Lengths_To_Rate_Lengths_Pre(tree->n_root,tree->n_root->v[1],tree);
 }
 
@@ -7668,7 +7693,7 @@ int Find_Clade(char **tax_name_list, int list_size, t_tree *tree)
 /*       Free_Bip(tree); */
 /*       Alloc_Bip(tree); */
 /*       Get_Bip(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree); */
-/*       Find_Clade_Pre(tree->n_root,tree->n_root->v[0],tax_num_list,list_size,&num,tree); */
+/*       Find_Clade_Pre(tree->n_root,tree->n_root->v[2],tax_num_list,list_size,&num,tree); */
 /*       Find_Clade_Pre(tree->n_root,tree->n_root->v[1],tax_num_list,list_size,&num,tree); */
 /*       Free(tax_num_list); */
 /*       return num; */
@@ -8266,7 +8291,7 @@ int Scale_Subtree_Height(t_node *a, phydbl K, phydbl floor, int *n_nodes, t_tree
     {
       tree->rates->nd_t[tree->n_root->num] = new_height;
       *n_nodes = 1;
-      Scale_Node_Heights_Post(tree->n_root,tree->n_root->v[0],K,floor,n_nodes,tree);
+      Scale_Node_Heights_Post(tree->n_root,tree->n_root->v[2],K,floor,n_nodes,tree);
       Scale_Node_Heights_Post(tree->n_root,tree->n_root->v[1],K,floor,n_nodes,tree);
     }
   else
@@ -8460,7 +8485,7 @@ int Scale_Subtree_Rates_Post(t_node *a, t_node *d, phydbl mult, int *n_nodes, t_
 void Get_Node_Ranks(t_tree *tree)
 {
   tree->n_root->rank = 1;
-  Get_Node_Ranks_Pre(tree->n_root,tree->n_root->v[0],tree);
+  Get_Node_Ranks_Pre(tree->n_root,tree->n_root->v[2],tree);
   Get_Node_Ranks_Pre(tree->n_root,tree->n_root->v[1],tree);
 }
 
@@ -9007,7 +9032,7 @@ void Find_Surviving_Edges_In_Small_Tree(t_tree *small_tree, t_tree *big_tree)
 
   For(i,2*small_tree->n_otu-1) small_tree->rates->has_survived[i] = NO;
   
-  Find_Surviving_Edges_In_Small_Tree_Post(big_tree->n_root,big_tree->n_root->v[0],small_tree,big_tree);
+  Find_Surviving_Edges_In_Small_Tree_Post(big_tree->n_root,big_tree->n_root->v[2],small_tree,big_tree);
   Find_Surviving_Edges_In_Small_Tree_Post(big_tree->n_root,big_tree->n_root->v[1],small_tree,big_tree);
 }
 

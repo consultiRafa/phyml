@@ -159,7 +159,7 @@ int TIMES_main(int argc, char **argv)
 		  tree->rates = RATES_Make_Rate_Struct(tree->n_otu);
 		  RATES_Init_Rate_Struct(tree->rates,io->rates,tree->n_otu);
 
-		  Update_Ancestors(tree->n_root,tree->n_root->v[0],tree);
+		  Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
 		  Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);		  
 
 		  RATES_Fill_Lca_Table(tree);
@@ -394,13 +394,13 @@ void TIMES_Least_Square_Node_Times(t_edge *e_root, t_tree *tree)
   
   root = tree->n_root;
 
-  TIMES_Least_Square_Node_Times_Pre(root,root->v[0],A,b,n,tree);
+  TIMES_Least_Square_Node_Times_Pre(root,root->v[2],A,b,n,tree);
   TIMES_Least_Square_Node_Times_Pre(root,root->v[1],A,b,n,tree);
   
   b[root->num] = tree->e_root->l->v/2.;
   
   A[root->num * n + root->num]       = 1.0;
-  A[root->num * n + root->v[0]->num] = -.5;
+  A[root->num * n + root->v[2]->num] = -.5;
   A[root->num * n + root->v[1]->num] = -.5;
     
   if(!Matinv(A, n, n,YES))
@@ -414,7 +414,7 @@ void TIMES_Least_Square_Node_Times(t_edge *e_root, t_tree *tree)
 
   For(i,n-1) { tree->rates->nd_t[tree->a_nodes[i]->num] = -x[i]; }
   tree->rates->nd_t[root->num] = -x[n-1];
-  tree->n_root->l[0] = tree->rates->nd_t[root->v[0]->num] - tree->rates->nd_t[root->num];
+  tree->n_root->l[2] = tree->rates->nd_t[root->v[2]->num] - tree->rates->nd_t[root->num];
   tree->n_root->l[1] = tree->rates->nd_t[root->v[1]->num] - tree->rates->nd_t[root->num];
   ////////////////////////////////////////
   return;
@@ -437,7 +437,7 @@ void TIMES_Least_Square_Node_Times(t_edge *e_root, t_tree *tree)
       time_tree_length +=
 	FABS(tree->rates->nd_t[tree->a_edges[i]->left->num] -
 	     tree->rates->nd_t[tree->a_edges[i]->rght->num]);
-  time_tree_length += FABS(tree->rates->nd_t[root->num] - tree->rates->nd_t[root->v[0]->num]);
+  time_tree_length += FABS(tree->rates->nd_t[root->num] - tree->rates->nd_t[root->v[2]->num]);
   time_tree_length += FABS(tree->rates->nd_t[root->num] - tree->rates->nd_t[root->v[1]->num]);
   
   tree_length = 0.0;
@@ -496,13 +496,13 @@ void TIMES_Least_Square_Node_Times_Pre(t_node *a, t_node *d, phydbl *A, phydbl *
 
 void TIMES_Adjust_Node_Times(t_tree *tree)
 {
-  TIMES_Adjust_Node_Times_Pre(tree->n_root->v[0],tree->n_root->v[1],tree);
-  TIMES_Adjust_Node_Times_Pre(tree->n_root->v[1],tree->n_root->v[0],tree);
+  TIMES_Adjust_Node_Times_Pre(tree->n_root->v[2],tree->n_root->v[1],tree);
+  TIMES_Adjust_Node_Times_Pre(tree->n_root->v[1],tree->n_root->v[2],tree);
 
-  if(tree->rates->nd_t[tree->n_root->num] > MIN(tree->rates->nd_t[tree->n_root->v[0]->num],
+  if(tree->rates->nd_t[tree->n_root->num] > MIN(tree->rates->nd_t[tree->n_root->v[2]->num],
 						tree->rates->nd_t[tree->n_root->v[1]->num]))
     {
-      tree->rates->nd_t[tree->n_root->num] = MIN(tree->rates->nd_t[tree->n_root->v[0]->num],
+      tree->rates->nd_t[tree->n_root->num] = MIN(tree->rates->nd_t[tree->n_root->v[2]->num],
 						 tree->rates->nd_t[tree->n_root->v[1]->num]);
     }
 }
@@ -599,12 +599,12 @@ void TIMES_Set_All_Node_Priors(t_tree *tree)
   phydbl min_prior;
 
   /* Set all t_prior_max values */
-  TIMES_Set_All_Node_Priors_Bottom_Up(tree->n_root,tree->n_root->v[0],tree);
+  TIMES_Set_All_Node_Priors_Bottom_Up(tree->n_root,tree->n_root->v[2],tree);
   TIMES_Set_All_Node_Priors_Bottom_Up(tree->n_root,tree->n_root->v[1],tree);
 
   tree->rates->t_prior_max[tree->n_root->num] = 
     MIN(tree->rates->t_prior_max[tree->n_root->num],
-	MIN(tree->rates->t_prior_max[tree->n_root->v[0]->num],
+	MIN(tree->rates->t_prior_max[tree->n_root->v[2]->num],
 	    tree->rates->t_prior_max[tree->n_root->v[1]->num]));
 
 
@@ -633,7 +633,7 @@ void TIMES_Set_All_Node_Priors(t_tree *tree)
     }
 
 
-  TIMES_Set_All_Node_Priors_Top_Down(tree->n_root,tree->n_root->v[0],tree);
+  TIMES_Set_All_Node_Priors_Top_Down(tree->n_root,tree->n_root->v[2],tree);
   TIMES_Set_All_Node_Priors_Top_Down(tree->n_root,tree->n_root->v[1],tree);
 
   Get_Node_Ranks(tree);
@@ -738,9 +738,9 @@ void TIMES_Set_All_Node_Priors_Top_Down(t_node *a, t_node *d, t_tree *tree)
 
 void TIMES_Set_Floor(t_tree *tree)
 {
-  TIMES_Set_Floor_Post(tree->n_root,tree->n_root->v[0],tree);
+  TIMES_Set_Floor_Post(tree->n_root,tree->n_root->v[2],tree);
   TIMES_Set_Floor_Post(tree->n_root,tree->n_root->v[1],tree);
-  tree->rates->t_floor[tree->n_root->num] = MIN(tree->rates->t_floor[tree->n_root->v[0]->num],
+  tree->rates->t_floor[tree->n_root->num] = MIN(tree->rates->t_floor[tree->n_root->v[2]->num],
 						tree->rates->t_floor[tree->n_root->v[1]->num]);
 }
 
@@ -1096,9 +1096,9 @@ phydbl TIMES_Log_Number_Of_Ranked_Labelled_Histories(t_node *root, int per_slice
   v1 = v2 = NULL;
   if(root == tree->n_root)
     {
-      TIMES_Log_Number_Of_Ranked_Labelled_Histories_Post(root,root->v[0],per_slice,&logn,tree);
+      TIMES_Log_Number_Of_Ranked_Labelled_Histories_Post(root,root->v[2],per_slice,&logn,tree);
       TIMES_Log_Number_Of_Ranked_Labelled_Histories_Post(root,root->v[1],per_slice,&logn,tree);
-      v1 = root->v[0];
+      v1 = root->v[2];
       v2 = root->v[1];
     }
   else
@@ -1230,7 +1230,7 @@ phydbl TIMES_Lk_Uniform_Core(t_tree *tree)
   logn = TIMES_Log_Number_Of_Ranked_Labelled_Histories(tree->n_root,YES,tree);
 
   tree->rates->c_lnL_times = 0.0;
-  TIMES_Lk_Uniform_Post(tree->n_root,tree->n_root->v[0],tree);
+  TIMES_Lk_Uniform_Post(tree->n_root,tree->n_root->v[2],tree);
   TIMES_Lk_Uniform_Post(tree->n_root,tree->n_root->v[1],tree);
 
   /* printf("\n. ^ %f %f %f", */
@@ -1261,7 +1261,7 @@ void TIMES_Get_Number_Of_Time_Slices(t_tree *tree)
   int i;
 
   tree->rates->n_time_slices=0;
-  TIMES_Get_Number_Of_Time_Slices_Post(tree->n_root,tree->n_root->v[0],tree);
+  TIMES_Get_Number_Of_Time_Slices_Post(tree->n_root,tree->n_root->v[2],tree);
   TIMES_Get_Number_Of_Time_Slices_Post(tree->n_root,tree->n_root->v[1],tree);
   Qksort(tree->rates->time_slice_lims,NULL,0,tree->rates->n_time_slices-1);
 
@@ -1429,7 +1429,7 @@ void TIMES_Set_Root_Given_Tip_Dates(t_tree *tree)
 
 void Get_Survival_Duration(t_tree *tree)
 {
-  Get_Survival_Duration_Post(tree->n_root,tree->n_root->v[0],tree);
+  Get_Survival_Duration_Post(tree->n_root,tree->n_root->v[2],tree);
   Get_Survival_Duration_Post(tree->n_root,tree->n_root->v[1],tree);
 }
 
