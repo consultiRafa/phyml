@@ -1063,9 +1063,9 @@ void MCMC_Root_Time(t_tree *tree)
 
   if(t_min > t_max) 
     {
-      PhyML_Printf("\n. t_min = %f t_max = %f",t_min,t_max);
-      PhyML_Printf("\n. prior_min = %f prior_max = %f",tree->rates->t_prior_min[root->num],tree->rates->t_prior_max[root->num]);
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== t_min = %f t_max = %f",t_min,t_max);
+      PhyML_Printf("\n== prior_min = %f prior_max = %f",tree->rates->t_prior_min[root->num],tree->rates->t_prior_max[root->num]);
+      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
       /* Exit("\n"); */
     }
 
