@@ -145,5 +145,6 @@ void MCMC_Clock_R(t_tree *mixt_tree);
 void MCMC_Free_MCMC(t_mcmc *mcmc);
 void MCMC_Updown_T_Br(t_tree *tree);
 void MCMC_Root_Time(t_tree *tree);
+void MCMC_Jump_Calibration(t_tree *tree);
 
 #endif

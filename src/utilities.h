@@ -500,6 +500,7 @@ typedef struct __Tree{
   struct __T_Rate                       *rates; /*! structure for handling rates of evolution */
   struct __Tmcmc                        *mcmc;
   struct __Triplet            *triplet_struct;
+  struct __Phylogeo                      *geo;
 
   int                            is_mixt_tree;
   int                                tree_num; /*! tree number. Used for mixture models */
@@ -1290,6 +1291,7 @@ typedef struct __Tmcmc {
   int num_move_cov_rates;
   int num_move_cov_switch;
   int num_move_birth_rate;
+  int num_move_jump_calibration;
 
   int         nd_t_digits;
   int *monitor;
@@ -1440,7 +1442,7 @@ typedef struct __Phylogeo{
   int                  *loc; // Location for each lineage
   int            ldscape_sz; // Landscape size: number of locations
   int                 n_dim; // Dimension of the data (e.g., longitude + lattitude -> n_dim = 2) 
-
+  phydbl              sigma;
  
   struct __Node **sorted_nd; // Table of nodes sorted wrt their heights.
   phydbl                tau; // overall migration rate parameter

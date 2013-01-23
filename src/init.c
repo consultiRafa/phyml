@@ -106,6 +106,7 @@ void Init_Tree(t_tree *tree, int n_otu)
   tree->next                      = NULL;
   tree->prev                      = NULL;
   tree->mixt_tree                 = NULL;
+  tree->geo                       = NULL;
 
   tree->is_mixt_tree              = NO;  
   tree->tree_num                  = 0;

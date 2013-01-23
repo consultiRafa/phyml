@@ -18,8 +18,7 @@ AC_DEFINE([DEBUG],[1],[Debug tag on])
 AM_INIT_AUTOMAKE
 AC_CANONICAL_HOST
 
-# Checks for programs.
-AC_PROG_CC
+AC_PROG_CC([gcc])
 
 # Checks for libraries.
 AC_CHECK_LIB([m], [log])
@@ -147,6 +146,12 @@ if test "$sergeii" = yes; then
    AC_DEFINE([SERGEII],[1],[SERGEII tag on])
 fi
 
+AC_ARG_ENABLE([geo],[AS_HELP_STRING([--enable-geo],[Compile geo])],[geo=yes],[geo=no])
+AM_CONDITIONAL([WANT_GEO], [test "$geo" = yes]) 
+if test "$geo" = yes; then
+   AC_DEFINE([GEO],[1],[GEO tag on])
+fi
+
 
 if test "$phytime" = no; then
 if test "$tiporder" = no; then
@@ -156,8 +161,10 @@ if test "$phycont" = no; then
 if test "$m4" = no; then
 if test "$test" = no; then
 if test "$sergeii" = no; then
+if test "$geo" = no; then
 if test "$evolve" = no; then
    AC_DEFINE([PHYML],[1],[PHYML tag on])
+fi
 fi
 fi
 fi

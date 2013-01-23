@@ -7369,8 +7369,8 @@ void Dist_To_Root_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 {
   int i;
 
-  /* if(b) d->dist_to_root = a->dist_to_root + b->l->v; */
-  if(b) d->dist_to_root = a->dist_to_root + tree->rates->cur_l[d->num];
+  if(b) d->dist_to_root = a->dist_to_root + b->l->v;
+  /* if(b) d->dist_to_root = a->dist_to_root + tree->rates->cur_l[d->num]; */
 
   if(d->tax) return;
   else
@@ -7387,10 +7387,10 @@ void Dist_To_Root_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 
 void Dist_To_Root(t_node *n_root, t_tree *tree)
 {  
-  n_root->v[2]->dist_to_root = tree->rates->cur_l[n_root->v[2]->num];
-  n_root->v[1]->dist_to_root = tree->rates->cur_l[n_root->v[1]->num];
-  /* n_root->v[2]->dist_to_root = tree->e_root->l->v * tree->n_root_pos; */
-  /* n_root->v[1]->dist_to_root = tree->e_root->l->v * (1. - tree->n_root_pos); */
+  /* n_root->v[2]->dist_to_root = tree->rates->cur_l[n_root->v[2]->num]; */
+  /* n_root->v[1]->dist_to_root = tree->rates->cur_l[n_root->v[1]->num]; */
+  n_root->v[2]->dist_to_root = tree->e_root->l->v * tree->n_root_pos;
+  n_root->v[1]->dist_to_root = tree->e_root->l->v * (1. - tree->n_root_pos);
   Dist_To_Root_Pre(n_root,n_root->v[2],NULL,tree);
   Dist_To_Root_Pre(n_root,n_root->v[1],NULL,tree);
 }
