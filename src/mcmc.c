@@ -113,7 +113,7 @@ void MCMC(t_tree *tree)
     }
 
 
-  first = 0;
+  first = 2;
   secod = 1;
   do
     {
@@ -176,8 +176,8 @@ void MCMC(t_tree *tree)
 
       For(move,tree->mcmc->n_moves) if(tree->mcmc->move_weight[move] > u) break;
       
-      if(u < .5) { first = 0; secod = 1; }
-      else       { first = 1; secod = 0; }
+      if(u < .5) { first = 2; secod = 1; }
+      else       { first = 1; secod = 2; }
       
 
       /* printf("\n. [%15s] %15f ",tree->mcmc->move_name[move],tree->c_lnL); */
@@ -820,7 +820,7 @@ void MCMC_One_Time(t_node *a, t_node *d, int traversal, t_tree *tree)
   t_node *v2,*v3;
   phydbl K;
   int move_num;
-    
+  
   if(d->tax) return; /* Won't change time at tip */
 
   /* if(FABS(tree->rates->t_prior_min[d->num] - tree->rates->t_prior_max[d->num]) < 1.E-10) return; */

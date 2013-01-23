@@ -8383,7 +8383,7 @@ int Scale_Subtree_Rates(t_node *a, phydbl mult, int *n_nodes, t_tree *tree)
 
   if(a == tree->n_root)
     {
-      res = Scale_Subtree_Rates_Post(a,a->v[0],mult,n_nodes,tree);
+      res = Scale_Subtree_Rates_Post(a,a->v[2],mult,n_nodes,tree);
       if(res) res = Scale_Subtree_Rates_Post(a,a->v[1],mult,n_nodes,tree);
       return res;
     }
