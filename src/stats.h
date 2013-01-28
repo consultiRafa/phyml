@@ -97,5 +97,6 @@ void Integrated_Geometric_Brownian_Bridge_Moments(phydbl T, phydbl A, phydbl B, 
 void Integrated_Geometric_Brownian_Bridge_Mean(phydbl T, phydbl A, phydbl B, phydbl u, phydbl *mean);
 void Integrated_Geometric_Brownian_Bridge_Var(phydbl T, phydbl A, phydbl B, phydbl u, phydbl *mean);
 int Sample_i_With_Proba_pi(phydbl *pi, int len);
+phydbl Quantile(phydbl *x, int len, phydbl p);
 
 #endif

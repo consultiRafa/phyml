@@ -639,14 +639,39 @@ void MCMC_Geo_Tau(t_tree *mixt_tree)
 void MCMC_Geo_Loc(t_tree *tree)
 {
   int target;
+  int *rec_loc; // recorded locations
+  int i;
+  phydbl cur_lnL, new_lnL;
+  phydbl u, ratio, alpha;
 
-  target = Rand_Int(tree->n_otu,2*tree->n_otu-1); // Choose an internal node (including the root) at random 
-  
+  cur_lnL = tree->geo->c_lnL;
+
+  rec_loc = (int *)mCalloc(2*tree->n_otu-1,sizeof(int));
+
+  For(i,2*tree->n_otu-1) rec_loc[i] = tree->geo->loc[i];
+
+  // Choose an internal node (including the root) at random 
+  target = Rand_Int(tree->n_otu,2*tree->n_otu-2); 
+
+  // Randomize the locations below the selected node
   GEO_Randomize_Locations(tree->a_nodes[target], 
                           tree->geo,
                           tree);
+  
+  new_lnL = GEO_Lk(tree->geo,tree);
 
+  ratio = (new_lnL - cur_lnL);        
+  ratio = EXP(ratio);
+  alpha = MIN(1.,ratio);      
+  u = Uni();
 
+  if(u > alpha) /* Reject */
+    {
+      For(i,2*tree->n_otu-1) tree->geo->loc[i] = rec_loc[i];
+      tree->geo->c_lnL = GEO_Lk(tree->geo,tree); // TO DO: you only need to update the occupation vector here...
+    }
+
+  Free(rec_loc);
 
 }
 

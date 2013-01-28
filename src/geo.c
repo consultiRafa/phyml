@@ -22,6 +22,19 @@ int GEO_Main(int argc, char **argv)
   int n_tax;
   t_tree *tree;
   int seed;
+  int n_vars;
+  phydbl *res;
+  FILE *fp;
+  int pid;
+  char *s;
+
+  s = (char *)mCalloc(T_MAX_NAME,sizeof(char));
+  
+  strcpy(s,"geo.out");
+  pid = getpid();
+  sprintf(s+strlen(s),".%d",pid);
+
+  fp = fopen(s,"w");
 
   seed = time(NULL);
   /* seed = 1359056628; */
@@ -31,13 +44,25 @@ int GEO_Main(int argc, char **argv)
   t = GEO_Make_Geo_Basic();
   GEO_Init_Geo_Struct(t);
 
-  t->tau        = 0.5;
-  t->lbda       = 3.;
-  t->sigma      = 3.0;
+  /* t->tau        = 0.5; */
+  /* t->lbda       = 0.2; */
+  /* t->sigma      = 3.0; */
 
-  t->ldscape_sz = 100;
+  t->tau        = Uni()*(5.0-0.1)   + 0.1;
+  t->lbda       = Uni()*(5.0-0.1)   + 0.1;
+  t->sigma      = Uni()*(10. - 0.1) + 0.1;
+
+  t->ldscape_sz = 40;
   t->n_dim      = 2;
-  n_tax         = 50;
+  n_tax         = 100;
+
+  /* PhyML_Fprintf(fp,"\nSigmaTrue\t LbdaTrue\t TauTrue\tSigma5\t Sigma50\t Sigma95\t Lbda5\t Lbda50\t Lbda95\t Tau5\t Tau50\t Tau95\t"); */
+  /* PhyML_Fprintf(fp,"\n"); */
+  PhyML_Fprintf(fp,"%f\t %f\t %f\t",
+                t->sigma,
+                t->lbda,
+                t->tau);
+
 
   GEO_Make_Geo_Complete(t->ldscape_sz,t->n_dim,n_tax,t);
 
@@ -52,11 +77,14 @@ int GEO_Main(int argc, char **argv)
 
   GEO_Get_Locations_Beneath(t,tree);
 
+  GEO_Randomize_Locations(tree->n_root, 
+                          tree->geo,
+                          tree);
   GEO_Update_Occup(t,tree);
   GEO_Lk(t,tree);
   PhyML_Printf("\n. Init loglk: %f",tree->geo->c_lnL);
-  /* Exit("\n"); */
 
+  /* Exit("\n"); */
   /* int c = 0; */
   /* do */
   /*   { */
@@ -92,9 +120,17 @@ int GEO_Main(int argc, char **argv)
   t->lbda  = 1.;
   t->sigma = 1.0;
 
+  n_vars = 4;
+  tree->mcmc->chain_len = 1.E+4;
+  tree->mcmc->sample_interval = 50;
+
+
   GEO_Update_Occup(t,tree);
   GEO_Lk(t,tree);
   PhyML_Printf("\n. Init loglk: %f",tree->geo->c_lnL);
+
+
+  res = (phydbl *)mCalloc(tree->mcmc->chain_len / tree->mcmc->sample_interval * n_vars,sizeof(phydbl));
 
   tree->mcmc->run = 0;
   do
@@ -102,20 +138,45 @@ int GEO_Main(int argc, char **argv)
       MCMC_Geo_Lbda(tree);
       MCMC_Geo_Sigma(tree);
       MCMC_Geo_Tau(tree);
+      MCMC_Geo_Loc(tree);
       
-      if(tree->mcmc->run%50 == 0)
-        PhyML_Printf("\n. Run %6d Sigma: %12f Lambda: %12f Tau: %12f LogLk: %12f",
-                     tree->mcmc->run,
-                     tree->geo->sigma,
-                     tree->geo->lbda,
-                     tree->geo->tau,
-                     tree->geo->c_lnL);
-      
+      if(tree->mcmc->run%tree->mcmc->sample_interval == 0)
+        {
+          PhyML_Printf("\n. Run %6d Sigma: %12f Lambda: %12f Tau: %12f LogLk: %12f",
+                       tree->mcmc->run,
+                       tree->geo->sigma,
+                       tree->geo->lbda,
+                       tree->geo->tau,
+                       tree->geo->c_lnL);
+
+          res[0 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = tree->geo->sigma; 
+          res[1 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = tree->geo->lbda; 
+          res[2 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = tree->geo->tau; 
+          res[3 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = tree->geo->c_lnL; 
+        }
+
       tree->mcmc->run++;
       MCMC_Get_Acc_Rates(tree->mcmc);
     }
   while(tree->mcmc->run < tree->mcmc->chain_len);
+  
+  
+  PhyML_Fprintf(fp,"%f\t %f\t %f\t%f\t %f\t %f\t%f\t %f\t %f\t",
+               Quantile(res+0*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.05),
+               Quantile(res+0*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.50),
+               Quantile(res+0*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.95),
 
+               Quantile(res+1*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.05),
+               Quantile(res+1*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.50),
+               Quantile(res+1*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.95),
+
+               Quantile(res+2*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.05),
+               Quantile(res+2*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.50),
+               Quantile(res+2*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.95));
+
+  Free(s);
+
+  fclose(fp);
 
   return 1;
 }

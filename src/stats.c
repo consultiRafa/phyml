@@ -4413,6 +4413,41 @@ int Sample_i_With_Proba_pi(phydbl *pi, int len)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+phydbl Quantile(phydbl *x, int len, phydbl p)
+{
+  phydbl *y;
+  int i;
+  int swap;
+  phydbl buff;
+
+  y = (phydbl *)mCalloc(len,sizeof(phydbl));
+  For(i,len) y[i] = x[i];
+
+
+  do
+    {
+      swap = NO;
+      For(i,len-1) 
+        {
+          if(y[i+1] < y[i])
+            {
+              swap = YES;
+
+              buff = y[i+1];
+              y[i+1] = y[i];
+              y[i] = buff;
+            }
+        }
+    }
+  while(swap == YES);
+  
+  Free(y);
+
+  return(y[(int)((len-1)*p)]);
+
+}
+
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
