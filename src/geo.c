@@ -161,7 +161,7 @@ int GEO_Main(int argc, char **argv)
   while(tree->mcmc->run < tree->mcmc->chain_len);
   
   
-  PhyML_Fprintf(fp,"%f\t %f\t %f\t%f\t %f\t %f\t%f\t %f\t %f\t",
+  PhyML_Fprintf(fp,"%f\t %f\t %f\t%f\t %f\t %f\t%f\t %f\t %f\n",
                Quantile(res+0*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.05),
                Quantile(res+0*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.50),
                Quantile(res+0*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.95),
