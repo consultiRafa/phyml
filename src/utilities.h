@@ -1292,6 +1292,9 @@ typedef struct __Tmcmc {
   int num_move_cov_switch;
   int num_move_birth_rate;
   int num_move_jump_calibration;
+  int num_move_geo_lambda;
+  int num_move_geo_sigma;
+  int num_move_geo_tau;
 
   int         nd_t_digits;
   int *monitor;
@@ -1440,13 +1443,27 @@ typedef struct __Phylogeo{
   int                *occup; // Vector giving the number of lineages that occupy each location
   phydbl           *ldscape; // Coordinates of the locations
   int                  *loc; // Location for each lineage
+  int          *loc_beneath; // Gives the location occupied beneath each node in the tree
   int            ldscape_sz; // Landscape size: number of locations
   int                 n_dim; // Dimension of the data (e.g., longitude + lattitude -> n_dim = 2) 
-  phydbl              sigma;
- 
-  struct __Node **sorted_nd; // Table of nodes sorted wrt their heights.
-  phydbl                tau; // overall migration rate parameter
+
+
+  phydbl              sigma; // Dispersal parameter
+  phydbl          min_sigma;
+  phydbl          max_sigma;
+
   phydbl               lbda; // Competition parameter
+  phydbl           min_lbda;
+  phydbl           max_lbda;
+
+  phydbl              c_lnL;
+  
+  struct __Node **sorted_nd; // Table of nodes sorted wrt their heights.
+
+  phydbl                tau; // overall migration rate parameter
+  phydbl            min_tau;
+  phydbl            max_tau;
+
 }t_geo;
 
 /*!********************************************************/

@@ -34,5 +34,11 @@ t_tree *GEO_Simulate(t_geo *t, int n_otu);
 void GEO_Optimize_Sigma(t_geo *t, t_tree *tree);
 phydbl GEO_Wrap_Lk(t_edge *b, t_tree *tree, supert_tree *stree);
 void GEO_Optimize_Lambda(t_geo *t, t_tree *tree);
+void GEO_Init_Geo_Struct(t_geo *t);
+void GEO_Optimize_Tau(t_geo *t, t_tree *tree);
+void GEO_Get_Locations_Beneath(t_geo *t, t_tree *tree);
+void GEO_Get_Locations_Beneath_Post(t_node *a, t_node *d, t_geo *t, t_tree *tree);
+void GEO_Randomize_Locations_Pre(t_node *n, t_geo *t, t_tree *tree);
+void GEO_Randomize_Locations(t_node *n, t_geo *t, t_tree *tree);
 
 #endif

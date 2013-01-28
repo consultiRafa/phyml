@@ -247,7 +247,7 @@ void DR_Print_Tree_Postscript_Pre(t_node *a, t_node *d, int render_name, FILE *f
 
 
       PhyML_Fprintf(fp,"%.1f %.1f mt\n",w->xcoord[d->num] - (w->xcoord[d->num] - w->xcoord[a->num])/2.,w->ycoord[d->num]);
-      PhyML_Fprintf(fp," /Helvetica findfont 4 scalefont\n");
+      PhyML_Fprintf(fp," /Helvetica findfont 6 scalefont\n");
       PhyML_Fprintf(fp,"setfont\n");
       PhyML_Fprintf(fp,"([%4.2f,%4.2f]) show \n",
                     tree->geo->ldscape[tree->geo->loc[d->num]*tree->geo->n_dim+0],
@@ -292,7 +292,7 @@ void DR_Print_Tree_Postscript_Pre(t_node *a, t_node *d, int render_name, FILE *f
 
 
       PhyML_Fprintf(fp,"%.1f %.1f mt\n",w->xcoord[d->num] - (w->xcoord[d->num] - w->xcoord[a->num])/2.,w->ycoord[d->num]);
-      PhyML_Fprintf(fp," /Helvetica findfont 4 scalefont\n");
+      PhyML_Fprintf(fp," /Helvetica findfont 6 scalefont\n");
       PhyML_Fprintf(fp,"setfont\n");
       PhyML_Fprintf(fp,"([%4.2f,%4.2f]) show \n",
                     tree->geo->ldscape[tree->geo->loc[d->num]*tree->geo->n_dim+0],

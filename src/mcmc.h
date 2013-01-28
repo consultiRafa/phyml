@@ -146,5 +146,9 @@ void MCMC_Free_MCMC(t_mcmc *mcmc);
 void MCMC_Updown_T_Br(t_tree *tree);
 void MCMC_Root_Time(t_tree *tree);
 void MCMC_Jump_Calibration(t_tree *tree);
+void MCMC_Geo_Lbda(t_tree *mixt_tree);
+void MCMC_Geo_Sigma(t_tree *mixt_tree);
+void MCMC_Geo_Tau(t_tree *mixt_tree);
+void MCMC_Geo_Loc(t_tree *tree);
 
 #endif

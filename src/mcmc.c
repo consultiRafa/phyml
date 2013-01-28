@@ -379,7 +379,6 @@ void MCMC(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void MCMC_Single_Param_Generic(phydbl *val, 
 			       phydbl lim_inf, 
 			       phydbl lim_sup, 
@@ -453,6 +452,14 @@ void MCMC_Single_Param_Generic(phydbl *val,
       ratio = EXP(ratio);
       alpha = MIN(1.,ratio);
       
+      /* printf("\n. %s cur_val: %f new_val:%f cur_lnL: %f new_lnL: %f ratio: %f", */
+      /*        tree->mcmc->move_name[move_num], */
+      /*        cur_val, */
+      /*        new_val, */
+      /*        cur_lnLike, */
+      /*        new_lnLike, */
+      /*        ratio); */
+
       u = Uni();
       if(u > alpha) /* Reject */
 	{
@@ -461,7 +468,7 @@ void MCMC_Single_Param_Generic(phydbl *val,
 	  if(lnPrior) *lnPrior = cur_lnPrior;
 	  if(lnLike)  *lnLike  = cur_lnLike;
 	  Restore_Br_Len(tree);
-	  if(tree->mod->update_eigen) Update_Eigen(tree->mod);
+	  if(tree->mod && tree->mod->update_eigen) Update_Eigen(tree->mod);
 	}
       else /* Accept */
 	{
@@ -549,6 +556,98 @@ void MCMC_Clock_R(t_tree *mixt_tree)
       tree = tree->next;
     }
   while(tree);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+// Sample dispersal parameter from a phylogeo model
+void MCMC_Geo_Sigma(t_tree *mixt_tree)
+{
+  t_tree *tree;
+
+  tree = mixt_tree;
+  do
+    {
+      MCMC_Single_Param_Generic(&(tree->geo->sigma),
+                                mixt_tree->geo->min_sigma,
+                                mixt_tree->geo->max_sigma,
+                                mixt_tree->mcmc->num_move_geo_sigma,
+                                NULL,&(mixt_tree->geo->c_lnL),
+                                NULL,GEO_Wrap_Lk,
+                                mixt_tree->mcmc->move_type[mixt_tree->mcmc->num_move_geo_sigma],
+                                NO,NULL,mixt_tree,NULL);
+
+      tree = tree->next;
+    }
+  while(tree);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+// Sample competition parameter from a phylogeo model
+void MCMC_Geo_Lbda(t_tree *mixt_tree)
+{
+  t_tree *tree;
+
+  tree = mixt_tree;
+  do
+    {
+      MCMC_Single_Param_Generic(&(tree->geo->lbda),
+                                mixt_tree->geo->min_lbda,
+                                mixt_tree->geo->max_lbda,
+                                mixt_tree->mcmc->num_move_geo_lambda,
+                                NULL,&(mixt_tree->geo->c_lnL),
+                                NULL,GEO_Wrap_Lk,
+                                mixt_tree->mcmc->move_type[mixt_tree->mcmc->num_move_geo_lambda],
+                                NO,NULL,mixt_tree,NULL);
+
+      tree = tree->next;
+    }
+  while(tree);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+// Sample global migration rate parameter from a phylogeo model
+void MCMC_Geo_Tau(t_tree *mixt_tree)
+{
+  t_tree *tree;
+
+  tree = mixt_tree;
+  do
+    {
+      MCMC_Single_Param_Generic(&(tree->geo->tau),
+                                mixt_tree->geo->min_tau,
+                                mixt_tree->geo->max_tau,
+                                mixt_tree->mcmc->num_move_geo_tau,
+                                NULL,&(mixt_tree->geo->c_lnL),
+                                NULL,GEO_Wrap_Lk,
+                                mixt_tree->mcmc->move_type[mixt_tree->mcmc->num_move_geo_tau],
+                                NO,NULL,mixt_tree,NULL);
+
+      tree = tree->next;
+    }
+  while(tree);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void MCMC_Geo_Loc(t_tree *tree)
+{
+  int target;
+
+  target = Rand_Int(tree->n_otu,2*tree->n_otu-1); // Choose an internal node (including the root) at random 
+  
+  GEO_Randomize_Locations(tree->a_nodes[target], 
+                          tree->geo,
+                          tree);
+
+
+
 }
 
 //////////////////////////////////////////////////////////////
@@ -2005,12 +2104,18 @@ void MCMC_Print_Param_Stdin(t_mcmc *mcmc, t_tree *tree)
       PhyML_Printf("%9d",tree->mcmc->run);
       PhyML_Printf("  %5d",(int)(cur_time-mcmc->t_beg));
       PhyML_Printf("  %10.2f",tree->c_lnL);
-      PhyML_Printf("  %10.2f",tree->rates->c_lnL_rates+tree->rates->c_lnL_times);
+      PhyML_Printf("  %10.2f",(tree->rates ? tree->rates->c_lnL_rates+tree->rates->c_lnL_times : +1));
       PhyML_Printf("  %12.6f[%5.0f]",RATES_Average_Substitution_Rate(tree),tree->mcmc->ess[tree->mcmc->num_move_clock_r]);
       /* PhyML_Printf("\t%12.6f[%5.0f]",tree->rates->clock_r,tree->mcmc->ess[tree->mcmc->num_move_clock_r]); */
-      PhyML_Printf("  %10.1f[%5.0f]",tree->rates->nd_t[tree->n_root->num],tree->mcmc->ess[tree->mcmc->num_move_nd_t+tree->n_root->num-tree->n_otu]);
-      PhyML_Printf("  %9f[%5.0f]",tree->rates->nu,tree->mcmc->ess[tree->mcmc->num_move_nu]);
-      PhyML_Printf("  %8f[%5.0f]",tree->rates->birth_rate,tree->mcmc->ess[tree->mcmc->num_move_birth_rate]);
+      PhyML_Printf("  %10.1f[%5.0f]",
+                   (tree->rates ? tree->rates->nd_t[tree->n_root->num] : -1.),
+                   tree->mcmc->ess[tree->mcmc->num_move_nd_t+tree->n_root->num-tree->n_otu]);
+      PhyML_Printf("  %9f[%5.0f]",
+                   (tree->rates ? tree->rates->nu : -1.),
+                   tree->mcmc->ess[tree->mcmc->num_move_nu]);
+      PhyML_Printf("  %8f[%5.0f]",
+                   (tree->rates ? tree->rates->birth_rate : -1.),
+                   tree->mcmc->ess[tree->mcmc->num_move_birth_rate]);
       PhyML_Printf("  %8.0f",min);
     }
 }
@@ -3853,13 +3958,16 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->num_move_tree_rates       = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_subtree_rates    = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_updown_nu_cr     = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_ras              = mcmc->n_moves; mcmc->n_moves += 2*tree->mod->ras->n_catg;
+  mcmc->num_move_ras              = mcmc->n_moves; mcmc->n_moves += (tree->mod ? 2*tree->mod->ras->n_catg : 1);
   mcmc->num_move_updown_t_cr      = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_cov_rates        = mcmc->n_moves; mcmc->n_moves += 2*tree->mod->m4mod->n_h;
+  mcmc->num_move_cov_rates        = mcmc->n_moves; mcmc->n_moves += (tree->mod ? 2*tree->mod->m4mod->n_h : 1);
   mcmc->num_move_cov_switch       = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_birth_rate       = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_updown_t_br      = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_jump_calibration = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_geo_lambda       = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_geo_sigma        = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_geo_tau          = mcmc->n_moves; mcmc->n_moves += 1;
 
   mcmc->run_move           = (int *)mCalloc(mcmc->n_moves,sizeof(int));
   mcmc->acc_move           = (int *)mCalloc(mcmc->n_moves,sizeof(int));
@@ -3898,15 +4006,19 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   strcpy(mcmc->move_name[mcmc->num_move_tree_rates],"tree_rates");
   strcpy(mcmc->move_name[mcmc->num_move_subtree_rates],"subtree_rates");
   strcpy(mcmc->move_name[mcmc->num_move_updown_nu_cr],"updown_nu_cr");
-  for(i=mcmc->num_move_ras;i<mcmc->num_move_ras+2*tree->mod->ras->n_catg;i++) 
+  for(i=mcmc->num_move_ras;i<mcmc->num_move_ras+(tree->mod ? 2*tree->mod->ras->n_catg : 1);i++) 
     strcpy(mcmc->move_name[i],"ras");  
   strcpy(mcmc->move_name[mcmc->num_move_updown_t_cr],"updown_t_cr");
-  for(i=mcmc->num_move_cov_rates;i<mcmc->num_move_cov_rates+2*tree->mod->m4mod->n_h;i++) 
+  for(i=mcmc->num_move_cov_rates;i<mcmc->num_move_cov_rates+(tree->mod ? 2*tree->mod->m4mod->n_h : 1);i++) 
     strcpy(mcmc->move_name[i],"cov_rates");  
   strcpy(mcmc->move_name[mcmc->num_move_cov_switch],"cov_switch");
   strcpy(mcmc->move_name[mcmc->num_move_birth_rate],"birth_rate");
   strcpy(mcmc->move_name[mcmc->num_move_updown_t_br],"updown_t_br");
-  strcpy(mcmc->move_name[mcmc->num_move_updown_t_br],"jump_calibration");
+  strcpy(mcmc->move_name[mcmc->num_move_jump_calibration],"jump_calibration");
+  strcpy(mcmc->move_name[mcmc->num_move_geo_lambda],"geo_lambda");
+  strcpy(mcmc->move_name[mcmc->num_move_geo_sigma],"geo_sigma");
+  strcpy(mcmc->move_name[mcmc->num_move_geo_tau],"geo_tau");
+
   
   if(tree->rates->model_log_rates == YES)
     for(i=mcmc->num_move_br_r;i<mcmc->num_move_br_r+2*tree->n_otu-2;i++) mcmc->move_type[i] = MCMC_MOVE_RANDWALK_NORMAL;  
@@ -3924,13 +4036,16 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_type[mcmc->num_move_tree_rates] = MCMC_MOVE_SCALE_THORNE;
   mcmc->move_type[mcmc->num_move_subtree_rates] = MCMC_MOVE_SCALE_THORNE;
   mcmc->move_type[mcmc->num_move_updown_nu_cr] = MCMC_MOVE_RANDWALK_NORMAL;
-  for(i=mcmc->num_move_ras;i<mcmc->num_move_ras+2*tree->mod->ras->n_catg;i++) mcmc->move_type[i] = MCMC_MOVE_RANDWALK_NORMAL;  
+  for(i=mcmc->num_move_ras;i<mcmc->num_move_ras+(tree->mod ? 2*tree->mod->ras->n_catg : 1);i++) mcmc->move_type[i] = MCMC_MOVE_RANDWALK_NORMAL;  
   mcmc->move_type[mcmc->num_move_updown_t_cr] = MCMC_MOVE_SCALE_THORNE;
-  for(i=mcmc->num_move_cov_rates;i<mcmc->num_move_cov_rates+2*tree->mod->m4mod->n_h;i++) mcmc->move_type[i] = MCMC_MOVE_SCALE_THORNE;
+  for(i=mcmc->num_move_cov_rates;i<mcmc->num_move_cov_rates+(tree-> mod ? 2*tree->mod->m4mod->n_h : 1);i++) mcmc->move_type[i] = MCMC_MOVE_SCALE_THORNE;
   mcmc->move_type[mcmc->num_move_cov_switch] = MCMC_MOVE_SCALE_THORNE;
   mcmc->move_type[mcmc->num_move_birth_rate] = MCMC_MOVE_SCALE_THORNE;
   mcmc->move_type[mcmc->num_move_updown_t_br] = MCMC_MOVE_SCALE_THORNE;
   mcmc->move_type[mcmc->num_move_jump_calibration] = MCMC_MOVE_SCALE_THORNE;
+  mcmc->move_type[mcmc->num_move_geo_lambda] = MCMC_MOVE_SCALE_THORNE;
+  mcmc->move_type[mcmc->num_move_geo_sigma] = MCMC_MOVE_SCALE_THORNE;
+  mcmc->move_type[mcmc->num_move_geo_tau] = MCMC_MOVE_SCALE_THORNE;
 
   /* We start with small tuning parameter values in order to have inflated ESS
      for clock_r */
@@ -3976,10 +4091,10 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_tree_rates]       = 1.0;
   mcmc->move_weight[mcmc->num_move_subtree_rates]    = 0.5;
   mcmc->move_weight[mcmc->num_move_updown_nu_cr]     = 0.0;
-  for(i=mcmc->num_move_ras;i<mcmc->num_move_ras+2*tree->mod->ras->n_catg;i++) mcmc->move_weight[i] = 0.5*(1./(phydbl)tree->mod->ras->n_catg);
+  for(i=mcmc->num_move_ras;i<mcmc->num_move_ras+(tree->mod ? 2*tree->mod->ras->n_catg : 1);i++) mcmc->move_weight[i] = 0.5*(1./(tree->mod ? (phydbl)tree->mod->ras->n_catg : 1));
   mcmc->move_weight[mcmc->num_move_updown_t_cr]      = 0.0; /* Does not seem to work well (does not give uniform prior on root height
   							      when sampling from prior) */
-  for(i=mcmc->num_move_cov_rates;i<mcmc->num_move_cov_rates+2*tree->mod->m4mod->n_h;i++) mcmc->move_weight[i] = 0.5*(1./(phydbl)tree->mod->m4mod->n_h);
+  for(i=mcmc->num_move_cov_rates;i<mcmc->num_move_cov_rates+(tree->mod ? 2*tree->mod->m4mod->n_h : 1);i++) mcmc->move_weight[i] = 0.5*(1./(tree->mod ? (phydbl)tree->mod->m4mod->n_h : 1));
   mcmc->move_weight[mcmc->num_move_cov_switch]       = 1.0;
   mcmc->move_weight[mcmc->num_move_birth_rate]       = 2.0;
   mcmc->move_weight[mcmc->num_move_updown_t_br]      = 1.0;
@@ -3988,6 +4103,9 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
 #else
   mcmc->move_weight[mcmc->num_move_jump_calibration] = 0.0;
 #endif
+  mcmc->move_weight[mcmc->num_move_geo_lambda]       = 1.0;
+  mcmc->move_weight[mcmc->num_move_geo_sigma]        = 1.0;
+  mcmc->move_weight[mcmc->num_move_geo_tau]          = 1.0;
 
 
   /* for(i=mcmc->num_move_br_r;i<mcmc->num_move_br_r+2*tree->n_otu-2;i++) mcmc->move_weight[i] = 0.0; /\* Rates *\/ */

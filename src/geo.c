@@ -24,19 +24,20 @@ int GEO_Main(int argc, char **argv)
   int seed;
 
   seed = time(NULL);
-  /* seed =  1358846471; */
-  /* seed = 1358847698; */
+  /* seed = 1359056628; */
   printf("\n. Seed = %d",seed);
   srand(seed);
 
   t = GEO_Make_Geo_Basic();
+  GEO_Init_Geo_Struct(t);
 
-  t->tau        = 0.1;
-  t->lbda       = 10.;
+  t->tau        = 0.5;
+  t->lbda       = 3.;
+  t->sigma      = 3.0;
+
   t->ldscape_sz = 100;
   t->n_dim      = 2;
-  t->sigma      = 0.1;
-  n_tax         = 100;
+  n_tax         = 50;
 
   GEO_Make_Geo_Complete(t->ldscape_sz,t->n_dim,n_tax,t);
 
@@ -49,19 +50,72 @@ int GEO_Main(int argc, char **argv)
 
   tree = GEO_Simulate(t,n_tax);
 
-  t->lbda  = 1.0;
-  t->sigma = 1.0;
-  printf("\n. Init loglk: %f",GEO_Lk(t,tree));
+  GEO_Get_Locations_Beneath(t,tree);
+
+  GEO_Update_Occup(t,tree);
+  GEO_Lk(t,tree);
+  PhyML_Printf("\n. Init loglk: %f",tree->geo->c_lnL);
   /* Exit("\n"); */
 
+  /* int c = 0; */
+  /* do */
+  /*   { */
+  /*     GEO_Optimize_Sigma(t,tree); */
+  /*     GEO_Optimize_Lambda(t,tree); */
+  /*     GEO_Optimize_Tau(t,tree); */
+  /*     printf("\n. Sigma = %f Lambda = %f Tau = %f Loglk = %f",tree->geo->sigma,tree->geo->lbda,tree->geo->tau,GEO_Lk(t,tree)); */
+  /*     c++; */
+  /*   } */
+  /* while(c < 30); */
+
+
+  tree->mcmc = MCMC_Make_MCMC_Struct();
+  MCMC_Complete_MCMC(tree->mcmc,tree);
+
+  tree->mcmc->io               = NULL;
+  tree->mcmc->is               = NO;
+  tree->mcmc->use_data         = YES;
+  tree->mcmc->run              = 0;
+  tree->mcmc->sample_interval  = 1E+3;
+  tree->mcmc->chain_len        = 1E+6;
+  tree->mcmc->chain_len_burnin = 1E+5;
+  tree->mcmc->randomize        = YES;
+  tree->mcmc->norm_freq        = 1E+3;
+  tree->mcmc->max_tune         = 1.E+20;
+  tree->mcmc->min_tune         = 1.E-10;
+  tree->mcmc->print_every      = 2;
+  tree->mcmc->is_burnin        = NO;
+  tree->mcmc->nd_t_digits      = 1;
+
+
+  t->tau   = 1.0;
+  t->lbda  = 1.;
+  t->sigma = 1.0;
+
+  GEO_Update_Occup(t,tree);
+  GEO_Lk(t,tree);
+  PhyML_Printf("\n. Init loglk: %f",tree->geo->c_lnL);
+
+  tree->mcmc->run = 0;
   do
     {
-      GEO_Optimize_Sigma(t,tree);
-      printf("\n. Sigma = %f Lambda = %f Loglk = %f",tree->geo->sigma,tree->geo->lbda,GEO_Lk(t,tree));
-      GEO_Optimize_Lambda(t,tree);
-      printf("\n. Sigma = %f Lambda = %f Loglk = %f",tree->geo->sigma,tree->geo->lbda,GEO_Lk(t,tree));
+      MCMC_Geo_Lbda(tree);
+      MCMC_Geo_Sigma(tree);
+      MCMC_Geo_Tau(tree);
+      
+      if(tree->mcmc->run%50 == 0)
+        PhyML_Printf("\n. Run %6d Sigma: %12f Lambda: %12f Tau: %12f LogLk: %12f",
+                     tree->mcmc->run,
+                     tree->geo->sigma,
+                     tree->geo->lbda,
+                     tree->geo->tau,
+                     tree->geo->c_lnL);
+      
+      tree->mcmc->run++;
+      MCMC_Get_Acc_Rates(tree->mcmc);
     }
-  while(1);
+  while(tree->mcmc->run < tree->mcmc->chain_len);
+
 
   return 1;
 }
@@ -101,6 +155,9 @@ void GEO_Make_Geo_Complete(int ldscape_sz, int n_dim, int n_tax, t_geo *t)
 
   // Covariance matrix
   t->cov = (phydbl *)mCalloc((int)(n_dim*n_dim),sizeof(phydbl));
+
+  // gives the location occupied beneath each node in the tree
+  t->loc_beneath = (int *)mCalloc((int)(2*n_tax-1)*ldscape_sz,sizeof(int));
 }
 
 //////////////////////////////////////////////////////////////
@@ -115,6 +172,7 @@ void Free_Geo(t_geo *t)
   Free(t->ldscape);
   Free(t->sorted_nd);
   Free(t->cov);
+  Free(t->loc_beneath);
 }
 
 //////////////////////////////////////////////////////////////
@@ -253,34 +311,34 @@ phydbl GEO_Lk(t_geo *t, t_tree *tree)
   phydbl R;
   int dep,arr; // departure and arrival location indices;
   t_node *curr_n,*prev_n;
+  phydbl sum;
 
-  GEO_Update_Sorted_Nd(t,tree); // NOTE: we probably don't need to sort node heights every time
+  GEO_Update_Sorted_Nd(t,tree);
   GEO_Update_Occup(t,tree);     // Same here.
 
   prev_n = NULL;
   curr_n = NULL;
   loglk = .0;
-  for(i=1;i<tree->n_otu;i++) // Consider all the time slices, from oldest to youngest. 
+  for(i=1;i<tree->n_otu-1;i++) // Consider all the time slices, from oldest to youngest. 
                              // Start at first node below root
     {
-      prev_n = t->sorted_nd[i-1];
-      curr_n = t->sorted_nd[i];
-
-      /* printf("\n. %d %d %f ",n->tax,n->num,tree->rates->nd_t[n->num]); */
-      /* For(j,t->ldscape_sz) printf("%d,",t->occup[n->num*t->ldscape_sz+j]); */
-
+      prev_n = t->sorted_nd[i-1]; // node just above
+      curr_n = t->sorted_nd[i];   // current node
+      
       GEO_Update_Rmat(curr_n,t,tree); // NOTE: don't need to do that every time. Add check later.
 
       R = GEO_Total_Migration_Rate(curr_n,t); // Total migration rate calculated at node n
 
-      dep = t->loc[prev_n->num]; // departure location
-      arr =              // arrival location
-        (t->loc[curr_n->num] != t->loc[prev_n->num] ? 
-         t->loc[curr_n->num] : 
-         (t->loc[prev_n->v[1] == curr_n ? 
-                 prev_n->v[2]->num : 
-                 prev_n->v[1]->num]));
+      dep = t->loc[curr_n->num]; // departure location
+      arr =                      // arrival location
+        (t->loc[curr_n->v[1]->num] == t->loc[curr_n->num] ? 
+         t->loc[curr_n->v[2]->num] : 
+         t->loc[curr_n->v[1]->num]);
       
+      /* printf("\n%f\t%f", */
+      /*        t->ldscape[arr*t->n_dim+0]-t->ldscape[dep*t->n_dim+0], */
+      /*        t->ldscape[arr*t->n_dim+1]-t->ldscape[dep*t->n_dim+1]); */
+
       loglk -= R * FABS(tree->rates->nd_t[curr_n->num] - tree->rates->nd_t[prev_n->num]);
       loglk += LOG(t->r_mat[dep * t->ldscape_sz + arr]);
 
@@ -290,6 +348,29 @@ phydbl GEO_Lk(t_geo *t, t_tree *tree)
       /*        FABS(t->sorted_nd[i] - t->sorted_nd[i-1]),loglk); */
 
     }
+
+
+  // Likelihood for the first 'slice' (i.e., the part just below the root down to
+  // the next node)
+  GEO_Update_Rmat(tree->n_root,t,tree);
+
+  loglk -= LOG(t->ldscape_sz); 
+  dep = t->loc[tree->n_root->num];
+  arr = 
+    (t->loc[tree->n_root->num] != t->loc[tree->n_root->v[1]->num] ? 
+     t->loc[tree->n_root->v[1]->num] :
+     t->loc[tree->n_root->v[2]->num]);
+  
+  /* printf("\n %f %f",t->ldscape[dep],t->ldscape[arr]); */
+
+  loglk += LOG(t->r_mat[dep * t->ldscape_sz + arr]);
+    
+  sum = .0;
+  For(i,t->ldscape_sz) sum += t->r_mat[dep * t->ldscape_sz + i];
+  
+  loglk -= LOG(sum);
+
+  tree->geo->c_lnL = loglk;
 
   return loglk;
 }
@@ -452,13 +533,13 @@ t_tree *GEO_Simulate(t_geo *t, int n_otu)
       // Select the node that branches out
       hit = Sample_i_With_Proba_pi(p_branch,n_branching_nodes);
       
-      printf("\n. [%d] Select node %d (location %d)",n_branching_nodes,branching_nodes[hit]->num,t->loc[branching_nodes[hit]->num]);
+      /* printf("\n. [%d] Select node %d (location %d)",n_branching_nodes,branching_nodes[hit]->num,t->loc[branching_nodes[hit]->num]); */
 
       // Set the time for the branching node
       tree->rates->nd_t[branching_nodes[hit]->num] = time;
 
 
-      printf("\n. Set its time to %f",time);
+      /* printf("\n. Set its time to %f",time); */
 
       // Select the destination location
       dep = t->loc[branching_nodes[hit]->num]; // Departure point
@@ -477,18 +558,24 @@ t_tree *GEO_Simulate(t_geo *t, int n_otu)
 
       arr = Sample_i_With_Proba_pi(p_mig,t->ldscape_sz);
 
-      printf("\n. Migrate from %d [%5.2f,%5.2f] to %d [%5.2f,%5.2f]",
-             dep,
-             t->ldscape[dep*t->n_dim+0],
-             t->ldscape[dep*t->n_dim+1],
-             arr,
-             t->ldscape[arr*t->n_dim+0],
-             t->ldscape[arr*t->n_dim+1]);
+      /* printf("\n. Migrate from %d [%5.2f,%5.2f] to %d [%5.2f,%5.2f]", */
+      /*        dep, */
+      /*        t->ldscape[dep*t->n_dim+0], */
+      /*        t->ldscape[dep*t->n_dim+1], */
+      /*        arr, */
+      /*        t->ldscape[arr*t->n_dim+0], */
+      /*        t->ldscape[arr*t->n_dim+1]); */
+
+      /* printf("\n%f\t%f", */
+      /*        t->ldscape[arr*t->n_dim+0]-t->ldscape[dep*t->n_dim+0], */
+      /*        t->ldscape[arr*t->n_dim+1]-t->ldscape[dep*t->n_dim+1]); */
+             
+
 
       // Update vector of occupation
       occup[arr]++;
       
-      printf("\n. Remove %d. Add %d and %d",branching_nodes[hit]->num,tree->a_nodes[nd_idx]->num,tree->a_nodes[nd_idx+1]->num);
+      /* printf("\n. Remove %d. Add %d and %d",branching_nodes[hit]->num,tree->a_nodes[nd_idx]->num,tree->a_nodes[nd_idx+1]->num); */
       // Connect two new nodes to the node undergoing a branching event
       tree->a_nodes[nd_idx]->v[0]   = branching_nodes[hit];
       tree->a_nodes[nd_idx+1]->v[0] = branching_nodes[hit];
@@ -551,6 +638,12 @@ t_tree *GEO_Simulate(t_geo *t, int n_otu)
 
     }
   while(n_branching_nodes < n_otu);
+
+  printf("\n");
+  For(i,t->ldscape_sz)
+    printf("%d,",occup[i]);
+  printf("\n");
+
 
   // Set the times at the tips
   For(i,2*tree->n_otu-1) if(tree->rates->nd_t[i] < 0.0) tree->rates->nd_t[i] = time;
@@ -640,7 +733,7 @@ t_tree *GEO_Simulate(t_geo *t, int n_otu)
     FABS(tree->rates->nd_t[tree->n_root->v[2]->num] -
          tree->rates->nd_t[tree->n_root->num]) / tree->e_root->l->v;
 
-  printf("\n. %s ",Write_Tree(tree,NO));
+  /* printf("\n. %s ",Write_Tree(tree,NO)); */
 
   DR_Draw_Tree("essai.ps",tree);
 
@@ -650,6 +743,9 @@ t_tree *GEO_Simulate(t_geo *t, int n_otu)
   /*          t->ldscape[t->loc[i]*t->n_dim+0], */
   /*          t->ldscape[t->loc[i]*t->n_dim+1]); */
 
+  
+  Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
+  Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);		
 
   Free(branching_nodes);
   Free(p_branch);
@@ -665,13 +761,16 @@ t_tree *GEO_Simulate(t_geo *t, int n_otu)
 void GEO_Simulate_Coordinates(int n, t_geo *t)
 {
   int i;
+  phydbl width;
+
+  width = 5.;
 
   For(i,n)
     {
-      /* t->ldscape[i*t->n_dim+0] = Rnorm(0.0,1.); */
-      /* t->ldscape[i*t->n_dim+1] = Rnorm(0.0,1.); */
-      t->ldscape[i*t->n_dim+0] = -3. + Uni()*3.;
-      t->ldscape[i*t->n_dim+1] = -3. + Uni()*3.;
+      /* t->ldscape[i*t->n_dim+0] = Rnorm(0.0,3.); */
+      /* t->ldscape[i*t->n_dim+1] = Rnorm(0.0,3.); */
+      t->ldscape[i*t->n_dim+0] = -width/2. + Uni()*width;
+      t->ldscape[i*t->n_dim+1] = -width/2. + Uni()*width;
     }
 }
 
@@ -681,8 +780,8 @@ void GEO_Simulate_Coordinates(int n, t_geo *t)
 void GEO_Optimize_Sigma(t_geo *t, t_tree *tree)
 {
   Generic_Brent_Lk(&(t->sigma),
-                   1.E-10,
-                   1.E+3,
+                   t->min_sigma,
+                   t->max_sigma,
                    1.E-5,
                    1000,
                    NO,
@@ -695,8 +794,22 @@ void GEO_Optimize_Sigma(t_geo *t, t_tree *tree)
 void GEO_Optimize_Lambda(t_geo *t, t_tree *tree)
 {
   Generic_Brent_Lk(&(t->lbda),
-                   1.E-10,
-                   1.E+3,
+                   t->min_lbda,
+                   t->max_lbda,
+                   1.E-5,
+                   1000,
+                   NO,
+                   GEO_Wrap_Lk,NULL,tree,NULL);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void GEO_Optimize_Tau(t_geo *t, t_tree *tree)
+{
+  Generic_Brent_Lk(&(t->tau),
+                   t->min_tau,
+                   t->max_tau,
                    1.E-5,
                    1000,
                    NO,
@@ -713,4 +826,172 @@ phydbl GEO_Wrap_Lk(t_edge *b, t_tree *tree, supert_tree *stree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void GEO_Init_Geo_Struct(t_geo *t)
+{
+  t->c_lnL      = UNLIKELY;
+
+  t->sigma      = 1.0;
+  t->min_sigma  = 1.E-3;
+  t->max_sigma  = 1.E+3;
+
+  t->lbda       = 1.0;
+  t->min_lbda   = 1.E-3;
+  t->max_lbda   = 1.E+3;
+  
+  t->tau        = 1.0;
+  t->min_tau    = 1.E-3;
+  t->max_tau    = 1.E+3;
+
+  t->tau        = 1.0;
+
+  t->n_dim      = -1;
+  t->ldscape_sz = -1;
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void GEO_Randomize_Locations_Pre(t_node *n, t_geo *t, t_tree *tree)
+{
+
+  if(n->tax == YES) return;
+  else
+    {
+      int i;
+      
+      GEO_Randomize_Locations(n,t,tree);
+
+      For(i,3)
+        if(n->v[i] != n->anc && n->b[i] != tree->e_root) 
+          GEO_Randomize_Locations_Pre(n->v[i],t,tree);
+    }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void GEO_Randomize_Locations(t_node *n, t_geo *t, t_tree *tree)
+{
+  t_node *v1, *v2;
+  int i;
+  phydbl *probs; // vector of probability of picking each location
+  phydbl sum;
+  
+  probs = (phydbl *)mCalloc(t->ldscape_sz,sizeof(phydbl));
+
+  v1 = v2 = NULL;
+  For(i,3)
+    {
+      if(n->v[i] != n->anc && n->b[i] != tree->e_root)
+        {
+          if(!v1) v1 = n->v[i];
+          else    v2 = n->v[i];
+        }
+    }
+
+  if(t->loc[v1->num] != t->loc[n->num] && v1->tax == NO)
+    {
+      sum = 0.0;
+      For(i,t->ldscape_sz) sum += t->loc_beneath[v1->num * t->ldscape_sz + i];
+      For(i,t->ldscape_sz) probs[i] = t->loc_beneath[v1->num * t->ldscape_sz + i]/sum;
+      
+      t->loc[v1->num] = Sample_i_With_Proba_pi(probs,t->ldscape_sz);      
+    }
+  else if(t->loc[v2->num] != t->loc[n->num] && v2->tax == NO)
+    {
+      sum = 0.0;
+      For(i,t->ldscape_sz) sum += t->loc_beneath[v2->num * t->ldscape_sz + i];
+      For(i,t->ldscape_sz) probs[i] = t->loc_beneath[v2->num * t->ldscape_sz + i]/sum;
+      
+      Sample_i_With_Proba_pi(probs,t->ldscape_sz);
+
+      t->loc[v2->num] = Sample_i_With_Proba_pi(probs,t->ldscape_sz);      
+    }
+
+  Free(probs);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void GEO_Get_Locations_Beneath(t_geo *t, t_tree *tree)
+{
+  int i;
+
+  GEO_Get_Locations_Beneath_Post(tree->n_root,tree->n_root->v[1],t,tree);
+  GEO_Get_Locations_Beneath_Post(tree->n_root,tree->n_root->v[2],t,tree);
+
+  For(i,t->ldscape_sz)
+    t->loc_beneath[tree->n_root->num*t->ldscape_sz+i] =
+    t->loc_beneath[tree->n_root->v[1]->num*t->ldscape_sz+i] +
+    t->loc_beneath[tree->n_root->v[2]->num*t->ldscape_sz+i] ;
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void GEO_Get_Locations_Beneath_Post(t_node *a, t_node *d, t_geo *t, t_tree *tree)
+{
+
+  if(d->tax) 
+    {
+      t->loc_beneath[d->num*t->ldscape_sz+t->loc[d->num]] = 1;
+      return;
+    }
+  else
+    {
+      int i;
+      t_node *v1, *v2;
+
+      For(i,3) 
+        {
+          if(d->v[i] != a && d->b[i] != tree->e_root)
+            {
+              GEO_Get_Locations_Beneath_Post(d,d->v[i],t,tree);
+            }
+        }
+          
+
+      v1 = v2 = NULL;
+      For(i,3) 
+        {
+          if(d->v[i] != a && d->b[i] != tree->e_root)
+            {
+              if(!v1) v1 = d->v[i];
+              else    v2 = d->v[i];
+            }
+        }
+          
+      For(i,t->ldscape_sz) 
+        t->loc_beneath[ d->num*t->ldscape_sz+i] = 
+        t->loc_beneath[v1->num*t->ldscape_sz+i] + 
+        t->loc_beneath[v2->num*t->ldscape_sz+i] ;
+    }
+}
+
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 
