@@ -36,7 +36,7 @@ int GEO_Main(int argc, char **argv)
 
   fp = fopen(s,"w");
 
-  seed = time(NULL);
+  seed = getpid();
   /* seed = 1359056628; */
   printf("\n. Seed = %d",seed);
   srand(seed);
@@ -48,13 +48,13 @@ int GEO_Main(int argc, char **argv)
   /* t->lbda       = 0.2; */
   /* t->sigma      = 3.0; */
 
-  t->tau        = Uni()*(5.0-0.1)   + 0.1;
-  t->lbda       = Uni()*(5.0-0.1)   + 0.1;
-  t->sigma      = Uni()*(10. - 0.1) + 0.1;
+  t->tau        = Uni()*(2.0-0.1)  + 0.1;
+  t->lbda       = Uni()*(2.0-0.1)  + 0.1;
+  t->sigma      = Uni()*(3. - 0.1) + 0.1;
 
-  t->ldscape_sz = 40;
+  t->ldscape_sz = 20;
   t->n_dim      = 2;
-  n_tax         = 100;
+  n_tax         = 50;
 
   /* PhyML_Fprintf(fp,"\nSigmaTrue\t LbdaTrue\t TauTrue\tSigma5\t Sigma50\t Sigma95\t Lbda5\t Lbda50\t Lbda95\t Tau5\t Tau50\t Tau95\t"); */
   /* PhyML_Fprintf(fp,"\n"); */
