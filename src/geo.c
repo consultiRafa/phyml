@@ -52,9 +52,9 @@ int GEO_Main(int argc, char **argv)
   t->lbda       = Uni()*(2.0-0.1)  + 0.1;
   t->sigma      = Uni()*(3. - 0.1) + 0.1;
 
-  t->ldscape_sz = 50;
+  t->ldscape_sz = (int)atoi(argv[1]);
   t->n_dim      = 2;
-  n_tax         = 100;
+  n_tax         = (int)atoi(argv[2]);
 
   /* PhyML_Fprintf(fp,"\nSigmaTrue\t LbdaTrue\t TauTrue\tSigma5\t Sigma50\t Sigma95\t Lbda5\t Lbda50\t Lbda95\t Tau5\t Tau50\t Tau95\t"); */
   /* PhyML_Fprintf(fp,"\n"); */
