@@ -52,7 +52,7 @@ int GEO_Main(int argc, char **argv)
   t->lbda       = Uni()*(2.0-0.1)  + 0.1;
   t->sigma      = Uni()*(3. - 0.1) + 0.1;
 
-  t->ldscape_sz = 20;
+  t->ldscape_sz = 50;
   t->n_dim      = 2;
   n_tax         = 50;
 
