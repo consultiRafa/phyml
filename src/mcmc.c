@@ -505,7 +505,8 @@ void MCMC_Update_Effective_Sample_Size(int move_num, t_mcmc *mcmc, t_tree *tree)
   mcmc->sum_val[move_num]            += new_val;
   mcmc->sum_valsq[move_num]          += POW(new_val,2);
   mcmc->sum_curval_nextval[move_num] += cur_val * new_val;
-  	
+
+
   mcmc->ess[move_num] = 
     Effective_Sample_Size(mcmc->first_val[move_num],
 			  new_val,
@@ -3327,8 +3328,8 @@ void MCMC_Adjust_Tuning_Parameter(int move, t_mcmc *mcmc)
       /* 	} */
       else
 	{
-	  rate_inf = 0.2;
-	  rate_sup = 0.2;
+	  rate_inf = 0.234; // Gareth Robert's magic number !
+	  rate_sup = 0.234;
 	}
 
       /* PhyML_Printf("\n. %s acc=%d run=%d tune=%f", */
@@ -4194,8 +4195,14 @@ void MCMC_Copy_To_New_Param_Val(t_mcmc *mcmc, t_tree *tree)
   mcmc->new_param_val[mcmc->num_move_nu]          = tree->rates->nu;
   mcmc->new_param_val[mcmc->num_move_clock_r]     = tree->rates->clock_r;
   mcmc->new_param_val[mcmc->num_move_tree_height] = tree->rates->nd_t[tree->n_root->num];
-  mcmc->new_param_val[mcmc->num_move_kappa]       = tree->mod->kappa->v;
+  mcmc->new_param_val[mcmc->num_move_kappa]       = tree->mod ? tree->mod->kappa->v : -1.;
   mcmc->new_param_val[mcmc->num_move_birth_rate]  = tree->rates->birth_rate;
+
+
+  mcmc->new_param_val[mcmc->num_move_geo_tau]    = tree->geo ? tree->geo->tau   : -1.;
+  mcmc->new_param_val[mcmc->num_move_geo_lambda] = tree->geo ? tree->geo->lbda  : -1.;
+  mcmc->new_param_val[mcmc->num_move_geo_sigma]  = tree->geo ? tree->geo->sigma : -1.;
+
 
   For(i,2*tree->n_otu-2)
     mcmc->new_param_val[mcmc->num_move_br_r+i] = tree->rates->br_r[i];
