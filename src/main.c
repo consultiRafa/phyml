@@ -195,12 +195,6 @@ int main(int argc, char **argv)
 		    }
 
 
-          /* BFGS(tree,tree->mod->m4mod->o_rr,5,1.e-5,1.e-5, */
-          /*      &Return_Abs_Lk, */
-          /*      &Num_Derivative_Several_Param, */
-          /*      &Lnsrch,&failed); */
-          
-
 		  if(tree->mod->s_opt->opt_topo)
 		    {
 		      if(tree->mod->s_opt->topo_search      == NNI_MOVE) Simu_Loop(tree);
@@ -221,6 +215,10 @@ int main(int argc, char **argv)
 		  Pars(NULL,tree);
 		  Get_Tree_Size(tree);
 		  PhyML_Printf("\n\n. Log likelihood of the current tree: %f.",tree->c_lnL);
+
+                  //
+                  /* ML_Ancestral_Sequences(tree); */
+                  //
 
 		  Br_Len_Involving_Invar(tree);
 		  Rescale_Br_Len_Multiplier_Tree(tree);

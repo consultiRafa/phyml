@@ -5675,7 +5675,7 @@ void Make_Topology_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
      !strcmp(init_tree,"User"))
     {
       char *starting_tree = NULL;
-      starting_tree = XML_Get_Attribute_Value(instance,"filename");
+      starting_tree = XML_Get_Attribute_Value(instance,"file.name");
       
       if(!Filexists(starting_tree))
         {
