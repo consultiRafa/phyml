@@ -744,30 +744,17 @@ void Optimiz_All_Free_Param(t_tree *tree, int verbose)
 
   if((tree->mod->s_opt->opt_free_mixt_rates) && (tree->mod->ras->free_mixt_rates == YES))
     {
-      /* int failed; */
+      int failed;
       int i;
         
-      /* failed = 0; */
-      /* Switch_Eigen(YES,mod); */
-      /* BFGS(tree,tree->mod->ras->gamma_r_proba_unscaled,tree->mod->ras->n_catg,1.e-5,1.e-5, */
-      /* 	   &Return_Abs_Lk, */
-      /* 	   &Num_Derivative_Several_Param, */
-      /* 	   &Lnsrch,&failed); */
-
       if(verbose) Print_Lk(tree,"[Rate class freqs.  ]");
 
-      /* For(i,tree->mod->ras->n_catg-1) */
-      /* 	{ */
-      /* 	  Generic_Brent_Lk(&(tree->mod->ras->gamma_r_proba_unscaled->v[i]), */
-      /* 			   0., */
-      /* 			   100, */
-      /* 			   tree->mod->s_opt->min_diff_lk_local, */
-      /* 			   tree->mod->s_opt->brent_it_max, */
-      /* 			   tree->mod->s_opt->quickdirty, */
-      /* 			   Wrap_Lk,NULL,tree,NULL); */
-      /* 	} */
+      failed = 0;
+      BFGS(tree,tree->mod->ras->gamma_r_proba_unscaled->v,tree->mod->ras->n_catg,1.e-5,1.e-5,
+      	   &Return_Abs_Lk,
+      	   &Num_Derivative_Several_Param,
+      	   &Lnsrch,&failed);
 
-      tree->mod->ras->gamma_r_proba_unscaled->v[tree->mod->ras->n_catg-1] = 100.;
       For(i,tree->mod->ras->n_catg-1)
       	{
       	  if(!i)
@@ -778,18 +765,23 @@ void Optimiz_All_Free_Param(t_tree *tree, int verbose)
       			     tree->mod->s_opt->brent_it_max,
       			     tree->mod->s_opt->quickdirty,
       			     Wrap_Lk,NULL,tree,NULL);
-      	  else
+          else
       	    Generic_Brent_Lk(&(tree->mod->ras->gamma_r_proba_unscaled->v[i]),
       			     tree->mod->ras->gamma_r_proba_unscaled->v[i-1],
       			     tree->mod->ras->gamma_r_proba_unscaled->v[i+1],
       			     tree->mod->s_opt->min_diff_lk_local,
       			     tree->mod->s_opt->brent_it_max,
       			     tree->mod->s_opt->quickdirty,
-      			     Wrap_Lk,NULL,tree,NULL);
+      			     Wrap_Lk,NULL,tree,NULL);          
       	}
       
-      
       if(verbose) Print_Lk(tree,"[Rate class values  ]");
+
+      /* failed = 0; */
+      /* BFGS(tree,tree->mod->ras->gamma_rr_unscaled->v,tree->mod->ras->n_catg,1.e-5,1.e-5, */
+      /* 	   &Return_Abs_Lk, */
+      /* 	   &Num_Derivative_Several_Param, */
+      /* 	   &Lnsrch,&failed); */
 
       For(i,tree->mod->ras->n_catg) 
 	{

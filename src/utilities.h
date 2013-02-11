@@ -763,6 +763,9 @@ typedef struct __RAS {
   int          parent_class_number;
   scalar_dbl               *pinvar; /*! proportion of invariable sites */
 
+  short int                init_rr;
+  short int           init_r_proba;
+
   struct __RAS               *next;
   struct __RAS               *prev;
 

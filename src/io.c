@@ -4355,6 +4355,10 @@ void PhyML_XML(char *xml_filename)
         {
           io->ratio_test = SH;
         }
+      else if(!strcmp(s,"no") || !strcmp(s,"none"))
+        {
+          io->ratio_test = 0;
+        }
       else
         {
           PhyML_Printf("\n== '%s' is not a valid option for 'branch.test'.",s);
@@ -4889,6 +4893,9 @@ void PhyML_XML(char *xml_filename)
 			    instance->ds->next->obj = (int *)(class_num + class_number);
 
 			    iomod->ras->gamma_rr->v[class_number] = val;
+			    iomod->ras->gamma_rr_unscaled->v[class_number] = val;
+
+                            iomod->ras->init_rr = NO;
 
                             if(Are_Equal(val,0.0,1E-20) == NO) class_number++;
 			  }
@@ -4920,7 +4927,10 @@ void PhyML_XML(char *xml_filename)
 			      }
 			    else
 			      {
-				iomod->ras->gamma_r_proba->v[*((int *)instance->ds->next->obj)] = String_To_Dbl(weight);
+                                int class;
+                                class = *((int *)instance->ds->next->obj);
+				iomod->ras->gamma_r_proba->v[class] = String_To_Dbl(weight);
+                                iomod->ras->init_r_proba = NO;
 			      }
     			  }
 
@@ -5074,6 +5084,8 @@ void PhyML_XML(char *xml_filename)
   while(io->prev != NULL) io = io->prev;
   while(mixt_tree->prev != NULL) mixt_tree = mixt_tree->prev;
 
+
+
   /*! Finish making the models */
   mod = mixt_tree->mod;
   do
@@ -5102,14 +5114,21 @@ void PhyML_XML(char *xml_filename)
   For(num_rand_tree,io->mod->s_opt->n_rand_starts)
     {      
       /*! Initialize the models */
-      mod  = mixt_tree->mod;
+      mod = mixt_tree->mod;
       do
         {
           Init_Model(mod->io->cdata,mod,io);
           mod = mod->next;
         }
       while(mod);
-            
+
+      /* printf("\n%f %f %f %f", */
+      /*        mixt_tree->mod->ras->gamma_r_proba->v[0], */
+      /*        mixt_tree->mod->ras->gamma_r_proba->v[1], */
+      /*        mixt_tree->mod->ras->gamma_r_proba->v[2], */
+      /*        mixt_tree->mod->ras->gamma_r_proba->v[3]); */
+      /* Exit("\n"); */
+
       Print_Data_Structure(NO,stdout,mixt_tree);
 
       t_tree *bionj_tree = NULL;      
@@ -5249,7 +5268,7 @@ void PhyML_XML(char *xml_filename)
       
       MIXT_Check_Invar_Struct_In_Each_Partition_Elem(mixt_tree);
       MIXT_Check_RAS_Struct_In_Each_Partition_Elem(mixt_tree);
-            
+      
       tree = mixt_tree;
       do
         {
@@ -5257,7 +5276,7 @@ void PhyML_XML(char *xml_filename)
           tree = tree->next;
         }
       while(tree);
-            
+
       if(mixt_tree->mod->s_opt->opt_topo)
         {
           if(mixt_tree->mod->s_opt->topo_search      == NNI_MOVE) Simu_Loop(mixt_tree);
@@ -5267,8 +5286,15 @@ void PhyML_XML(char *xml_filename)
       else
         {
           if(mixt_tree->mod->s_opt->opt_subst_param || 
-             mixt_tree->mod->s_opt->opt_bl)                       Round_Optimize(mixt_tree,mixt_tree->data,ROUND_MAX);
-          else                                                    Lk(NULL,mixt_tree);
+             mixt_tree->mod->s_opt->opt_bl)                       
+            {
+              
+              Round_Optimize(mixt_tree,mixt_tree->data,ROUND_MAX);
+            }
+          else                                                    
+            {
+              Lk(NULL,mixt_tree);
+            }
         }
 
       
@@ -5880,7 +5906,7 @@ void Make_RAS_From_XML_Node(xml_node *parent, t_mod *mod)
             if(pinv)
               {
                 if(!strcmp(pinv,"estimate") || !strcmp(pinv,"estimated") || 
-                   !strcmp(pinv,"optimise.pinv") || !strcmp(pinv,"opt.pinv"))
+                   !strcmp(pinv,"optimise") || !strcmp(pinv,"optimised"))
                   {
                     mod->s_opt->opt_pinvar = YES;
                   }
@@ -5910,15 +5936,33 @@ void Make_RAS_From_XML_Node(xml_node *parent, t_mod *mod)
           }
         case 2: // FreeRate model
           {
+            char *opt_freerates;
+
             mod->ras->free_mixt_rates = YES;
-            mod->s_opt->opt_free_mixt_rates = YES;				      
+            
+            mod->s_opt->opt_free_mixt_rates = YES;
+
+            opt_freerates = XML_Get_Attribute_Value(w,"optimise.freerates");
+                        
+            if(opt_freerates)
+              {
+                if(!strcmp(opt_freerates,"yes") || !strcmp(opt_freerates,"true"))
+                  {
+                    mod->s_opt->opt_free_mixt_rates = YES;
+                  }
+                else 
+                  {					  
+                    mod->s_opt->opt_free_mixt_rates = NO;
+                  }
+              }
+
             mod->ras->n_catg = XML_Get_Number_Of_Classes_Siterates(parent);
             break;
           }
         default:
           {
             PhyML_Printf("\n== family: %s",family);
-            PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+            PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
             Exit("\n");
           }
         }

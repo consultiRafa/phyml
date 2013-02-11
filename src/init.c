@@ -600,6 +600,9 @@ void Set_Defaults_Model(t_mod *mod)
 
   
   mod->ras->parent_class_number = 0;
+  mod->ras->init_r_proba        = YES;
+  mod->ras->init_rr             = YES;
+
 
 #if !(defined PHYTIME || defined SERGEII)
   mod->l_min = 1.E-8;
@@ -923,10 +926,26 @@ void Init_Model(calign *data, t_mod *mod, option *io)
       mod->l_max = LOG(mod->l_max);
     }
 
-  For(i,mod->ras->n_catg) mod->ras->gamma_r_proba->v[i]          = (phydbl)1./mod->ras->n_catg;
-  For(i,mod->ras->n_catg) mod->ras->gamma_r_proba_unscaled->v[i] = (phydbl)i;
-  For(i,mod->ras->n_catg) mod->ras->gamma_rr->v[i]               = (phydbl)i;
-  For(i,mod->ras->n_catg) mod->ras->gamma_rr_unscaled->v[i]      = (phydbl)i;
+
+  if(mod->ras->init_r_proba == YES)
+    {
+      For(i,mod->ras->n_catg) mod->ras->gamma_r_proba->v[i]          = (phydbl)1./mod->ras->n_catg;
+      For(i,mod->ras->n_catg) mod->ras->gamma_r_proba_unscaled->v[i] = (phydbl)i;
+    }
+  else
+    {
+      mod->ras->gamma_r_proba_unscaled->v[0] = mod->ras->gamma_r_proba->v[0];
+      for(i=1;i<mod->ras->n_catg;i++)
+        mod->ras->gamma_r_proba_unscaled->v[i] = 
+          mod->ras->gamma_r_proba_unscaled->v[i-1] +
+          mod->ras->gamma_r_proba->v[i];
+    }
+
+  if(mod->ras->init_rr == YES)
+    {
+      For(i,mod->ras->n_catg) mod->ras->gamma_rr->v[i]               = (phydbl)i;
+      For(i,mod->ras->n_catg) mod->ras->gamma_rr_unscaled->v[i]      = (phydbl)i;
+    }
 
   mod->br_len_multiplier->v = 1.0;
 
