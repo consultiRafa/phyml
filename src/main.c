@@ -24,7 +24,7 @@ the GNU public licence. See http://www.opensource.org for details.
 #include "alrt.h"
 #include "mixt.h"
 #include "sergeii.h"
-#include "geo.h"
+//#include "geo.h"
 
 #ifdef MPI
 #include "mpi_boot.h"
@@ -498,7 +498,7 @@ int main(int argc, char **argv)
 }
 
 #elif(GEO)
-#include "geo.h"
+//#include "geo.h"
 int main(int argc, char **argv)
 {
   GEO_Main(argc,argv);

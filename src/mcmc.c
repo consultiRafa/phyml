@@ -25,7 +25,7 @@ void MCMC(t_tree *tree)
   phydbl u;
   int first,secod;
   int i;
-
+ 
   RATES_Set_Clock_And_Nu_Max(tree);
   RATES_Set_Birth_Rate_Boundaries(tree);
  
@@ -33,7 +33,7 @@ void MCMC(t_tree *tree)
     {
       MCMC_Randomize_Birth(tree);
       MCMC_Randomize_Nu(tree);
-      MCMC_Randomize_Node_Times(tree); 
+      MCMC_Randomize_Node_Times(tree);   
       MCMC_Sim_Rate(tree->n_root,tree->n_root->v[2],tree);
       MCMC_Sim_Rate(tree->n_root,tree->n_root->v[1],tree);
       MCMC_Randomize_Node_Rates(tree);
@@ -54,16 +54,17 @@ void MCMC(t_tree *tree)
   
   Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
   Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
-
   For(i,2*tree->n_otu-2) tree->rates->br_do_updt[i] = YES;  
-  RATES_Update_Cur_Bl(tree);
+  RATES_Update_Cur_Bl(tree);  
   RATES_Lk_Rates(tree);	
   TIMES_Lk_Times(tree); 
-  Set_Both_Sides(NO,tree);  
+  Set_Both_Sides(NO,tree);     
   if(tree->mcmc->use_data) Lk(NULL,tree);
   else tree->c_lnL = 0.0;
   Switch_Eigen(NO,tree->mod);
   MCMC_Print_Param(tree->mcmc,tree);
+ 
+
 
   //////////////////
   if(tree->io->mutmap == YES)
@@ -71,7 +72,7 @@ void MCMC(t_tree *tree)
       int j;
       char *s,*t;
       FILE *fp;
-      
+     
       Make_Ancestral_Seq(tree);
       Make_MutMap(tree);
  
@@ -112,7 +113,7 @@ void MCMC(t_tree *tree)
       Free(t);
     }
 
-
+ 
   first = 2;
   secod = 1;
   do
@@ -256,8 +257,8 @@ void MCMC(t_tree *tree)
       /* Covarion change calibration interval */
       else if(!strcmp(tree->mcmc->move_name[move],"jump_calibration"))
       	{
-      	  MCMC_Jump_Calibration(tree);
-	}
+          MCMC_Jump_Calibration(tree);
+        }
 
       /* Covarion model parameters */
       else if(!strcmp(tree->mcmc->move_name[move],"cov_rates"))
@@ -281,9 +282,14 @@ void MCMC(t_tree *tree)
 
       	  if(tree->mcmc->is == NO || tree->rates->model_log_rates == YES)
       	    {
+              //for(i = tree -> n_otu; i < 2*tree -> n_otu - 1; i++) printf("\n. '%d' '%f' \n", i, tree -> rates -> nd_t[i]);
               MCMC_Root_Time(tree);
+              //for(i = tree -> n_otu; i < 2*tree -> n_otu - 1; i++) printf("\n. '%d' '%f' \n", i, tree -> rates -> nd_t[i]);
 	      MCMC_One_Time(tree->n_root,tree->n_root->v[first],YES,tree);
+              //for(i = tree -> n_otu; i < 2*tree -> n_otu - 1; i++) printf("\n. '%d' '%f' \n", i, tree -> rates -> nd_t[i]);
 	      MCMC_One_Time(tree->n_root,tree->n_root->v[secod],YES,tree);
+              //for(i = tree -> n_otu; i < 2*tree -> n_otu - 1; i++) printf("\n. '%d' '%f' \n", i, tree -> rates -> nd_t[i]);
+              //Exit("\n");
       	    }
       	  else
       	    {
@@ -379,6 +385,7 @@ void MCMC(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+
 void MCMC_Single_Param_Generic(phydbl *val, 
 			       phydbl lim_inf, 
 			       phydbl lim_sup, 
@@ -452,14 +459,6 @@ void MCMC_Single_Param_Generic(phydbl *val,
       ratio = EXP(ratio);
       alpha = MIN(1.,ratio);
       
-      /* printf("\n. %s cur_val: %f new_val:%f cur_lnL: %f new_lnL: %f ratio: %f", */
-      /*        tree->mcmc->move_name[move_num], */
-      /*        cur_val, */
-      /*        new_val, */
-      /*        cur_lnLike, */
-      /*        new_lnLike, */
-      /*        ratio); */
-
       u = Uni();
       if(u > alpha) /* Reject */
 	{
@@ -468,7 +467,7 @@ void MCMC_Single_Param_Generic(phydbl *val,
 	  if(lnPrior) *lnPrior = cur_lnPrior;
 	  if(lnLike)  *lnLike  = cur_lnLike;
 	  Restore_Br_Len(tree);
-	  if(tree->mod && tree->mod->update_eigen) Update_Eigen(tree->mod);
+	  if(tree->mod->update_eigen) Update_Eigen(tree->mod);
 	}
       else /* Accept */
 	{
@@ -505,8 +504,7 @@ void MCMC_Update_Effective_Sample_Size(int move_num, t_mcmc *mcmc, t_tree *tree)
   mcmc->sum_val[move_num]            += new_val;
   mcmc->sum_valsq[move_num]          += POW(new_val,2);
   mcmc->sum_curval_nextval[move_num] += cur_val * new_val;
-
-
+  	
   mcmc->ess[move_num] = 
     Effective_Sample_Size(mcmc->first_val[move_num],
 			  new_val,
@@ -558,127 +556,6 @@ void MCMC_Clock_R(t_tree *mixt_tree)
     }
   while(tree);
 }
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-#if defined(PHYLOGEO)
-
-// Sample dispersal parameter from a phylogeo model
-void MCMC_Geo_Sigma(t_tree *mixt_tree)
-{
-  t_tree *tree;
-
-  tree = mixt_tree;
-  do
-    {
-      MCMC_Single_Param_Generic(&(tree->geo->sigma),
-                                mixt_tree->geo->min_sigma,
-                                mixt_tree->geo->max_sigma,
-                                mixt_tree->mcmc->num_move_geo_sigma,
-                                NULL,&(mixt_tree->geo->c_lnL),
-                                NULL,GEO_Wrap_Lk,
-                                mixt_tree->mcmc->move_type[mixt_tree->mcmc->num_move_geo_sigma],
-                                NO,NULL,mixt_tree,NULL);
-
-      tree = tree->next;
-    }
-  while(tree);
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-// Sample competition parameter from a phylogeo model
-void MCMC_Geo_Lbda(t_tree *mixt_tree)
-{
-  t_tree *tree;
-
-  tree = mixt_tree;
-  do
-    {
-      MCMC_Single_Param_Generic(&(tree->geo->lbda),
-                                mixt_tree->geo->min_lbda,
-                                mixt_tree->geo->max_lbda,
-                                mixt_tree->mcmc->num_move_geo_lambda,
-                                NULL,&(mixt_tree->geo->c_lnL),
-                                NULL,GEO_Wrap_Lk,
-                                mixt_tree->mcmc->move_type[mixt_tree->mcmc->num_move_geo_lambda],
-                                NO,NULL,mixt_tree,NULL);
-
-      tree = tree->next;
-    }
-  while(tree);
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-// Sample global migration rate parameter from a phylogeo model
-void MCMC_Geo_Tau(t_tree *mixt_tree)
-{
-  t_tree *tree;
-
-  tree = mixt_tree;
-  do
-    {
-      MCMC_Single_Param_Generic(&(tree->geo->tau),
-                                mixt_tree->geo->min_tau,
-                                mixt_tree->geo->max_tau,
-                                mixt_tree->mcmc->num_move_geo_tau,
-                                NULL,&(mixt_tree->geo->c_lnL),
-                                NULL,GEO_Wrap_Lk,
-                                mixt_tree->mcmc->move_type[mixt_tree->mcmc->num_move_geo_tau],
-                                NO,NULL,mixt_tree,NULL);
-
-      tree = tree->next;
-    }
-  while(tree);
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-void MCMC_Geo_Loc(t_tree *tree)
-{
-  int target;
-  int *rec_loc; // recorded locations
-  int i;
-  phydbl cur_lnL, new_lnL;
-  phydbl u, ratio, alpha;
-
-  cur_lnL = tree->geo->c_lnL;
-
-  rec_loc = (int *)mCalloc(2*tree->n_otu-1,sizeof(int));
-
-  For(i,2*tree->n_otu-1) rec_loc[i] = tree->geo->loc[i];
-
-  // Choose an internal node (including the root) at random 
-  target = Rand_Int(tree->n_otu,2*tree->n_otu-2); 
-
-  // Randomize the locations below the selected node
-  GEO_Randomize_Locations(tree->a_nodes[target], 
-                          tree->geo,
-                          tree);
-  
-  new_lnL = GEO_Lk(tree->geo,tree);
-
-  ratio = (new_lnL - cur_lnL);        
-  ratio = EXP(ratio);
-  alpha = MIN(1.,ratio);      
-  u = Uni();
-
-  if(u > alpha) /* Reject */
-    {
-      For(i,2*tree->n_otu-1) tree->geo->loc[i] = rec_loc[i];
-      tree->geo->c_lnL = GEO_Lk(tree->geo,tree); // TO DO: you only need to update the occupation vector here...
-    }
-
-  Free(rec_loc);
-
-}
-
-#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -1144,10 +1021,140 @@ void MCMC_One_Time(t_node *a, t_node *d, int traversal, t_tree *tree)
 
 void MCMC_Jump_Calibration(t_tree *tree)
 {
-}
+  phydbl u;
+  //phydbl t_min, t_max;
+  //phydbl t1_cur, t1_new;
+  phydbl cur_lnL_data, new_lnL_data;
+  phydbl cur_lnL_rate, new_lnL_rate;
+  phydbl cur_lnL_time, new_lnL_time;
+  phydbl cur_lnL_Hastings_ratio, new_lnL_Hastings_ratio;
+  phydbl ratio,alpha;
+  //t_edge *b1,*b2,*b3;
+  int    i, rnd_node, result;
+  //phydbl t0,t2,t3;
+  //t_node *v2,*v3;
+  phydbl K;
+  //phydbl cur_tot_prob, new_tot_prob;
+  int move_num;
+  int tot_num;
 
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
+  tot_num = Number_Of_Comb(tree -> rates -> calib);
+  if(tot_num > 1)
+    {
+      //cur_tot_prob = 1.0;
+      //Lk_Hastings_Ratio_Times(tree -> n_root, tree -> n_root -> v[2], &cur_tot_prob, tree);
+      //Lk_Hastings_Ratio_Times(tree -> n_root, tree -> n_root -> v[1], &cur_tot_prob, tree);
+      //t_min = tree -> rates -> t_prior_min[tree -> n_root -> num];
+      //t_max = MIN(tree -> rates -> nd_t[tree -> n_root -> v[1] -> num], tree -> rates -> nd_t[tree -> n_root -> v[2] -> num]);
+      //cur_tot_prob += LOG(1) - LOG(t_max - t_min);
+      ///////////////////////////////////////////////////////////////////////////////////////////
+      //for(i = tree -> n_otu; i < 2 * tree -> n_otu - 1; i++) printf("\n. '%f' '%f' \n", tree -> rates -> t_prior_min[i], tree -> rates -> t_prior_max[i]);
+      //for(i = tree -> n_otu; i < 2 * tree -> n_otu - 1; i++) printf("\n. '%f' \n", tree -> rates -> nd_t[i]);
+      ///////////////////////////////////////////////////////////////////////////////////////////
+      Record_Br_Len(tree);
+      RATES_Record_Rates(tree);
+      RATES_Record_Times(tree);
+      TIMES_Record_Prior_Times(tree);
+
+      move_num       = tree -> mcmc -> num_move_jump_calibration;
+      //K              = tree -> mcmc -> tune_move[move_num];  
+      cur_lnL_data   = tree -> c_lnL;
+      cur_lnL_rate   = tree -> rates -> c_lnL_rates;
+      cur_lnL_Hastings_ratio   = tree -> rates -> c_lnL_Hastings_ratio;
+      new_lnL_data   = cur_lnL_data;
+      new_lnL_rate   = cur_lnL_rate;
+      new_lnL_Hastings_ratio =  cur_lnL_Hastings_ratio;
+      ratio          = 0.0;
+      cur_lnL_time   = tree -> rates -> c_lnL_times;
+      new_lnL_time   = cur_lnL_time;
+
+      
+      rnd_node = RND_Calibration_And_Node_Number(tree); 
+
+      result = TRUE;
+
+      Check_Node_Time(tree -> n_root, tree -> n_root -> v[1], &result, tree); 
+      Check_Node_Time(tree -> n_root, tree -> n_root -> v[2], &result, tree);
+      ///////////////////////////////////////////////////////////////////////////////////////////
+      //for(i = tree -> n_otu; i < 2 * tree -> n_otu -1; i++) printf("\n. Node number:%d Min:%f Max:%f Cur.time:%f \n", i, tree -> rates -> t_prior_min[i], tree -> rates -> t_prior_max[i], tree -> rates -> nd_t[i]); 
+      //PhyML_Printf("\n. .......................................................................\n");
+      ///////////////////////////////////////////////////////////////////////////////////////////
+      new_lnL_Hastings_ratio = 0.0;
+      if(result != TRUE) 
+        {
+          Update_Times_Down_Tree(tree -> n_root, tree -> n_root -> v[1], &new_lnL_Hastings_ratio, tree);
+          Update_Times_Down_Tree(tree -> n_root, tree -> n_root -> v[2], &new_lnL_Hastings_ratio, tree);
+        }
+      else return;
+
+      result = TRUE;
+
+      Check_Node_Time(tree -> n_root, tree -> n_root -> v[1], &result, tree); 
+      Check_Node_Time(tree -> n_root, tree -> n_root -> v[2], &result, tree);
+
+      ///////////////////////////////////////////////////////////////////////////////////////////
+      //for(i = tree -> n_otu; i < 2 * tree -> n_otu -1; i++) printf("\n. Node number:%d Min:%f Max:%f Cur.time:%f \n", i, tree -> rates -> t_prior_min[i], tree -> rates -> t_prior_max[i], tree -> rates -> nd_t[i]); 
+      //PhyML_Printf("\n. .......................................................................\n");
+      /////////////////////////////////////////////////////////////////////////////////////////// 
+
+    if(result != TRUE)
+        {
+          PhyML_Printf("\n==You have a problem with calibration information.\n");
+          PhyML_Printf("\n==Err in file %s at line %d\n",__FILE__,__LINE__);
+          Exit("\n");
+        }
+ 
+      
+      ///////////////////////////////////////////////////////////////////////////////////////////
+      //Exit("\n");
+      ///////////////////////////////////////////////////////////////////////////////////////////
+      //new_tot_prob = 1.0;
+      //Lk_Hastings_Ratio_Times(tree -> n_root, tree -> n_root -> v[2], &new_tot_prob, tree);
+      //Lk_Hastings_Ratio_Times(tree -> n_root, tree -> n_root -> v[1], &new_tot_prob, tree);
+      //t_min = tree -> rates -> t_prior_min[tree -> n_root -> num];
+      //t_max = MIN(tree -> rates -> nd_t[tree -> n_root -> v[1] -> num], tree -> rates -> nd_t[tree -> n_root -> v[2] -> num]);
+      //new_tot_prob += LOG(1) - LOG(t_max - t_min);
+
+      For(i,2*tree->n_otu-2) tree->rates->br_do_updt[i] = YES;
+      RATES_Update_Cur_Bl(tree);
+      if(tree->mcmc->use_data) new_lnL_data = Lk(NULL,tree);
+      
+      new_lnL_rate = RATES_Lk_Rates(tree);
+      new_lnL_time = TIMES_Lk_Times(tree);      
+     
+      /* Likelihood ratio */
+      if(tree->mcmc->use_data) ratio += (new_lnL_data - cur_lnL_data);
+      
+      /* Prior ratio */
+      ratio += (new_lnL_rate - cur_lnL_rate);
+      ratio += (new_lnL_time - cur_lnL_time);
+      ratio += (cur_lnL_Hastings_ratio - new_lnL_Hastings_ratio); //Hastings ratio
+       
+      ratio = EXP(ratio);
+      alpha = MIN(1.,ratio);
+      u = Uni();
+      
+      if(u > alpha)
+        {
+          RATES_Reset_Times(tree);
+          Restore_Br_Len(tree);
+          TIMES_Reset_Prior_Times(tree);
+          tree->c_lnL = cur_lnL_data;
+          tree->rates->c_lnL_rates = cur_lnL_rate;
+          tree->rates->c_lnL_times = cur_lnL_time;
+          tree->rates->c_lnL_Hastings_ratio = cur_lnL_Hastings_ratio;
+        }
+      else
+        {
+          tree->mcmc->acc_move[move_num]++;
+        }
+      
+      tree->mcmc->run_move[move_num]++;
+    }
+  
+}
+  //////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////
 
 void MCMC_Root_Time(t_tree *tree)
 {
@@ -2124,7 +2131,7 @@ void MCMC_Print_Param_Stdin(t_mcmc *mcmc, t_tree *tree)
       if(tree->rates->model == THORNE || tree->rates->model == GUINDON) PhyML_Printf("  %16s","AutoCor[ ESS ]");    
       else PhyML_Printf("  %16s","RateVar[ ESS ]");
       PhyML_Printf("  %15s","BirthR[ ESS ]");
-      PhyML_Printf("  %8s","MinESS");    
+      PhyML_Printf("  %8s","MinESS");   
     }
 
   if((cur_time - mcmc->t_last_print) >  mcmc->print_every)
@@ -2134,18 +2141,12 @@ void MCMC_Print_Param_Stdin(t_mcmc *mcmc, t_tree *tree)
       PhyML_Printf("%9d",tree->mcmc->run);
       PhyML_Printf("  %5d",(int)(cur_time-mcmc->t_beg));
       PhyML_Printf("  %10.2f",tree->c_lnL);
-      PhyML_Printf("  %10.2f",(tree->rates ? tree->rates->c_lnL_rates+tree->rates->c_lnL_times : +1));
+      PhyML_Printf("  %10.2f",tree->rates->c_lnL_rates+tree->rates->c_lnL_times);
       PhyML_Printf("  %12.6f[%5.0f]",RATES_Average_Substitution_Rate(tree),tree->mcmc->ess[tree->mcmc->num_move_clock_r]);
       /* PhyML_Printf("\t%12.6f[%5.0f]",tree->rates->clock_r,tree->mcmc->ess[tree->mcmc->num_move_clock_r]); */
-      PhyML_Printf("  %10.1f[%5.0f]",
-                   (tree->rates ? tree->rates->nd_t[tree->n_root->num] : -1.),
-                   tree->mcmc->ess[tree->mcmc->num_move_nd_t+tree->n_root->num-tree->n_otu]);
-      PhyML_Printf("  %9f[%5.0f]",
-                   (tree->rates ? tree->rates->nu : -1.),
-                   tree->mcmc->ess[tree->mcmc->num_move_nu]);
-      PhyML_Printf("  %8f[%5.0f]",
-                   (tree->rates ? tree->rates->birth_rate : -1.),
-                   tree->mcmc->ess[tree->mcmc->num_move_birth_rate]);
+      PhyML_Printf("  %10.1f[%5.0f]",tree->rates->nd_t[tree->n_root->num],tree->mcmc->ess[tree->mcmc->num_move_nd_t+tree->n_root->num-tree->n_otu]);
+      PhyML_Printf("  %9f[%5.0f]",tree->rates->nu,tree->mcmc->ess[tree->mcmc->num_move_nu]);
+      PhyML_Printf("  %8f[%5.0f]",tree->rates->birth_rate,tree->mcmc->ess[tree->mcmc->num_move_birth_rate]);
       PhyML_Printf("  %8.0f",min);
     }
 }
@@ -3332,8 +3333,8 @@ void MCMC_Adjust_Tuning_Parameter(int move, t_mcmc *mcmc)
       /* 	} */
       else
 	{
-	  rate_inf = 0.234; // Gareth Robert's magic number !
-	  rate_sup = 0.234;
+	  rate_inf = 0.2;
+	  rate_sup = 0.2;
 	}
 
       /* PhyML_Printf("\n. %s acc=%d run=%d tune=%f", */
@@ -3988,16 +3989,13 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->num_move_tree_rates       = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_subtree_rates    = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_updown_nu_cr     = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_ras              = mcmc->n_moves; mcmc->n_moves += (tree->mod ? 2*tree->mod->ras->n_catg : 1);
+  mcmc->num_move_ras              = mcmc->n_moves; mcmc->n_moves += 2*tree->mod->ras->n_catg;
   mcmc->num_move_updown_t_cr      = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_cov_rates        = mcmc->n_moves; mcmc->n_moves += (tree->mod ? 2*tree->mod->m4mod->n_h : 1);
+  mcmc->num_move_cov_rates        = mcmc->n_moves; mcmc->n_moves += 2*tree->mod->m4mod->n_h;
   mcmc->num_move_cov_switch       = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_birth_rate       = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_updown_t_br      = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_jump_calibration = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_geo_lambda       = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_geo_sigma        = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_geo_tau          = mcmc->n_moves; mcmc->n_moves += 1;
 
   mcmc->run_move           = (int *)mCalloc(mcmc->n_moves,sizeof(int));
   mcmc->acc_move           = (int *)mCalloc(mcmc->n_moves,sizeof(int));
@@ -4036,19 +4034,15 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   strcpy(mcmc->move_name[mcmc->num_move_tree_rates],"tree_rates");
   strcpy(mcmc->move_name[mcmc->num_move_subtree_rates],"subtree_rates");
   strcpy(mcmc->move_name[mcmc->num_move_updown_nu_cr],"updown_nu_cr");
-  for(i=mcmc->num_move_ras;i<mcmc->num_move_ras+(tree->mod ? 2*tree->mod->ras->n_catg : 1);i++) 
+  for(i=mcmc->num_move_ras;i<mcmc->num_move_ras+2*tree->mod->ras->n_catg;i++) 
     strcpy(mcmc->move_name[i],"ras");  
   strcpy(mcmc->move_name[mcmc->num_move_updown_t_cr],"updown_t_cr");
-  for(i=mcmc->num_move_cov_rates;i<mcmc->num_move_cov_rates+(tree->mod ? 2*tree->mod->m4mod->n_h : 1);i++) 
+  for(i=mcmc->num_move_cov_rates;i<mcmc->num_move_cov_rates+2*tree->mod->m4mod->n_h;i++) 
     strcpy(mcmc->move_name[i],"cov_rates");  
   strcpy(mcmc->move_name[mcmc->num_move_cov_switch],"cov_switch");
   strcpy(mcmc->move_name[mcmc->num_move_birth_rate],"birth_rate");
   strcpy(mcmc->move_name[mcmc->num_move_updown_t_br],"updown_t_br");
-  strcpy(mcmc->move_name[mcmc->num_move_jump_calibration],"jump_calibration");
-  strcpy(mcmc->move_name[mcmc->num_move_geo_lambda],"geo_lambda");
-  strcpy(mcmc->move_name[mcmc->num_move_geo_sigma],"geo_sigma");
-  strcpy(mcmc->move_name[mcmc->num_move_geo_tau],"geo_tau");
-
+  strcpy(mcmc->move_name[mcmc->num_move_updown_t_br],"jump_calibration");
   
   if(tree->rates->model_log_rates == YES)
     for(i=mcmc->num_move_br_r;i<mcmc->num_move_br_r+2*tree->n_otu-2;i++) mcmc->move_type[i] = MCMC_MOVE_RANDWALK_NORMAL;  
@@ -4066,16 +4060,13 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_type[mcmc->num_move_tree_rates] = MCMC_MOVE_SCALE_THORNE;
   mcmc->move_type[mcmc->num_move_subtree_rates] = MCMC_MOVE_SCALE_THORNE;
   mcmc->move_type[mcmc->num_move_updown_nu_cr] = MCMC_MOVE_RANDWALK_NORMAL;
-  for(i=mcmc->num_move_ras;i<mcmc->num_move_ras+(tree->mod ? 2*tree->mod->ras->n_catg : 1);i++) mcmc->move_type[i] = MCMC_MOVE_RANDWALK_NORMAL;  
+  for(i=mcmc->num_move_ras;i<mcmc->num_move_ras+2*tree->mod->ras->n_catg;i++) mcmc->move_type[i] = MCMC_MOVE_RANDWALK_NORMAL;  
   mcmc->move_type[mcmc->num_move_updown_t_cr] = MCMC_MOVE_SCALE_THORNE;
-  for(i=mcmc->num_move_cov_rates;i<mcmc->num_move_cov_rates+(tree-> mod ? 2*tree->mod->m4mod->n_h : 1);i++) mcmc->move_type[i] = MCMC_MOVE_SCALE_THORNE;
+  for(i=mcmc->num_move_cov_rates;i<mcmc->num_move_cov_rates+2*tree->mod->m4mod->n_h;i++) mcmc->move_type[i] = MCMC_MOVE_SCALE_THORNE;
   mcmc->move_type[mcmc->num_move_cov_switch] = MCMC_MOVE_SCALE_THORNE;
   mcmc->move_type[mcmc->num_move_birth_rate] = MCMC_MOVE_SCALE_THORNE;
   mcmc->move_type[mcmc->num_move_updown_t_br] = MCMC_MOVE_SCALE_THORNE;
   mcmc->move_type[mcmc->num_move_jump_calibration] = MCMC_MOVE_SCALE_THORNE;
-  mcmc->move_type[mcmc->num_move_geo_lambda] = MCMC_MOVE_SCALE_THORNE;
-  mcmc->move_type[mcmc->num_move_geo_sigma] = MCMC_MOVE_SCALE_THORNE;
-  mcmc->move_type[mcmc->num_move_geo_tau] = MCMC_MOVE_SCALE_THORNE;
 
   /* We start with small tuning parameter values in order to have inflated ESS
      for clock_r */
@@ -4121,10 +4112,10 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_tree_rates]       = 1.0;
   mcmc->move_weight[mcmc->num_move_subtree_rates]    = 0.5;
   mcmc->move_weight[mcmc->num_move_updown_nu_cr]     = 0.0;
-  for(i=mcmc->num_move_ras;i<mcmc->num_move_ras+(tree->mod ? 2*tree->mod->ras->n_catg : 1);i++) mcmc->move_weight[i] = 0.5*(1./(tree->mod ? (phydbl)tree->mod->ras->n_catg : 1));
+  for(i=mcmc->num_move_ras;i<mcmc->num_move_ras+2*tree->mod->ras->n_catg;i++) mcmc->move_weight[i] = 0.5*(1./(phydbl)tree->mod->ras->n_catg);
   mcmc->move_weight[mcmc->num_move_updown_t_cr]      = 0.0; /* Does not seem to work well (does not give uniform prior on root height
   							      when sampling from prior) */
-  for(i=mcmc->num_move_cov_rates;i<mcmc->num_move_cov_rates+(tree->mod ? 2*tree->mod->m4mod->n_h : 1);i++) mcmc->move_weight[i] = 0.5*(1./(tree->mod ? (phydbl)tree->mod->m4mod->n_h : 1));
+  for(i=mcmc->num_move_cov_rates;i<mcmc->num_move_cov_rates+2*tree->mod->m4mod->n_h;i++) mcmc->move_weight[i] = 0.5*(1./(phydbl)tree->mod->m4mod->n_h);
   mcmc->move_weight[mcmc->num_move_cov_switch]       = 1.0;
   mcmc->move_weight[mcmc->num_move_birth_rate]       = 2.0;
   mcmc->move_weight[mcmc->num_move_updown_t_br]      = 1.0;
@@ -4133,9 +4124,6 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
 #else
   mcmc->move_weight[mcmc->num_move_jump_calibration] = 0.0;
 #endif
-  mcmc->move_weight[mcmc->num_move_geo_lambda]       = 1.0;
-  mcmc->move_weight[mcmc->num_move_geo_sigma]        = 1.0;
-  mcmc->move_weight[mcmc->num_move_geo_tau]          = 1.0;
 
 
   /* for(i=mcmc->num_move_br_r;i<mcmc->num_move_br_r+2*tree->n_otu-2;i++) mcmc->move_weight[i] = 0.0; /\* Rates *\/ */
@@ -4199,14 +4187,8 @@ void MCMC_Copy_To_New_Param_Val(t_mcmc *mcmc, t_tree *tree)
   mcmc->new_param_val[mcmc->num_move_nu]          = tree->rates->nu;
   mcmc->new_param_val[mcmc->num_move_clock_r]     = tree->rates->clock_r;
   mcmc->new_param_val[mcmc->num_move_tree_height] = tree->rates->nd_t[tree->n_root->num];
-  mcmc->new_param_val[mcmc->num_move_kappa]       = tree->mod ? tree->mod->kappa->v : -1.;
+  mcmc->new_param_val[mcmc->num_move_kappa]       = tree->mod->kappa->v;
   mcmc->new_param_val[mcmc->num_move_birth_rate]  = tree->rates->birth_rate;
-
-
-  mcmc->new_param_val[mcmc->num_move_geo_tau]    = tree->geo ? tree->geo->tau   : -1.;
-  mcmc->new_param_val[mcmc->num_move_geo_lambda] = tree->geo ? tree->geo->lbda  : -1.;
-  mcmc->new_param_val[mcmc->num_move_geo_sigma]  = tree->geo ? tree->geo->sigma : -1.;
-
 
   For(i,2*tree->n_otu-2)
     mcmc->new_param_val[mcmc->num_move_br_r+i] = tree->rates->br_r[i];

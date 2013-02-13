@@ -1257,6 +1257,12 @@ typedef struct __T_Rate {
   int *has_survived;
 
   struct __Calibration *calib;
+  int tot_num_cal;
+  int *curr_nd_for_cal;
+  phydbl c_lnL_Hastings_ratio;
+
+  phydbl     *t_prior_min_buff;
+  phydbl     *t_prior_max_buff;
 
 }t_rate;
 

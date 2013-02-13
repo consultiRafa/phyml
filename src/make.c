@@ -999,6 +999,9 @@ t_rate *RATES_Make_Rate_Struct(int n_otu)
       rates->survival_rank        = (phydbl *)mCalloc(2*n_otu-1,sizeof(phydbl));
       rates->survival_dur         = (phydbl *)mCalloc(2*n_otu-1,sizeof(phydbl));
       rates->calib_prob           = (phydbl *)mCalloc(2*n_otu-1,sizeof(phydbl));
+      rates->curr_nd_for_cal      = (int *)mCalloc(2*n_otu-1,sizeof(int));
+      rates->t_prior_min_buff     = (phydbl *)mCalloc(2*n_otu-1,sizeof(phydbl));
+      rates->t_prior_max_buff     = (phydbl *)mCalloc(2*n_otu-1,sizeof(phydbl));
     }
 
   return rates;

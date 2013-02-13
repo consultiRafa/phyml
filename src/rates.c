@@ -2382,7 +2382,7 @@ void RATES_Update_Cur_Bl(t_tree *tree)
   RATES_Update_Cur_Bl_Pre(tree->n_root,tree->n_root->v[2],NULL,tree);
   RATES_Update_Cur_Bl_Pre(tree->n_root,tree->n_root->v[1],NULL,tree);
   
-  if(tree->mod && tree->mod->log_l == YES)
+  if(tree->mod->log_l == YES)
     {
       tree->e_root->l->v = 
 	EXP(tree->rates->cur_l[tree->n_root->v[2]->num]) +
@@ -2478,7 +2478,7 @@ void RATES_Update_Cur_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 	  tree->rates->cur_l[d->num] = tree->rates->cur_gamma_prior_mean[d->num]; // Required for having proper branch lengths in Write_Tree function
 	}
       
-      if(tree->mod && tree->mod->log_l == YES) tree->rates->cur_l[d->num] = LOG(tree->rates->cur_l[d->num]);
+      if(tree->mod->log_l == YES) tree->rates->cur_l[d->num] = LOG(tree->rates->cur_l[d->num]);
       
       if(b)
 	{
