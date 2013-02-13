@@ -17,33 +17,6 @@
 #endif
 #include <stdlib.h>
 
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-
-void TIMES_Record_Prior_Times(t_tree *tree)
-{
-  int i;
-  For(i,2*tree->n_otu-1) 
-    {
-      tree->rates->t_prior_min_buff[i] = tree->rates->t_prior_min[i];
-      tree->rates->t_prior_max_buff[i] = tree->rates->t_prior_max[i];
-    }
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-
-void TIMES_Reset_Prior_Times(t_tree *tree)
-{
-  int i;
-  For(i,2*tree->n_otu-1) 
-    {
-      tree->rates->t_prior_min[i] = tree->rates->t_prior_min_buff[i];
-      tree->rates->t_prior_max[i] = tree->rates->t_prior_max_buff[i];
-     }
-}
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -59,7 +32,7 @@ void Check_Node_Time(t_node *a, t_node *d, int *result, t_tree *tree)
   t_prior_max = tree -> rates -> t_prior_max;
   nd_t = tree -> rates -> nd_t;
 
-  if(a == tree -> n_root && (nd_t[tree -> n_root -> num] > MIN(t_prior_max[a -> num], MIN(nd_t[a -> v[1] -> num], nd_t[a -> v[2] -> num]))))  
+  if(a == tree -> n_root && (nd_t[a -> num] > MIN(t_prior_max[a -> num], MIN(nd_t[a -> v[1] -> num], nd_t[a -> v[2] -> num]))))  
     {
       *result = FALSE;
       return;
@@ -330,7 +303,7 @@ phydbl Randomize_One_Node_Time(phydbl min, phydbl max)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 //Calculates the Hastings ratio for the analysis. Used in case of 
-//calibration conditional jump.
+//calibration conditional jump. NOT THE RIGHT ONE TO USE!
 void Lk_Hastings_Ratio_Times(t_node *a, t_node *d, phydbl *tot_prob, t_tree *tree)
 {
   phydbl t_low, t_up;
@@ -477,7 +450,6 @@ void Update_Times_RND_Node_Ancestor_Descendant(int rnd_node, phydbl *L_Hast_rati
 void Update_Times_Down_Tree(t_node *a, t_node *d, phydbl *L_Hastings_ratio, t_tree *tree)
 {
   int result;
-  int i;
   phydbl *t_prior_min, *t_prior_max, *nd_t, t_low, t_up;
 
   t_prior_min = tree -> rates -> t_prior_min;
@@ -487,7 +459,7 @@ void Update_Times_Down_Tree(t_node *a, t_node *d, phydbl *L_Hastings_ratio, t_tr
   Check_Node_Time(tree -> n_root, tree -> n_root -> v[1], &result, tree);  
   Check_Node_Time(tree -> n_root, tree -> n_root -> v[2], &result, tree);
 
-  if(a == tree -> n_root) t_low = t_prior_min[d -> num];
+  if(a == tree -> n_root) t_low = t_prior_min[a -> num];
   else t_low = MAX(t_prior_min[d -> num], nd_t[d -> anc -> num]);
   t_up  = t_prior_max[d -> num];  
   d -> anc = a;
@@ -518,7 +490,7 @@ void PhyTime_XML(char *xml_file)
   FILE *f;
   char **clade, *clade_name, **mon_list;
   phydbl low, up;
-  int i, j, n_taxa, clade_size, node_num, n_mon, rnd_num;
+  int i, j, n_taxa, clade_size, node_num, n_mon; //rnd_num
   xml_node *n_r, *n_t, *n_m, *n_cur;
   t_cal *last_calib; 
   /* t_cal *cur; */

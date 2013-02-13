@@ -1154,10 +1154,10 @@ void MCMC_Jump_Calibration(t_tree *tree)
   phydbl cur_lnL_Hastings_ratio, new_lnL_Hastings_ratio;
   phydbl ratio,alpha;
   //t_edge *b1,*b2,*b3;
-  int i, rnd_node, result;
+  int i, result; //rnd_node
   //phydbl t0,t2,t3;
   //t_node *v2,*v3;
-  phydbl K;
+  //phydbl K;
   //phydbl cur_tot_prob, new_tot_prob;
   int move_num;
   int tot_num;
@@ -1165,12 +1165,6 @@ void MCMC_Jump_Calibration(t_tree *tree)
   tot_num = Number_Of_Comb(tree -> rates -> calib);
   if(tot_num > 1)
     {
-      //cur_tot_prob = 1.0;
-      //Lk_Hastings_Ratio_Times(tree -> n_root, tree -> n_root -> v[2], &cur_tot_prob, tree);
-      //Lk_Hastings_Ratio_Times(tree -> n_root, tree -> n_root -> v[1], &cur_tot_prob, tree);
-      //t_min = tree -> rates -> t_prior_min[tree -> n_root -> num];
-      //t_max = MIN(tree -> rates -> nd_t[tree -> n_root -> v[1] -> num], tree -> rates -> nd_t[tree -> n_root -> v[2] -> num]);
-      //cur_tot_prob += LOG(1) - LOG(t_max - t_min);
       ///////////////////////////////////////////////////////////////////////////////////////////
       //for(i = tree -> n_otu; i < 2 * tree -> n_otu - 1; i++) printf("\n. '%f' '%f' \n", tree -> rates -> t_prior_min[i], tree -> rates -> t_prior_max[i]);
       //for(i = tree -> n_otu; i < 2 * tree -> n_otu - 1; i++) printf("\n. '%f' \n", tree -> rates -> nd_t[i]);
@@ -1193,7 +1187,8 @@ void MCMC_Jump_Calibration(t_tree *tree)
       new_lnL_time = cur_lnL_time;
       
       
-      rnd_node = RND_Calibration_And_Node_Number(tree);
+      //rnd_node = RND_Calibration_And_Node_Number(tree);
+      RND_Calibration_And_Node_Number(tree);
       
       result = TRUE;
       
@@ -1232,12 +1227,6 @@ void MCMC_Jump_Calibration(t_tree *tree)
       ///////////////////////////////////////////////////////////////////////////////////////////
       //Exit("\n");
       ///////////////////////////////////////////////////////////////////////////////////////////
-      //new_tot_prob = 1.0;
-      //Lk_Hastings_Ratio_Times(tree -> n_root, tree -> n_root -> v[2], &new_tot_prob, tree);
-      //Lk_Hastings_Ratio_Times(tree -> n_root, tree -> n_root -> v[1], &new_tot_prob, tree);
-      //t_min = tree -> rates -> t_prior_min[tree -> n_root -> num];
-      //t_max = MIN(tree -> rates -> nd_t[tree -> n_root -> v[1] -> num], tree -> rates -> nd_t[tree -> n_root -> v[2] -> num]);
-      //new_tot_prob += LOG(1) - LOG(t_max - t_min);
       
       For(i,2*tree->n_otu-2) tree->rates->br_do_updt[i] = YES;
       RATES_Update_Cur_Bl(tree);
