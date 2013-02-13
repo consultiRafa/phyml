@@ -459,10 +459,11 @@ void Update_Times_Down_Tree(t_node *a, t_node *d, phydbl *L_Hastings_ratio, t_tr
   Check_Node_Time(tree -> n_root, tree -> n_root -> v[1], &result, tree);  
   Check_Node_Time(tree -> n_root, tree -> n_root -> v[2], &result, tree);
 
-  if(a == tree -> n_root) t_low = t_prior_min[a -> num];
-  else t_low = MAX(t_prior_min[d -> num], nd_t[d -> anc -> num]);
+  t_low = MAX(t_prior_min[d -> num], nd_t[d -> anc -> num]);
   t_up  = t_prior_max[d -> num];  
+
   d -> anc = a;
+
   if(d->tax) return;
   else
     {
@@ -948,7 +949,7 @@ void PhyTime_XML(char *xml_file)
   /*Set_Current_Calibration(0, tree);
   TIMES_Set_All_Node_Priors(tree);
   MCMC_Randomize_Node_Times(tree);   
-  
+ 
   //phydbl tot_prob = 0.0;
   //Lk_Hastings_Ratio_Times(tree -> n_root, tree -> n_root -> v[2], &tot_prob, tree);
   //Lk_Hastings_Ratio_Times(tree -> n_root, tree -> n_root -> v[1], &tot_prob, tree);
@@ -957,26 +958,29 @@ void PhyTime_XML(char *xml_file)
   
   int result = TRUE; 
   
-  tree -> rates -> nd_t[6] = -0.05;
-  int rnd_node;
+  //tree -> rates -> nd_t[6] = -0.05;
+  //int rnd_node;
   //rnd_node = RND_Calibration_And_Node_Number(tree);
   //printf("\n. Random node:'%d' \n ", rnd_node);
-  
+  RND_Calibration_And_Node_Number(tree);
+  tree -> rates -> nd_t[5] = -1.9;
   for(i = tree -> n_otu; i < 2 * tree -> n_otu -1; i++) printf("\n. Node number:%d Min:%f Max:%f Cur.time:%f \n", i, tree -> rates -> t_prior_min[i], tree -> rates -> t_prior_max[i], tree -> rates -> nd_t[i]);
   PhyML_Printf("\n. .......................................................................");  
   
-  
-  rnd_num = 6;
-
+  //int rnd_num;
+  //rnd_num = 6;
+  tree -> rates -> nd_t[5] = -1.9;
   Check_Node_Time(tree -> n_root, tree -> n_root -> v[1], &result, tree);  
   Check_Node_Time(tree -> n_root, tree -> n_root -> v[2], &result, tree); 
-  printf("\n. Check Nodes Times:'%d' \n", result);
+  printf("\n. Check Nodes Times 1:'%d' \n", result);
   PhyML_Printf("\n. .......................................................................\n");  
   
   if(result != TRUE)
-    {      
-      Update_Times_RND_Node_Ancestor_Descendant(rnd_num, tree);
-      PhyML_Printf("\n. HELLO MY FRIEND \n");  
+    {
+      phydbl L_Hastings_ratio = 0.0;
+      Update_Times_Down_Tree(tree -> n_root, tree -> n_root -> v[1], &L_Hastings_ratio, tree);//!!!!!!!!!!!!!!!!!!!!!
+      Update_Times_Down_Tree(tree -> n_root, tree -> n_root -> v[2], &L_Hastings_ratio, tree);
+      PhyML_Printf("\n. Hastings Ratio:%f \n", L_Hastings_ratio);  
     }
   
   for(i = tree -> n_otu; i < 2 * tree -> n_otu -1; i++) printf("\n. Node number:%d Min:%f Max:%f Cur.time:%f \n", i, tree -> rates -> t_prior_min[i], tree -> rates -> t_prior_max[i], tree -> rates -> nd_t[i]); 
@@ -985,7 +989,7 @@ void PhyTime_XML(char *xml_file)
   result = TRUE;
   Check_Node_Time(tree -> n_root, tree -> n_root -> v[1], &result, tree);  
   Check_Node_Time(tree -> n_root, tree -> n_root -> v[2], &result, tree); 
-  printf("\n. Check Nodes Times:'%d' \n", result);
+  printf("\n. Check Nodes Times 2:'%d' \n", result);
   PhyML_Printf("\n. .......................................................................");      	    
   Exit("\n");*/
   ////////////////////////////////////////////////////////////////////////////

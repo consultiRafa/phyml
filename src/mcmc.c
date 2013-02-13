@@ -1205,7 +1205,10 @@ void MCMC_Jump_Calibration(t_tree *tree)
           Update_Times_Down_Tree(tree -> n_root, tree -> n_root -> v[2], &new_lnL_Hastings_ratio, tree);
         }
       else return;
-      
+
+      //PhyML_Printf("\n. Hastings Ratio:%f \n", cur_lnL_Hastings_ratio);  
+      //PhyML_Printf("\n. Hastings Ratio:%f \n", new_lnL_Hastings_ratio);  
+
       result = TRUE;
       
       Check_Node_Time(tree -> n_root, tree -> n_root -> v[1], &result, tree);
