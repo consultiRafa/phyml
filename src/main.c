@@ -498,7 +498,7 @@ int main(int argc, char **argv)
 }
 
 #elif(GEO)
-//#include "geo.h"
+#include "geo.h"
 int main(int argc, char **argv)
 {
   GEO_Main(argc,argv);

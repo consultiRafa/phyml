@@ -794,8 +794,6 @@ void Optimiz_All_Free_Param(t_tree *tree, int verbose)
 	}
     }
 
-
-
   if(tree->mod->use_m4mod)
     {
       int failed,i;
