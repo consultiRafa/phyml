@@ -562,7 +562,7 @@ void MCMC_Clock_R(t_tree *mixt_tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if defined(PHYLOGEO)
+#if defined(GEO)
 
 // Sample dispersal parameter from a phylogeo model
 void MCMC_Geo_Sigma(t_tree *mixt_tree)
