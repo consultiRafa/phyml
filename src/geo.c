@@ -57,7 +57,7 @@ int GEO_Main(int argc, char **argv)
   t->n_dim      = 2;
   n_tax         = (int)atoi(argv[2]);
 
-  PhyML_Fprintf(fp,"\n# SigmaTrue\t LbdaTrue\t TauTrue\txTrue\t yTrue\t Sigma5\t Sigma50\t Sigma95\t Lbda5\t Lbda50\t Lbda95\t ProbLbdaInf1\t Tau5\t Tau50\t Tau95\t X\t Y\t RandX\t RandY\t");
+  PhyML_Fprintf(fp,"\n# SigmaTrue\t LbdaTrue\t TauTrue\txTrue\t yTrue\t Sigma5\t Sigma50\t Sigma95\t Lbda5\t Lbda50\t Lbda95\t ProbLbdaInf1\t Tau5\t Tau50\t Tau95\t X5\t X50\t X95\t Y5\t Y50\t Y95\t RandX5\t RandX50\t RandX95\t RandY5\t RandY50\t RandY95\t");
   PhyML_Fprintf(fp,"\n");
 
 
@@ -217,7 +217,7 @@ int GEO_Main(int argc, char **argv)
   while(tree->mcmc->run < tree->mcmc->chain_len);
   
   
-  PhyML_Fprintf(fp,"%f\t %f\t %f\t%f\t %f\t %f\t%f\t %f\t %f\t %f\n",
+  PhyML_Fprintf(fp,"%f\t %f\t %f\t  %f\t %f\t %f\t  %f\t  %f\t %f\t %f\t  %f\t %f\t %f\t  %f\t %f\t %f\t  %f\t %f\t %f\t  %f\t %f\t %f\t  \n",
                 Quantile(res+0*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.05),
                 Quantile(res+0*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.50),
                 Quantile(res+0*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.95),
@@ -239,7 +239,6 @@ int GEO_Main(int argc, char **argv)
                 Quantile(res+5*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.05),
                 Quantile(res+5*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.50),
                 Quantile(res+5*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.95),
-
 
                 Quantile(res+6*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.05),
                 Quantile(res+6*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.50),
