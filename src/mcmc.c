@@ -1221,6 +1221,12 @@ void MCMC_Jump_Calibration(t_tree *tree)
       
       if(result != TRUE)
         {
+          PhyML_Printf("\n. ...................... OLD CALIBRATION.....................................\n");
+          for(i = tree -> n_otu; i < 2 * tree -> n_otu -1; i++) printf("\n. Node number:[%d] Lower bound:[%f] Upper bound:[%f] Node time:[%f]. \n", i, tree -> rates -> t_prior_min_buff[i], tree -> rates -> t_prior_max_buff[i], tree -> rates -> buff_t[i]);
+          PhyML_Printf("\n. ...........................................................................\n");
+          PhyML_Printf("\n. ................. NEW PROPOSED CALIBRATION ................................\n");
+          for(i = tree -> n_otu; i < 2 * tree -> n_otu -1; i++) printf("\n. Node number:[%d] Lower bound:[%f] Upper bound:[%f] Node time:[%f]. \n", i, tree -> rates -> t_prior_min[i], tree -> rates -> t_prior_max[i], tree -> rates -> nd_t[i]);
+          PhyML_Printf("\n. ...........................................................................\n");
           PhyML_Printf("\n==You have a problem with calibration information.\n");
           PhyML_Printf("\n==Err in file %s at line %d\n",__FILE__,__LINE__);
           Exit("\n");
