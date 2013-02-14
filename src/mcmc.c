@@ -1208,6 +1208,7 @@ void MCMC_Jump_Calibration(t_tree *tree)
         {
           Update_Times_Down_Tree(tree -> n_root, tree -> n_root -> v[1], &new_lnL_Hastings_ratio, tree);
           Update_Times_Down_Tree(tree -> n_root, tree -> n_root -> v[2], &new_lnL_Hastings_ratio, tree);
+          tree->rates->c_lnL_Hastings_ratio = new_lnL_Hastings_ratio;
         }
       else return;
 
@@ -1279,7 +1280,6 @@ void MCMC_Jump_Calibration(t_tree *tree)
       tree->mcmc->run_move[move_num]++;
     }      
 }
-
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
