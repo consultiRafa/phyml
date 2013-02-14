@@ -475,7 +475,8 @@ void Update_Times_Down_Tree(t_node *a, t_node *d, phydbl *L_Hastings_ratio, t_tr
     if(nd_t[d -> num] > t_up || nd_t[d -> num] < t_low)
       { 
         //printf("\n. [2] Node number: [%d] \n", d -> num);
-        (*L_Hastings_ratio) += (LOG(1) - LOG(t_up - t_low));
+        //(*L_Hastings_ratio) += (LOG(1) - LOG(t_up - t_low));
+        (*L_Hastings_ratio) += (- LOG(t_up - t_low));
         nd_t[d -> num] = Randomize_One_Node_Time(t_low, t_up);
         t_prior_min[d -> num] = t_low;
         t_prior_max[d -> num] = t_up;
