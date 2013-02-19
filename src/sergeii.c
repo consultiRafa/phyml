@@ -684,7 +684,14 @@ void PhyTime_XML(char *xml_file)
     }
 
  ////////////////////////////////////////////////////////////////////////////
- ////////////////////////////////////////////////////////////////////////////   
+ ////////////////////////////////////////////////////////////////////////////
+  if(XML_Search_Attribute(n_r, "use_data") != NULL) 
+    {
+      if(XML_Search_Attribute(n_r, "use_data") -> value != NULL && (!strcmp(XML_Search_Attribute(n_r, "use_data") -> value, "YES")))
+        io -> mcmc -> use_data = YES;
+      if(XML_Search_Attribute(n_r, "use_data") -> value != NULL && (!strcmp(XML_Search_Attribute(n_r, "use_data") -> value, "NO")))
+        io -> mcmc -> use_data = NO;
+    }
 
   n_r = n_r -> child; 
   tree -> rates -> tot_num_cal = 0;
@@ -993,7 +1000,6 @@ void PhyTime_XML(char *xml_file)
   Exit("\n");*/
   ////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////   
-  
   //clear memory:
   free(clade_name);
   For(i, T_MAX_FILE)
@@ -1068,9 +1074,9 @@ void PhyTime_XML(char *xml_file)
 
   // Work with log of branch lengths?
   if(tree -> mod -> log_l == YES) Log_Br_Len(tree);
- 
+
   if(io -> mcmc -> use_data == YES)																
-    {
+    { 
       // Force the exact likelihood score 
       user_lk_approx = tree -> io -> lk_approx;													
       tree -> io -> lk_approx = EXACT;
@@ -1123,7 +1129,7 @@ void PhyTime_XML(char *xml_file)
 										
     }
 
-
+  
   tree -> rates -> model = io -> rates -> model;
   													  
   PhyML_Printf("\n. Selected model '%s' \n", RATES_Get_Model_Name(io -> rates -> model));
