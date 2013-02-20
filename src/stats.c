@@ -4465,9 +4465,22 @@ phydbl Prob(phydbl *x, int len, phydbl z)
 
 }
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
+// Return x  where mu is the first moment of the normal density
+// and x is the value such that f(x;mu,sigma)=y
+
+phydbl Inverse_Truncated_Normal(phydbl y, phydbl mu, phydbl sigma, phydbl lim_inf, phydbl lim_sup)
+{
+  phydbl p_inf, p_sup;
+  
+  p_inf = Pnorm(lim_inf,mu,sigma);
+  p_sup = Pnorm(lim_sup,mu,sigma);
+
+  /* return(mu + sigma * SQRT(-LOG( y * y * (p_sup - p_inf) * (p_sup - p_inf) * 2 * PI * sigma * sigma))); */
+  return(mu + sigma * SQRT(-LOG( y * y * (p_sup - p_inf) * (p_sup - p_inf) * 2. * PI * sigma * sigma)));
+}
 
 
 //////////////////////////////////////////////////////////////

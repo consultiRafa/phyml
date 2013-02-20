@@ -99,5 +99,6 @@ void Integrated_Geometric_Brownian_Bridge_Var(phydbl T, phydbl A, phydbl B, phyd
 int Sample_i_With_Proba_pi(phydbl *pi, int len);
 phydbl Quantile(phydbl *x, int len, phydbl p);
 phydbl Prob(phydbl *x, int len, phydbl z);
+phydbl Inverse_Truncated_Normal(phydbl y, phydbl mu, phydbl sigma, phydbl lim_inf, phydbl lim_sup);
 
 #endif

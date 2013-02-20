@@ -142,7 +142,7 @@ sources. In a command-line window, go to the directory that contains the sources
 \begin{verbatim}
 ./configure;
 make clean;
-make;
+make V=0;
 \end{verbatim}
 }
 
@@ -154,7 +154,7 @@ tool (such as \x{gprof}\label{gprof}) using the following instructions:
 \begin{verbatim}
 ./configure --enable-debug;
 make clean;
-make;
+make V=0;
 \end{verbatim}
 }
 
@@ -568,7 +568,8 @@ median. The mean is used by default.
 
 \item \x{--free\_rates} \index{command-line options!\x{--free\_rates}}\\
 As an alternative to the discrete gamma model, it is possible to estimate the (relative) rate in
-each class of the (mixture) model and the corresponding frequencies directly from the data. This model has more parameters
+each class of the (mixture) model and the corresponding frequencies directly from the data. This
+model, called the FreeRate model, has more parameters
 than the discrete gamma one but usually provides a significantly better fit to the data. See
 \cite{soubrier12} for more information about this model and an illustration of its use.
 
@@ -605,7 +606,7 @@ This option sets the initial tree to random. It is only valid if SPR searches ar
 
 \item \x{--print\_site\_lnl}\index{likelihood!print site likelihood} \index{command-line options!\x{--print\_site\_lk}}\\
 Print the likelihood for each site in file *\_phyml\_lk.txt. For $\Gamma$ or $\Gamma$+I or
-\x{freerates} models, this option returns the posterior probability of each relative rate class at
+FreeRate models, this option returns the posterior probability of each relative rate class at
 each site. Such information can then be used to identify fast- and slow-evolving regions of the alignment.
 
 \item \x{--print\_trace}\index{command-line options!\x{--print\_trace}}\\
@@ -1530,7 +1531,7 @@ Options:
 \item \x{print.trace="yes|true|no|false"}. PhyML will print the estimated trees (and the
   corresponding loglikelihoods) at multiple stages of the estimation process. This option is useful
   for monitoring the progress of the analysis when processing large data sets.
-\item \x{branch.test="aBayes|aLRT|SH"}. Calculate fast branch support using the aBayes method
+\item \x{branch.test="aBayes|aLRT|SH|no"}. Calculate fast branch support using the aBayes method
   \cite{anisimova11}, aLRT \cite{anisimova06} or SH \cite{shimodaira99} tests. These branch
   statistics are much faster to estimate than the bootrap proportions and usually provide good
   estimates of the probabilities that the corresponding edges are correctly inferred (see Anisimova et
@@ -1656,14 +1657,22 @@ distribution of the relative rates. The available options for such element are:
 \begin{itemize}
 \item \x{family="gamma|gamma+inv|freerates"}. \x{gamma} indicates that the distribution of the
   relative rates is set to be a discrete Gamma density. \x{gamma+inv} indicates that the relative rate model
-  is a mixture of Gamma and invariant sites (this is the common $\Gamma+$I model). \x{freerates} is
+  is a mixture of Gamma and invariant sites (this is the common $\Gamma+$I model). FreeRate is
   a model that does not use any parametric function to describe the distribution of the relative
-  rates. Under this option, relative rates and the corresponding frequencies of these classes are
+  rates (see \cite{soubrier12}). Under this option, relative rates and the corresponding frequencies of these classes are
   directly estimated from the data. While such approach is slightly more computationally demanding
   than the $\Gamma$ (or $\Gamma$+I) model, it often provides a significantly better fit to the data. 
+\item \x{alpha="value|optimised"}, where \x{value} is a real positive number. Use this option to set
+   the gamma shape parameter to the selected value. \x{optimised}: the parameter is estimated from
+   the data (see also next option).
 \item \x{optimise.alpha="yes|true|no|false"}. Optimise the shape of the Gamma distribution of
   relative rates (or not).
+\item \x{pinv="value|optimised"}, where \x{value} is in $[0,1]$. Use this option to set
+   the proportion of invariants to the selected value. \x{optimised}: the parameter is estimated from
+   the data (see also next option).
 \item \x{optimise.pinv="yes|true|no|false"}. Optimise the proportion of invariable sites (or not).
+\item \x{optimise.freerates="yes|true|no|false"}. Optimise the parameters of the FreeRate model,
+  i.e., the relative rates and the corresponding frequencies.
 \end{itemize} 
 \vspace{0.2cm}
 \begin{Verbatim}[frame=single, label=Example of `siterates' component, samepage=true,
@@ -1959,7 +1968,7 @@ mandatory. The content of that file should look as follows:
 
 \begin{figure}[h]
 \begin{small}
-\begin{Verbatim}[frame=single, label=Calibration node file, samepage=true, baselinestretch=0.5]
+\begin{Verbatim}[frame=single, label=Calibration node file, samepage=true, baselinestretch=0.5, fontsize=\tiny]
 Dugong_dugon Procavia_capensis Elephantidae | -65 -54
 Equus_sp. Ceratomorpha | -58 -54
 Cercopithecus_solatus Macaca_mulatta Hylobates_lar Homo_sapiens | -35 -25

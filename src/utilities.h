@@ -1460,6 +1460,7 @@ typedef struct __Phylogeo{
   phydbl              sigma; // Dispersal parameter
   phydbl          min_sigma;
   phydbl          max_sigma;
+  phydbl       sigma_thresh; // beyond sigma_thresh, there is no dispersal bias.
 
   phydbl               lbda; // Competition parameter
   phydbl           min_lbda;

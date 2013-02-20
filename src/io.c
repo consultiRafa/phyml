@@ -1487,7 +1487,7 @@ int Get_Token(FILE *fp, char *token)
 	}
       while(c != '"');
       *token = c;
-      c = fgetc(fp);
+      /* c = fgetc(fp); */
       if(c == EOF) return 0;
       *(token+1) = '\0';
       return 1;
@@ -1497,6 +1497,8 @@ int Get_Token(FILE *fp, char *token)
     {
       Skip_Comment(fp);
       c = fgetc(fp);
+      *token = c;
+      token++;
       if(c == EOF) return 0;
       return 1;
     }
@@ -1514,7 +1516,7 @@ int Get_Token(FILE *fp, char *token)
   else if(c == '-') { *token = c; token++; }
   else
     {
-      while(isgraph(c) && c != ';' && c != '-' && c != ',')
+      while(isgraph(c) && c != ';' && c != '-' && c != ',' && c != '=')
 	{
 	  *(token++) = c;
 	  c = fgetc(fp);
