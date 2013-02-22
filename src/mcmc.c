@@ -4250,6 +4250,8 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_clock_r]          = 1.0;
   mcmc->move_weight[mcmc->num_move_tree_height]      = 2.0;
   mcmc->move_weight[mcmc->num_move_subtree_height]   = 0.0;
+  mcmc->move_weight[mcmc->num_move_tree_height]      = 2.0;
+  mcmc->move_weight[mcmc->num_move_subtree_height]   = 0.0;
   mcmc->move_weight[mcmc->num_move_nu]               = 2.0;
   mcmc->move_weight[mcmc->num_move_kappa]            = 0.5;
   mcmc->move_weight[mcmc->num_move_tree_rates]       = 1.0;
@@ -4272,23 +4274,37 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_geo_tau]          = 1.0;
 
 
-  /* for(i=mcmc->num_move_br_r;i<mcmc->num_move_br_r+2*tree->n_otu-2;i++) mcmc->move_weight[i] = 0.0; /\* Rates *\/ */
-  /* for(i=mcmc->num_move_nd_r;i<mcmc->num_move_nd_r+2*tree->n_otu-1;i++) mcmc->move_weight[i] = 0.0; /\* Node rates *\/ */
-  /* for(i=mcmc->num_move_nd_t;i<mcmc->num_move_nd_t+tree->n_otu-1;i++)   mcmc->move_weight[i] = (phydbl)(1./(tree->n_otu-1));  /\* Times *\/ */
-  /* mcmc->move_weight[mcmc->num_move_clock_r]         = 1.0; */
-  /* mcmc->move_weight[mcmc->num_move_tree_height]     = 0.0; */
-  /* mcmc->move_weight[mcmc->num_move_subtree_height]  = 0.0; */
-  /* mcmc->move_weight[mcmc->num_move_nu]              = 0.0; */
-  /* mcmc->move_weight[mcmc->num_move_kappa]           = 0.0; */
-  /* mcmc->move_weight[mcmc->num_move_tree_rates]      = 0.0; */
-  /* mcmc->move_weight[mcmc->num_move_subtree_rates]   = 0.0; */
-  /* mcmc->move_weight[mcmc->num_move_updown_nu_cr]    = 0.0; */
-  /* for(i=mcmc->num_move_ras;i<mcmc->num_move_ras+2*tree->mod->ras->n_catg;i++) mcmc->move_weight[i] = 0.5*(1./(phydbl)tree->mod->ras->n_catg);; */
-  /* mcmc->move_weight[mcmc->num_move_updown_t_cr]     = 0.0; /\* Does not seem to work well (does not give uniform prior on root height */
-  /* 							      when sampling from prior) *\/ */
-  /* for(i=mcmc->num_move_cov_rates;i<mcmc->num_move_cov_rates+2*tree->mod->m4mod->n_h;i++) mcmc->move_weight[i] = 0.0; */
-  /* mcmc->move_weight[mcmc->num_move_cov_switch]      = 0.0; */
 
+
+/*   for(i=mcmc->num_move_br_r;i<mcmc->num_move_br_r+2*tree->n_otu-2;i++) mcmc->move_weight[i] = 0.0; /\* Rates *\/ */
+/*   for(i=mcmc->num_move_nd_r;i<mcmc->num_move_nd_r+2*tree->n_otu-1;i++) mcmc->move_weight[i] = 0.0; /\* Node rates *\/ */
+/*   for(i=mcmc->num_move_nd_t;i<mcmc->num_move_nd_t+tree->n_otu-1;i++)   mcmc->move_weight[i] = (phydbl)(1./(tree->n_otu-1));  /\* Times *\/ */
+/*   mcmc->move_weight[mcmc->num_move_clock_r]          = 0.0; */
+/*   mcmc->move_weight[mcmc->num_move_tree_height]      = 0.0; */
+/*   mcmc->move_weight[mcmc->num_move_subtree_height]   = 0.0; */
+/*   mcmc->move_weight[mcmc->num_move_tree_height]      = 0.0; */
+/*   mcmc->move_weight[mcmc->num_move_subtree_height]   = 0.0; */
+/*   mcmc->move_weight[mcmc->num_move_nu]               = 0.0; */
+/*   mcmc->move_weight[mcmc->num_move_kappa]            = 0.0; */
+/*   mcmc->move_weight[mcmc->num_move_tree_rates]       = 0.0; */
+/*   mcmc->move_weight[mcmc->num_move_subtree_rates]    = 0.0; */
+/*   mcmc->move_weight[mcmc->num_move_updown_nu_cr]     = 0.0; */
+/*   for(i=mcmc->num_move_ras;i<mcmc->num_move_ras+(tree->mod ? 2*tree->mod->ras->n_catg : 1);i++) mcmc->move_weight[i] = 0.0; */
+/*   mcmc->move_weight[mcmc->num_move_updown_t_cr]      = 0.0; /\* Does not seem to work well (does not give uniform prior on root height */
+/*   							      when sampling from prior) *\/ */
+/*   for(i=mcmc->num_move_cov_rates;i<mcmc->num_move_cov_rates+(tree->mod ? 2*tree->mod->m4mod->n_h : 1);i++) mcmc->move_weight[i] = 0.5*(1./(tree->mod ? (phydbl)tree->mod->m4mod->n_h : 1)); */
+/*   mcmc->move_weight[mcmc->num_move_cov_switch]       = 0.0; */
+/*   /\* mcmc->move_weight[mcmc->num_move_birth_rate]       = 2.0; *\/ */
+/*   mcmc->move_weight[mcmc->num_move_birth_rate]       = 0.0; */
+/*   mcmc->move_weight[mcmc->num_move_updown_t_br]      = 0.0; */
+/* #if defined (SERGEII) */
+/*   mcmc->move_weight[mcmc->num_move_jump_calibration] = 0.0; */
+/* #else */
+/*   mcmc->move_weight[mcmc->num_move_jump_calibration] = 0.0; */
+/* #endif */
+/*   mcmc->move_weight[mcmc->num_move_geo_lambda]       = 0.0; */
+/*   mcmc->move_weight[mcmc->num_move_geo_sigma]        = 0.0; */
+/*   mcmc->move_weight[mcmc->num_move_geo_tau]          = 0.0; */
 
 
   sum = 0.0;
@@ -4450,7 +4466,6 @@ void MCMC_Slice_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void MCMC_Make_Move(phydbl *cur, phydbl *new, phydbl inf, phydbl sup, phydbl *loghr, phydbl tune, int move_type)
 {

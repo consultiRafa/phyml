@@ -173,22 +173,22 @@ int GEO_Main(int argc, char **argv)
           MCMC_Update_Effective_Sample_Size(tree->mcmc->num_move_geo_sigma,tree->mcmc,tree);
           MCMC_Update_Effective_Sample_Size(tree->mcmc->num_move_geo_tau,tree->mcmc,tree);
 
-          PhyML_Printf("\n. Run %6d Sigma: %12f [%4.0f] Lambda: %12f [%4.0f] Tau: %12f [%4.0f] LogLk: %12f x: %12f y:%12f",
-                       tree->mcmc->run,
+          /* PhyML_Printf("\n. Run %6d Sigma: %12f [%4.0f] Lambda: %12f [%4.0f] Tau: %12f [%4.0f] LogLk: %12f x: %12f y:%12f", */
+          /*              tree->mcmc->run, */
 
-                       tree->geo->sigma,
-                       tree->mcmc->ess[tree->mcmc->num_move_geo_sigma],
+          /*              tree->geo->sigma, */
+          /*              tree->mcmc->ess[tree->mcmc->num_move_geo_sigma], */
 
-                       tree->geo->lbda,
-                       tree->mcmc->ess[tree->mcmc->num_move_geo_lambda],
+          /*              tree->geo->lbda, */
+          /*              tree->mcmc->ess[tree->mcmc->num_move_geo_lambda], */
 
-                       tree->geo->tau,
-                       tree->mcmc->ess[tree->mcmc->num_move_geo_tau],
+          /*              tree->geo->tau, */
+          /*              tree->mcmc->ess[tree->mcmc->num_move_geo_tau], */
 
-                       tree->geo->c_lnL,
+          /*              tree->geo->c_lnL, */
  
-                       t->ldscape[t->loc[tree->n_root->num]*t->n_dim+0],
-                       t->ldscape[t->loc[tree->n_root->num]*t->n_dim+1]);
+          /*              t->ldscape[t->loc[tree->n_root->num]*t->n_dim+0], */
+          /*              t->ldscape[t->loc[tree->n_root->num]*t->n_dim+1]); */
 
           rand_loc = Rand_Int(0,t->ldscape_sz);
 
