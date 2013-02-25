@@ -1018,6 +1018,7 @@ void MCMC_One_Time(t_node *a, t_node *d, int traversal, t_tree *tree)
 
   MCMC_Make_Move(&t1_cur,&t1_new,t_min,t_max,&ratio,K,tree->mcmc->move_type[move_num]);
 
+
   if(t1_new > t_min && t1_new < t_max) 
     {
       tree->rates->nd_t[d->num] = t1_new;
@@ -2861,7 +2862,7 @@ void MCMC_Init_MCMC_Struct(char *filename, option *io, t_mcmc *mcmc)
   mcmc->min_tune         = 1.E-10;
   mcmc->print_every      = 2;
   mcmc->is_burnin        = NO;
-  mcmc->nd_t_digits      = 1;
+  mcmc->nd_t_digits      = 4;
 
   if(filename)
     {
@@ -4114,24 +4115,25 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->num_move_nd_t = mcmc->n_moves;
   mcmc->n_moves += tree->n_otu-1;
 
-  mcmc->num_move_nu               = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_clock_r          = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_tree_height      = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_subtree_height   = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_kappa            = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_tree_rates       = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_subtree_rates    = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_updown_nu_cr     = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_ras              = mcmc->n_moves; mcmc->n_moves += (tree->mod ? 2*tree->mod->ras->n_catg : 1);
-  mcmc->num_move_updown_t_cr      = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_cov_rates        = mcmc->n_moves; mcmc->n_moves += (tree->mod ? 2*tree->mod->m4mod->n_h : 1);
-  mcmc->num_move_cov_switch       = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_birth_rate       = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_updown_t_br      = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_jump_calibration = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_geo_lambda       = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_geo_sigma        = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_geo_tau          = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_nu                  = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_clock_r             = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_tree_height         = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_subtree_height      = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_kappa               = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_tree_rates          = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_subtree_rates       = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_updown_nu_cr        = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_ras                 = mcmc->n_moves; mcmc->n_moves += (tree->mod ? 2*tree->mod->ras->n_catg : 1);
+  mcmc->num_move_updown_t_cr         = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_cov_rates           = mcmc->n_moves; mcmc->n_moves += (tree->mod ? 2*tree->mod->m4mod->n_h : 1);
+  mcmc->num_move_cov_switch          = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_birth_rate          = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_updown_t_br         = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_jump_calibration    = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_geo_lambda          = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_geo_sigma           = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_geo_tau             = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_geo_updown_tau_lbda = mcmc->n_moves; mcmc->n_moves += 1;
 
   mcmc->run_move           = (int *)mCalloc(mcmc->n_moves,sizeof(int));
   mcmc->acc_move           = (int *)mCalloc(mcmc->n_moves,sizeof(int));
@@ -4182,6 +4184,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   strcpy(mcmc->move_name[mcmc->num_move_geo_lambda],"geo_lambda");
   strcpy(mcmc->move_name[mcmc->num_move_geo_sigma],"geo_sigma");
   strcpy(mcmc->move_name[mcmc->num_move_geo_tau],"geo_tau");
+  strcpy(mcmc->move_name[mcmc->num_move_geo_updown_tau_lbda],"geo_updown_tau_lbda");
 
   
   if(tree->rates->model_log_rates == YES)
@@ -4210,6 +4213,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_type[mcmc->num_move_geo_lambda] = MCMC_MOVE_SCALE_THORNE;
   mcmc->move_type[mcmc->num_move_geo_sigma] = MCMC_MOVE_SCALE_THORNE;
   mcmc->move_type[mcmc->num_move_geo_tau] = MCMC_MOVE_SCALE_THORNE;
+  mcmc->move_type[mcmc->num_move_geo_updown_tau_lbda] = MCMC_MOVE_SCALE_THORNE;
 
   /* We start with small tuning parameter values in order to have inflated ESS
      for clock_r */
@@ -4261,17 +4265,18 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_updown_t_cr]      = 0.0; /* Does not seem to work well (does not give uniform prior on root height
   							      when sampling from prior) */
   for(i=mcmc->num_move_cov_rates;i<mcmc->num_move_cov_rates+(tree->mod ? 2*tree->mod->m4mod->n_h : 1);i++) mcmc->move_weight[i] = 0.5*(1./(tree->mod ? (phydbl)tree->mod->m4mod->n_h : 1));
-  mcmc->move_weight[mcmc->num_move_cov_switch]       = 1.0;
-  mcmc->move_weight[mcmc->num_move_birth_rate]       = 2.0;
-  mcmc->move_weight[mcmc->num_move_updown_t_br]      = 1.0;
+  mcmc->move_weight[mcmc->num_move_cov_switch]          = 1.0;
+  mcmc->move_weight[mcmc->num_move_birth_rate]          = 2.0;
+  mcmc->move_weight[mcmc->num_move_updown_t_br]         = 1.0;
 #if defined (SERGEII)
-  mcmc->move_weight[mcmc->num_move_jump_calibration] = 1.0;
+  mcmc->move_weight[mcmc->num_move_jump_calibration]    = 1.0;
 #else
-  mcmc->move_weight[mcmc->num_move_jump_calibration] = 0.0;
+  mcmc->move_weight[mcmc->num_move_jump_calibration]    = 0.0;
 #endif
-  mcmc->move_weight[mcmc->num_move_geo_lambda]       = 1.0;
-  mcmc->move_weight[mcmc->num_move_geo_sigma]        = 1.0;
-  mcmc->move_weight[mcmc->num_move_geo_tau]          = 1.0;
+  mcmc->move_weight[mcmc->num_move_geo_lambda]          = 1.0;
+  mcmc->move_weight[mcmc->num_move_geo_sigma]           = 1.0;
+  mcmc->move_weight[mcmc->num_move_geo_tau]             = 1.0;
+  mcmc->move_weight[mcmc->num_move_geo_updown_tau_lbda] = 1.0;
 
 
 
@@ -4294,7 +4299,6 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
 /*   							      when sampling from prior) *\/ */
 /*   for(i=mcmc->num_move_cov_rates;i<mcmc->num_move_cov_rates+(tree->mod ? 2*tree->mod->m4mod->n_h : 1);i++) mcmc->move_weight[i] = 0.5*(1./(tree->mod ? (phydbl)tree->mod->m4mod->n_h : 1)); */
 /*   mcmc->move_weight[mcmc->num_move_cov_switch]       = 0.0; */
-/*   /\* mcmc->move_weight[mcmc->num_move_birth_rate]       = 2.0; *\/ */
 /*   mcmc->move_weight[mcmc->num_move_birth_rate]       = 0.0; */
 /*   mcmc->move_weight[mcmc->num_move_updown_t_br]      = 0.0; */
 /* #if defined (SERGEII) */

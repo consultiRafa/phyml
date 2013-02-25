@@ -41,5 +41,6 @@ void GEO_Get_Locations_Beneath_Post(t_node *a, t_node *d, t_geo *t, t_tree *tree
 void GEO_Randomize_Locations_Pre(t_node *n, t_geo *t, t_tree *tree);
 void GEO_Randomize_Locations(t_node *n, t_geo *t, t_tree *tree);
 void GEO_Get_Sigma_Max(t_geo *t);
+void MCMC_Geo_Updown_Tau_Lbda(t_tree *tree);
 
 #endif

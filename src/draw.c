@@ -240,7 +240,7 @@ void DR_Print_Tree_Postscript_Pre(t_node *a, t_node *d, int render_name, FILE *f
       PhyML_Fprintf(fp," /Helvetica findfont 8 scalefont\n");
       PhyML_Fprintf(fp,"setfont\n");
       PhyML_Fprintf(fp,"%.1f %.1f mt\n",w->xcoord[d->num]+2,w->ycoord[d->num]);
-      /* PhyML_Fprintf(fp,"(%d) show \n",d->num); */
+      PhyML_Fprintf(fp,"(%d) show \n",d->num);
       /* PhyML_Fprintf(fp,"(%s) show \n",d->name); */
       PhyML_Fprintf(fp," /Helvetica findfont 14 scalefont\n");
       PhyML_Fprintf(fp,"setfont\n");
@@ -249,7 +249,7 @@ void DR_Print_Tree_Postscript_Pre(t_node *a, t_node *d, int render_name, FILE *f
       PhyML_Fprintf(fp,"%.1f %.1f mt\n",w->xcoord[d->num] - (w->xcoord[d->num] - w->xcoord[a->num])/2.,w->ycoord[d->num]);
       PhyML_Fprintf(fp," /Helvetica findfont 6 scalefont\n");
       PhyML_Fprintf(fp,"setfont\n");
-      PhyML_Fprintf(fp,"([%4.2f,%4.2f]) show \n",
+      PhyML_Fprintf(fp,"([%4.4f,%4.4f]) show \n",
                     tree->geo->ldscape[tree->geo->loc[d->num]*tree->geo->n_dim+0],
                     tree->geo->ldscape[tree->geo->loc[d->num]*tree->geo->n_dim+1]);
       
@@ -285,7 +285,7 @@ void DR_Print_Tree_Postscript_Pre(t_node *a, t_node *d, int render_name, FILE *f
       PhyML_Fprintf(fp," /Helvetica findfont 8 scalefont\n");
       PhyML_Fprintf(fp,"setfont\n");
       PhyML_Fprintf(fp,"%.1f %.1f mt\n",w->xcoord[d->num]+2,w->ycoord[d->num]);
-      /* PhyML_Fprintf(fp,"(%d) show \n",d->num); */
+      PhyML_Fprintf(fp,"(%d) show \n",d->num);
       PhyML_Fprintf(fp,"%.1f %.1f mt\n",w->xcoord[d->num],w->ycoord[d->num]);
       PhyML_Fprintf(fp," /Helvetica findfont 14 scalefont\n");
       PhyML_Fprintf(fp,"setfont\n");
@@ -294,7 +294,7 @@ void DR_Print_Tree_Postscript_Pre(t_node *a, t_node *d, int render_name, FILE *f
       PhyML_Fprintf(fp,"%.1f %.1f mt\n",w->xcoord[d->num] - (w->xcoord[d->num] - w->xcoord[a->num])/2.,w->ycoord[d->num]);
       PhyML_Fprintf(fp," /Helvetica findfont 6 scalefont\n");
       PhyML_Fprintf(fp,"setfont\n");
-      PhyML_Fprintf(fp,"([%4.2f,%4.2f]) show \n",
+      PhyML_Fprintf(fp,"([%4.4f,%4.4f]) show \n",
                     tree->geo->ldscape[tree->geo->loc[d->num]*tree->geo->n_dim+0],
                     tree->geo->ldscape[tree->geo->loc[d->num]*tree->geo->n_dim+1]);
       
