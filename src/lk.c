@@ -2301,7 +2301,7 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
   int i;
   phydbl len;
   phydbl l_min, l_max;
-
+  phydbl shape, scale, mean, var;
   
   if(tree->is_mixt_tree)
     {
@@ -2312,61 +2312,42 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
   l_min = tree->mod->l_min;
   l_max = tree->mod->l_max;
 
-
-
-  if(tree->mod->gamma_mgf_bl == YES)
+  len = -1.0;
+  
+  if(tree->mod->log_l == YES) b_fcus->l->v = EXP(b_fcus->l->v);
+  
+  For(i,tree->mod->ras->n_catg)
     {
-      phydbl shape,scale,mean,var;
-
-      mean = b_fcus->l->v;
-      var  = b_fcus->l_var;
-      
-      if(mean < l_min) 
+      if(b_fcus->has_zero_br_len == YES) 
         {
-          mean = l_min;
+          len = -1.0;
         }
-
-      if(mean > l_max) 
+      else
         {
-          mean = l_max;
+          len = b_fcus->l->v*tree->mod->ras->gamma_rr->v[i];	  
+          len *= tree->mod->br_len_multiplier->v;
+          if(tree->mixt_tree)  len *= tree->mixt_tree->mod->ras->gamma_rr->v[tree->mod->ras->parent_class_number];
+          if(len < l_min)      len = l_min;
+          else if(len > l_max) len = l_max;
         }
-
-      shape = mean*mean/var;
-      scale = var/mean;
-
-      For(i,tree->mod->ras->n_catg) 
-	{
-	  PMat_MGF_Gamma(b_fcus->Pij_rr+tree->mod->ns*tree->mod->ns*i,
-			 shape,scale,tree->mod->ras->gamma_rr->v[i],tree->mod);
-	}
-    }
-  else
-    {
-      len = -1.0;
-
-      if(tree->mod->log_l == YES) b_fcus->l->v = EXP(b_fcus->l->v);
       
-      For(i,tree->mod->ras->n_catg)
-	{
-	  if(b_fcus->has_zero_br_len == YES) 
-	    {
-	      len = -1.0;
-	    }
-	  else
-	    {
-	      len = b_fcus->l->v*tree->mod->ras->gamma_rr->v[i];	  
-	      len *= tree->mod->br_len_multiplier->v;
-	      if(tree->mixt_tree)  len *= tree->mixt_tree->mod->ras->gamma_rr->v[tree->mod->ras->parent_class_number];
-	      if(len < l_min)      len = l_min;
-	      else if(len > l_max) len = l_max;
-	    }
-
-	  PMat(len,tree->mod,tree->mod->ns*tree->mod->ns*i,b_fcus->Pij_rr);
-
-	}
-
-      if(tree->mod->log_l == YES) b_fcus->l->v = LOG(b_fcus->l->v);
+      if(tree->mod->gamma_mgf_bl == NO)
+        PMat(len,tree->mod,tree->mod->ns*tree->mod->ns*i,b_fcus->Pij_rr);
+      else
+        {
+          mean = len;
+          var  = b_fcus->l_var;
+          
+          shape = mean*mean/var;
+          scale = var/mean;
+          
+          PMat_MGF_Gamma(b_fcus->Pij_rr+tree->mod->ns*tree->mod->ns*i,
+                         /* shape,scale,tree->mod->ras->gamma_rr->v[i],tree->mod); */
+                         shape,scale,1.0,tree->mod);
+          
+        }
     }
+  if(tree->mod->log_l == YES) b_fcus->l->v = LOG(b_fcus->l->v);
 }
 
 //////////////////////////////////////////////////////////////
