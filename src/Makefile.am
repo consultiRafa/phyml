@@ -49,8 +49,13 @@ if WANT_EVOLVE
 bin_PROGRAMS = evolve
 PROG = EVOLVE
 else
+if WANT_CHECKPOINT
+bin_PROGRAMS = checkpoint
+PROG = CHECKPOINT
+else
 bin_PROGRAMS = phyml
 PROG = PHYML
+endif
 endif
 endif
 endif
@@ -416,6 +421,40 @@ mixt.c mixt.h\
 geo.c geo.h
 geo_LDADD = -lm 
 else
+if WANT_CHECKPOINT
+checkpoint_SOURCES = main.c\
+utilities.c  utilities.h\
+optimiz.c  optimiz.h\
+lk.c  lk.h\
+bionj.c bionj.h\
+models.c  models.h\
+free.c  free.h\
+help.c  help.h\
+simu.c  simu.h\
+eigen.c  eigen.h\
+pars.c  pars.h\
+alrt.c  alrt.h\
+interface.c  interface.h\
+cl.c  cl.h\
+spr.c spr.h\
+draw.c  draw.h\
+stats.c stats.h\
+rates.c rates.h\
+mcmc.c mcmc.h\
+times.c times.h\
+tiporder.c tiporder.h\
+mg.c mg.h\
+m4.c m4.h\
+io.c io.h\
+make.c make.h\
+nexus.c nexus.h\
+init.c init.h\
+xml.c xml.h\
+sergeii.c sergeii.h\
+mixt.c mixt.h\
+checkpoint.c checkpoint.h
+checkpoint_LDADD = -lm 
+else
 phyml_SOURCES = main.c \
 utilities.c  utilities.h\
 optimiz.c  optimiz.h\
@@ -447,6 +486,7 @@ xml.c xml.h\
 sergeii.c sergeii.h\
 mixt.c mixt.h
 phyml_LDADD = -lm 
+endif
 endif
 endif
 endif

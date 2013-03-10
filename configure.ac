@@ -150,6 +150,12 @@ if test "$geo" = yes; then
    AC_DEFINE([GEO],[1],[GEO tag on])
 fi
 
+AC_ARG_ENABLE([checkpoint],[AS_HELP_STRING([--enable-checkpoint],[Compile checkpoint])],[checkpoint=yes],[checkpoint=no])
+AM_CONDITIONAL([WANT_CHECKPOINT], [test "$checkpoint" = yes]) 
+if test "$checkpoint" = yes; then
+   AC_DEFINE([CHECKPOINT],[1],[CHECKPOINT tag on])
+fi
+
 
 if test "$phytime" = no; then
 if test "$tiporder" = no; then
@@ -161,6 +167,7 @@ if test "$test" = no; then
 if test "$sergeii" = no; then
 if test "$geo" = no; then
 if test "$evolve" = no; then
+if test "$checkpoint" = no; then
    AC_DEFINE([PHYML],[1],[PHYML tag on])
 fi
 fi
@@ -172,6 +179,21 @@ fi
 fi
 fi
 fi
+fi
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 AC_CONFIG_FILES([Makefile src/Makefile])
 dnl AC_CONFIG_FILES([Makefile])
 AC_OUTPUT

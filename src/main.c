@@ -505,5 +505,13 @@ int main(int argc, char **argv)
   return 1;
 }
 
+#elif(CHECKPOINT)
+#include "checkpoint.h"
+int main(int argc, char **argv)
+{
+  CHECK_Main(argc,argv);
+  return 1;
+}
+
 #endif
 

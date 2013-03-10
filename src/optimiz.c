@@ -647,6 +647,12 @@ void Optimize_Br_Len_Serie(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tree)
 	  PhyML_Printf("\n== %f -- %f",lk_init,tree->c_lnL);
 	  Warn_And_Exit("\n== Err. in Optimize_Br_Len_Serie (variance)\n");
 	}
+
+      if((tree->io->quiet)?(0):(tree->mod->s_opt->print)) 
+        {
+          Print_Lk(tree,"[Branch len. var.   ]");
+          PhyML_Printf("[%10f]",tree->mod->l_var);
+        }
     }
 
   l_infa = tree->mod->l_max/b_fcus->l->v;
