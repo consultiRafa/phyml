@@ -659,7 +659,7 @@ void MCMC_Geo_Loc(t_tree *tree)
   target = 2*tree->n_otu-2;
   
   // Root node is special. Select new location uniformly at random
-  if(tree->a_nodes[target] == tree->n_root) tree->geo->loc[target] = Rand_Int(0,tree->geo->ldscape_sz);
+  if(tree->a_nodes[target] == tree->n_root) tree->geo->loc[target] = Rand_Int(0,tree->geo->ldscape_sz-1);
 
   // Randomize the locations below the selected node
   GEO_Randomize_Locations(tree->a_nodes[target], 
@@ -2588,7 +2588,7 @@ void MCMC_Print_Param(t_mcmc *mcmc, t_tree *tree)
       For(i,2*tree->n_otu-2) tree->rates->mean_r[i] = EXP(tree->rates->br_r[i]);
       For(i,2*tree->n_otu-1) tree->rates->mean_t[i] = tree->rates->nd_t[i];
       
-      /* Branch_Lengths_To_Time_Lengths(tree); */
+      /* Time_To_Branch(tree); */
       /* char *s; */
       /* s = (char *)mCalloc(T_MAX_NAME,sizeof(char)); */
       /* strcpy(s,mcmc->io->in_align_file); */
@@ -2658,7 +2658,7 @@ void MCMC_Print_Param(t_mcmc *mcmc, t_tree *tree)
       /* fclose(fp); */
       
       // TREES
-      Branch_Lengths_To_Time_Lengths(tree);
+      Time_To_Branch(tree);
       tree->bl_ndigits = 3;
       s_tree = Write_Tree(tree,NO);
       tree->bl_ndigits = 7;

@@ -42,5 +42,9 @@ void GEO_Randomize_Locations_Pre(t_node *n, t_geo *t, t_tree *tree);
 void GEO_Randomize_Locations(t_node *n, t_geo *t, t_tree *tree);
 void GEO_Get_Sigma_Max(t_geo *t);
 void MCMC_Geo_Updown_Tau_Lbda(t_tree *tree);
+int GEO_Simulate_Estimate(int argc, char **argv);
+phydbl *GEO_Read_In_Landscape(char *file_name, t_geo *t, t_tree *tree);
+int GEO_Estimate(int argc, char **argv);
+phydbl *GEO_MCMC(t_tree *tree);
 
 #endif

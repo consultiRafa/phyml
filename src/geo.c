@@ -18,11 +18,84 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int GEO_Main(int argc, char **argv)
 {
+  /* GEO_Simulate_Estimate(argc,argv); */
+  GEO_Estimate(argc,argv);
+  return(1);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+int GEO_Estimate(int argc, char **argv)
+{
+  t_geo *t;
+  int seed;
+  FILE *fp;
+  t_tree *tree;
+  phydbl *ldscp;
+  int i;
+
+  seed = getpid();
+  /* seed = 28224; */
+  printf("\n. Seed = %d",seed);
+  srand(seed);
+
+  t = GEO_Make_Geo_Basic();
+  GEO_Init_Geo_Struct(t);
+
+  fp = Openfile(argv[1],0); /* Open tree file  */
+
+  tree = Read_Tree_File_Phylip(fp); /* Read it */
+  Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
+  Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);		
+  tree->rates = RATES_Make_Rate_Struct(tree->n_otu);
+  RATES_Init_Rate_Struct(tree->rates,NULL,tree->n_otu);
+  Branch_To_Time(tree);
+  tree->geo = t;
+
+  ldscp = GEO_Read_In_Landscape(argv[2],t,tree);
+  
+
+  GEO_Make_Geo_Complete(t->ldscape_sz,t->n_dim,tree->n_otu,t);
+    
+  For(i,t->ldscape_sz*t->n_dim) t->ldscape[i] = ldscp[i];
+  For(i,tree->n_otu) t->loc[i] = i;
+
+  t->cov[0*t->n_dim+0] = t->sigma;
+  t->cov[1*t->n_dim+1] = t->sigma;
+  t->cov[0*t->n_dim+1] = 0.0;
+  t->cov[1*t->n_dim+0] = 0.0;
+
+  GEO_Get_Sigma_Max(t);
+
+  GEO_Get_Locations_Beneath(t,tree);
+
+  GEO_Randomize_Locations(tree->n_root,
+                          t,
+                          tree);
+
+  GEO_Update_Occup(t,tree);
+  GEO_Lk(t,tree);
+
+  PhyML_Printf("\n. Init loglk: %f",tree->geo->c_lnL);
+
+  GEO_MCMC(tree);
+
+  fclose(fp);
+  Free(ldscp);
+
+  return(1);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+int GEO_Simulate_Estimate(int argc, char **argv)
+{
   t_geo *t;
   int n_tax;
   t_tree *tree;
   int seed;
-  int n_vars;
   phydbl *res;
   FILE *fp;
   int pid;
@@ -39,6 +112,7 @@ int GEO_Main(int argc, char **argv)
 
   seed = getpid();
   /* seed = 28224; */
+  seed = 1718;
   printf("\n. Seed = %d",seed);
   srand(seed);
 
@@ -118,108 +192,8 @@ int GEO_Main(int argc, char **argv)
   /*   } */
   /* while(c < 30); */
 
+  res = GEO_MCMC(tree);
 
-  tree->mcmc = MCMC_Make_MCMC_Struct();
-  MCMC_Complete_MCMC(tree->mcmc,tree);
-
-  tree->mcmc->io               = NULL;
-  tree->mcmc->is               = NO;
-  tree->mcmc->use_data         = YES;
-  tree->mcmc->run              = 0;
-  tree->mcmc->sample_interval  = 1E+3;
-  tree->mcmc->chain_len        = 1E+6;
-  tree->mcmc->chain_len_burnin = 1E+5;
-  tree->mcmc->randomize        = YES;
-  tree->mcmc->norm_freq        = 1E+3;
-  tree->mcmc->max_tune         = 1.E+20;
-  tree->mcmc->min_tune         = 1.E-10;
-  tree->mcmc->print_every      = 2;
-  tree->mcmc->is_burnin        = NO;
-  tree->mcmc->nd_t_digits      = 1;
-
-
-  t->tau   = 1.0;
-  t->lbda  = 1.0;
-  t->sigma = 1.0;
-
-  n_vars = 10;
-  tree->mcmc->chain_len = 1.E+8;
-  tree->mcmc->sample_interval = 50;
-  
-  MCMC_Complete_MCMC(tree->mcmc,tree);
-
-  GEO_Update_Occup(t,tree);
-  GEO_Lk(t,tree);
-  PhyML_Printf("\n. Init loglk: %f",tree->geo->c_lnL);
-  
-  res = (phydbl *)mCalloc(tree->mcmc->chain_len / tree->mcmc->sample_interval * n_vars,sizeof(phydbl));
-
-  tree->mcmc->start_ess[tree->mcmc->num_move_geo_sigma]  = YES;
-  tree->mcmc->start_ess[tree->mcmc->num_move_geo_lambda] = YES;
-  tree->mcmc->start_ess[tree->mcmc->num_move_geo_tau]    = YES;
-
-  tree->mcmc->run = 0;
-  do
-    {
-      MCMC_Geo_Lbda(tree);
-      MCMC_Geo_Sigma(tree);
-      MCMC_Geo_Tau(tree);
-      MCMC_Geo_Loc(tree);
-      MCMC_Geo_Updown_Tau_Lbda(tree);
-
-      
-      if(tree->mcmc->run%tree->mcmc->sample_interval == 0)
-        {
-          MCMC_Copy_To_New_Param_Val(tree->mcmc,tree);
-          
-          MCMC_Update_Effective_Sample_Size(tree->mcmc->num_move_geo_lambda,tree->mcmc,tree);
-          MCMC_Update_Effective_Sample_Size(tree->mcmc->num_move_geo_sigma,tree->mcmc,tree);
-          MCMC_Update_Effective_Sample_Size(tree->mcmc->num_move_geo_tau,tree->mcmc,tree);
-
-          PhyML_Printf("\n. Run %6d Sigma: %12f [%4.0f] Lambda: %12f [%4.0f] Tau: %12f [%4.0f] LogLk: %12f x: %12f y:%12f",
-                       tree->mcmc->run,
-
-                       tree->geo->sigma,
-                       tree->mcmc->ess[tree->mcmc->num_move_geo_sigma],
-
-                       tree->geo->lbda,
-                       tree->mcmc->ess[tree->mcmc->num_move_geo_lambda],
-
-                       tree->geo->tau,
-                       tree->mcmc->ess[tree->mcmc->num_move_geo_tau],
-
-                       tree->geo->c_lnL,
- 
-                       t->ldscape[t->loc[tree->n_root->num]*t->n_dim+0],
-                       t->ldscape[t->loc[tree->n_root->num]*t->n_dim+1]);
-
-          rand_loc = Rand_Int(0,t->ldscape_sz-1);
-
-          res[0 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = tree->geo->sigma; 
-          res[1 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = tree->geo->lbda; 
-          res[2 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = tree->geo->tau; 
-          res[3 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = tree->geo->c_lnL; 
-          
-                
-          res[4 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = t->ldscape[t->loc[tree->n_root->num]*t->n_dim+0];
-          res[5 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = t->ldscape[t->loc[tree->n_root->num]*t->n_dim+1];
-
-          res[6 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = t->ldscape[rand_loc*t->n_dim+0];
-          res[7 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = t->ldscape[rand_loc*t->n_dim+1];
-        }
-
-      tree->mcmc->run++;
-      MCMC_Get_Acc_Rates(tree->mcmc);
-
-
-      if(tree->mcmc->ess[tree->mcmc->num_move_geo_sigma] > 100. &&
-         tree->mcmc->ess[tree->mcmc->num_move_geo_tau]   > 100. &&
-         tree->mcmc->ess[tree->mcmc->num_move_geo_lambda]> 100.) break;
-
-    }
-  while(tree->mcmc->run < tree->mcmc->chain_len);
-  
-  
   PhyML_Fprintf(fp,"%f\t %f\t %f\t  %f\t %f\t %f\t  %f\t  %f\t %f\t %f\t  %f\t %f\t %f\t  %f\t %f\t %f\t  %f\t %f\t %f\t  %f\t %f\t %f\t  \n",
                 Quantile(res+0*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.025),
                 Quantile(res+0*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.50),
@@ -253,10 +227,140 @@ int GEO_Main(int argc, char **argv)
                 );
   
   Free(s);
+  Free(res);
 
   fclose(fp);
 
   return 1;
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+phydbl *GEO_MCMC(t_tree *tree)
+{
+  phydbl *res;
+  int n_vars;
+  int rand_loc;
+  t_geo *t;
+
+
+  t = tree->geo;
+
+  tree->mcmc = MCMC_Make_MCMC_Struct();
+  MCMC_Complete_MCMC(tree->mcmc,tree);
+  
+  tree->mcmc->io               = NULL;
+  tree->mcmc->is               = NO;
+  tree->mcmc->use_data         = YES;
+  tree->mcmc->run              = 0;
+  tree->mcmc->sample_interval  = 1E+3;
+  tree->mcmc->chain_len        = 1E+6;
+  tree->mcmc->chain_len_burnin = 1E+5;
+  tree->mcmc->randomize        = YES;
+  tree->mcmc->norm_freq        = 1E+3;
+  tree->mcmc->max_tune         = 1.E+20;
+  tree->mcmc->min_tune         = 1.E-10;
+  tree->mcmc->print_every      = 2;
+  tree->mcmc->is_burnin        = NO;
+  tree->mcmc->nd_t_digits      = 1;
+
+  t->tau   = 1.0;
+  t->lbda  = 1.0;
+  t->sigma = 1.0;
+
+  tree->mcmc->chain_len = 1.E+8;
+  tree->mcmc->sample_interval = 50;
+  
+  MCMC_Complete_MCMC(tree->mcmc,tree);
+
+  GEO_Update_Occup(t,tree);
+  GEO_Lk(t,tree);
+
+  PhyML_Printf("\n. Init loglk: %f",t->c_lnL);
+  
+  tree->mcmc->start_ess[tree->mcmc->num_move_geo_sigma]  = YES;
+  tree->mcmc->start_ess[tree->mcmc->num_move_geo_lambda] = YES;
+  tree->mcmc->start_ess[tree->mcmc->num_move_geo_tau]    = YES;
+
+  n_vars = 10;
+  res = (phydbl *)mCalloc(tree->mcmc->chain_len / tree->mcmc->sample_interval * n_vars,sizeof(phydbl));
+
+  tree->mcmc->run = 0;
+  do
+    {
+      MCMC_Geo_Lbda(tree);
+      MCMC_Geo_Sigma(tree);
+      MCMC_Geo_Tau(tree);
+      MCMC_Geo_Loc(tree);
+      MCMC_Geo_Updown_Tau_Lbda(tree);
+
+      
+      if(tree->mcmc->run%tree->mcmc->sample_interval == 0)
+        {
+          MCMC_Copy_To_New_Param_Val(tree->mcmc,tree);
+          
+          MCMC_Update_Effective_Sample_Size(tree->mcmc->num_move_geo_lambda,tree->mcmc,tree);
+          MCMC_Update_Effective_Sample_Size(tree->mcmc->num_move_geo_sigma,tree->mcmc,tree);
+          MCMC_Update_Effective_Sample_Size(tree->mcmc->num_move_geo_tau,tree->mcmc,tree);
+
+          PhyML_Printf("\n. Run %6d Sigma: %12f [%4.0f] Lambda: %12f [%4.0f] Tau: %12f [%4.0f] LogLk: %12f x: %12f y:%12f",
+                       tree->mcmc->run,
+
+                       t->sigma,
+                       tree->mcmc->ess[tree->mcmc->num_move_geo_sigma],
+
+                       t->lbda,
+                       tree->mcmc->ess[tree->mcmc->num_move_geo_lambda],
+
+                       t->tau,
+                       tree->mcmc->ess[tree->mcmc->num_move_geo_tau],
+
+                       t->c_lnL,
+                       
+                       t->ldscape[t->loc[tree->n_root->num]*t->n_dim+0],
+                       t->ldscape[t->loc[tree->n_root->num]*t->n_dim+1]);
+
+
+          if(t->ldscape[t->loc[tree->n_root->num]*t->n_dim+0] < 1.)
+            {
+              printf("\n. loc = %d",t->loc[tree->n_root->num]);
+
+              int i;
+              For(i,t->ldscape_sz)
+                {
+                  printf("\n. i=%d %f %f",i,t->ldscape[i*t->n_dim+0],t->ldscape[i*t->n_dim+1]);
+                }
+
+            }
+
+          rand_loc = Rand_Int(0,t->ldscape_sz-1);
+
+          res[0 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = t->sigma; 
+          res[1 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = t->lbda; 
+          res[2 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = t->tau; 
+          res[3 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = t->c_lnL; 
+                    
+          res[4 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = t->ldscape[t->loc[tree->n_root->num]*t->n_dim+0];
+          res[5 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = t->ldscape[t->loc[tree->n_root->num]*t->n_dim+1];
+
+          res[6 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = t->ldscape[rand_loc*t->n_dim+0];
+          res[7 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = t->ldscape[rand_loc*t->n_dim+1];
+        }
+
+      tree->mcmc->run++;
+      MCMC_Get_Acc_Rates(tree->mcmc);
+
+
+      if(tree->mcmc->ess[tree->mcmc->num_move_geo_sigma] > 100. &&
+         tree->mcmc->ess[tree->mcmc->num_move_geo_tau]   > 100. &&
+         tree->mcmc->ess[tree->mcmc->num_move_geo_lambda]> 100.) break;
+
+    }
+  while(tree->mcmc->run < tree->mcmc->chain_len);
+
+  return(res);
+  
 }
 
 //////////////////////////////////////////////////////////////
@@ -274,6 +378,7 @@ t_geo *GEO_Make_Geo_Basic()
 
 void GEO_Make_Geo_Complete(int ldscape_sz, int n_dim, int n_tax, t_geo *t)
 {
+  
   // F matrix
   t->f_mat = (phydbl *)mCalloc(ldscape_sz*ldscape_sz,sizeof(phydbl));
 
@@ -281,10 +386,10 @@ void GEO_Make_Geo_Complete(int ldscape_sz, int n_dim, int n_tax, t_geo *t)
   t->r_mat = (phydbl *)mCalloc(ldscape_sz*ldscape_sz,sizeof(phydbl));
 
   // Occupation vectors: one vector for each node
-  t->occup = (int *)mCalloc((int)(2*n_tax-1)*ldscape_sz,sizeof(int)); 
+  t->occup = (int *)mCalloc((2*n_tax-1)*ldscape_sz,sizeof(int));
 
   // Locations
-  t->ldscape = (phydbl *)mCalloc((int)(ldscape_sz*n_dim),sizeof(phydbl));
+  t->ldscape = (phydbl *)mCalloc((ldscape_sz*n_dim),sizeof(phydbl));
 
   // Lineage locations
   t->loc = (int *)mCalloc((int)(2*n_tax-1),sizeof(int));
@@ -352,6 +457,8 @@ void GEO_Update_Fmat(t_geo *t)
 
           // Matrix is symmetric
           t->f_mat[j*t->ldscape_sz+i] = t->f_mat[i*t->ldscape_sz+j];
+
+          /* printf("\n. f[%d,%d] = %f (1:[%f;%f] 2:[%f;%f]) sigma=%f",i,j,t->f_mat[i*t->ldscape_sz+j],loc1[0],loc1[1],loc2[0],loc2[1],SQRT(t->cov[0*t->n_dim+0])); */
         }
     }
 }
@@ -401,7 +508,7 @@ void GEO_Update_Occup(t_geo *t, t_tree *tree)
   GEO_Update_Sorted_Nd(t,tree);
 
   For(i,t->ldscape_sz*(2*tree->n_otu-1)) t->occup[i] = 0;
-
+  
   t->occup[tree->n_root->num*t->ldscape_sz + t->loc[tree->n_root->num]] = 1;
   
   for(i=1;i<2*tree->n_otu-1;i++)
@@ -494,6 +601,7 @@ phydbl GEO_Lk(t_geo *t, t_tree *tree)
 
   GEO_Update_Occup(t,tree);     // Same here.
 
+
   prev_n = NULL;
   curr_n = NULL;
   loglk = .0;
@@ -506,6 +614,8 @@ phydbl GEO_Lk(t_geo *t, t_tree *tree)
       GEO_Update_Rmat(curr_n,t,tree); // NOTE: don't need to do that every time. Add check later.
 
       R = GEO_Total_Migration_Rate(curr_n,t); // Total migration rate calculated at node n
+
+      /* printf("\n. %d %d (%d) %f %p %p \n",i,curr_n->num,curr_n->tax,tree->rates->nd_t[curr_n->num],curr_n->v[1],curr_n->v[2]); */
 
       dep = t->loc[curr_n->num]; // departure location
       arr =                      // arrival location
@@ -1030,8 +1140,8 @@ void GEO_Init_Geo_Struct(t_geo *t)
 
   t->tau          = 1.0;
 
-  t->n_dim        = -1;
-  t->ldscape_sz   = -1;
+  t->n_dim        = 2;
+  t->ldscape_sz   = 1;
 }
 
 //////////////////////////////////////////////////////////////
@@ -1149,9 +1259,11 @@ void GEO_Get_Locations_Beneath_Post(t_node *a, t_node *d, t_geo *t, t_tree *tree
         }
           
       For(i,t->ldscape_sz) 
-        t->loc_beneath[ d->num*t->ldscape_sz+i] = 
-        t->loc_beneath[v1->num*t->ldscape_sz+i] + 
-        t->loc_beneath[v2->num*t->ldscape_sz+i] ;
+        {
+          t->loc_beneath[ d->num*t->ldscape_sz+i] = 
+            t->loc_beneath[v1->num*t->ldscape_sz+i] + 
+            t->loc_beneath[v2->num*t->ldscape_sz+i] ;
+        }
     }
 }
 
@@ -1333,6 +1445,77 @@ void MCMC_Geo_Updown_Tau_Lbda(t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+phydbl *GEO_Read_In_Landscape(char *file_name, t_geo *t, t_tree *tree)
+{
+  FILE *fp;
+  char *s,*line;
+  phydbl longitude, lattitude;
+  phydbl *ldscape;
+  int i, pos;
+
+  PhyML_Printf("\n");
+  PhyML_Printf("\n. Reading landscape file '%s'.\n",file_name);
+
+
+
+  line = (char *)mCalloc(T_MAX_LINE,sizeof(char));
+  s    = (char *)mCalloc(T_MAX_LINE,sizeof(char));
+  ldscape = (phydbl *)mCalloc(10*t->n_dim,sizeof(phydbl));
+  
+  fp = Openfile(file_name,0);
+  
+  t->ldscape_sz = 0;
+
+  do
+    {
+      if(!fgets(line,T_MAX_LINE,fp)) break;
+
+      // Read in taxon name
+      pos = 0;
+      do
+      {
+        while(line[pos] == ' ') pos++;
+
+        i = 0;
+        s[0] = '\0';
+        while((line[pos] != ' ') && (line[pos] != '\n') && (line[pos] != '\t'))
+          {
+            s[i] = line[pos];
+            i++;
+            pos++;
+          }
+        s[i] = '\0';
+        
+        if(line[pos] == '\n' || line[pos] == ' ') break;
+        pos++;
+      }while(1);
+      
+      if(strlen(s) > 0) For(i,tree->n_otu) if(!strcmp(tree->a_nodes[i]->name,s)) break;
+
+      if(i == tree->n_otu)
+        {
+          PhyML_Printf("\n== Could not find a taxon with name '%s' in the tree provided.",s);
+          PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+          Exit("\n");
+        }
+      
+      sscanf(line+pos,"%lf %lf",&longitude,&lattitude);
+
+      t->ldscape_sz++;
+      if(!(t->ldscape_sz%10))
+        {
+          ldscape = (phydbl *)mRealloc(ldscape,(t->ldscape_sz+10)*t->n_dim,sizeof(phydbl));
+        }
+
+      ldscape[(t->ldscape_sz-1)*t->n_dim+0] = longitude;
+      ldscape[(t->ldscape_sz-1)*t->n_dim+1] = lattitude;
+
+    }
+  while(1);
+
+  return(ldscape);
+}
 
 
 //////////////////////////////////////////////////////////////

@@ -7565,18 +7565,17 @@ int Edge_Num_To_Node_Num(int edge_num, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
-void Branch_Lengths_To_Time_Lengths(t_tree *tree)
+void Time_To_Branch(t_tree *tree)
 {
-  Branch_Lengths_To_Time_Lengths_Pre(tree->n_root,tree->n_root->v[2],tree);
-  Branch_Lengths_To_Time_Lengths_Pre(tree->n_root,tree->n_root->v[1],tree);
+  Time_To_Branch_Pre(tree->n_root,tree->n_root->v[2],tree);
+  Time_To_Branch_Pre(tree->n_root,tree->n_root->v[1],tree);
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
 
-void Branch_Lengths_To_Time_Lengths_Pre(t_node *a, t_node *d, t_tree *tree)
+void Time_To_Branch_Pre(t_node *a, t_node *d, t_tree *tree)
 {
   int i;
 
@@ -7588,7 +7587,53 @@ void Branch_Lengths_To_Time_Lengths_Pre(t_node *a, t_node *d, t_tree *tree)
     {
       For(i,3)
 	if((d->v[i] != a) && (d->b[i] != tree->e_root))
-	  Branch_Lengths_To_Time_Lengths_Pre(d,d->v[i],tree);     
+	  Time_To_Branch_Pre(d,d->v[i],tree);     
+    }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+// Assume an ultrametric tree.
+void Branch_To_Time(t_tree *tree)
+{
+  Branch_To_Time_Pre(tree->n_root,tree->n_root->v[2],tree);
+  Branch_To_Time_Pre(tree->n_root,tree->n_root->v[1],tree);
+
+  tree->rates->nd_t[tree->n_root->num] = 
+    tree->rates->nd_t[tree->n_root->v[1]->num] -
+    tree->n_root->l[1];
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Branch_To_Time_Pre(t_node *a, t_node *d, t_tree *tree)
+{
+  int i;
+  
+  if(d->tax) 
+    {
+      tree->rates->nd_t[d->num] = 0.0;
+      return;
+    }
+  else
+    {
+      For(i,3)
+	if((d->v[i] != a) && (d->b[i] != tree->e_root))
+	  {
+            Branch_To_Time_Pre(d,d->v[i],tree);            
+          }              
+
+      For(i,3)
+	if((d->v[i] != a) && (d->b[i] != tree->e_root))
+	  {
+            tree->rates->nd_t[d->num] = tree->rates->nd_t[d->v[i]->num] - d->b[i]->l->v;
+            break;
+          }
     }
 }
 

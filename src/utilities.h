@@ -1648,8 +1648,8 @@ t_node *Find_Lca_Pair_Of_Nodes(t_node *n1,t_node *n2,t_tree *tree);
 t_node *Find_Lca_Clade(t_node **node_list,int node_list_size,t_tree *tree);
 int Get_List_Of_Ancestors(t_node *ref_node,t_node **list,int *size,t_tree *tree);
 int Edge_Num_To_Node_Num(int edge_num,t_tree *tree);
-void Branch_Lengths_To_Time_Lengths(t_tree *tree);
-void Branch_Lengths_To_Time_Lengths_Pre(t_node *a,t_node *d,t_tree *tree);
+void Time_To_Branch(t_tree *tree);
+void Time_To_Branch_Pre(t_node *a,t_node *d,t_tree *tree);
 void Branch_Lengths_To_Rate_Lengths(t_tree *tree);
 void Branch_Lengths_To_Rate_Lengths_Pre(t_node *a,t_node *d,t_tree *tree);
 int Find_Clade(char **tax_name_list,int list_size,t_tree *tree);
@@ -1708,6 +1708,9 @@ void Joint_Proba_States_Left_Right(phydbl *Pij, phydbl *p_lk_left, phydbl *p_lk_
 				   phydbl *F, int n, int site, t_tree *tree);
 void Set_Both_Sides(int yesno, t_tree *tree);
 void Set_D_States(calign *data, int datatype, int stepsize);
+void Branch_To_Time(t_tree *tree);
+void Branch_To_Time_Pre(t_node *a, t_node *d, t_tree *tree);
+
 
 #include "xml.h"
 #include "free.h"

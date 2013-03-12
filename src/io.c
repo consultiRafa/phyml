@@ -1943,7 +1943,6 @@ t_tree *Read_Tree_File(option *io)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 char *Return_Tree_String_Phylip(FILE *fp_input_tree)
 {
   char *line;
@@ -2313,7 +2312,7 @@ void Print_Node(t_node *a, t_node *d, t_tree *tree)
   if(d->tax) return;
   else
     For(i,3)
-      if(d->v[i] != a) Print_Node(d,d->v[i],tree);
+      if(d->v[i] != a && d->b[i] != tree->e_root) Print_Node(d,d->v[i],tree);
 }
 
 //////////////////////////////////////////////////////////////
@@ -3370,6 +3369,9 @@ void Print_Diversity_Pre(t_node *a, t_node *d, t_edge *b, FILE *fp, t_tree *tree
     }
 
 }
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 
 t_tree *Read_User_Tree(calign *cdata, t_mod *mod, option *io)
 {
