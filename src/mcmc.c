@@ -656,7 +656,7 @@ void MCMC_Geo_Loc(t_tree *tree)
   // Choose an internal node (including the root) at random 
   target = Rand_Int(tree->n_otu,2*tree->n_otu-2); 
 
-  target = 2*tree->n_otu-2;
+  /* target = 2*tree->n_otu-2; */
   
   // Root node is special. Select new location uniformly at random
   if(tree->a_nodes[target] == tree->n_root) tree->geo->loc[target] = Rand_Int(0,tree->geo->ldscape_sz-1);
