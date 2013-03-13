@@ -18,8 +18,8 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int GEO_Main(int argc, char **argv)
 {
-  /* GEO_Simulate_Estimate(argc,argv); */
-  GEO_Estimate(argc,argv);
+  GEO_Simulate_Estimate(argc,argv);
+  /* GEO_Estimate(argc,argv); */
   return(1);
 }
 
