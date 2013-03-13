@@ -343,9 +343,9 @@ phydbl *GEO_MCMC(t_tree *tree)
       MCMC_Get_Acc_Rates(tree->mcmc);
 
 
-      if(tree->mcmc->ess[tree->mcmc->num_move_geo_sigma] > 1000. &&
-         tree->mcmc->ess[tree->mcmc->num_move_geo_tau]   > 1000. &&
-         tree->mcmc->ess[tree->mcmc->num_move_geo_lambda]> 1000.) break;
+      if(tree->mcmc->ess[tree->mcmc->num_move_geo_sigma] > 100. &&
+         tree->mcmc->ess[tree->mcmc->num_move_geo_tau]   > 100. &&
+         tree->mcmc->ess[tree->mcmc->num_move_geo_lambda]> 100.) break;
 
     }
   while(tree->mcmc->run < tree->mcmc->chain_len);
