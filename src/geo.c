@@ -18,8 +18,8 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int GEO_Main(int argc, char **argv)
 {
-  GEO_Simulate_Estimate(argc,argv);
-  /* GEO_Estimate(argc,argv); */
+  /* GEO_Simulate_Estimate(argc,argv); */
+  GEO_Estimate(argc,argv);
   return(1);
 }
 
@@ -116,7 +116,7 @@ int GEO_Simulate_Estimate(int argc, char **argv)
 
   seed = getpid();
   /* seed = 28224; */
-  seed = 1718;
+  /* seed = 1718; */
   printf("\n. Seed = %d",seed);
   srand(seed);
 
@@ -343,9 +343,9 @@ phydbl *GEO_MCMC(t_tree *tree)
       MCMC_Get_Acc_Rates(tree->mcmc);
 
 
-      if(tree->mcmc->ess[tree->mcmc->num_move_geo_sigma] > 100. &&
-         tree->mcmc->ess[tree->mcmc->num_move_geo_tau]   > 100. &&
-         tree->mcmc->ess[tree->mcmc->num_move_geo_lambda]> 100.) break;
+      if(tree->mcmc->ess[tree->mcmc->num_move_geo_sigma] > 1000. &&
+         tree->mcmc->ess[tree->mcmc->num_move_geo_tau]   > 1000. &&
+         tree->mcmc->ess[tree->mcmc->num_move_geo_lambda]> 1000.) break;
 
     }
   while(tree->mcmc->run < tree->mcmc->chain_len);
