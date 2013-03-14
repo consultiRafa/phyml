@@ -129,7 +129,7 @@ int GEO_Simulate_Estimate(int argc, char **argv)
   t->sigma      = Uni()*(t->max_sigma-t->min_sigma) + t->min_sigma;
 
   /* t->tau        = 3.0; */
-  /* t->lbda       = 0.0001; */
+  t->lbda       = 0.2;
   /* t->sigma      = 10.; */
 
 
@@ -139,7 +139,6 @@ int GEO_Simulate_Estimate(int argc, char **argv)
 
   PhyML_Fprintf(fp,"\n# SigmaTrue\t SigmaThresh\t LbdaTrue\t TauTrue\txTrue\t yTrue\t xRand\t yRand\t Sigma5\t Sigma50\t Sigma95\t Lbda5\t Lbda50\t Lbda95\t ProbLbdaInf1\t Tau5\t Tau50\t Tau95\t X5\t X50\t X95\t Y5\t Y50\t Y95\t RandX5\t RandX50\t RandX95\t RandY5\t RandY50\t RandY95\t");
   PhyML_Fprintf(fp,"\n");
-
 
   GEO_Make_Geo_Complete(t->ldscape_sz,t->n_dim,n_tax,t);
 
@@ -269,9 +268,9 @@ phydbl *GEO_MCMC(t_tree *tree)
   tree->mcmc->is_burnin        = NO;
   tree->mcmc->nd_t_digits      = 1;
 
-  t->tau   = 1.0;
-  t->lbda  = 1.0;
-  t->sigma = 1.0;
+  /* t->tau   = 1.0; */
+  /* t->lbda  = 1.0; */
+  /* t->sigma = 1.0; */
 
   tree->mcmc->chain_len = 1.E+8;
   tree->mcmc->sample_interval = 50;
@@ -294,12 +293,23 @@ phydbl *GEO_MCMC(t_tree *tree)
   do
     {
       MCMC_Geo_Lbda(tree);
-      MCMC_Geo_Sigma(tree);
-      MCMC_Geo_Tau(tree);
+      /* MCMC_Geo_Sigma(tree); */
+      /* MCMC_Geo_Tau(tree); */
       MCMC_Geo_Loc(tree);
-      MCMC_Geo_Updown_Tau_Lbda(tree);
+      /* MCMC_Geo_Updown_Tau_Lbda(tree); */
 
       
+      /* printf("\n"); */
+      /* int i; */
+      /* For(i,2*tree->n_otu-1) */
+      /*   { */
+      /*     if(tree->a_nodes[i]->tax == NO) */
+      /*       { */
+      /*         printf("%2d ",tree->geo->loc[i]); */
+      /*       } */
+      /*   } */
+
+
       if(tree->mcmc->run%tree->mcmc->sample_interval == 0)
         {
           MCMC_Copy_To_New_Param_Val(tree->mcmc,tree);
@@ -1148,7 +1158,6 @@ void GEO_Randomize_Locations(t_node *n, t_geo *t, t_tree *tree)
       phydbl *probs; // vector of probability of picking each location
       phydbl sum;
       phydbl u;
-
       
       probs = (phydbl *)mCalloc(t->ldscape_sz,sizeof(phydbl));
       
@@ -1214,14 +1223,12 @@ void GEO_Get_Locations_Beneath(t_geo *t, t_tree *tree)
   GEO_Get_Locations_Beneath_Post(tree->n_root,tree->n_root->v[1],t,tree);
   GEO_Get_Locations_Beneath_Post(tree->n_root,tree->n_root->v[2],t,tree);
 
-  printf("\n. Root %d \n",tree->n_root->num);
   For(i,t->ldscape_sz)
     {
       t->loc_beneath[tree->n_root->num*t->ldscape_sz+i] =
         t->loc_beneath[tree->n_root->v[1]->num*t->ldscape_sz+i] +
         t->loc_beneath[tree->n_root->v[2]->num*t->ldscape_sz+i] ;
       
-      printf("%d ",t->loc_beneath[ tree->n_root->num*t->ldscape_sz+i]);
     }
 
 
@@ -1262,14 +1269,11 @@ void GEO_Get_Locations_Beneath_Post(t_node *a, t_node *d, t_geo *t, t_tree *tree
             }
         }
           
-      printf("\n %d   ",d->num);
       For(i,t->ldscape_sz) 
         {
           t->loc_beneath[ d->num*t->ldscape_sz+i] = 
             t->loc_beneath[v1->num*t->ldscape_sz+i] + 
             t->loc_beneath[v2->num*t->ldscape_sz+i] ;
-
-          printf("%d ",t->loc_beneath[ d->num*t->ldscape_sz+i]);
         }
     }
 }

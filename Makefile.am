@@ -1,2 +1,3 @@
-SUBDIRS = src 
-EXTRA_DIST = doc bin examples
+SUBDIRS = src
+EXTRA_DIST = doc bin examples 
+DIST_SUBDIRS = $(SUBDIRS) doc

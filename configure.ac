@@ -5,9 +5,7 @@ AC_INIT([PhyML],esyscmd([sh -c "date \"+%Y%m%d\" | tr -d '\n'"]),[s.guindon@auck
 AM_INIT_AUTOMAKE([foreign])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES])
 
-dnl AC_INIT([PhyML],[beta],[guindon@stat.auckland.ac.nz])
-dnl AC_CONFIG_SRCDIR([simu.c])
-AC_CONFIG_SRCDIR([src/simu.c])
+AC_CONFIG_SRCDIR([src/simu.c],[doc/phyml-manual.tex])
 AC_CONFIG_HEADERS([config.h])
 
 AC_DEFINE([UNIX],[1],[Unix tag on])
@@ -29,6 +27,18 @@ AC_CHECK_HEADERS([float.h stdlib.h string.h unistd.h])
 AC_C_CONST
 AC_C_INLINE
 AC_TYPE_SIZE_T
+
+# Check for presence of LaTeX and pdfLaTeX
+AC_CHECK_PROGS([PDFLATEX], pdflatex, [/bin/false])
+AC_CHECK_PROGS([LATEX], latex, [/bin/false])
+if test "x$PDFLATEX" = x/bin/false || test "x$LATEX" = x/bin/false; then
+ enable_docs=no
+ AC_MSG_WARN([Documentation will not be built!])
+fi
+
+AM_CONDITIONAL([HAVE_PDFLATEX], test -n "$PDFLATEX")
+
+
 
 # Checks for library functions.
 AC_FUNC_MALLOC
@@ -181,19 +191,5 @@ fi
 fi
 fi
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-AC_CONFIG_FILES([Makefile src/Makefile])
-dnl AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([Makefile src/Makefile doc/Makefile])
 AC_OUTPUT
