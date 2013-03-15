@@ -154,8 +154,7 @@ int TIMES_main(int argc, char **argv)
 
 		  time(&t_beg);
 		  time(&(tree->t_beg));
-
-
+                  io->mcmc->use_data = NO;
 		  tree->rates = RATES_Make_Rate_Struct(tree->n_otu);
 		  RATES_Init_Rate_Struct(tree->rates,io->rates,tree->n_otu);
 
@@ -226,7 +225,7 @@ int TIMES_main(int argc, char **argv)
 
 		  /* Work with log of branch lengths? */
 		  if(tree->mod->log_l == YES) Log_Br_Len(tree);
-		  
+
 		  if(io->mcmc->use_data == YES)
 		    {
 		      /* Force the exact likelihood score */

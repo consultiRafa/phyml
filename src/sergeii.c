@@ -958,46 +958,28 @@ void PhyTime_XML(char *xml_file)
  
   tree -> rates -> calib = last_calib;
   while(tree -> rates -> calib -> prev) tree -> rates -> calib = tree -> rates -> calib -> prev;
-  ////////////////////////////////////////////////////////////////////////////////////////////////
-  /*Set_Current_Calibration(0, tree);
-  TIMES_Set_All_Node_Priors(tree);
-  //MCMC_Randomize_Node_Times(tree);   
-  for(i = tree -> n_otu; i < 2 * tree -> n_otu -1; i++) printf("\n. [2] Node number:%d Min:%f Max:%f \n", i, tree -> rates -> t_prior_min[i], tree -> rates -> t_prior_max[i]);
-  PhyML_Printf("\n. .......................................................................");
 
-  Set_Current_Calibration(1, tree);
-  TIMES_Set_All_Node_Priors(tree);
-  for(i = tree -> n_otu; i < 2 * tree -> n_otu -1; i++) printf("\n. [2] Node number:%d Min:%f Max:%f \n", i, tree -> rates -> t_prior_min[i], tree -> rates -> t_prior_max[i]);
-  PhyML_Printf("\n. .......................................................................");
- 
-  //int result = TRUE; 
-  
-  //tree -> rates -> nd_t[6] = -0.05;
-  //int rnd_node;
-  //rnd_node = RND_Calibration_And_Node_Number(tree);
-  //printf("\n. Random node:'%d' \n ", rnd_node);
-  //RND_Calibration_And_Node_Number(tree);
-  //tree -> rates -> nd_t[5] = -1.9;
-  //Set_Current_Calibration(0, tree);
-  //TIMES_Set_All_Node_Priors(tree);
-  //tree -> rates -> nd_t[7] = -0.09;
-  //for(i = tree -> n_otu; i < 2 * tree -> n_otu -1; i++) printf("\n. [2] Node number:%d Min:%f Max:%f Cur.time:%f \n", i, tree -> rates -> t_prior_min[i], tree -> rates -> t_prior_max[i], tree -> rates -> nd_t[i]);
-  //PhyML_Printf("\n. .......................................................................");  
-  
-  //Check_Node_Time(tree -> n_root, tree -> n_root -> v[1], &result, tree);  
-  //Check_Node_Time(tree -> n_root, tree -> n_root -> v[2], &result, tree); 
-  //printf("\n. Check Nodes Times 1:'%d' \n", result);
-  //PhyML_Printf("\n. .......................................................................\n");  
-  //result = TRUE;
-  //if(result != TRUE)
-  //{
-  //  phydbl L_Hastings_ratio = 0.0;
-  //  Update_Times_Down_Tree(tree -> n_root, tree -> n_root -> v[1], &L_Hastings_ratio, tree);//!!!!!!!!!!!!!!!!!!!!!
-  //  Update_Times_Down_Tree(tree -> n_root, tree -> n_root -> v[2], &L_Hastings_ratio, tree);
-  //  PhyML_Printf("\n. Hastings Ratio:%f \n", L_Hastings_ratio);  
-  //}
-        	    
-  Exit("\n");*/
+  ////////////////////////////////////////////////////////////////////////////////////////////////
+  //Check for the sum of probabilities for one calibration add up to one
+  do
+    {
+      phydbl p = 0.0;
+      for(i = tree -> n_otu; i < 2 * tree -> n_otu - 1; i++) p = p + tree -> rates -> calib -> proba[i];
+      if(p != 1.0)
+        {
+          PhyML_Printf("\n==You need to provide proper probabilities for the calibration. \n");
+          PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+          Exit("\n");
+        } 
+      if(tree -> rates -> calib -> next) tree -> rates -> calib = tree -> rates -> calib -> next;
+      else break;
+    }
+  while(tree -> rates -> calib);
+  ////////////////////////////////////////////////////////////////////////////////////////////////
+  //phydbl K_num;
+  //Normolizing_Constant_For_Combination_Of_Calibrations(tree -> n_root, tree -> n_root -> v[1], &K_num, tree);
+  //Normolizing_Constant_For_Combination_Of_Calibrations(tree -> n_root, tree -> n_root -> v[2], &K_num, tree);
+  //Exit("\n");
   ////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////   
   //clear memory:
@@ -1177,3 +1159,8 @@ void PhyTime_XML(char *xml_file)
   /* return 1;    */
 }
 
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
