@@ -105,6 +105,8 @@ int GEO_Simulate_Estimate(int argc, char **argv)
   int pid;
   char *s;
   int rand_loc;
+  phydbl *probs,sum;
+  int i;
 
   s = (char *)mCalloc(T_MAX_NAME,sizeof(char));
   
@@ -129,7 +131,7 @@ int GEO_Simulate_Estimate(int argc, char **argv)
   t->sigma      = Uni()*(t->max_sigma-t->min_sigma) + t->min_sigma;
 
   /* t->tau        = 3.0; */
-  t->lbda       = 0.2;
+  /* t->lbda       = 0.02; */
   /* t->sigma      = 10.; */
 
 
@@ -176,9 +178,17 @@ int GEO_Simulate_Estimate(int argc, char **argv)
 
   GEO_Get_Locations_Beneath(t,tree);
 
-  GEO_Randomize_Locations(tree->n_root,
-                          tree->geo,
-                          tree);
+
+
+  probs = (phydbl *)mCalloc(tree->geo->ldscape_sz,sizeof(phydbl));
+  
+  sum = 0.0;
+  For(i,tree->geo->ldscape_sz) sum += tree->geo->loc_beneath[tree->n_root->num * tree->geo->ldscape_sz + i];
+  For(i,tree->geo->ldscape_sz) probs[i] = tree->geo->loc_beneath[tree->n_root->num * tree->geo->ldscape_sz + i]/sum;
+  tree->geo->loc[tree->n_root->num] = Sample_i_With_Proba_pi(probs,tree->geo->ldscape_sz);        
+  Free(probs);
+  GEO_Randomize_Locations(tree->n_root,tree->geo,tree);
+
   GEO_Update_Occup(t,tree);
   GEO_Lk(t,tree);
   PhyML_Printf("\n. Init loglk: %f",tree->geo->c_lnL);
@@ -268,9 +278,9 @@ phydbl *GEO_MCMC(t_tree *tree)
   tree->mcmc->is_burnin        = NO;
   tree->mcmc->nd_t_digits      = 1;
 
-  /* t->tau   = 1.0; */
-  /* t->lbda  = 1.0; */
-  /* t->sigma = 1.0; */
+  t->tau   = 1.0;
+  t->lbda  = 1.0;
+  t->sigma = 1.0;
 
   tree->mcmc->chain_len = 1.E+8;
   tree->mcmc->sample_interval = 50;
@@ -293,10 +303,10 @@ phydbl *GEO_MCMC(t_tree *tree)
   do
     {
       MCMC_Geo_Lbda(tree);
-      /* MCMC_Geo_Sigma(tree); */
-      /* MCMC_Geo_Tau(tree); */
+      MCMC_Geo_Sigma(tree);
+      MCMC_Geo_Tau(tree);
       MCMC_Geo_Loc(tree);
-      /* MCMC_Geo_Updown_Tau_Lbda(tree); */
+      MCMC_Geo_Updown_Tau_Lbda(tree);
 
       
       /* printf("\n"); */
@@ -928,11 +938,6 @@ t_tree *GEO_Simulate(t_geo *t, int n_otu)
     }
   while(n_branching_nodes < n_otu);
 
-  printf("\n");
-  For(i,t->ldscape_sz)
-    printf("%d,",occup[i]);
-  printf("\n");
-
 
   // Set the times at the tips
   For(i,2*tree->n_otu-1) if(tree->rates->nd_t[i] < 0.0) tree->rates->nd_t[i] = time;
@@ -1159,6 +1164,7 @@ void GEO_Randomize_Locations(t_node *n, t_geo *t, t_tree *tree)
       phydbl sum;
       phydbl u;
       
+
       probs = (phydbl *)mCalloc(t->ldscape_sz,sizeof(phydbl));
       
       v1 = v2 = NULL;
@@ -1171,37 +1177,105 @@ void GEO_Randomize_Locations(t_node *n, t_geo *t, t_tree *tree)
             }
         }
       
-      if(v1->tax)
+      if(v1->tax && v2->tax)
+        {
+          return;
+        }
+      else if(v1->tax && !v2->tax && t->loc[v1->num] != t->loc[n->num])
         {
           t->loc[v2->num] = t->loc[n->num];
         }
-      else if(v2->tax)
+      else if(v2->tax && !v1->tax && t->loc[v2->num] != t->loc[n->num])
         {
           t->loc[v1->num] = t->loc[n->num];
         }
+      else if(v1->tax && !v2->tax && t->loc[v1->num] == t->loc[n->num])
+        {
+          sum = 0.0;
+          For(i,t->ldscape_sz) sum += t->loc_beneath[v2->num * t->ldscape_sz + i];
+          For(i,t->ldscape_sz) probs[i] = t->loc_beneath[v2->num * t->ldscape_sz + i]/sum;
+          
+          t->loc[v2->num] = Sample_i_With_Proba_pi(probs,t->ldscape_sz);      
+        }
+      else if(v2->tax && !v1->tax && t->loc[v2->num] == t->loc[n->num])
+        {
+          sum = 0.0;
+          For(i,t->ldscape_sz) sum += t->loc_beneath[v1->num * t->ldscape_sz + i];
+          For(i,t->ldscape_sz) probs[i] = t->loc_beneath[v1->num * t->ldscape_sz + i]/sum;
+          
+          t->loc[v1->num] = Sample_i_With_Proba_pi(probs,t->ldscape_sz);      
+        }
       else
         {
+          int n_v1, n_v2;
+          phydbl p;
+
+          n_v1 = t->loc_beneath[v1->num * t->ldscape_sz + t->loc[n->num]];
+          n_v2 = t->loc_beneath[v2->num * t->ldscape_sz + t->loc[n->num]];
+          
+          if(n_v1 + n_v2 < 1)
+            {
+              PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+              Exit("\n");
+            }
+          
+
+          p = n_v1 / (n_v1 + n_v2);
+
           u = Uni();
 
-          if(u < .5)
-            {
-              sum = 0.0;
-              For(i,t->ldscape_sz) sum += t->loc_beneath[v1->num * t->ldscape_sz + i];
-              For(i,t->ldscape_sz) probs[i] = t->loc_beneath[v1->num * t->ldscape_sz + i]/sum;
-              
-              
-              t->loc[v1->num] = Sample_i_With_Proba_pi(probs,t->ldscape_sz);      
-              t->loc[v2->num] = t->loc[n->num];
-            }
-          else
-            {
+          if(u < p)
+            {              
               sum = 0.0;
               For(i,t->ldscape_sz) sum += t->loc_beneath[v2->num * t->ldscape_sz + i];
               For(i,t->ldscape_sz) probs[i] = t->loc_beneath[v2->num * t->ldscape_sz + i]/sum;
-
+              
               t->loc[v2->num] = Sample_i_With_Proba_pi(probs,t->ldscape_sz);      
-              t->loc[v1->num] = t->loc[n->num];
+              t->loc[v1->num] = t->loc[n->num];                
             }
+          else
+            {
+              if(t->loc_beneath[v2->num * t->ldscape_sz + t->loc[n->num]] > 0)
+                {
+                  sum = 0.0;
+                  For(i,t->ldscape_sz) sum += t->loc_beneath[v1->num * t->ldscape_sz + i];
+                  For(i,t->ldscape_sz) probs[i] = t->loc_beneath[v1->num * t->ldscape_sz + i]/sum;
+                  
+                  t->loc[v1->num] = Sample_i_With_Proba_pi(probs,t->ldscape_sz);      
+                  t->loc[v2->num] = t->loc[n->num];
+                }
+              else
+                {
+                  sum = 0.0;
+                  For(i,t->ldscape_sz) sum += t->loc_beneath[v2->num * t->ldscape_sz + i];
+                  For(i,t->ldscape_sz) probs[i] = t->loc_beneath[v2->num * t->ldscape_sz + i]/sum;
+                  
+                  t->loc[v2->num] = Sample_i_With_Proba_pi(probs,t->ldscape_sz);      
+                  t->loc[v1->num] = t->loc[n->num];                
+                }
+            }
+          
+          if(t->loc[v1->num] != t->loc[n->num] && t->loc[v2->num] != t->loc[n->num])
+            {
+              PhyML_Printf("\n. %d %d %d",t->loc[v1->num],t->loc[v2->num],t->loc[n->num]);
+              PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+              Exit("\n");
+            }
+
+          if(t->loc_beneath[v1->num * t->ldscape_sz + t->loc[v1->num]] < 1)
+            {
+              PhyML_Printf("\n. %d %d %d",t->loc[v1->num],t->loc[v2->num],t->loc[n->num]);
+              PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+              Exit("\n");
+            }
+
+          if(t->loc_beneath[v2->num * t->ldscape_sz + t->loc[v2->num]] < 1)
+            {
+              PhyML_Printf("\n. %d %d %d",t->loc[v1->num],t->loc[v2->num],t->loc[n->num]);
+              PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+              Exit("\n");
+            }
+          
         }
       
       Free(probs);
@@ -1227,8 +1301,7 @@ void GEO_Get_Locations_Beneath(t_geo *t, t_tree *tree)
     {
       t->loc_beneath[tree->n_root->num*t->ldscape_sz+i] =
         t->loc_beneath[tree->n_root->v[1]->num*t->ldscape_sz+i] +
-        t->loc_beneath[tree->n_root->v[2]->num*t->ldscape_sz+i] ;
-      
+        t->loc_beneath[tree->n_root->v[2]->num*t->ldscape_sz+i];      
     }
 
 

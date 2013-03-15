@@ -646,6 +646,8 @@ void MCMC_Geo_Loc(t_tree *tree)
   int i;
   phydbl cur_lnL, new_lnL;
   phydbl u, ratio, alpha;
+  phydbl sum;
+  phydbl *probs;
 
   cur_lnL = tree->geo->c_lnL;
 
@@ -656,10 +658,22 @@ void MCMC_Geo_Loc(t_tree *tree)
   // Choose an internal node (including the root) at random 
   target = Rand_Int(tree->n_otu,2*tree->n_otu-2); 
 
-  /* target = 2*tree->n_otu-2; */
+  target = 2*tree->n_otu-2;
   
   // Root node is special. Select new location uniformly at random
-  if(tree->a_nodes[target] == tree->n_root) tree->geo->loc[target] = Rand_Int(0,tree->geo->ldscape_sz-1);
+  if(tree->a_nodes[target] == tree->n_root) 
+    {
+      probs = (phydbl *)mCalloc(tree->geo->ldscape_sz,sizeof(phydbl));
+
+      sum = 0.0;
+      For(i,tree->geo->ldscape_sz) sum += tree->geo->loc_beneath[tree->n_root->num * tree->geo->ldscape_sz + i];
+      For(i,tree->geo->ldscape_sz) probs[i] = tree->geo->loc_beneath[tree->n_root->num * tree->geo->ldscape_sz + i]/sum;
+      
+      tree->geo->loc[tree->n_root->num] = Sample_i_With_Proba_pi(probs,tree->geo->ldscape_sz);      
+
+      Free(probs);
+    }
+
 
   // Randomize the locations below the selected node
   GEO_Randomize_Locations(tree->a_nodes[target], 
