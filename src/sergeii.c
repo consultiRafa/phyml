@@ -975,6 +975,7 @@ void PhyTime_XML(char *xml_file)
       else break;
     }
   while(tree -> rates -> calib);
+  while(tree -> rates -> calib -> prev) tree -> rates -> calib = tree -> rates -> calib -> prev;
   ////////////////////////////////////////////////////////////////////////////////////////////////
   //phydbl K_num;
   //Normolizing_Constant_For_Combination_Of_Calibrations(tree -> n_root, tree -> n_root -> v[1], &K_num, tree);
