@@ -1164,7 +1164,7 @@ void PhyTime_XML(char *xml_file)
 ////////////////////////////////////////////////////////////////////////////
 phydbl *Slicing_Calibrations(t_tree *tree)
 {
-  int i, j, f, n_otu, **indic, *n_slice;
+  int i, j, k, f, n_otu, **indic, *n_slice, **slice_numbers;
   phydbl buf, *t_prior_min, *t_prior_max, *t_slice, *t_slice_min, *t_slice_max;
 
 
@@ -1172,13 +1172,16 @@ phydbl *Slicing_Calibrations(t_tree *tree)
   t_prior_max = tree -> rates -> t_prior_max;
   n_otu = tree -> n_otu;
 
-  t_slice        = (phydbl *)mCalloc(2 * n_otu - 2, sizeof(phydbl));
-  t_slice_min    = (phydbl *)mCalloc(2 * n_otu - 3, sizeof(phydbl));
-  t_slice_max    = (phydbl *)mCalloc(2 * n_otu - 3, sizeof(phydbl));
-  indic          = (int **)mCalloc(n_otu - 1, sizeof(int *));
+  t_slice        = (phydbl *)mCalloc(2 * n_otu - 2, sizeof(phydbl)); //the vector of the union of lower and upper bounds, lined up in incresing order
+  t_slice_min    = (phydbl *)mCalloc(2 * n_otu - 3, sizeof(phydbl)); //vector of the lower bounds of the sliced intervals
+  t_slice_max    = (phydbl *)mCalloc(2 * n_otu - 3, sizeof(phydbl)); //vector of the upper bounds of the sliced intervals
+  indic          = (int **)mCalloc(n_otu - 1, sizeof(int *)); //matrix of the indicators, columns - node numbers (i + n_otu), rows - the number of the sliced interval
   For(i, n_otu - 1) 
     indic[i]     = (int *)mCalloc(2 * n_otu - 3, sizeof(int));
-  n_slice        = (int *)mCalloc(n_otu - 1, sizeof(int));
+  slice_numbers  = (int **)mCalloc(n_otu - 1, sizeof(int *));//matrix of the slice intervals numbers, columns node numbers (i + n_otu), rows - the number of the sliced interval
+  For(i, n_otu - 1) 
+    slice_numbers[i] = (int *)mCalloc(2 * n_otu - 3, sizeof(int));
+  n_slice        = (int *)mCalloc(n_otu - 1, sizeof(int)); //vector of the numbers of sliced intervals that apply to one node with number (i + n_otu)
   
   i = 0;
   j = n_otu; 
@@ -1196,7 +1199,7 @@ phydbl *Slicing_Calibrations(t_tree *tree)
       t_slice[i] = t_prior_max[j];
       j++;
     }
-
+  ////////////////////////////////////////////////////////////////////////////
   //Get slices in incresing order. Excluding tips.
   do
     {
@@ -1215,6 +1218,7 @@ phydbl *Slicing_Calibrations(t_tree *tree)
   while(f);
   //for(i = 0; i < 2 * n_otu - 2; i++) printf("\n. '%f' \n", t_slice[i]);
 
+  ////////////////////////////////////////////////////////////////////////////
   //Get the intervals with respect to slices. Total number of t_slice_min(max) 2 * n_otu - 3. Excluding tips.
   i = 0;
   For(j, 2 * n_otu - 3)
@@ -1225,6 +1229,7 @@ phydbl *Slicing_Calibrations(t_tree *tree)
     }
   //For(j, 2 * n_otu - 3) printf("\n. '%f' '%f' \n", t_slice_min[j], t_slice_max[j]);
 
+  ////////////////////////////////////////////////////////////////////////////
   //Getting indecators for the node number [i + n_otu] to have slice. i = i + n_otu is the node number on the tree and j is the slice number, total 
   //number of intervals is 2 * n_otu - 3. Excluding tips. 
   For(i, n_otu - 1)
@@ -1236,21 +1241,63 @@ phydbl *Slicing_Calibrations(t_tree *tree)
     }
   printf("\n");
   For(i, n_otu - 1) 
-    {
-      printf(". node[%d]", i + n_otu);
-      For(j, 2 * n_otu - 3) printf(". '%d' ", indic[i][j]);
-      printf("\n");
-    }
+  {
+    printf(". node[%d]", i + n_otu);
+    For(j, 2 * n_otu - 3) printf(". '%d' ", indic[i][j]);
+    printf("\n");
+  }
+
+  ////////////////////////////////////////////////////////////////////////////
   //Get the number of slices that can be applied for each node.
+ 
   For(i, n_otu - 1)
     {
+      k = 0;
       For(j, 2 * n_otu - 3)
         {
-          if(indic[i][j] == 1) n_slice[i]++;
+          if(indic[i][j] == 1) 
+            {
+              slice_numbers[i][k] = j;
+              n_slice[i]++; 
+              k++;
+            }
         }
     }
-  For(i, n_otu - 1) printf(". node[%d] '%d' \n", i + n_otu, n_slice[i]);
 
+  ////////////////////////////////////////////////////////////////////////////
+  //Running through all of the combinations of slices
+  int l, m, tot_num_comb, num_comb_one, num_comb_two;
+  phydbl *t_cur_slice_min, *t_cur_slice_max;
+
+  tot_num_comb = 1; 
+
+  t_cur_slice_min    = (phydbl *)mCalloc(n_otu - 1, sizeof(phydbl));
+  t_cur_slice_max    = (phydbl *)mCalloc(n_otu - 1, sizeof(phydbl));
+
+  For(i, n_otu - 1) tot_num_comb = tot_num_comb * n_slice[i]; //printf(" '%d' \n", tot_num_comb);
+  
+  For(k, tot_num_comb)
+    {
+      For(i, n_otu - 1) //node number i + n_otu
+        {
+          printf(" ['%d]' ", i + n_otu);
+          l = (k % Number_Of_Comb_Slices(i, n_otu - 1, n_slice)) / Number_Of_Comb_Slices(i+1, n_otu - 1, n_slice);
+          t_cur_slice_min[i] = t_slice_min[slice_numbers[i][l]]; printf(" '%f' ", t_cur_slice_min[i]);
+          t_cur_slice_max[i] = t_slice_max[slice_numbers[i][l]]; printf(" '%f' ", t_cur_slice_max[i]);
+          printf("\n"); 
+        }
+      printf("\n");
+    }
+
+  ////////////////////////////////////////////////////////////////////////////
+  
+
+
+  //For(i, n_otu - 1) printf(". node[%d] '%d' \n", i + n_otu, n_slice[i]);
+  //For(i, n_otu - 1) 
+  //{
+  //  For(j, n_slice[i]) printf(". node[%d] '%d'", i + n_otu, slice_numbers[i][j]);
+  //}
 
   return(t_slice); 
 
@@ -1258,3 +1305,14 @@ phydbl *Slicing_Calibrations(t_tree *tree)
 
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
+int Number_Of_Comb_Slices(int m, int num_elem, int *n_slice)
+{
+  int i, num_comb;
+
+  i = 0;
+  num_comb = 1;       
+
+  for(i = m; i < num_elem; i++) num_comb = num_comb * n_slice[i]; 
+  
+  return(num_comb);
+}
