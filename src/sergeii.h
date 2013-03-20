@@ -20,4 +20,5 @@ void Update_Times_RND_Node_Ancestor_Descendant(int rnd_node, phydbl *L_Hast_rati
 void Update_Times_Down_Tree(t_node *a, t_node *d, phydbl *L_Hastings_ratio, t_tree *tree);
 phydbl *Slicing_Calibrations(t_tree *tree);
 int Number_Of_Comb_Slices(int m, int num_elem, int *n_slice);
+void Check_Time_Slices(t_node *a, t_node *d, int *result, phydbl *t_cur_slice_min, phydbl *t_cur_slice_max, t_tree *tree);
 #endif

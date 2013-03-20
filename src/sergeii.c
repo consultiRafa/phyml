@@ -1266,7 +1266,7 @@ phydbl *Slicing_Calibrations(t_tree *tree)
 
   ////////////////////////////////////////////////////////////////////////////
   //Running through all of the combinations of slices
-  int l, m, tot_num_comb, num_comb_one, num_comb_two;
+  int l, tot_num_comb;
   phydbl *t_cur_slice_min, *t_cur_slice_max;
 
   tot_num_comb = 1; 
@@ -1280,13 +1280,24 @@ phydbl *Slicing_Calibrations(t_tree *tree)
     {
       For(i, n_otu - 1) //node number i + n_otu
         {
-          printf(" ['%d]' ", i + n_otu);
+          //printf(" ['%d]' ", i + n_otu);
           l = (k % Number_Of_Comb_Slices(i, n_otu - 1, n_slice)) / Number_Of_Comb_Slices(i+1, n_otu - 1, n_slice);
-          t_cur_slice_min[i] = t_slice_min[slice_numbers[i][l]]; printf(" '%f' ", t_cur_slice_min[i]);
-          t_cur_slice_max[i] = t_slice_max[slice_numbers[i][l]]; printf(" '%f' ", t_cur_slice_max[i]);
-          printf("\n"); 
+          t_cur_slice_min[i] = t_slice_min[slice_numbers[i][l]]; //printf(" '%f' ", t_cur_slice_min[i]);
+          t_cur_slice_max[i] = t_slice_max[slice_numbers[i][l]]; //printf(" '%f' ", t_cur_slice_max[i]);
+          //printf("\n"); 
         }
-      printf("\n");
+      ////////////////////////////////////////////////////////////////////////////
+      //Check for the time slices set properly
+      int result;
+
+      result = TRUE;
+
+      Check_Time_Slices(tree -> n_root, tree -> n_root -> v[1], &result, t_cur_slice_min, t_cur_slice_max, tree);
+      Check_Time_Slices(tree -> n_root, tree -> n_root -> v[2], &result, t_cur_slice_min, t_cur_slice_max, tree);
+      //printf("\n. '%d' \n", result);
+
+      ////////////////////////////////////////////////////////////////////////////
+      //printf("\n");
     }
 
   ////////////////////////////////////////////////////////////////////////////
@@ -1316,3 +1327,32 @@ int Number_Of_Comb_Slices(int m, int num_elem, int *n_slice)
   
   return(num_comb);
 }
+
+
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+void Check_Time_Slices(t_node *a, t_node *d, int *result, phydbl *t_cur_slice_min, phydbl *t_cur_slice_max, t_tree *tree)
+{
+  int n_otu;
+
+  n_otu = tree -> n_otu;
+ 
+
+  d -> anc = a;
+  if(d -> tax) return;
+  else
+    { 
+      if(t_cur_slice_max[d -> num - n_otu] < t_cur_slice_max[a -> num - n_otu])
+        {
+          *result = FALSE; 
+        }
+
+      int i;
+      For(i,3) 
+	if((d -> v[i] != d -> anc) && (d -> b[i] != tree -> e_root))
+             Check_Time_Slices(d, d -> v[i], result, t_cur_slice_min, t_cur_slice_max, tree);
+    }
+}
+
+
