@@ -1172,38 +1172,49 @@ phydbl *Slicing_Calibrations(t_tree *tree)
   t_prior_max = tree -> rates -> t_prior_max;
   n_otu = tree -> n_otu;
 
-  t_slice        = (phydbl *)mCalloc(2 * n_otu - 2, sizeof(phydbl)); //the vector of the union of lower and upper bounds, lined up in incresing order
+  t_slice        = (phydbl *)mCalloc(2 * (n_otu - 1), sizeof(phydbl)); //the vector of the union of lower and upper bounds, lined up in incresing order
   t_slice_min    = (phydbl *)mCalloc(2 * n_otu - 3, sizeof(phydbl)); //vector of the lower bounds of the sliced intervals
   t_slice_max    = (phydbl *)mCalloc(2 * n_otu - 3, sizeof(phydbl)); //vector of the upper bounds of the sliced intervals
+
+  /* indic          = (int *)mCalloc((n_otu - 1)*(2 * n_otu - 3), sizeof(int)); //matrix of the indicators, columns - node numbers (i + n_otu), rows - the number of the sliced interval */
+  
   indic          = (int **)mCalloc(n_otu - 1, sizeof(int *)); //matrix of the indicators, columns - node numbers (i + n_otu), rows - the number of the sliced interval
   For(i, n_otu - 1) 
     indic[i]     = (int *)mCalloc(2 * n_otu - 3, sizeof(int));
-  slice_numbers  = (int **)mCalloc(n_otu - 1, sizeof(int *));//matrix of the slice intervals numbers, columns node numbers (i + n_otu), rows - the number of the sliced interval
+
+
+  /* slice_numbers  = (int *)mCalloc((n_otu - 1)*(2 * n_otu - 3), sizeof(int ));//matrix of the slice intervals numbers, columns node numbers (i + n_otu), rows - the number of the sliced interval */
+
+
+  slice_numbers  = (int **)mCalloc(n_otu - 1, sizeof(int *)); //matrix of the slice intervals numbers, columns node numbers (i + n_otu), rows - the number of the sliced interval
   For(i, n_otu - 1) 
     slice_numbers[i] = (int *)mCalloc(2 * n_otu - 3, sizeof(int));
+
+
   n_slice        = (int *)mCalloc(n_otu - 1, sizeof(int)); //vector of the numbers of sliced intervals that apply to one node with number (i + n_otu)
   
   i = 0;
-  j = n_otu; 
-  For(i, n_otu - 1) n_slice[i] = 0;
-
-
+  j = n_otu;
   For(i, n_otu - 1)  
-  {
-    t_slice[i] = t_prior_min[j];
-    j++;
-  }
+    {
+      t_slice[i] = t_prior_min[j];
+      j++;
+    }
+
   j = n_otu; 
   for(i = n_otu - 1; i < 2 * n_otu - 2; i++) 
     {
       t_slice[i] = t_prior_max[j];
       j++;
     }
+
+
+
   ////////////////////////////////////////////////////////////////////////////
-  //Get slices in incresing order. Excluding tips.
+  //Get slices in increasing order. Excluding tips.
   do
     {
-      f = 0;
+      f = NO;
       For(j, 2 * n_otu - 3)
         {
           if(t_slice[j] > t_slice[j + 1])
@@ -1211,11 +1222,11 @@ phydbl *Slicing_Calibrations(t_tree *tree)
               buf = t_slice[j];
               t_slice[j] = t_slice[j + 1];
               t_slice[j + 1] = buf;
-              f = 1;
+              f = YES;
             }
         }
     }
-  while(f);
+  while(f == NO);
   //for(i = 0; i < 2 * n_otu - 2; i++) printf("\n. '%f' \n", t_slice[i]);
 
   ////////////////////////////////////////////////////////////////////////////
@@ -1230,15 +1241,27 @@ phydbl *Slicing_Calibrations(t_tree *tree)
   //For(j, 2 * n_otu - 3) printf("\n. '%f' '%f' \n", t_slice_min[j], t_slice_max[j]);
 
   ////////////////////////////////////////////////////////////////////////////
-  //Getting indecators for the node number [i + n_otu] to have slice. i = i + n_otu is the node number on the tree and j is the slice number, total 
+  //Getting indicators for the node number [i + n_otu] to have slice. i = i + n_otu is the node number on the tree and j is the slice number, total 
   //number of intervals is 2 * n_otu - 3. Excluding tips. 
+
+
+
   For(i, n_otu - 1)
     {
       For(j, 2 * n_otu - 3)
         {
-          if(t_prior_min[i + n_otu] <= t_slice_min[j] && t_prior_max[i + n_otu] >= t_slice_max[j]) indic[i][j] = 1;
+          /* if(t_prior_min[i + n_otu] <= t_slice_min[j] && t_prior_max[i + n_otu] >= t_slice_max[j]) indic[i][j] = 1; */
+          /* if(Are_Equal(t_prior_min[i + n_otu],t_slice_min[j],1.E-10)) indic[i*(2*n_otu-3)+j] = 1; */
+          /* else if(Are_Equal(t_prior_max[i + n_otu],t_slice_max[j],1.E-10)) indic[i*(2*n_otu-3)+j] = 1; */
+          /* else if(t_prior_min[i + n_otu] < t_slice_min[j] && t_prior_max[i + n_otu] > t_slice_max[j]) indic[i*(2*n_otu-3)+j] = 1; */
+
+          if(Are_Equal(t_prior_min[i + n_otu],t_slice_min[j],1.E-10)) indic[i][j] = 1;
+          else if(Are_Equal(t_prior_max[i + n_otu],t_slice_max[j],1.E-10)) indic[i][j] = 1;
+          else if(t_prior_min[i + n_otu] < t_slice_min[j] && t_prior_max[i + n_otu] > t_slice_max[j]) indic[i][j] = 1;
         }
     }
+
+
   printf("\n");
   For(i, n_otu - 1) 
   {

@@ -119,6 +119,7 @@ int GEO_Simulate_Estimate(int argc, char **argv)
   seed = getpid();
   /* seed = 28224; */
   /* seed = 1718; */
+  /* seed = 23680; */
   printf("\n. Seed = %d",seed);
   srand(seed);
 
@@ -126,9 +127,9 @@ int GEO_Simulate_Estimate(int argc, char **argv)
   GEO_Init_Geo_Struct(t);
 
 
-  t->tau        = Uni()*(t->max_tau-t->min_tau)  + t->min_tau;
-  t->lbda       = EXP(Uni()*(LOG(t->max_lbda)-LOG(t->min_lbda))  + LOG(t->min_lbda));
-  t->sigma      = Uni()*(t->max_sigma-t->min_sigma) + t->min_sigma;
+  t->tau        = Uni()*(t->max_tau/10.-t->min_tau*10.)  + t->min_tau*10.;
+  t->lbda       = EXP(Uni()*(LOG(t->max_lbda/10.)-LOG(t->min_lbda*10.))  + LOG(t->min_lbda*10.));
+  t->sigma      = Uni()*(t->max_sigma/10.-t->min_sigma*10.) + t->min_sigma*10.;
 
   /* t->tau        = 3.0; */
   /* t->lbda       = 0.02; */
@@ -307,6 +308,8 @@ phydbl *GEO_MCMC(t_tree *tree)
       MCMC_Geo_Tau(tree);
       MCMC_Geo_Loc(tree);
       MCMC_Geo_Updown_Tau_Lbda(tree);
+      /* MCMC_Geo_Updown_Tau_Lbda(tree); */
+      /* MCMC_Geo_Updown_Tau_Lbda(tree); */
 
       
       /* printf("\n"); */
@@ -1133,16 +1136,16 @@ void GEO_Init_Geo_Struct(t_geo *t)
 
   t->sigma        = 1.0;
   t->min_sigma    = 1.E-3;
-  t->max_sigma    = 10.;
+  t->max_sigma    = 1.E+2;
   t->sigma_thresh = t->max_sigma;
 
   t->lbda         = 1.0;
-  t->min_lbda     = 1.E-2;
-  t->max_lbda     = 1.E+1;
+  t->min_lbda     = 1.E-3;
+  t->max_lbda     = 1.E+2;
   
   t->tau          = 1.0;
   t->min_tau      = 1.E-3;
-  t->max_tau      = 1.E+1;
+  t->max_tau      = 1.E+2;
 
   t->tau          = 1.0;
 

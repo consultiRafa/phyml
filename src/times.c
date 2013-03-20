@@ -289,6 +289,9 @@ int TIMES_main(int argc, char **argv)
 		  
 		  if(tree->io->cstr_tree) Find_Surviving_Edges_In_Small_Tree(tree,tree->io->cstr_tree);
 
+                  printf("\n. %f ",TIMES_Log_Number_Of_Ranked_Labelled_Histories(tree->n_root,YES,tree));
+                  Exit("\n");
+
 		  time(&t_beg);
 		  tree->mcmc = MCMC_Make_MCMC_Struct();
 		  MCMC_Copy_MCMC_Struct(tree->io->mcmc,tree->mcmc,"phytime");
@@ -1135,6 +1138,7 @@ phydbl TIMES_Log_Number_Of_Ranked_Labelled_Histories(t_node *root, int per_slice
   tree->rates->n_tips_below[root->num] = n1+n2;
 
   logn += Factln(n1+n2-2) - Factln(n1-1) - Factln(n2-1);
+  printf("\n. n1:%d n2:%d logn:%f",n1,n2,logn);
 
   return(logn);
 }
