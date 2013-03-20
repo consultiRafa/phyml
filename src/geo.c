@@ -307,7 +307,7 @@ phydbl *GEO_MCMC(t_tree *tree)
       MCMC_Geo_Sigma(tree);
       MCMC_Geo_Tau(tree);
       MCMC_Geo_Loc(tree);
-      MCMC_Geo_Updown_Tau_Lbda(tree);
+      /* MCMC_Geo_Updown_Tau_Lbda(tree); */
       /* MCMC_Geo_Updown_Tau_Lbda(tree); */
       /* MCMC_Geo_Updown_Tau_Lbda(tree); */
 
