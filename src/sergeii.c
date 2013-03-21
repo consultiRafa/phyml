@@ -133,7 +133,7 @@ void Set_Current_Calibration(int row, t_tree *tree)
 phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
 {
 
-  phydbl *Yule_val, *times_partial_proba, times_tot_proba, *t_prior_min, *t_prior_max, min_value, K, ln_t; 
+  phydbl *Yule_val, *times_partial_proba, times_tot_proba, *t_prior_min, *t_prior_max, min_value, c, K, ln_t; 
   short int *t_has_prior;
   int i, j, k, tot_num_comb, result;
   t_cal *calib;
@@ -176,9 +176,11 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
       result = TRUE;
       Check_Node_Time(tree -> n_root, tree -> n_root -> v[1], &result, tree) ;
       Check_Node_Time(tree -> n_root, tree -> n_root -> v[2], &result, tree) ;
-      if(result != TRUE) times_partial_proba[i] = 0.0;      
+      if(result != TRUE) times_partial_proba[i] = 0.0; 
 
-      Yule_val[i] = TIMES_Lk_Yule_Order(tree);
+      K = Slicing_Calibrations(tree);     
+
+      Yule_val[i] = K * TIMES_Lk_Yule_Order(tree);
 
       while(calib -> prev) calib = calib -> prev;
     }
@@ -186,16 +188,16 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
   min_value = 0.0;
   For(i, tot_num_comb) if(Yule_val[i] < min_value && Yule_val[i] > -INFINITY) min_value = Yule_val[i];
 
-  K = -600. - min_value;
+  c = -600. - min_value;
   times_tot_proba = 0.0;
   For(i, tot_num_comb)
     {
-      times_tot_proba += times_partial_proba[i] * EXP(Yule_val[i] + K);
+      times_tot_proba += times_partial_proba[i] * EXP(Yule_val[i] + c);
     }
 
   For(i, 2 * tree -> n_otu - 1) t_has_prior[i] = NO;
 
-  ln_t = -K + LOG(times_tot_proba);
+  ln_t = -c + LOG(times_tot_proba);
 
   free(Yule_val);  
   free(times_partial_proba);
@@ -977,10 +979,10 @@ void PhyTime_XML(char *xml_file)
   while(tree -> rates -> calib);
   while(tree -> rates -> calib -> prev) tree -> rates -> calib = tree -> rates -> calib -> prev;
   ////////////////////////////////////////////////////////////////////////////////////////////////  
-  Set_Current_Calibration(0, tree);
-  TIMES_Set_All_Node_Priors(tree);
-  Slicing_Calibrations(tree);
-  Exit("\n");
+  //Set_Current_Calibration(0, tree);
+  //TIMES_Set_All_Node_Priors(tree);
+  //Slicing_Calibrations(tree);
+  //Exit("\n");
   ////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////   
   //clear memory:
@@ -1162,6 +1164,9 @@ void PhyTime_XML(char *xml_file)
 
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
+//Function calculates the normalizing constant K of the joint distribution Yule_Order.
+//Use the fact that density Yule_Order can be used streight forward only in case of the complete 
+//overlap of the calibration intervals for all of the nodes or in case of no overlap.  
 phydbl Slicing_Calibrations(t_tree *tree)
 {
   int i, j, k, f, n_otu, *indic, *n_slice, *slice_numbers;
@@ -1173,15 +1178,17 @@ phydbl Slicing_Calibrations(t_tree *tree)
   n_otu = tree -> n_otu;
 
   t_slice        = (phydbl *)mCalloc(2 * (n_otu - 1), sizeof(phydbl)); //the vector of the union of lower and upper bounds, lined up in incresing order.
-  t_slice_min    = (phydbl *)mCalloc(2 * n_otu - 3, sizeof(phydbl)); //vector of the lower bounds of the sliced intervals.
-  t_slice_max    = (phydbl *)mCalloc(2 * n_otu - 3, sizeof(phydbl)); //vector of the upper bounds of the sliced intervals.
-  indic          = (int *)mCalloc((n_otu - 1) * (2 * n_otu - 3), sizeof(int)); //vector of the indicators, columns - node numbers (i + n_otu), rows - the number of the sliced interval.
+  t_slice_min    = (phydbl *)mCalloc(2 * n_otu - 3, sizeof(phydbl));   //vector of the lower bounds of the sliced intervals.
+  t_slice_max    = (phydbl *)mCalloc(2 * n_otu - 3, sizeof(phydbl));   //vector of the upper bounds of the sliced intervals.
+  indic          = (int *)mCalloc((n_otu - 1) * (2 * n_otu - 3), sizeof(int));  //vector of the indicators, columns - node numbers (i + n_otu), rows - the number of the sliced interval.
   slice_numbers  = (int *)mCalloc((n_otu - 1) * (2 * n_otu - 3), sizeof(int )); //vecor of the slice intervals numbers, columns node numbers (i + n_otu), rows - the number of the sliced interval.
-  n_slice        = (int *)mCalloc(n_otu - 1, sizeof(int)); //vector of the numbers of sliced intervals that apply to one node with number (i + n_otu).
+  n_slice        = (int *)mCalloc(n_otu - 1, sizeof(int));                      //vector of the numbers of sliced intervals that apply to one node with number (i + n_otu).
   
   i = 0;
   K = 0;
   j = n_otu;
+  ////////////////////////////////////////////////////////////////////////////
+  //Put prior bounds in one vector t_slice. Excluding tips.
   For(i, n_otu - 1)  
     {
       t_slice[i] = t_prior_min[j];
@@ -1213,10 +1220,8 @@ phydbl Slicing_Calibrations(t_tree *tree)
     }
   while(f);
 
-  //for(i = 0; i < 2 * n_otu - 2; i++) printf("\n. '%f' \n", t_slice[i]);
-
   ////////////////////////////////////////////////////////////////////////////
-  //Get the intervals with respect to slices. Total number of t_slice_min(max) 2 * n_otu - 3. Excluding tips.
+  //Get the intervals with respect to slices. Total number of t_slice_min(max) - 2 * n_otu - 3. Excluding tips.
   i = 0;
   For(j, 2 * n_otu - 3)
     {
@@ -1240,19 +1245,9 @@ phydbl Slicing_Calibrations(t_tree *tree)
           else if(t_prior_min[i + n_otu] < t_slice_min[j] && t_prior_max[i + n_otu] > t_slice_max[j]) indic[i * (2 * n_otu - 3) + j] = 1;
         }
     } 
-  /*
-  For(i, n_otu - 1)
-    { 
-      printf("\n. Node [%d] ", i + n_otu);
-      For(j, 2 * n_otu - 3)  
-        {          
-          printf(". '%d' ",  indic[i * (2 * n_otu - 3) + j]);          
-        }
-      printf("\n");
-    }
-  */
+
   ////////////////////////////////////////////////////////////////////////////
- //Get the number of slices that can be applied for each node. 
+  //Get the number of slices that can be applied for each node and the vectors of slice numbers for each node. 
   For(i, n_otu - 1)
     {
       k = 0;
@@ -1273,11 +1268,12 @@ phydbl Slicing_Calibrations(t_tree *tree)
     { 
        For(j, 2 * n_otu - 3)  
         {          
-          printf(". '%d' ",  slice_numbers[i * (2 * n_otu - 3) + j]);          
+          printf(". '%d' ", slice_numbers[i * (2 * n_otu - 3) + j]);          
         }
       printf("\n");
     }
   */
+
   ////////////////////////////////////////////////////////////////////////////
   //Running through all of the combinations of slices
   int l, tot_num_comb, *cur_slices, *cur_slices_shr, shr_num_slices;
@@ -1311,6 +1307,7 @@ phydbl Slicing_Calibrations(t_tree *tree)
       //printf("\n");
       //For(i, n_otu - 1) printf(" Slice number'%d' ", cur_slices[i]); 
       //printf("\n");
+
       ///////////////////////////////////////////////////////////////////////////
       //Taking away duplicated slices
       For(i, n_otu -1)
@@ -1321,6 +1318,7 @@ phydbl Slicing_Calibrations(t_tree *tree)
             }  
         }
       //For(i, n_otu - 1) printf(" Slice number'%d' \n", cur_slices[i]); 
+
       ///////////////////////////////////////////////////////////////////////////
       //Getting a vector of all of the slices without duplicates.
       For(i, n_otu -1)
@@ -1334,12 +1332,7 @@ phydbl Slicing_Calibrations(t_tree *tree)
       //printf("\n"); 
       //For(i, shr_num_slices) printf(" Slice number'%d'", cur_slices_shr[i]); 
       //printf("\n"); 
-      //////////////////////////////
-      //t_cur_slice_min[0] = -2.0;
-      //t_cur_slice_max[0] = -1.1;
-      //t_cur_slice_min[1] = -2.0;
-      //t_cur_slice_max[1] = -1.1;
-      //////////////////////////////
+
       ////////////////////////////////////////////////////////////////////////////
       //Check for the time slices to be set properly
       int result;
@@ -1395,8 +1388,9 @@ phydbl Slicing_Calibrations(t_tree *tree)
                   k_part = k_part * Factorial(n_1 + n_2) / ((phydbl)Factorial(n_1 + n_2 + 1) * Factorial(n_1) * Factorial(n_2));
                   //printf("\n. k_part at the node [%d] [%f] \n", slice_root -> num, k_part); 
                 }
+
               ////////////////////////////////////////////////////////////////////////////
-              //Calculating PRODUCT over all of the time slices k_part*(exp(-lmbd*l) - exp(-lmbd*u))/(exp(-lmbd*l) - exp(-lmbd*u)) 
+              //Calculating PRODUCT over all of the time slices k_part * (exp(-lmbd*l) - exp(-lmbd*u))/(exp(-lmbd*l) - exp(-lmbd*u)) 
               phydbl num, denom, lmbd;
 
               lmbd = tree -> rates -> birth_rate;
@@ -1414,7 +1408,17 @@ phydbl Slicing_Calibrations(t_tree *tree)
   K = 1 / P;
   //printf("\n. [K] of the tree for one combination of slices [%f] \n", K);
   ////////////////////////////////////////////////////////////////////////////
-
+  free(t_cur_slice_min);
+  free(t_cur_slice_max);
+  free(cur_slices);
+  free(cur_slices_shr); 
+  free(t_slice);        
+  free(t_slice_min);    
+  free(t_slice_max);    
+  free(indic);          
+  free(slice_numbers);  
+  free(n_slice);
+        
   return(K); 
 }
 
