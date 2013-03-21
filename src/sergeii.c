@@ -1360,20 +1360,20 @@ phydbl *Slicing_Calibrations(t_tree *tree)
           ////////////////////////////////////////////////////////////////////////////
           //Getting the root node in a given slice
           t_node *slice_root;
-          printf("\n '%d' \n", shr_num_slices); 
+          //printf("\n '%d' \n", shr_num_slices); 
           For(i, shr_num_slices)
             {
-              printf("\n '%f' \n", k_part); 
+              //printf("\n '%f' \n", k_part); 
               slice_root = Search_Root_Node_In_Slice(tree -> n_root, tree -> n_root -> v[1], t_slice_min[cur_slices_shr[i]], t_slice_max[cur_slices_shr[i]], t_cur_slice_min, t_cur_slice_max, tree);
-              printf("\n '%d' \n", slice_root -> num); 
+              //printf("\n '%d' \n", slice_root -> num); 
               if(slice_root != NULL)
                 {
                   n_1 = 0;
                   n_2 = 0;
                   Number_Of_Nodes_In_Slice(slice_root, slice_root -> v[1], &n_1, t_cur_slice_min, t_cur_slice_max, tree);
                   Number_Of_Nodes_In_Slice(slice_root, slice_root -> v[2], &n_2, t_cur_slice_min, t_cur_slice_max, tree);
-                  k_part = Calculate_k_partial(n_1, n_2);
-                  printf("\n '%f' \n", k_part); 
+                  //k_part = Calculate_k_partial(n_1, n_2);
+                  //printf("\n '%f' \n", k_part); 
                 }
               
               slice_root = Search_Root_Node_In_Slice(tree -> n_root, tree -> n_root -> v[2], t_slice_min[cur_slices_shr[i]], t_slice_max[cur_slices_shr[i]], t_cur_slice_min, t_cur_slice_max, tree);
@@ -1383,8 +1383,8 @@ phydbl *Slicing_Calibrations(t_tree *tree)
                   n_2 = 0;
                   Number_Of_Nodes_In_Slice(slice_root, slice_root -> v[1], &n_1, t_cur_slice_min, t_cur_slice_max, tree);
                   Number_Of_Nodes_In_Slice(slice_root, slice_root -> v[2], &n_2, t_cur_slice_min, t_cur_slice_max, tree);
-                  k_part = k_part * Calculate_k_partial(n_1, n_2);
-                  printf("\n '%f' \n", k_part); 
+                  //k_part = k_part * Calculate_k_partial(n_1, n_2);
+                  //printf("\n '%f' \n", k_part); 
                 }
                            
             }
@@ -1482,7 +1482,7 @@ t_node *Search_Root_Node_In_Slice(t_node *d_start, t_node *d, phydbl t_slice_min
           return(d); 
         }
       else
-        return;
+        return (NULL);
 
       int i;
       For(i,3) 
