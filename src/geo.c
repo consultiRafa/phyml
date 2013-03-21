@@ -68,6 +68,8 @@ int GEO_Estimate(int argc, char **argv)
 
   GEO_Get_Sigma_Max(t);
 
+  t->max_sigma = t->sigma_thresh * 2.;
+
   PhyML_Printf("\n. Sigma max: %f",t->sigma_thresh);
 
   GEO_Get_Locations_Beneath(t,tree);
@@ -127,10 +129,6 @@ int GEO_Simulate_Estimate(int argc, char **argv)
   GEO_Init_Geo_Struct(t);
 
 
-  t->tau        = Uni()*(t->max_tau/10.-t->min_tau*10.)  + t->min_tau*10.;
-  t->lbda       = EXP(Uni()*(LOG(t->max_lbda/10.)-LOG(t->min_lbda*10.))  + LOG(t->min_lbda*10.));
-  t->sigma      = Uni()*(t->max_sigma/10.-t->min_sigma*10.) + t->min_sigma*10.;
-
   /* t->tau        = 3.0; */
   /* t->lbda       = 0.02; */
   /* t->sigma      = 10.; */
@@ -140,8 +138,6 @@ int GEO_Simulate_Estimate(int argc, char **argv)
   t->n_dim      = 2;
   n_tax         = (int)atoi(argv[2]);
 
-  PhyML_Fprintf(fp,"\n# SigmaTrue\t SigmaThresh\t LbdaTrue\t TauTrue\txTrue\t yTrue\t xRand\t yRand\t Sigma5\t Sigma50\t Sigma95\t Lbda5\t Lbda50\t Lbda95\t ProbLbdaInf1\t Tau5\t Tau50\t Tau95\t X5\t X50\t X95\t Y5\t Y50\t Y95\t RandX5\t RandX50\t RandX95\t RandY5\t RandY50\t RandY95\t");
-  PhyML_Fprintf(fp,"\n");
 
   GEO_Make_Geo_Complete(t->ldscape_sz,t->n_dim,n_tax,t);
 
@@ -152,13 +148,26 @@ int GEO_Simulate_Estimate(int argc, char **argv)
 
   GEO_Simulate_Coordinates(t->ldscape_sz,t);
 
+  GEO_Get_Sigma_Max(t);
+
+  t->max_sigma = t->sigma_thresh * 2.;
+
+  PhyML_Printf("\n. Sigma max: %f",t->max_sigma);
+
+  t->tau        = Uni()*(t->max_tau/100.-t->min_tau*10.)  + t->min_tau*10.;
+  t->lbda       = EXP(Uni()*(LOG(t->max_lbda/100.)-LOG(t->min_lbda*10.))  + LOG(t->min_lbda*10.));
+  t->sigma      = Uni()*(t->max_sigma-t->min_sigma) + t->min_sigma;
+
+
+  PhyML_Fprintf(fp,"\n# SigmaTrue\t SigmaThresh\t LbdaTrue\t TauTrue\txTrue\t yTrue\t xRand\t yRand\t Sigma5\t Sigma50\t Sigma95\t Lbda5\t Lbda50\t Lbda95\t ProbLbdaInf1\t Tau5\t Tau50\t Tau95\t X5\t X50\t X95\t Y5\t Y50\t Y95\t RandX5\t RandX50\t RandX95\t RandY5\t RandY50\t RandY95\t");
+  PhyML_Fprintf(fp,"\n");
+
   tree = GEO_Simulate(t,n_tax);
 
-  GEO_Get_Sigma_Max(t);
 
   rand_loc = Rand_Int(0,t->ldscape_sz-1);
 
-  PhyML_Printf("\nSigma: %f\t Lbda: %f\t Tau:%f\t x:%f\t y:%f rand.x:%f\t rand.y:%f\t",
+  PhyML_Printf("\n. sigma: %f\t lbda: %f\t tau:%f\t x:%f\t y:%f rand.x:%f\t rand.y:%f\t",
                t->sigma,
                t->lbda,
                t->tau,
@@ -331,13 +340,13 @@ phydbl *GEO_MCMC(t_tree *tree)
           MCMC_Update_Effective_Sample_Size(tree->mcmc->num_move_geo_sigma,tree->mcmc,tree);
           MCMC_Update_Effective_Sample_Size(tree->mcmc->num_move_geo_tau,tree->mcmc,tree);
 
-          printf("\n. lbda:%f,%f tau:%f,%f sigma:%f,%f",
-                 tree->mcmc->acc_rate[tree->mcmc->num_move_geo_lambda],
-                 tree->mcmc->tune_move[tree->mcmc->num_move_geo_lambda],
-                 tree->mcmc->acc_rate[tree->mcmc->num_move_geo_tau],
-                 tree->mcmc->tune_move[tree->mcmc->num_move_geo_tau],
-                 tree->mcmc->acc_rate[tree->mcmc->num_move_geo_sigma],
-                 tree->mcmc->tune_move[tree->mcmc->num_move_geo_sigma]);
+          /* printf("\n. lbda:%f,%f tau:%f,%f sigma:%f,%f", */
+          /*        tree->mcmc->acc_rate[tree->mcmc->num_move_geo_lambda], */
+          /*        tree->mcmc->tune_move[tree->mcmc->num_move_geo_lambda], */
+          /*        tree->mcmc->acc_rate[tree->mcmc->num_move_geo_tau], */
+          /*        tree->mcmc->tune_move[tree->mcmc->num_move_geo_tau], */
+          /*        tree->mcmc->acc_rate[tree->mcmc->num_move_geo_sigma], */
+          /*        tree->mcmc->tune_move[tree->mcmc->num_move_geo_sigma]); */
                  
           PhyML_Printf("\n. Run %6d Sigma: %12f [%4.0f] Lambda: %12f [%4.0f] Tau: %12f [%4.0f] LogLk: %12f x: %12f y:%12f",
                        tree->mcmc->run,
@@ -1149,16 +1158,16 @@ void GEO_Init_Geo_Struct(t_geo *t)
 
   t->sigma        = 1.0;
   t->min_sigma    = 1.E-3;
-  t->max_sigma    = 1.E+2;
+  t->max_sigma    = 1.E+3;
   t->sigma_thresh = t->max_sigma;
 
   t->lbda         = 1.0;
   t->min_lbda     = 1.E-3;
-  t->max_lbda     = 1.E+2;
+  t->max_lbda     = 1.E+3;
   
   t->tau          = 1.0;
   t->min_tau      = 1.E-3;
-  t->max_tau      = 1.E+2;
+  t->max_tau      = 1.E+3;
 
   t->tau          = 1.0;
 
@@ -1401,6 +1410,7 @@ void GEO_Get_Sigma_Max(t_geo *t)
   
   inv_max_dist = 1./max_dist;
   
+
 
 
   sigma_a = t->min_sigma; sigma_b = 1.0; sigma_c = t->max_sigma;
