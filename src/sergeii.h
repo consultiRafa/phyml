@@ -18,11 +18,10 @@ void Update_Descendent_Cond_Jump(t_node *a, t_node *d, phydbl *L_Hast_ratio, t_t
 void Update_Ancestor_Cond_Jump(t_node *d, phydbl *L_Hast_ratio, t_tree *tree);
 void Update_Times_RND_Node_Ancestor_Descendant(int rnd_node, phydbl *L_Hast_ratio, t_tree *tree);
 void Update_Times_Down_Tree(t_node *a, t_node *d, phydbl *L_Hastings_ratio, t_tree *tree);
-phydbl *Slicing_Calibrations(t_tree *tree);
+phydbl Slicing_Calibrations(t_tree *tree);
 int Number_Of_Comb_Slices(int m, int num_elem, int *n_slice);
 void Check_Time_Slices(t_node *a, t_node *d, int *result, phydbl *t_cur_slice_min, phydbl *t_cur_slice_max, t_tree *tree);
 void *Number_Of_Nodes_In_Slice(t_node *d_start, t_node *d, int *n, phydbl *t_cur_slice_min, phydbl *t_cur_slice_max, t_tree *tree);
 t_node *Search_Root_Node_In_Slice(t_node *d_start, t_node *d, phydbl t_slice_min, phydbl t_slice_max, phydbl *t_cur_slice_min, phydbl *t_cur_slice_max, t_tree *tree);
-phydbl Calculate_k_patial(int n_1, int n_2);
 int Factorial(int base);
 #endif
