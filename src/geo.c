@@ -331,6 +331,14 @@ phydbl *GEO_MCMC(t_tree *tree)
           MCMC_Update_Effective_Sample_Size(tree->mcmc->num_move_geo_sigma,tree->mcmc,tree);
           MCMC_Update_Effective_Sample_Size(tree->mcmc->num_move_geo_tau,tree->mcmc,tree);
 
+          printf("\n. lbda:%f,%f tau:%f,%f sigma:%f,%f",
+                 tree->mcmc->acc_rate[tree->mcmc->num_move_geo_lambda],
+                 tree->mcmc->tune_move[tree->mcmc->num_move_geo_lambda],
+                 tree->mcmc->acc_rate[tree->mcmc->num_move_geo_tau],
+                 tree->mcmc->tune_move[tree->mcmc->num_move_geo_tau],
+                 tree->mcmc->acc_rate[tree->mcmc->num_move_geo_sigma],
+                 tree->mcmc->tune_move[tree->mcmc->num_move_geo_sigma]);
+                 
           PhyML_Printf("\n. Run %6d Sigma: %12f [%4.0f] Lambda: %12f [%4.0f] Tau: %12f [%4.0f] LogLk: %12f x: %12f y:%12f",
                        tree->mcmc->run,
 
@@ -363,6 +371,11 @@ phydbl *GEO_MCMC(t_tree *tree)
         }
 
       tree->mcmc->run++;
+
+      if(tree->mcmc->ess[tree->mcmc->num_move_geo_sigma] > 20.) tree->mcmc->adjust_tuning[tree->mcmc->num_move_geo_sigma]  = NO;
+      if(tree->mcmc->ess[tree->mcmc->num_move_geo_tau]   > 20.) tree->mcmc->adjust_tuning[tree->mcmc->num_move_geo_tau]    = NO;
+      if(tree->mcmc->ess[tree->mcmc->num_move_geo_lambda]> 20.) tree->mcmc->adjust_tuning[tree->mcmc->num_move_geo_lambda] = NO;
+      
       MCMC_Get_Acc_Rates(tree->mcmc);
 
 
