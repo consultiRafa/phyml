@@ -1372,7 +1372,7 @@ phydbl *Slicing_Calibrations(t_tree *tree)
                   n_2 = 0;
                   Number_Of_Nodes_In_Slice(slice_root, slice_root -> v[1], &n_1, t_cur_slice_min, t_cur_slice_max, tree);
                   Number_Of_Nodes_In_Slice(slice_root, slice_root -> v[2], &n_2, t_cur_slice_min, t_cur_slice_max, tree);
-                  k_part = Factorial(n_1 + n_2) / (Factorial(n_1 + n_2 + 1) * Factorial(n_1) * Factorial(n_2));
+                  k_part = Calculate_k_partial(n_1, n_2);
                   printf("\n '%f' \n", k_part); 
                 }
               
@@ -1383,7 +1383,7 @@ phydbl *Slicing_Calibrations(t_tree *tree)
                   n_2 = 0;
                   Number_Of_Nodes_In_Slice(slice_root, slice_root -> v[1], &n_1, t_cur_slice_min, t_cur_slice_max, tree);
                   Number_Of_Nodes_In_Slice(slice_root, slice_root -> v[2], &n_2, t_cur_slice_min, t_cur_slice_max, tree);
-                  k_part = k_part * Factorial(n_1 + n_2) / (Factorial(n_1 + n_2 + 1) * Factorial(n_1) * Factorial(n_2));
+                  k_part = k_part * Calculate_k_partial(n_1, n_2);
                   printf("\n '%f' \n", k_part); 
                 }
                            
@@ -1494,9 +1494,13 @@ t_node *Search_Root_Node_In_Slice(t_node *d_start, t_node *d, phydbl t_slice_min
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 //Calculate the k for everuy root node in the slice.
-phydbl Calculate_k_patial(int n_1, int n_2)
+phydbl Calculate_k_partial(int n_1, int n_2)
 {
- 
+  phydbl k;
+
+  k = Factorial(n_1 + n_2) / (Factorial(n_1 + n_2 + 1) * Factorial(n_1) * Factorial(n_2));
+
+  return(k);
 }
 
 //////////////////////////////////////////////////////////////
