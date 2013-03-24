@@ -178,7 +178,7 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
       Check_Node_Time(tree -> n_root, tree -> n_root -> v[1], &result, tree) ;
       Check_Node_Time(tree -> n_root, tree -> n_root -> v[2], &result, tree) ;
       if(result != TRUE) times_partial_proba[i] = 0.0; 
-PhyML_Printf("\n. The number [%d] normolizing constant [%f] \n", i+1, K[i]);
+
       Yule_val[i] = K[i] * TIMES_Lk_Yule_Order(tree);
 
       while(calib -> prev) calib = calib -> prev;
