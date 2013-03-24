@@ -1527,3 +1527,56 @@ int Factorial(int base)
   if(base == 1) return(1);
   return(base * Factorial(base-1)); 
 }
+
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//Calculate the vector of the norm.constants for prior on node times. 
+//The length of the vector is the total number of combinations of calibrations.
+phydbl *Norm_Constant_Prior_Times(t_tree *tree)
+{
+
+  phydbl *t_prior_min, *t_prior_max, min_value, *K; 
+  short int *t_has_prior;
+  int i, j, k, tot_num_comb;
+  t_cal *calib;
+ 
+
+
+
+  calib = tree -> rates -> calib;
+  t_prior_min = tree -> rates -> t_prior_min;
+  t_prior_max = tree -> rates -> t_prior_max;
+  t_has_prior = tree -> rates -> t_has_prior;
+
+  tot_num_comb = Number_Of_Comb(calib);  
+
+  K = (phydbl *)mCalloc(tot_num_comb, sizeof(phydbl));   
+
+  For(i, tot_num_comb)
+    {
+      for(j = tree -> n_otu; j < 2 * tree -> n_otu - 1; j++) 
+        {
+          t_prior_min[j] = -BIG;
+          t_prior_max[j] = BIG;
+          t_has_prior[j] = NO; 
+        }
+      do
+        {
+          k = (i % Number_Of_Comb(calib)) / Number_Of_Comb(calib -> next);
+          t_prior_min[calib -> all_applies_to[k] -> num] = MAX(t_prior_min[calib -> all_applies_to[k] -> num], calib -> lower);
+          t_prior_max[calib -> all_applies_to[k] -> num] = MIN(t_prior_max[calib -> all_applies_to[k] -> num], calib -> upper);
+          t_has_prior[calib -> all_applies_to[k] -> num] = YES;
+          if(calib -> next) calib = calib -> next;
+          else break;
+        }
+      while(calib);
+      TIMES_Set_All_Node_Priors(tree);
+
+      K[i] = Slicing_Calibrations(tree);     
+
+      while(calib -> prev) calib = calib -> prev;
+    }
+
+  return(K);
+}
