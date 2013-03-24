@@ -133,7 +133,7 @@ void Set_Current_Calibration(int row, t_tree *tree)
 phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
 {
 
-  phydbl *Yule_val, *times_partial_proba, times_tot_proba, *t_prior_min, *t_prior_max, min_value, c, K, ln_t; 
+  phydbl *Yule_val, *times_partial_proba, times_tot_proba, *t_prior_min, *t_prior_max, min_value, c, *K, ln_t; 
   short int *t_has_prior;
   int i, j, k, tot_num_comb, result;
   t_cal *calib;
@@ -144,6 +144,7 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
   t_prior_min = tree -> rates -> t_prior_min;
   t_prior_max = tree -> rates -> t_prior_max;
   t_has_prior = tree -> rates -> t_has_prior;
+  K = tree -> K;
   tot_num_comb = Number_Of_Comb(calib);
 
   
@@ -178,9 +179,7 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
       Check_Node_Time(tree -> n_root, tree -> n_root -> v[2], &result, tree) ;
       if(result != TRUE) times_partial_proba[i] = 0.0; 
 
-      K = Slicing_Calibrations(tree);     
-
-      Yule_val[i] = K * TIMES_Lk_Yule_Order(tree);
+      Yule_val[i] = K[i] * TIMES_Lk_Yule_Order(tree);
 
       while(calib -> prev) calib = calib -> prev;
     }
@@ -1130,11 +1129,15 @@ void PhyTime_XML(char *xml_file)
  
   MCMC_Copy_MCMC_Struct(tree -> io -> mcmc, tree -> mcmc, "phytime"); 
 
-  tree -> mod -> m4mod = m4mod;
-	
+  tree -> mod -> m4mod = m4mod;\
+
+  PhyML_Printf("\n");
+  PhyML_Printf("\n. Computing Norm.Constants for the Node Times Priors...");		
   MCMC_Complete_MCMC(tree -> mcmc, tree);
 
   tree -> mcmc -> is_burnin = NO;
+
+  Norm_Constant_Prior_Times(tree);
 
   MCMC(tree);                                            															
   MCMC_Close_MCMC(tree -> mcmc);																	
@@ -1533,7 +1536,7 @@ int Factorial(int base)
 //////////////////////////////////////////////////////////////
 //Calculate the vector of the norm.constants for prior on node times. 
 //The length of the vector is the total number of combinations of calibrations.
-phydbl *Norm_Constant_Prior_Times(t_tree *tree)
+void Norm_Constant_Prior_Times(t_tree *tree)
 {
 
   phydbl *t_prior_min, *t_prior_max, min_value, *K; 
@@ -1548,6 +1551,7 @@ phydbl *Norm_Constant_Prior_Times(t_tree *tree)
   t_prior_min = tree -> rates -> t_prior_min;
   t_prior_max = tree -> rates -> t_prior_max;
   t_has_prior = tree -> rates -> t_has_prior;
+  K = tree -> K;
 
   tot_num_comb = Number_Of_Comb(calib);  
 
@@ -1578,5 +1582,4 @@ phydbl *Norm_Constant_Prior_Times(t_tree *tree)
       while(calib -> prev) calib = calib -> prev;
     }
 
-  return(K);
 }
