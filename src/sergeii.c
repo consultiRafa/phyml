@@ -1129,14 +1129,14 @@ void PhyTime_XML(char *xml_file)
  
   MCMC_Copy_MCMC_Struct(tree -> io -> mcmc, tree -> mcmc, "phytime"); 
 
-  tree -> mod -> m4mod = m4mod;\
-
-  PhyML_Printf("\n");
-  PhyML_Printf("\n. Computing Norm.Constants for the Node Times Priors...");		
+  tree -> mod -> m4mod = m4mod;
+		
   MCMC_Complete_MCMC(tree -> mcmc, tree);
 
   tree -> mcmc -> is_burnin = NO;
 
+  PhyML_Printf("\n");
+  PhyML_Printf("\n. Computing Normalizing Constant(s) for the Node Times Prior Density...");
   Norm_Constant_Prior_Times(tree);
 
   MCMC(tree);                                            															
@@ -1421,6 +1421,7 @@ phydbl Slicing_Calibrations(t_tree *tree)
   free(indic);          
   free(slice_numbers);  
   free(n_slice);
+  free(tree -> K);
         
   return(K); 
 }
@@ -1539,7 +1540,7 @@ int Factorial(int base)
 void Norm_Constant_Prior_Times(t_tree *tree)
 {
 
-  phydbl *t_prior_min, *t_prior_max, min_value, *K; 
+  phydbl *t_prior_min, *t_prior_max, *K; 
   short int *t_has_prior;
   int i, j, k, tot_num_comb;
   t_cal *calib;
@@ -1553,7 +1554,9 @@ void Norm_Constant_Prior_Times(t_tree *tree)
   t_has_prior = tree -> rates -> t_has_prior;
   K = tree -> K;
 
-  tot_num_comb = Number_Of_Comb(calib);  
+  tot_num_comb = Number_Of_Comb(calib);
+  
+  PhyML_Printf("\n. The total number of calibration combinations: [%d]\n", tot_num_comb);
 
   K = (phydbl *)mCalloc(tot_num_comb, sizeof(phydbl));   
 
@@ -1578,7 +1581,7 @@ void Norm_Constant_Prior_Times(t_tree *tree)
       TIMES_Set_All_Node_Priors(tree);
 
       K[i] = Slicing_Calibrations(tree);     
-
+      PhyML_Printf("\n. The number [%d] normolizing constant [%f] \n", i+1, K[i]);
       while(calib -> prev) calib = calib -> prev;
     }
 
