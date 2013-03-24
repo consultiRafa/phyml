@@ -24,6 +24,6 @@ void Check_Time_Slices(t_node *a, t_node *d, int *result, phydbl *t_cur_slice_mi
 void *Number_Of_Nodes_In_Slice(t_node *d_start, t_node *d, int *n, phydbl *t_cur_slice_min, phydbl *t_cur_slice_max, t_tree *tree);
 t_node *Search_Root_Node_In_Slice(t_node *d_start, t_node *d, phydbl t_slice_min, phydbl t_slice_max, phydbl *t_cur_slice_min, phydbl *t_cur_slice_max, t_tree *tree);
 int Factorial(int base);
-phydbl Norm_Constant_Prior_Times(t_tree *tree);
+phydbl *Norm_Constant_Prior_Times(t_tree *tree);
 #endif
 
