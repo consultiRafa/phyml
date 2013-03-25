@@ -180,6 +180,7 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
       if(result != TRUE) times_partial_proba[i] = 0.0; 
 
       Yule_val[i] = K[i] * TIMES_Lk_Yule_Order(tree);
+      //Yule_val[i] = TIMES_Lk_Yule_Order(tree);
 
       while(calib -> prev) calib = calib -> prev;
     }
@@ -1136,7 +1137,7 @@ void PhyTime_XML(char *xml_file)
   tree -> mcmc -> is_burnin = NO;
 
   PhyML_Printf("\n");
-  PhyML_Printf("\n. Computing Normalizing Constant(s) for the Node Times Prior Density...");
+  PhyML_Printf("\n. Computing Normalizing Constant(s) for the Node Times Prior Density...\n");
   tree -> K = Norm_Constant_Prior_Times(tree);
 
   MCMC(tree);                                            															
@@ -1580,7 +1581,7 @@ phydbl *Norm_Constant_Prior_Times(t_tree *tree)
       TIMES_Set_All_Node_Priors(tree);
 
       K[i] = Slicing_Calibrations(tree);     
-      PhyML_Printf("\n. The number [%d] normolizing constant [%f] \n", i+1, K[i]);
+      PhyML_Printf("\n. Number [%d] normolizing constant [%f] \n", i+1, K[i]);
       while(calib -> prev) calib = calib -> prev;
     }
   return(K);
