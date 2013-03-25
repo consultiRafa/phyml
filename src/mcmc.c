@@ -51,9 +51,7 @@ void MCMC(t_tree *tree)
   Switch_Eigen(YES,tree->mod);
 
   MCMC_Initialize_Param_Val(tree->mcmc,tree);
-  /////////////////////////////////////
-  tree -> rates -> nd_t[tree -> n_root -> num] = -1.6;
-  /////////////////////////////////////
+
   Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
   Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
 
@@ -201,7 +199,7 @@ void MCMC(t_tree *tree)
       /* Tree height */
       else if(!strcmp(tree->mcmc->move_name[move],"tree_height"))
       	{
-      	  //MCMC_Tree_Height(tree);
+      	  MCMC_Tree_Height(tree);
       	}
 
       /* Subtree height */
@@ -283,7 +281,7 @@ void MCMC(t_tree *tree)
 
       	  if(tree->mcmc->is == NO || tree->rates->model_log_rates == YES)
       	    {
-              //MCMC_Root_Time(tree);
+              MCMC_Root_Time(tree);
 	      MCMC_One_Time(tree->n_root,tree->n_root->v[first],YES,tree);
 	      MCMC_One_Time(tree->n_root,tree->n_root->v[secod],YES,tree);
       	    }
@@ -4268,9 +4266,9 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   for(i=mcmc->num_move_nd_r;i<mcmc->num_move_nd_r+2*tree->n_otu-1;i++) mcmc->move_weight[i] = 0.0; /* Node rates */
   for(i=mcmc->num_move_nd_t;i<mcmc->num_move_nd_t+tree->n_otu-1;i++)   mcmc->move_weight[i] = (phydbl)(1./(tree->n_otu-1));  /* Times */
   mcmc->move_weight[mcmc->num_move_clock_r]          = 1.0;
-  mcmc->move_weight[mcmc->num_move_tree_height]      = 0.0;//2.0
+  mcmc->move_weight[mcmc->num_move_tree_height]      = 2.0;
   mcmc->move_weight[mcmc->num_move_subtree_height]   = 0.0;
-  mcmc->move_weight[mcmc->num_move_tree_height]      = 0.0;//2.0
+  mcmc->move_weight[mcmc->num_move_tree_height]      = 2.0;
   mcmc->move_weight[mcmc->num_move_subtree_height]   = 0.0;
   mcmc->move_weight[mcmc->num_move_nu]               = 2.0;
   mcmc->move_weight[mcmc->num_move_kappa]            = 0.5;
@@ -4283,7 +4281,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   for(i=mcmc->num_move_cov_rates;i<mcmc->num_move_cov_rates+(tree->mod ? 2*tree->mod->m4mod->n_h : 1);i++) mcmc->move_weight[i] = 0.5*(1./(tree->mod ? (phydbl)tree->mod->m4mod->n_h : 1));
   mcmc->move_weight[mcmc->num_move_cov_switch]          = 1.0;
   mcmc->move_weight[mcmc->num_move_birth_rate]          = 2.0;
-  mcmc->move_weight[mcmc->num_move_updown_t_br]         = 0.0;//1.0
+  mcmc->move_weight[mcmc->num_move_updown_t_br]         = 1.0;
 #if defined (SERGEII)
   mcmc->move_weight[mcmc->num_move_jump_calibration]    = 1.0;
 #else
