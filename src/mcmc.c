@@ -51,7 +51,7 @@ void MCMC(t_tree *tree)
   Switch_Eigen(YES,tree->mod);
 
   MCMC_Initialize_Param_Val(tree->mcmc,tree);
-
+ 
   Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
   Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
 

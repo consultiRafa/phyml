@@ -179,8 +179,8 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
       Check_Node_Time(tree -> n_root, tree -> n_root -> v[2], &result, tree) ;
       if(result != TRUE) times_partial_proba[i] = 0.0; 
 
-      Yule_val[i] = K[i] * TIMES_Lk_Yule_Order(tree);
-      //Yule_val[i] = TIMES_Lk_Yule_Order(tree);
+      //Yule_val[i] = K[i] * TIMES_Lk_Yule_Order(tree);
+      Yule_val[i] = TIMES_Lk_Yule_Order(tree);
 
       while(calib -> prev) calib = calib -> prev;
     }
@@ -1139,6 +1139,7 @@ void PhyTime_XML(char *xml_file)
   PhyML_Printf("\n");
   PhyML_Printf("\n. Computing Normalizing Constant(s) for the Node Times Prior Density...\n");
   tree -> K = Norm_Constant_Prior_Times(tree);
+  //Exit("\n");
 
   MCMC(tree);                                            															
   MCMC_Close_MCMC(tree -> mcmc);																	
@@ -1334,7 +1335,7 @@ phydbl Slicing_Calibrations(t_tree *tree)
             }
         }
       //printf("\n"); 
-      //For(i, shr_num_slices) printf(" Slice number'%d'", cur_slices_shr[i]); 
+      //For(i, shr_num_slices) printf("\n. Slice number'%d' \n", cur_slices_shr[i]); 
       //printf("\n"); 
 
       ////////////////////////////////////////////////////////////////////////////
@@ -1400,11 +1401,11 @@ phydbl Slicing_Calibrations(t_tree *tree)
               lmbd = tree -> rates -> birth_rate;
               num = 1;
               denom = 1;
-              For(i, n_otu - 1) num = num * (EXP(-lmbd * t_cur_slice_min[i]) - EXP(-lmbd * t_cur_slice_max[i])); 
-              for(i = n_otu; i < 2 * n_otu - 1; i++) denom = denom * (EXP(-lmbd * t_prior_min[i]) - EXP(-lmbd * t_prior_max[i])); 
-              k_part = k_part * num / denom;
-              //printf("\n. k_part of the tree for one combination of slices [%f] \n", k_part);              
+              For(j, n_otu - 1) num = num * (EXP(-lmbd * t_cur_slice_min[j]) - EXP(-lmbd * t_cur_slice_max[j])); 
+              for(j = n_otu; j < 2 * n_otu - 1; j++) denom = denom * (EXP(-lmbd * t_prior_min[j]) - EXP(-lmbd * t_prior_max[j])); 
+              k_part = k_part * num / denom;                    
             }
+          printf("\n. k_part of the tree for one combination of slices [%f] \n", k_part);
         } 
       P = P + k_part;     
     }
