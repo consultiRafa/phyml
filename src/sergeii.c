@@ -174,13 +174,15 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
       while(calib);
       TIMES_Set_All_Node_Priors(tree);
 
+      K = Norm_Constant_Prior_Times(tree);
+
       result = TRUE;
       Check_Node_Time(tree -> n_root, tree -> n_root -> v[1], &result, tree) ;
       Check_Node_Time(tree -> n_root, tree -> n_root -> v[2], &result, tree) ;
       if(result != TRUE) times_partial_proba[i] = 0.0; 
 
-      //Yule_val[i] = K[i] * TIMES_Lk_Yule_Order(tree);
-      Yule_val[i] = TIMES_Lk_Yule_Order(tree);
+      Yule_val[i] = K[i] * TIMES_Lk_Yule_Order(tree);
+      //Yule_val[i] = TIMES_Lk_Yule_Order(tree);
 
       while(calib -> prev) calib = calib -> prev;
     }
@@ -1137,11 +1139,14 @@ void PhyTime_XML(char *xml_file)
   tree -> mcmc -> is_burnin = NO;
 
   PhyML_Printf("\n");
-  PhyML_Printf("\n. Computing Normalizing Constant(s) for the Node Times Prior Density...\n");
-  tree -> K = Norm_Constant_Prior_Times(tree);
-  Exit("\n");
+  //PhyML_Printf("\n. Computing Normalizing Constant(s) for the Node Times Prior Density...\n");
+  //tree -> K = Norm_Constant_Prior_Times(tree);
+  //Exit("\n");
 
-  MCMC(tree);                                            															
+  MCMC(tree);   
+
+  PhyML_Printf("\n. Normolizing constant [%f] [%f]\n", tree -> K[0], tree -> K[1]);
+                                         															
   MCMC_Close_MCMC(tree -> mcmc);																	
   MCMC_Free_MCMC(tree -> mcmc);														 				
   PhyML_Printf("\n");	
@@ -1235,7 +1240,7 @@ phydbl Slicing_Calibrations(t_tree *tree)
       i++;
     }
 
-  For(j, 2 * n_otu - 3) printf("\n. The interval number [%d] min [%f] max[%f] \n", j, t_slice_min[j], t_slice_max[j]);
+  //For(j, 2 * n_otu - 3) printf("\n. The interval number [%d] min [%f] max[%f] \n", j, t_slice_min[j], t_slice_max[j]);
 
   ////////////////////////////////////////////////////////////////////////////
   //Getting indicators for the node number [i + n_otu] to have slice. i = i + n_otu is the node number on the tree and j is the slice number, total 
@@ -1245,12 +1250,23 @@ phydbl Slicing_Calibrations(t_tree *tree)
       For(j, 2 * n_otu - 3)
         {
 
-          if(Are_Equal(t_prior_min[i + n_otu], t_slice_min[j], 1.E-10)) indic[i * (2 * n_otu - 3) + j] = 1;
-          else if(Are_Equal(t_prior_max[i + n_otu], t_slice_max[j], 1.E-10)) indic[i * (2 * n_otu - 3) + j] = 1;
-          else if(t_prior_min[i + n_otu] < t_slice_min[j] && t_prior_max[i + n_otu] > t_slice_max[j]) indic[i * (2 * n_otu - 3) + j] = 1;
+          if(Are_Equal(t_prior_min[i + n_otu], t_slice_min[j], 1.E-10) && t_prior_max[i + n_otu] > t_slice_max[j] && t_prior_min[i + n_otu] < t_slice_max[j] && !Are_Equal(t_slice_max[j], t_slice_min[j], 1.E-10)) indic[i * (2 * n_otu - 3) + j] = 1;
+          else if(Are_Equal(t_prior_max[i + n_otu], t_slice_max[j], 1.E-10) && t_prior_min[i + n_otu] < t_slice_min[j] && t_prior_max[i + n_otu] > t_slice_min[j] && !Are_Equal(t_slice_max[j], t_slice_min[j], 1.E-10)) indic[i * (2 * n_otu - 3) + j] = 1;
+          else if(t_prior_min[i + n_otu] < t_slice_min[j] && t_prior_max[i + n_otu] > t_slice_max[j] && !Are_Equal(t_slice_max[j], t_slice_min[j], 1.E-10)) indic[i * (2 * n_otu - 3) + j] = 1;
+          else if(Are_Equal(t_prior_min[i + n_otu], t_slice_min[j], 1.E-10) && Are_Equal(t_prior_max[i + n_otu], t_slice_max[j], 1.E-10)) indic[i * (2 * n_otu - 3) + j] = 1;
         }
     } 
-
+  /*
+  printf("\n");
+  For(i, n_otu - 1)
+    { 
+       For(j, 2 * n_otu - 3)  
+        {          
+          printf(". '%d' ", indic[i * (2 * n_otu - 3) + j]);          
+        }
+      printf("\n");
+    }
+  */
   ////////////////////////////////////////////////////////////////////////////
   //Get the number of slices that can be applied for each node and the vectors of slice numbers for each node. 
   For(i, n_otu - 1)
@@ -1294,7 +1310,7 @@ phydbl Slicing_Calibrations(t_tree *tree)
   cur_slices         = (int *)mCalloc(n_otu - 1, sizeof(int)); //the vector of the current slices with repetition.
   cur_slices_shr     = (int *)mCalloc(n_otu - 1, sizeof(int)); //the vector of the current slices without repetition.
 
-  For(i, n_otu - 1) tot_num_comb = tot_num_comb * n_slice[i]; printf("\n. Total number of combinations of slices [%d] \n", tot_num_comb);
+  For(i, n_otu - 1) tot_num_comb = tot_num_comb * n_slice[i]; //printf("\n. Total number of combinations of slices [%d] \n", tot_num_comb);
   
   For(k, tot_num_comb)
     {
@@ -1348,7 +1364,7 @@ phydbl Slicing_Calibrations(t_tree *tree)
       Check_Time_Slices(tree -> n_root, tree -> n_root -> v[2], &result, t_cur_slice_min, t_cur_slice_max, tree);
       //printf("\n. '%d' \n", result);
 
-      For(i, n_otu - 1) printf("\n. Node [%d] min [%f] max [%f] \n", i + n_otu, t_cur_slice_min[i], t_cur_slice_max[i]);
+      //For(i, n_otu - 1) printf("\n. Node [%d] min [%f] max [%f] \n", i + n_otu, t_cur_slice_min[i], t_cur_slice_max[i]);
 
       ////////////////////////////////////////////////////////////////////////////
       //Calculating k_part
@@ -1370,7 +1386,7 @@ phydbl Slicing_Calibrations(t_tree *tree)
            
           root_nodes = (int *)mCalloc(n_otu - 1, sizeof(int)); 
           
-          printf("\n. Number of slices shrinked [%d] \n", shr_num_slices);
+          //printf("\n. Number of slices shrinked [%d] \n", shr_num_slices);
           
           For(i, shr_num_slices)
             {
@@ -1389,9 +1405,8 @@ phydbl Slicing_Calibrations(t_tree *tree)
               Number_Of_Nodes_In_Slice(tree -> a_nodes[root_nodes[j] + n_otu], tree -> a_nodes[root_nodes[j] + n_otu] -> v[1], &n_1, t_cur_slice_min, t_cur_slice_max, tree);
               Number_Of_Nodes_In_Slice(tree -> a_nodes[root_nodes[j] + n_otu], tree -> a_nodes[root_nodes[j] + n_otu] -> v[2], &n_2, t_cur_slice_min, t_cur_slice_max, tree);
               k_part = k_part * Factorial(n_1 + n_2) / ((phydbl)Factorial(n_1 + n_2 + 1) * Factorial(n_1) * Factorial(n_2));
-              //printf("\n. k_part at the node [%d] [%f] \n", slice_root -> num, k_part); 
             }
-          
+          //printf("\n. k_part [%f] \n", k_part);       
           ////////////////////////////////////////////////////////////////////////////
           //Calculating PRODUCT over all of the time slices k_part * (exp(-lmbd*l) - exp(-lmbd*u))/(exp(-lmbd*l) - exp(-lmbd*u)) 
           phydbl num, denom, lmbd;
@@ -1401,14 +1416,14 @@ phydbl Slicing_Calibrations(t_tree *tree)
           denom = 1;
           For(j, n_otu - 1) num = num * (EXP(-lmbd * t_cur_slice_min[j]) - EXP(-lmbd * t_cur_slice_max[j])); 
           for(j = n_otu; j < 2 * n_otu - 1; j++) denom = denom * (EXP(-lmbd * t_prior_min[j]) - EXP(-lmbd * t_prior_max[j])); 
-          k_part = k_part * num / denom; 
+          k_part = (k_part * num) / denom; 
           //printf("\n. k_part of the tree for one combination of slices [%f] \n", k_part);
         } 
       P = P + k_part;     
     }
-  printf("\n. [P] of the tree for one combination of slices [%f] \n", P);
+  //printf("\n. [P] of the tree for one combination of slices [%f] \n", P);
   K = 1 / P;
-  printf("\n. [K] of the tree for one combination of slices [%f] \n", K);
+  //printf("\n. [K] of the tree for one combination of slices [%f] \n", K);
   ////////////////////////////////////////////////////////////////////////////
   free(t_cur_slice_min);
   free(t_cur_slice_max);
@@ -1420,7 +1435,7 @@ phydbl Slicing_Calibrations(t_tree *tree)
   free(indic);          
   free(slice_numbers);  
   free(n_slice);
-  free(tree -> K);
+  //free(tree -> K);
         
   return(K); 
 }
@@ -1567,7 +1582,7 @@ phydbl *Norm_Constant_Prior_Times(t_tree *tree)
 
   tot_num_comb = Number_Of_Comb(calib);
   
-  PhyML_Printf("\n. The total number of calibration combinations: [%d]\n", tot_num_comb);
+  //PhyML_Printf("\n. The total number of calibration combinations: [%d]\n", tot_num_comb);
 
   K = (phydbl *)mCalloc(tot_num_comb, sizeof(phydbl));   
 
@@ -1592,7 +1607,7 @@ phydbl *Norm_Constant_Prior_Times(t_tree *tree)
       TIMES_Set_All_Node_Priors(tree);
 
       K[i] = Slicing_Calibrations(tree);     
-      PhyML_Printf("\n. Number [%d] normolizing constant [%f] \n", i+1, K[i]);
+      //PhyML_Printf("\n. Number [%d] normolizing constant [%f] \n", i+1, K[i]);
       while(calib -> prev) calib = calib -> prev;
     }
   return(K);
