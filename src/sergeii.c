@@ -1420,8 +1420,10 @@ phydbl Slicing_Calibrations(t_tree *tree)
           num = 1;
           denom = 1;
           //lmbd = 8.047;
-          For(j, n_otu - 1) num = num * (EXP(-lmbd * t_cur_slice_min[j]) - EXP(-lmbd * t_cur_slice_max[j])); 
-          for(j = n_otu; j < 2 * n_otu - 1; j++) denom = denom * (EXP(-lmbd * t_prior_min[j]) - EXP(-lmbd * t_prior_max[j])); 
+          /* For(j, n_otu - 1) num = num * (EXP(-lmbd * t_cur_slice_min[j]) - EXP(-lmbd * t_cur_slice_max[j]));  */
+          /* for(j = n_otu; j < 2 * n_otu - 1; j++) denom = denom * (EXP(-lmbd * t_prior_min[j]) - EXP(-lmbd * t_prior_max[j]));  */
+          For(j, n_otu - 1) num = num * (EXP(lmbd * t_cur_slice_max[j]) - EXP(lmbd * t_cur_slice_min[j])); 
+          for(j = n_otu; j < 2 * n_otu - 1; j++) denom = denom * (EXP(lmbd * t_prior_max[j]) - EXP(lmbd * t_prior_min[j])); 
           k_part = (k_part * num) / denom; 
           //printf("\n. [2] k_part of the tree for one combination of slices [%f] \n", k_part); 
         } 
