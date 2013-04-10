@@ -190,7 +190,7 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
       //printf("\n. K = [%f] \n", K[0]); printf("\n. K = [%f] \n", K[1]);
       //Exit("\n");
       //Yule_val[i] = K[i] * TIMES_Lk_Yule_Order(tree);
-      //For(j, 2 * tree -> n_otu - 1) printf("\n. [2] Node [%d] min [%f] max[%f]\n", j, tree -> rates -> t_prior_min[j], tree -> rates -> t_prior_max[j]);
+      For(j, 2 * tree -> n_otu - 1) printf("\n. [2] Node [%d] min [%f] max[%f]\n", j, tree -> rates -> t_prior_min[j], tree -> rates -> t_prior_max[j]);
 
       Yule_val[i] = constant * times_lk;
 
