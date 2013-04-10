@@ -190,7 +190,7 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
       //printf("\n. K = [%f] \n", K[0]); printf("\n. K = [%f] \n", K[1]);
       //Exit("\n");
       //Yule_val[i] = K[i] * TIMES_Lk_Yule_Order(tree);
-      For(j, 2 * tree -> n_otu - 1) printf("\n. [2] Node [%d] min [%f] max[%f]\n", j, tree -> rates -> t_prior_min[j], tree -> rates -> t_prior_max[j]);
+      //For(j, 2 * tree -> n_otu - 1) printf("\n. [2] Node [%d] min [%f] max[%f]\n", j, tree -> rates -> t_prior_min[j], tree -> rates -> t_prior_max[j]);
 
       Yule_val[i] = constant * times_lk;
 
@@ -1224,7 +1224,8 @@ phydbl Slicing_Calibrations(t_tree *tree)
       t_slice[i] = t_prior_max[j];
       j++;
     }
-  chop_bound =  MIN(tree -> rates -> nd_t[tree -> n_root -> num], t_prior_max[tree -> n_root -> num]);
+  if(tree -> rates -> nd_t[tree -> n_root -> num] > t_prior_min[tree -> n_root -> num]) chop_bound =  MIN(tree -> rates -> nd_t[tree -> n_root -> num], t_prior_max[tree -> n_root -> num]);
+  else chop_bound = t_prior_min[tree -> n_root -> num];
   t_slice[2 * n_otu - 3] = chop_bound; 
   //t_slice[2 * n_otu - 3] = -1.1; 
   //For(j, 2 * n_otu - 2) printf("\n. Slice bound [%f] \n", t_slice[j]);
