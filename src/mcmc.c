@@ -1014,11 +1014,11 @@ void MCMC_One_Time(t_node *a, t_node *d, int traversal, t_tree *tree)
   t3 = tree->rates->nd_t[v3->num];
 
 
-  t_min = MAX(t0,tree->rates->t_prior_min[d->num]);
-  t_max = MIN(MIN(t2,t3),tree->rates->t_prior_max[d->num]);
+  /* t_min = MAX(t0,tree->rates->t_prior_min[d->num]);        */
+  /* t_max = MIN(MIN(t2,t3),tree->rates->t_prior_max[d->num]);*/
 
-  //t_min = t0;
-  //t_max = MIN(t2,t3);
+  t_min = t0;
+  t_max = MIN(t2,t3);
 
   t_min += tree->rates->min_dt;
   t_max -= tree->rates->min_dt;

@@ -140,7 +140,6 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
  
 
   times_tot_proba = 0.0;
-  constant = 1;
   calib = tree -> rates -> calib;
   t_prior_min = tree -> rates -> t_prior_min;
   t_prior_max = tree -> rates -> t_prior_max;
@@ -174,7 +173,7 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
         }
       while(calib);
       TIMES_Set_All_Node_Priors(tree);
-
+      //printf("\n. p[%i] = %f \n", i + 1, times_partial_proba[i]);
       result = TRUE;
       Check_Node_Time(tree -> n_root, tree -> n_root -> v[1], &result, tree) ;
       Check_Node_Time(tree -> n_root, tree -> n_root -> v[2], &result, tree) ;
@@ -183,7 +182,7 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
       //tree -> rates -> birth_rate = 4.0;
       
       times_lk = TIMES_Lk_Yule_Order(tree);
-
+      constant = 1.0; 
       if(times_lk > -INFINITY) constant = Slicing_Calibrations(tree);
 
       //printf("\n. K = [%f] \n", K);
@@ -1194,7 +1193,7 @@ void PhyTime_XML(char *xml_file)
 phydbl Slicing_Calibrations(t_tree *tree)
 {
   int i, j, k, f, n_otu, *indic, *n_slice, *slice_numbers;
-  phydbl K, buf, *t_prior_min, *t_prior_max, *t_slice, *t_slice_min, *t_slice_max;
+  phydbl K, buf, chop_bound, *t_prior_min, *t_prior_max, *t_slice, *t_slice_min, *t_slice_max;
 
 
   t_prior_min = tree -> rates -> t_prior_min;
@@ -1225,8 +1224,8 @@ phydbl Slicing_Calibrations(t_tree *tree)
       t_slice[i] = t_prior_max[j];
       j++;
     }
-
-  t_slice[2 * n_otu - 3] = MIN(tree -> rates -> nd_t[tree -> n_root -> num], t_prior_max[tree -> n_root -> num]); 
+  chop_bound =  MIN(tree -> rates -> nd_t[tree -> n_root -> num], t_prior_max[tree -> n_root -> num]);
+  t_slice[2 * n_otu - 3] = chop_bound; 
   //t_slice[2 * n_otu - 3] = -1.1; 
   //For(j, 2 * n_otu - 2) printf("\n. Slice bound [%f] \n", t_slice[j]);
   ////////////////////////////////////////////////////////////////////////////
@@ -1247,7 +1246,7 @@ phydbl Slicing_Calibrations(t_tree *tree)
     }
   while(f);
   //For(j, 2 * n_otu - 2) printf("\n. [1] Slice bound [%f] \n", t_slice[j]);
-  for(j = 1; j < 2 * n_otu - 2; j++) t_slice[j] = MAX(MIN(tree -> rates -> nd_t[tree -> n_root -> num], t_prior_max[tree -> n_root -> num]), t_slice[j]);
+  for(j = 1; j < 2 * n_otu - 2; j++) t_slice[j] = MAX(chop_bound, t_slice[j]);
   //for(j = 1; j < 2 * n_otu - 2; j++) t_slice[j] = MAX(-1.1, t_slice[j]);
   //For(j, 2 * n_otu - 2) printf("\n. [2] Slice bound [%f] \n", t_slice[j]);
   ////////////////////////////////////////////////////////////////////////////
@@ -1443,7 +1442,7 @@ phydbl Slicing_Calibrations(t_tree *tree)
           lmbd = tree -> rates -> birth_rate;
           num = 1;
           denom = 1;
-          //lmbd = 5.239;
+          //lmbd = 6.001;
           /* For(j, n_otu - 1) num = num * (EXP(-lmbd * t_cur_slice_min[j]) - EXP(-lmbd * t_cur_slice_max[j]));  */
           /* for(j = n_otu; j < 2 * n_otu - 1; j++) denom = denom * (EXP(-lmbd * t_prior_min[j]) - EXP(-lmbd * t_prior_max[j]));  */
           For(j, n_otu - 2) num = num * (EXP(lmbd * t_cur_slice_max[j]) - EXP(lmbd * t_cur_slice_min[j])); 
