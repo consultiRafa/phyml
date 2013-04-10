@@ -64,7 +64,7 @@ void MCMC(t_tree *tree)
   else tree->c_lnL = 0.0;
   Switch_Eigen(NO,tree->mod);
   MCMC_Print_Param(tree->mcmc,tree);
-
+  
   //////////////////
   if(tree->io->mutmap == YES)
     {
@@ -178,7 +178,7 @@ void MCMC(t_tree *tree)
       
       if(u < .5) { first = 2; secod = 1; }
       else       { first = 1; secod = 2; }
-      
+ 
 
       /* printf("\n. [%15s] %15f ",tree->mcmc->move_name[move],tree->c_lnL); */
 
@@ -186,7 +186,7 @@ void MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"clock"))
       	{
       	  For(i,2*tree->n_otu-2) tree->rates->br_do_updt[i] = YES;	  
-          MCMC_Clock_R(tree);
+          MCMC_Clock_R(tree);  
       	}
 
       /* Nu */
@@ -205,7 +205,7 @@ void MCMC(t_tree *tree)
       /* Subtree height */
       else if(!strcmp(tree->mcmc->move_name[move],"subtree_height"))
       	{
-      	  MCMC_Subtree_Height(tree);
+      	  MCMC_Subtree_Height(tree); 
       	}
 
       /* Subtree rates */
@@ -396,7 +396,7 @@ void MCMC_Single_Param_Generic(phydbl *val,
   phydbl K;
   phydbl new_lnval, cur_lnval;
  
-  Record_Br_Len(tree);
+  Record_Br_Len(tree);  
 
   cur_val       = *val;
   new_val       = -1.0;
@@ -1008,16 +1008,17 @@ void MCMC_One_Time(t_node *a, t_node *d, int traversal, t_tree *tree)
 	if(!b2) { b2 = d->b[i]; }
 	else    { b3 = d->b[i]; }
       }
-  
+ 
   t0 = tree->rates->nd_t[a->num];
   t2 = tree->rates->nd_t[v2->num];
   t3 = tree->rates->nd_t[v3->num];
 
-  /* t_min = MAX(t0,tree->rates->t_prior_min[d->num]); */
-  /* t_max = MIN(MIN(t2,t3),tree->rates->t_prior_max[d->num]); */
 
-  t_min = t0;
-  t_max = MIN(t2,t3);
+  t_min = MAX(t0,tree->rates->t_prior_min[d->num]);
+  t_max = MIN(MIN(t2,t3),tree->rates->t_prior_max[d->num]);
+
+  //t_min = t0;
+  //t_max = MIN(t2,t3);
 
   t_min += tree->rates->min_dt;
   t_max -= tree->rates->min_dt;
@@ -1029,7 +1030,7 @@ void MCMC_One_Time(t_node *a, t_node *d, int traversal, t_tree *tree)
       PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
       /* Exit("\n"); */
     }
-
+ 
   MCMC_Make_Move(&t1_cur,&t1_new,t_min,t_max,&ratio,K,tree->mcmc->move_type[move_num]);
 
 
@@ -1352,10 +1353,13 @@ void MCMC_Root_Time(t_tree *tree)
 
   if(t_min > t_max) 
     {
+      int i;
+      for(i = tree -> n_otu; i < 2 * tree -> n_otu - 1; i++) printf("\n. Node[%d] min [%f] max[%f] \n", i, tree -> rates -> t_prior_min[i], tree -> rates -> t_prior_max[i]);
+      for(i = tree -> n_otu; i < 2 * tree -> n_otu - 1; i++) printf("\n. Node[%d] cur time [%f] \n", i, tree -> rates -> nd_t[i]);
       PhyML_Printf("\n== t_min = %f t_max = %f",t_min,t_max);
       PhyML_Printf("\n== prior_min = %f prior_max = %f",tree->rates->t_prior_min[root->num],tree->rates->t_prior_max[root->num]);
       PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
-      /* Exit("\n"); */
+      Exit("\n");
     }
 
   MCMC_Make_Move(&t1_cur,&t1_new,t_min,t_max,&ratio,K,tree->mcmc->move_type[move_num]);
@@ -1370,7 +1374,7 @@ void MCMC_Root_Time(t_tree *tree)
       if(tree->mcmc->use_data) new_lnL_data = Lk(b1,tree);
 
       new_lnL_rate = RATES_Lk_Rates(tree);
-      new_lnL_time = TIMES_Lk_Times(tree);
+      new_lnL_time = TIMES_Lk_Times(tree); 
 
       if(tree->mcmc->use_data) ratio += (new_lnL_data - cur_lnL_data);
       ratio += (new_lnL_rate - cur_lnL_rate);
@@ -1456,7 +1460,7 @@ void MCMC_Tree_Height(t_tree *tree)
   
   u = Uni();
   mult = EXP(K*(u-0.5));
-
+ 
  /* WARNING: It must not be floor = tree->rates->t_prior_max[tree->n_root->num]; 
      floor is the maximum value a node height can take when one ignores the 
      calibration nodes, i.e., floor is set by the height of the tips
@@ -1466,7 +1470,7 @@ void MCMC_Tree_Height(t_tree *tree)
   /* floor = tree->rates->t_prior_max[tree->n_root->num]; */
 
   Scale_Subtree_Height(tree->n_root,mult,floor,&n_nodes,tree);
-  
+
   /* For(i,2*tree->n_otu-1) */
   /*   { */
   /*     if(tree->rates->nd_t[i] > tree->rates->t_prior_max[i] || */
@@ -4489,6 +4493,7 @@ void MCMC_Make_Move(phydbl *cur, phydbl *new, phydbl inf, phydbl sup, phydbl *lo
 {
   phydbl u;
 
+ 
   switch(move_type)
     {
 
@@ -4503,7 +4508,7 @@ void MCMC_Make_Move(phydbl *cur, phydbl *new, phydbl inf, phydbl sup, phydbl *lo
 
     case MCMC_MOVE_RANDWALK_UNIFORM:
       {
-	u = Uni();
+	u = Uni();  
 	/* *new   = u * (2.*tune) + (*cur) - tune; */
 	/* *new   = Reflect(*new,inf,sup); */
 	*new   = u*(sup-inf)+inf;
