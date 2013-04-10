@@ -1353,13 +1353,10 @@ void MCMC_Root_Time(t_tree *tree)
 
   if(t_min > t_max) 
     {
-      int i;
-      for(i = tree -> n_otu; i < 2 * tree -> n_otu - 1; i++) printf("\n. Node[%d] min [%f] max[%f] \n", i, tree -> rates -> t_prior_min[i], tree -> rates -> t_prior_max[i]);
-      for(i = tree -> n_otu; i < 2 * tree -> n_otu - 1; i++) printf("\n. Node[%d] cur time [%f] \n", i, tree -> rates -> nd_t[i]);
       PhyML_Printf("\n== t_min = %f t_max = %f",t_min,t_max);
       PhyML_Printf("\n== prior_min = %f prior_max = %f",tree->rates->t_prior_min[root->num],tree->rates->t_prior_max[root->num]);
       PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
-      Exit("\n");
+      /* Exit("\n"); */
     }
 
   MCMC_Make_Move(&t1_cur,&t1_new,t_min,t_max,&ratio,K,tree->mcmc->move_type[move_num]);
