@@ -35,6 +35,8 @@ int GEO_Estimate(int argc, char **argv)
   phydbl *ldscp;
   int *loc_hash;
   int i;
+  phydbl *probs;
+  phydbl sum;
 
   // geo ./ban
 
@@ -76,6 +78,14 @@ int GEO_Estimate(int argc, char **argv)
   PhyML_Printf("\n. Sigma max: %f",t->sigma_thresh);
 
   GEO_Get_Locations_Beneath(t,tree);
+
+  probs = (phydbl *)mCalloc(tree->geo->ldscape_sz,sizeof(phydbl));
+  
+  sum = 0.0;
+  For(i,tree->geo->ldscape_sz) sum += tree->geo->loc_beneath[tree->n_root->num * tree->geo->ldscape_sz + i];
+  For(i,tree->geo->ldscape_sz) probs[i] = tree->geo->loc_beneath[tree->n_root->num * tree->geo->ldscape_sz + i]/sum;
+  tree->geo->loc[tree->n_root->num] = Sample_i_With_Proba_pi(probs,tree->geo->ldscape_sz);        
+  Free(probs);
 
   GEO_Randomize_Locations(tree->n_root,t,tree);
 
@@ -645,7 +655,7 @@ phydbl GEO_Lk(t_geo *t, t_tree *tree)
   curr_n = NULL;
   loglk = .0;
   for(i=1;i<tree->n_otu-1;i++) // Consider all the time slices, from oldest to youngest. 
-                             // Start at first node below root
+                               // Start at first node below root
     {
       prev_n = t->sorted_nd[i-1]; // node just above
       curr_n = t->sorted_nd[i];   // current node
@@ -654,6 +664,22 @@ phydbl GEO_Lk(t_geo *t, t_tree *tree)
 
       R = GEO_Total_Migration_Rate(curr_n,t); // Total migration rate calculated at node n
 
+      if(i < 2)
+        {
+          printf("\n. t0: %f t1: %f  R: %f tau: %f sigma: %f lbda: %f x1: %f y1: %f x2: %f y2: %f",
+                 tree->rates->nd_t[t->sorted_nd[i-1]->num],
+                 tree->rates->nd_t[t->sorted_nd[i]->num],
+                 R,
+                 t->tau,                 
+                 t->lbda,                 
+                 t->sigma,                 
+                 t->ldscape[t->loc[tree->geo->sorted_nd[i-1]->num]*t->n_dim+0],
+                 t->ldscape[t->loc[tree->geo->sorted_nd[i-1]->num]*t->n_dim+1],
+                 t->ldscape[t->loc[tree->geo->sorted_nd[i]->num]*t->n_dim+0],
+                 t->ldscape[t->loc[tree->geo->sorted_nd[i]->num]*t->n_dim+1]);          
+        }
+
+      
       /* printf("\n. %d %d (%d) %f %p %p \n",i,curr_n->num,curr_n->tax,tree->rates->nd_t[curr_n->num],curr_n->v[1],curr_n->v[2]); */
 
       dep = t->loc[curr_n->num]; // departure location
@@ -1604,14 +1630,16 @@ void GEO_Read_In_Landscape(char *file_name, t_geo *t, phydbl **ldscape, int **lo
       
       if(strlen(s) > 0) For(i,tree->n_otu) if(!strcmp(tree->a_nodes[i]->name,s)) break;
 
-      (*loc_hash)[i] = t->ldscape_sz;
-
       if(i == tree->n_otu)
         {
           PhyML_Printf("\n== Could not find a taxon with name '%s' in the tree provided.",s);
-          PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
-          Exit("\n");
+          /* PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__); */
+          /* Exit("\n"); */
+          continue;
         }
+
+      (*loc_hash)[i] = t->ldscape_sz;
+
       
       sscanf(line+pos,"%lf %lf",&longitude,&lattitude);
 

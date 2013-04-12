@@ -171,7 +171,7 @@ void DR_Print_Tree_Postscript_Pre(t_node *a, t_node *d, int render_name, FILE *f
   
   step = (max-min)/13.;
   
-  /* val = tree->rates->mean_r[d->num] / (phydbl)(tree->mcmc->run/tree->mcmc->sample_interval+1.); */
+  val = tree->rates->mean_r[d->num] / (phydbl)(tree->mcmc->run/tree->mcmc->sample_interval+1.);
   /* val = tree->rates->mean_r[d->num]; */
   /* val = tree->rates->has_survived[d->num]; */
   /* if(val > 0.5) {R=1.; G=.0; B=0.;} */

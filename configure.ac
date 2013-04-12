@@ -33,7 +33,7 @@ AC_CHECK_PROGS([PDFLATEX], pdflatex, [/bin/false])
 AC_CHECK_PROGS([LATEX], latex, [/bin/false])
 if test "x$PDFLATEX" = x/bin/false || test "x$LATEX" = x/bin/false; then
  enable_docs=no
- AC_MSG_WARN([Documentation will not be built!])
+AC_MSG_WARN([Documentation will not be built!])
 fi
 
 AM_CONDITIONAL([HAVE_PDFLATEX], test -n "$PDFLATEX")

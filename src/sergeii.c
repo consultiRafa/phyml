@@ -183,6 +183,7 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
       
       times_lk = TIMES_Lk_Yule_Order(tree);
       constant = 1.0; 
+      
       if(times_lk > -INFINITY) constant = Slicing_Calibrations(tree);
 
       //printf("\n. K = [%f] \n", K);
@@ -559,7 +560,8 @@ void PhyTime_XML(char *xml_file)
   io -> mod = mod;
   mod = io -> mod;
   mod -> s_opt = s_opt;
-  
+  clade_size = -1;
+
   ////////////////////////////////////////////////////////////////////////////
   //////////////////////reading tree topology:////////////////////////////////
 
