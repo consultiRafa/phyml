@@ -1079,6 +1079,18 @@ void MCMC_One_Time(t_node *a, t_node *d, int traversal, t_tree *tree)
           if(tree->mcmc->use_data) ratio += (new_lnL_data - cur_lnL_data);
         }
       
+      /* if(d->num == 7) */
+      /*   { */
+      /*     printf("\n. nd_t: %f %f new_lnL_rate: %f cur_lnL_rate: %f new_lnL_time: %f cur_lnL_time: %f ratio: %f", */
+      /*            t1_cur, */
+      /*            tree->rates->nd_t[d->num], */
+      /*            new_lnL_rate, */
+      /*            cur_lnL_rate, */
+      /*            new_lnL_time, */
+      /*            cur_lnL_time, */
+      /*            ratio); */
+      /*   } */
+
           
       ratio = EXP(ratio);
       alpha = MIN(1.,ratio);
@@ -4283,7 +4295,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_birth_rate]          = 2.0;
   mcmc->move_weight[mcmc->num_move_updown_t_br]         = 1.0;
 #if defined (SERGEII)
-  mcmc->move_weight[mcmc->num_move_jump_calibration]    = 1.0;
+  mcmc->move_weight[mcmc->num_move_jump_calibration]    = 0.0;
 #else
   mcmc->move_weight[mcmc->num_move_jump_calibration]    = 0.0;
 #endif

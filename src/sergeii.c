@@ -175,16 +175,21 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
       TIMES_Set_All_Node_Priors(tree);
       //printf("\n. p[%i] = %f \n", i + 1, times_partial_proba[i]);
       result = TRUE;
-      Check_Node_Time(tree -> n_root, tree -> n_root -> v[1], &result, tree) ;
-      Check_Node_Time(tree -> n_root, tree -> n_root -> v[2], &result, tree) ;
-      if(result != TRUE) times_partial_proba[i] = 0.0; 
+      /* Check_Node_Time(tree -> n_root, tree -> n_root -> v[1], &result, tree) ; */
+      /* Check_Node_Time(tree -> n_root, tree -> n_root -> v[2], &result, tree) ; */
+      /* if(result != TRUE) times_partial_proba[i] = 0.0;  */
       
-      //tree -> rates -> birth_rate = 4.0;
+      tree -> rates -> birth_rate = 10.0;
       
       times_lk = TIMES_Lk_Yule_Order(tree);
       constant = 1.0; 
       
       if(times_lk > -INFINITY) constant = Slicing_Calibrations(tree);
+      else 
+        {
+          times_lk = 1.0;
+          times_partial_proba[i] = 0.0;
+        }
 
       //printf("\n. K = [%f] \n", K);
       //K = Norm_Constant_Prior_Times(tree);
@@ -195,15 +200,31 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
 
       Yule_val[i] = constant * times_lk;
 
+
       //Yule_val[i] = TIMES_Lk_Yule_Order(tree);
  
       while(calib -> prev) calib = calib -> prev;
     }
  
-  min_value = 0.0;
-  For(i, tot_num_comb) if(Yule_val[i] < min_value && Yule_val[i] > -INFINITY) min_value = Yule_val[i];
+  /* min_value = 0.0; */
+  /* For(i, tot_num_comb) if(Yule_val[i] < min_value && Yule_val[i] > -INFINITY) min_value = Yule_val[i]; */
 
-  c = -600. - min_value;
+  /* c = -600. - min_value; */
+  
+  phydbl sum = .0;
+  For(i, tot_num_comb)
+    {
+      sum += times_partial_proba[i];
+    }
+  if(sum > .0)
+    {
+      For(i, tot_num_comb)
+        {
+          times_partial_proba[i] /= sum;
+        }      
+    }
+
+  c = .0;
   times_tot_proba = 0.0;
   For(i, tot_num_comb)
     {
