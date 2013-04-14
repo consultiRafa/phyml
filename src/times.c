@@ -154,7 +154,6 @@ int TIMES_main(int argc, char **argv)
 
 		  time(&t_beg);
 		  time(&(tree->t_beg));
-                  io->mcmc->use_data = NO;
 		  tree->rates = RATES_Make_Rate_Struct(tree->n_otu);
 		  RATES_Init_Rate_Struct(tree->rates,io->rates,tree->n_otu);
 
@@ -170,23 +169,7 @@ int TIMES_main(int argc, char **argv)
 
                   Set_Both_Sides(YES,tree);
 
-		  /* phydbl *l1,*l2,crit; */
-		  /* int i; */
-		  /* l1 = (phydbl *)mCalloc(2*tree->n_otu-1,sizeof(phydbl)); */
-		  /* l2 = (phydbl *)mCalloc(2*tree->n_otu-1,sizeof(phydbl)); */
-		  /* RATES_Bl_To_Bl(tree); */
-		  /* For(i,2*tree->n_otu-2) l1[i] = tree->rates->cur_l[i]; */
-		  /* TIMES_Least_Square_Node_Times(tree->e_root,tree); */
-		  /* Branch_Lengths_To_Time_Lengths(tree); */
-		  /* printf("\n. %s",Write_Tree(tree,NO)); */
-		  /* For(i,2*tree->n_otu-2) l2[i] = tree->rates->cur_l[i]; */
-		  /* crit = .0; */
-		  /* For(i,2*tree->n_otu-2) crit += POW(l1[i]-l2[i],2); */
-		  /* PhyML_Printf("\n. crit = %f",crit); */
-		  /* Exit("\n"); */
-
 		  Prepare_Tree_For_Lk(tree);
-
 
 		  /* Read node age priors */
 		  Read_Clade_Priors(io->clade_list_file,tree);
@@ -288,9 +271,6 @@ int TIMES_main(int argc, char **argv)
 		  tree->rates->bl_from_rt = YES;
 		  
 		  if(tree->io->cstr_tree) Find_Surviving_Edges_In_Small_Tree(tree,tree->io->cstr_tree);
-
-                  printf("\n. %f ",TIMES_Log_Number_Of_Ranked_Labelled_Histories(tree->n_root,YES,tree));
-                  Exit("\n");
 
 		  time(&t_beg);
 		  tree->mcmc = MCMC_Make_MCMC_Struct();
@@ -1138,7 +1118,6 @@ phydbl TIMES_Log_Number_Of_Ranked_Labelled_Histories(t_node *root, int per_slice
   tree->rates->n_tips_below[root->num] = n1+n2;
 
   logn += Factln(n1+n2-2) - Factln(n1-1) - Factln(n2-1);
-  printf("\n. n1:%d n2:%d logn:%f",n1,n2,logn);
 
   return(logn);
 }

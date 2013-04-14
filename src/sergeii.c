@@ -133,9 +133,9 @@ void Set_Current_Calibration(int row, t_tree *tree)
 phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
 {
 
-  phydbl times_lk, *Yule_val, *times_partial_proba, times_tot_proba, *t_prior_min, *t_prior_max, min_value, c, constant, ln_t; 
+  phydbl times_lk, *Yule_val, *times_partial_proba, times_tot_proba, *t_prior_min, *t_prior_max, c, constant, ln_t; 
   short int *t_has_prior;
-  int i, j, k, tot_num_comb, result;
+  int i, j, k, tot_num_comb;
   t_cal *calib;
  
 
@@ -174,13 +174,10 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
       while(calib);
       TIMES_Set_All_Node_Priors(tree);
       //printf("\n. p[%i] = %f \n", i + 1, times_partial_proba[i]);
-      result = TRUE;
-      /* Check_Node_Time(tree -> n_root, tree -> n_root -> v[1], &result, tree) ; */
-      /* Check_Node_Time(tree -> n_root, tree -> n_root -> v[2], &result, tree) ; */
-      /* if(result != TRUE) times_partial_proba[i] = 0.0;  */
       
-      tree -> rates -> birth_rate = 10.0;
-      
+      /* tree -> rates -> birth_rate = 1.0; */
+      /* tree -> rates -> nd_t[tree->n_root->num] = -3.7; */
+
       times_lk = TIMES_Lk_Yule_Order(tree);
       constant = 1.0; 
       
@@ -211,19 +208,8 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
 
   /* c = -600. - min_value; */
   
-  phydbl sum = .0;
-  For(i, tot_num_comb)
-    {
-      sum += times_partial_proba[i];
-    }
-  if(sum > .0)
-    {
-      For(i, tot_num_comb)
-        {
-          times_partial_proba[i] /= sum;
-        }      
-    }
 
+  
   c = .0;
   times_tot_proba = 0.0;
   For(i, tot_num_comb)
@@ -234,6 +220,7 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
   For(i, 2 * tree -> n_otu - 1) t_has_prior[i] = NO;
 
   ln_t = -c + LOG(times_tot_proba);
+
 
   free(Yule_val);  
   free(times_partial_proba);
@@ -1162,6 +1149,9 @@ void PhyTime_XML(char *xml_file)
 
   if(tree -> io -> cstr_tree) Find_Surviving_Edges_In_Small_Tree(tree, tree -> io -> cstr_tree); 																				 
   time(&t_beg);
+
+  /* !!!! */
+  tree->rates->nd_t[7] = -0.001;
 
   tree -> mcmc = MCMC_Make_MCMC_Struct();
  

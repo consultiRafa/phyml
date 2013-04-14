@@ -4280,8 +4280,6 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_clock_r]          = 1.0;
   mcmc->move_weight[mcmc->num_move_tree_height]      = 2.0;
   mcmc->move_weight[mcmc->num_move_subtree_height]   = 0.0;
-  mcmc->move_weight[mcmc->num_move_tree_height]      = 2.0;
-  mcmc->move_weight[mcmc->num_move_subtree_height]   = 0.0;
   mcmc->move_weight[mcmc->num_move_nu]               = 2.0;
   mcmc->move_weight[mcmc->num_move_kappa]            = 0.5;
   mcmc->move_weight[mcmc->num_move_tree_rates]       = 1.0;
