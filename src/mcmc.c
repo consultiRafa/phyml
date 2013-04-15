@@ -1358,7 +1358,8 @@ void MCMC_Root_Time(t_tree *tree)
   t3 = tree->rates->nd_t[v3->num];
 
   t_min = t0;
-  t_max = MIN(MIN(t2,t3),tree->rates->t_prior_max[root->num]);
+  /* t_max = MIN(MIN(t2,t3),tree->rates->t_prior_max[root->num]); */
+  t_max = MIN(t2,t3);
 
   t_min += tree->rates->min_dt;
   t_max -= tree->rates->min_dt;

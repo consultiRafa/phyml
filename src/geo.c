@@ -677,6 +677,14 @@ phydbl GEO_Lk(t_geo *t, t_tree *tree)
                  t->ldscape[t->loc[tree->geo->sorted_nd[i-1]->num]*t->n_dim+1],
                  t->ldscape[t->loc[tree->geo->sorted_nd[i]->num]*t->n_dim+0],
                  t->ldscape[t->loc[tree->geo->sorted_nd[i]->num]*t->n_dim+1]);          
+          
+          printf("\n >> ");
+          int j;
+          For(j,t->ldscape_sz) 
+            if(t->occup[t->sorted_nd[i]->num * t->ldscape_sz + j] > 0) 
+              printf("%f %f -- ",
+                     t->ldscape[j*t->n_dim+0],
+                     t->ldscape[j*t->n_dim+1]);
         }
 
       
