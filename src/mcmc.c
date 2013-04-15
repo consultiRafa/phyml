@@ -256,7 +256,7 @@ void MCMC(t_tree *tree)
       /* Covarion change calibration interval */
       else if(!strcmp(tree->mcmc->move_name[move],"jump_calibration"))
       	{
-      	  MCMC_Jump_Calibration(tree);
+      	  //MCMC_Jump_Calibration(tree);
 	}
 
       /* Covarion model parameters */

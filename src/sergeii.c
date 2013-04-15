@@ -173,8 +173,8 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
         }
       while(calib);
       TIMES_Set_All_Node_Priors(tree);
-      //printf("\n. p[%i] = %f \n", i + 1, times_partial_proba[i]);
-      
+
+      //printf("\n. p[%i] = %f \n", i + 1, times_partial_proba[i]);     
       /* tree -> rates -> birth_rate = 1.0; */
       /* tree -> rates -> nd_t[tree->n_root->num] = -3.7; */
 
@@ -190,11 +190,10 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
 
       //printf("\n. K = [%f] \n", K);
       //K = Norm_Constant_Prior_Times(tree);
-      //printf("\n. K = [%f] \n", K[0]); printf("\n. K = [%f] \n", K[1]);
-      //Exit("\n");
       //Yule_val[i] = K[i] * TIMES_Lk_Yule_Order(tree);
-      //For(j, 2 * tree -> n_otu - 1) printf("\n. [2] Node [%d] min [%f] max[%f]\n", j, tree -> rates -> t_prior_min[j], tree -> rates -> t_prior_max[j]);
-
+      //For(j, 2 * tree -> n_otu - 1) printf("\n. [1] Node [%d] min [%f] max[%f]\n", j, tree -> rates -> t_prior_min[j], tree -> rates -> t_prior_max[j]);
+      //For(j, 2 * tree -> n_otu - 1) printf("\n. [2] Node [%d] time [%f]\n", j, tree -> rates -> nd_t[j]);
+      //printf("\n. constant = [%f] \n", constant);
       Yule_val[i] = constant * times_lk;
 
 
@@ -816,79 +815,75 @@ void PhyTime_XML(char *xml_file)
 	    {
 	      if(!strcmp("appliesto", n_r -> child -> name)) 
 		{
-		  strcpy(clade_name, n_r -> child -> child -> attr -> value);//reached clade names
-		  if(!strcmp("@root@", clade_name))
-		    {
-		      node_num = io -> tree -> n_root -> num;
-		      For(j, n_mon)
-			{
-			  if(!strcmp("@root@", mon_list[j])) io -> mcmc -> monitor[node_num] = YES;
-			}	
-		    }
-		  else		  
-		    {
-		      i = 0; 
-		      do
-			{
-			  strcpy(clade[i], n_r -> child -> child -> child -> attr -> value); 
-			  i++;
-			  if(n_r -> child -> child -> child -> next) n_r -> child -> child -> child = n_r -> child -> child -> child -> next;
-			  else break;
-			}
-		      while(n_r -> child -> child -> child);
-		      clade_size = i;
-		      node_num = Find_Clade(clade, clade_size, io -> tree);
-			{
-			  if(!strcmp(clade_name, mon_list[j])) io -> mcmc -> monitor[node_num] = YES;
-			}	
-                    }     
-                  ////////////////////////////////////////////////////////////////////////////////////////////////////
-                  if(n_r -> child -> attr) tree -> rates -> calib -> proba[node_num] = String_To_Dbl(n_r -> child -> attr -> value);
-                  if(!n_r -> child -> attr && n_r -> child -> next == NULL)tree -> rates -> calib -> proba[node_num] = 1.;
-                  if(!n_r -> child -> attr && n_r -> child -> next)
+                  //case of internal node:
+                  strcpy(clade_name, n_r -> child -> attr -> value);//reached clade names
+                  //printf("\n. Clade name [%s] \n", clade_name);//reached clade name n_r -> child -> attr -> value
+                  n_cur = XML_Search_Node_ID(clade_name, NO, n_r -> parent);
+                  //printf("\n. [1] Root node name [%s] \n", n_cur -> attr -> value);  
+                  if(n_cur) //found clade with a given name
+                    {                   
+                      i = 0;  
+                      do
+                        {
+                          strcpy(clade[i], n_cur -> child -> attr -> value); 
+                          i++;
+                          if(n_cur -> child -> next) n_cur -> child = n_cur -> child -> next;
+                          else break;
+                        }
+                      while(n_cur -> child);
+                      clade_size = i;
+                      node_num = Find_Clade(clade, clade_size, io -> tree);
+                      //printf("\n. Node number [%d] \n", node_num);
+                      For(j, n_mon)
+                        {
+                          if(!strcmp(clade_name, mon_list[j])) io -> mcmc -> monitor[node_num] = YES;
+                        }  
+                    }
+                  else
                     {
-                      PhyML_Printf("==You either need to provide information about probability with which calibration \n");
-                      PhyML_Printf("==applies to a node or you need to apply calibartion only to one node. \n");
+                      PhyML_Printf("==Calibration information on the clade [%s] was not found. \n", clade_name);
                       PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
                       Exit("\n");
                     }
-                  tree -> rates -> calib -> all_applies_to[tree -> rates -> calib -> n_all_applies_to] -> num = node_num; 
-                  tree -> rates -> calib -> n_all_applies_to++;
-                  tree -> rates -> calib -> lower = low;
-                  tree -> rates -> calib -> upper = up;
-                  ////////////////////////////////////////////////////////////////////////////////////////////////////
-                  /*
-                    if(tree -> a_nodes[node_num] -> calib == NULL) 
+                  //For(i, clade_size) PhyML_Printf("\n. Clade name [%s] Taxon name: [%s]", clade_name, clade[i]);
+                  if(n_r -> child -> attr -> next -> value && String_To_Dbl(n_r -> child -> attr -> next -> value) != 0) 
                     {
-                      tree -> a_nodes[node_num] -> calib = (t_cal **)mCalloc(2 * tree -> n_otu - 1, sizeof(t_cal *));
-                      For(i, 2 * tree -> n_otu - 1) tree -> a_nodes[node_num] -> calib[i] = Make_Calib(tree -> n_otu);
-                      tree -> a_nodes[node_num] -> calib_applies_to = (short int *)mCalloc(2 * tree -> n_otu - 1, sizeof(short int));
+                      tree -> rates -> calib -> proba[node_num] = String_To_Dbl(n_r -> child -> attr -> next -> value);
+                      if(!n_r -> child -> attr -> next && n_r -> child -> next == NULL) tree -> rates -> calib -> proba[node_num] = 1.;
+                      if(!n_r -> child -> attr -> next && n_r -> child -> next)
+                        {
+                          PhyML_Printf("==You either need to provide information about probability with which calibration \n");
+                          PhyML_Printf("==applies to a node or you need to apply calibartion only to one node. \n");
+                          PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+                          Exit("\n");
+                        }
+                      tree -> rates -> calib -> all_applies_to[tree -> rates -> calib -> n_all_applies_to] -> num = node_num; 
+                      tree -> rates -> calib -> n_all_applies_to++;
+                      tree -> rates -> calib -> lower = low;
+                      tree -> rates -> calib -> upper = up; 
+ 
+                      //printf("\n. Porbability [%f] \n", String_To_Dbl(n_r -> child -> attr -> next -> value));
                     }
-                  tree -> a_nodes[node_num] -> calib[tree -> a_nodes[node_num] -> n_calib] -> lower = low;
-                  tree -> a_nodes[node_num] -> calib[tree -> a_nodes[node_num] -> n_calib] -> upper = up;
-                  tree -> a_nodes[node_num] -> calib[tree -> a_nodes[node_num] -> n_calib] -> calib_proba =  String_To_Dbl(n_r -> child -> attr -> value);
-                  tree -> a_nodes[node_num] -> n_calib++;
-                  */
-                  /////////////////////////////////////////////////////////////////////////////////////////////////////
+                  /////////////////////////////////////////////////////////////////////////////////////////////////////               
                   PhyML_Printf("\n. .......................................................................");
                   PhyML_Printf("\n");
-                  PhyML_Printf("\n. Node number to which calibration applies to is: [%d]",node_num);
                   PhyML_Printf("\n. Clade name: [%s]", clade_name);
                   if(strcmp(clade_name, "@root@"))
                     {
                       For(i, clade_size) PhyML_Printf("\n. Taxon name: [%s]", clade[i]);
                     }
+                  PhyML_Printf("\n. Node number to which calibration applies to is [%d] with probability [%f]", node_num, String_To_Dbl(n_r -> child -> attr -> next -> value));
                   PhyML_Printf("\n. Lower bound set to: %15f time units.", low);
                   PhyML_Printf("\n. Upper bound set to: %15f time units.", up);
-                  PhyML_Printf("\n. .......................................................................");            
-                  //////////////////////////////////////////////////////////////////////////////////////////////////////
+                  PhyML_Printf("\n. ......................................................................."); 
+                  /////////////////////////////////////////////////////////////////////////////////////////////////////    
                   if(n_r -> child -> next) n_r -> child = n_r -> child -> next;
-                  else break;
-		}
-	      else if(n_r -> child -> next) n_r -> child = n_r -> child -> next;
-	      else break;	      
-	    }
-	  while(n_r -> child);                  
+                  else break;    
+                }
+              else if(n_r -> child -> next) n_r -> child = n_r -> child -> next;
+              else break;              
+            }
+          while(n_r -> child);                  
           //PhyML_Printf("\n. '%d'\n", tree -> rates -> calib -> n_all_applies_to);
           tree -> rates -> calib = tree -> rates -> calib -> next;	   
 	  n_r = n_r -> next;
@@ -924,8 +919,9 @@ void PhyTime_XML(char *xml_file)
       else break;
     }
   while(1);
- //Root to be the last one calibration read from the file.. 
+  //Root to be the last one calibration read from the file..
   n_cur = XML_Search_Node_Name("calibration_root", NO, n_r -> parent);
+
   if(n_cur)
     {         
       tree -> rates -> tot_num_cal++;
@@ -952,9 +948,9 @@ void PhyTime_XML(char *xml_file)
       n_cur = XML_Search_Node_Name("appliesto", NO, n_cur -> parent);
       if(n_cur)
         {
-          if(n_cur -> attr) tree -> rates -> calib -> proba[node_num] = String_To_Dbl(n_cur -> attr -> value);
-          if(!n_cur -> attr && n_cur -> next == NULL)tree -> rates -> calib -> proba[node_num] = 1.;
-          if(!n_cur -> attr && n_cur -> next)
+          if(n_cur -> attr -> next) tree -> rates -> calib -> proba[node_num] = String_To_Dbl(n_cur -> attr -> next -> value);
+          if(!n_cur -> attr -> next && n_cur -> next == NULL) tree -> rates -> calib -> proba[node_num] = 1.;
+          if(!n_cur -> attr -> next && n_cur -> next)
             {
               PhyML_Printf("==You either need to provide information about probability with which calibration \n");
               PhyML_Printf("==applies to a node or you need to apply calibartion only to one node. \n");
@@ -967,8 +963,8 @@ void PhyTime_XML(char *xml_file)
           tree -> rates -> calib -> upper = up;
           PhyML_Printf("\n. .......................................................................");
           PhyML_Printf("\n");
-          PhyML_Printf("\n. Node number to which calibration applies to is: [%d]",node_num);
           PhyML_Printf("\n. Clade name: [%s]", "root");
+          PhyML_Printf("\n. Node number to which calibration applies to is [%d] with probability [%f]", node_num, String_To_Dbl(n_cur-> attr -> next -> value)); 
           PhyML_Printf("\n. Lower bound set to: %15f time units.", low);
           PhyML_Printf("\n. Upper bound set to: %15f time units.", up);
           PhyML_Printf("\n. .......................................................................\n");        
@@ -1006,7 +1002,7 @@ void PhyTime_XML(char *xml_file)
   //Set_Current_Calibration(0, tree);
   //TIMES_Set_All_Node_Priors(tree);
   //Slicing_Calibrations(tree);
-  //Exit("\n");
+  
   ////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////   
   //clear memory:
@@ -1023,6 +1019,7 @@ void PhyTime_XML(char *xml_file)
     }
   free(mon_list);
 
+  //Exit("\n");
   ////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////   
   //START analysis:
@@ -1151,7 +1148,7 @@ void PhyTime_XML(char *xml_file)
   time(&t_beg);
 
   /* !!!! */
-  tree->rates->nd_t[7] = -0.001;
+  //tree->rates->nd_t[7] = -0.001;
 
   tree -> mcmc = MCMC_Make_MCMC_Struct();
  
@@ -1456,7 +1453,7 @@ phydbl Slicing_Calibrations(t_tree *tree)
           lmbd = tree -> rates -> birth_rate;
           num = 1;
           denom = 1;
-          //lmbd = 6.001;
+          //lmbd = 4.71;
           /* For(j, n_otu - 1) num = num * (EXP(-lmbd * t_cur_slice_min[j]) - EXP(-lmbd * t_cur_slice_max[j]));  */
           /* for(j = n_otu; j < 2 * n_otu - 1; j++) denom = denom * (EXP(-lmbd * t_prior_min[j]) - EXP(-lmbd * t_prior_max[j]));  */
           For(j, n_otu - 2) num = num * (EXP(lmbd * t_cur_slice_max[j]) - EXP(lmbd * t_cur_slice_min[j])); 
