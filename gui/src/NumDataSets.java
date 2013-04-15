@@ -1,3 +1,4 @@
+package phyml;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -38,22 +39,31 @@ public class NumDataSets extends JPanel {
 		spinner = new JSpinner(model);
 		lab2 = new JLabel("Run ID");
 		iDTxt = new JTextField();
+		
 		CustomGridLayout layout = new CustomGridLayout();
 		setLayout(layout);
-		layout.setDimensions(1, 0.12);
+		layout.setDimensions(1, 0.1);
 		add(new JPanel());
-		layout.setDimensions(0.01, 0.88);
+		layout.setDimensions(0.01, 0.4);
 		add(new JPanel());
-		layout.setDimensions(0.30, 0.88);
+		layout.setDimensions(0.33, 0.4);
 		add(lab1);
-		layout.setDimensions(0.1, 0.88);
+		layout.setDimensions(0.27, 0.4);
 		add(spinner);
-		layout.setDimensions(0.07, 0.88);
+		layout.setDimensions(0.38, 0.4);
 		add(new JPanel());
-		layout.setDimensions(0.14, 0.88);
+		layout.setDimensions(0.01, 0.4);
+		add(new JPanel());
+		layout.setDimensions(1, 0.1);
+		add(new JPanel());
+		layout.setDimensions(0.01, 0.4);
+		add(new JPanel());
+		layout.setDimensions(0.33, 0.4);
 		add(lab2);
-		layout.setDimensions(0.37, 0.88);
+		layout.setDimensions(0.27, 0.4);
 		add(iDTxt);
+		layout.setDimensions(0.38, 0.4);
+		add(new JPanel());
 	}
 
 	/**

@@ -1,10 +1,10 @@
+package phyml;
 
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -24,56 +24,70 @@ public class ProportionAndSubrate extends JPanel implements ActionListener {
 	 * default id
 	 */
 	private static final long serialVersionUID = 1L;
-	private JComboBox sites;
 	private CustomTextField parameter;
-	private JComboBox subRates;
+	private JRadioButton choice1;
+	private JRadioButton choice2;
+	private JRadioButton choice3;
+	private JRadioButton choice4;
 
 	/**
 	 * Constructor method.
 	 */
 	public ProportionAndSubrate() {
-		String[] choices = new String[] { "fixed", "estimated" };
-		sites = new JComboBox(choices);
-		sites.addActionListener(this);
 		parameter = new CustomTextField("0.00");
-		String[] yesNo = new String[] { "yes", "no" };
-		subRates = new JComboBox(yesNo);
-		subRates.addActionListener(this);
+		choice1 = new JRadioButton("Estimated");
+		choice2 = new JRadioButton("Fixed");
+		choice3 = new JRadioButton("No");
+		choice4 = new JRadioButton("Yes");
+		choice1.addActionListener(this);
+		choice2.addActionListener(this);
+		choice3.addActionListener(this);
+		choice4.addActionListener(this);
+		choice1.setSelected(true);
+		choice3.setSelected(true);
+		
 		CustomGridLayout layout = new CustomGridLayout();
 		setLayout(layout);
 		layout.setDimensions(1, 0.1);
 		add(new JPanel());
-		layout.setDimensions(0.01, 0.9);
+		layout.setDimensions(0.01, 0.4);
 		add(new JPanel());
+		layout.setDimensions(0.33, 0.4);
+		add(new JLabel("Proportion Invariable Sites"));
+		layout.setDimensions(0.27, 0.4);
+		add(parameter);
+		layout.setDimensions(0.38, 0.4);
 		JPanel p1 = new JPanel();
-		layout.setDimensions(0.45, 0.9);
+		CustomGridLayout lo1 = new CustomGridLayout();
+		p1.setLayout(lo1);
 		add(p1);
-		CustomGridLayout lO1 = new CustomGridLayout();
-		p1.setLayout(lO1);
-		lO1.setDimensions(0.66, 1);
-		p1.add(new JLabel("Proportion of Invariable Sites"));
-		lO1.setDimensions(0.22, 1);
-		p1.add(sites);
-		lO1.setDimensions(0.02, 1);
+		lo1.setDimensions(0.2, 1);
 		p1.add(new JPanel());
-		lO1.setDimensions(0.1, 1);
-		p1.add(parameter);
+		lo1.setDimensions(0.4, 1);
+		p1.add(choice1);
+		lo1.setDimensions(0.4, 1);
+		p1.add(choice2);
+		layout.setDimensions(0.01, 0.4);
+		add(new JPanel());
+		layout.setDimensions(1, 0.1);
+		add(new JPanel());
+		layout.setDimensions(0.01, 0.4);
+		add(new JPanel());
+		layout.setDimensions(0.33, 0.4);
+		add(new JLabel("One Sub. Rate Category"));
+		layout.setDimensions(0.27, 0.4);
+		add(new JPanel());
+		layout.setDimensions(0.38, 0.4);
 		JPanel p2 = new JPanel();
-		layout.setDimensions(0.04, 0.9);
-		add(new JPanel());
-		layout.setDimensions(0.49, 0.9);
+		CustomGridLayout lo2 = new CustomGridLayout();
+		p2.setLayout(lo2);
 		add(p2);
-		CustomGridLayout lO2 = new CustomGridLayout();
-		p2.setLayout(lO2);
-		lO2.setDimensions(0.74, 1);
-		// p2.add(new JLabel("One Sub. Rate Category"));
-		p2.add(new JLabel("Variation of rates across sites"));
-		//lO2.setDimensions(0.04, 1);
-		//p2.add(new JPanel());
-		lO2.setDimensions(0.2, 1);
-		p2.add(subRates);
-		layout.setDimensions(0.01, 0.9);
-		add(new JPanel());
+		lo2.setDimensions(0.2, 1);
+		p2.add(new JPanel());
+		lo2.setDimensions(0.4, 1);
+		p2.add(choice3);
+		lo2.setDimensions(0.4, 1);
+		p2.add(choice4);
 	}
 
 	/**
@@ -150,18 +164,42 @@ public class ProportionAndSubrate extends JPanel implements ActionListener {
 		}
 	}
 
+	@Override
 	public void actionPerformed(ActionEvent e) {
-		if (e.getSource() == sites) {
-			if (sites.getSelectedItem().toString().equals("fixed")) {
+		if (e.getSource() == choice1) {
+			if(choice1.isSelected()){
+				choice2.setSelected(false);
+				parameter.setEnabled(false);
+			}else{
+				choice2.setSelected(true);
 				parameter.setEnabled(true);
-			} else {
+			}
+		}
+		if(e.getSource() == choice2){
+			if(choice2.isSelected()){
+				choice1.setSelected(false);
+				parameter.setEnabled(true);
+			}else{
+				choice1.setSelected(true);
 				parameter.setEnabled(false);
 			}
-		} else if (e.getSource() == subRates) {
-			if (subRates.getSelectedItem().toString().equals("yes")) {
+		}
+		if (e.getSource() == choice3) {
+			if(choice3.isSelected()){
+				choice4.setSelected(false);
 				PhymlPanel.sM.setNumSubCatGammaAverageCompVisible(true);
-			} else {
+			}else{
+				choice4.setSelected(true);
 				PhymlPanel.sM.setNumSubCatGammaAverageCompVisible(false);
+			}
+		}
+		if(e.getSource() == choice4){
+			if(choice4.isSelected()){
+				choice3.setSelected(false);
+				PhymlPanel.sM.setNumSubCatGammaAverageCompVisible(false);
+			}else{
+				PhymlPanel.sM.setNumSubCatGammaAverageCompVisible(true);
+				choice3.setSelected(true);
 			}
 		}
 	}
@@ -174,7 +212,7 @@ public class ProportionAndSubrate extends JPanel implements ActionListener {
 	 *         fixed.
 	 */
 	public String getPropInvarSites() {
-		if (sites.getSelectedItem().toString().equals("estimated")) {
+		if (choice1.isSelected()) {
 			return "e";
 		} else {
 			return Double.parseDouble(parameter.getText()) + "";

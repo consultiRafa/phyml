@@ -1,3 +1,8 @@
+package phyml;
+
+import nz.org.nesi.phyml.swing.GridPanel;
+import nz.org.nesi.phyml.swing.PhyMLJobSubmit;
+
 
 /**
  * Class callPHYML provides a method to call the external program PhyML. The
@@ -15,6 +20,7 @@ public class callPHYML {
 	 * Method to call the program PHYML via command line. Note: if unsure of
 	 * what the parameters exactly are, please read the PHYML documentation. The
 	 * parameters are passed from the GUI.
+	 * @param nesiSubmit 
 	 * 
 	 * @param seqFileName
 	 *            filename of nucleotide/aa file (phylip format)
@@ -82,7 +88,7 @@ public class callPHYML {
 	 * @return void
 	 * 
 	 */
-	public static void callPhyML(String seqFileName, String dataType,
+	public static void callPhyML(GridPanel gridPanel, boolean nesiSubmit, String seqFileName, String dataType,
 			String sequential, String nDataSets, String parsimony,
 			String bootstrap, String subModel, String aaRateFileName,
 			String freq, String tstvRatio, String pInvar, String nSubCat,
@@ -94,7 +100,7 @@ public class callPHYML {
 			String quiet) {
 
 		// format the parameters such that PhyML can be executed
-		String command = formatCommand(seqFileName, dataType, sequential,
+		String command = formatCommand(nesiSubmit, seqFileName, dataType, sequential,
 				nDataSets, parsimony, bootstrap, subModel, aaRateFileName,
 				freq, tstvRatio, pInvar, nSubCat, gamma, useMedian, freeRates,
 				codePos, search, treeFile, params, randStart, nRandStart,
@@ -113,9 +119,29 @@ public class callPHYML {
 			// executable
 			// file/binaries and call "UnpackExecutableFile" to unpack the right
 			// fies there.
-			UnpackExecutableFile.start(command.split(" ")[0]);
-			CmdExec exec = new CmdExec(command);
-			exec.start();
+			//UnpackExecutableFile.start(command.split(" ")[0]);
+			if(!nesiSubmit){
+				CmdExec exec = new CmdExec(command);
+				exec.start();
+			}else{
+				final PhyMLJobSubmit job = new PhyMLJobSubmit(gridPanel.getServiceInterface(), command, seqFileName);
+				
+				Thread t = new Thread() {
+					public void run() {
+						try {
+							job.submit();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					};
+				};
+				
+				t.start();
+				
+				
+//				SwingClient frame = new SwingClient(command,seqFileName);
+//				frame.run();
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -124,6 +150,7 @@ public class callPHYML {
 	/**
 	 * Method to return a correctly formated string of the PhyML program
 	 * (version) path with the parameters formatted with the correct flags
+	 * @param nesiSubmit 
 	 * 
 	 * @param seqFileName
 	 *            filename of nucleotide/aa file (phylip format)
@@ -191,7 +218,7 @@ public class callPHYML {
 	 * @return String to call PhyML with all flags
 	 */
 
-	private static String formatCommand(String seqFileName, String dataType,
+	private static String formatCommand(boolean nesiSubmit, String seqFileName, String dataType,
 			String sequential, String nDataSets, String parsimony,
 			String bootstrap, String subModel, String aaRateFileName,
 			String freq, String tstvRatio, String pInvar, String nSubCat,
@@ -203,17 +230,19 @@ public class callPHYML {
 			String quiet) {
 
 		String command = "";
-		command += phymlVersion();
-		if (command.equals("")) {
-			return "";
+		if(!nesiSubmit){
+			command += phymlVersion();
+			if (command.equals("")) {
+				return "";
+			}
+			if (!seqFileName.equals(""))
+				command += "-i " + seqFileName + " ";
 		}
 
 		// if the string param is not "", add flag
 		// this of course assumes that the things passed to it are ready to use
 		// in
 		// PhyML
-		if (!seqFileName.equals(""))
-			command += "-i " + seqFileName + " ";
 		if (!dataType.equals(""))
 			command += "-d " + dataType + " ";
 		if (!sequential.equals(""))
@@ -270,8 +299,8 @@ public class callPHYML {
 			command += "--contrained_lens" + contrainedLens + " ";
 		if (!constFile.equals(""))
 			command += "--constraint_file " + constFile + " ";
-		// if (!quiet.equals(""))
-		// 	command += "--quiet ";
+		if (!quiet.equals(""))
+			command += "--quiet ";
 
 		return command;
 	} // end formatCommand

@@ -1,5 +1,10 @@
+package phyml;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import grisu.frontend.control.login.LoginManager;
+import nz.org.nesi.phyml.Client;
+import nz.org.nesi.phyml.PhyMLParameters;
 
 /**
  * Class CmdExec implements the call to phyml as a thread. This enables the
@@ -12,6 +17,7 @@ import java.io.InputStreamReader;
 public class CmdExec extends Thread {
 
 	private String cmd;
+	private String[] args;
 
 	/**
 	 * Constructor method for initialising an CmdExec object.
@@ -21,27 +27,57 @@ public class CmdExec extends Thread {
 	 */
 	public CmdExec(String cmd) {
 		this.cmd = cmd;
+		args = new String[]{};
+	}
+
+	public CmdExec(String[] args) {
+		this.cmd = "";
+		this.args = args;
 	}
 
 	@Override
 	public void run() {
 		int exitStatus = -1;
-		try {
-			Runtime rt = Runtime.getRuntime();
-			Process process = rt.exec(cmd);
-			BufferedReader input = new BufferedReader(new InputStreamReader(
-					process.getInputStream()));
-			String line1 = null;
-			while ((line1 = input.readLine()) != null) {
-				StandardOutPanel.setInput(line1);
-                                Thread.sleep(2);
+		if (!cmd.equals("")&&args.length==0) {
+			try {
+				Runtime rt = Runtime.getRuntime();
+				Process process = rt.exec(cmd);
+				BufferedReader input = new BufferedReader(
+						new InputStreamReader(process.getInputStream()));
+				String line1 = null;
+				while ((line1 = input.readLine()) != null) {
+					StandardOutPanel.setInput(line1);
+					//Thread.sleep(20);
+				}
+				exitStatus = process.waitFor();
+				System.out.println("Exit Status: " + exitStatus);
+				PhymlPanel.SetSubmit(true);
+				PhymlPanel.loadTrees();
+			} catch (Throwable t) {
+				t.printStackTrace();
 			}
-			exitStatus = process.waitFor();
-			System.out.println("Exit Status: " + exitStatus);
+		}else{	
+			// basic housekeeping
+			LoginManager.initGrisuClient("phyml-grid");
+
+			// helps to parse commandline arguments, if you don't want to create
+			// your own parameter class, just use DefaultCliParameters
+			PhyMLParameters parameters = new PhyMLParameters();
+			// create the client
+			Client client = null;
+			try {
+				client = new Client(parameters, args);
+			} catch(Exception e) {
+				System.err.println("Could not start phyml-grid: "
+						+ e.getLocalizedMessage());
+				System.exit(1);
+			}
+
+			// finally:
+			// execute the "run"
+			client.run();
 			PhymlPanel.SetSubmit(true);
 			PhymlPanel.loadTrees();
-		} catch (Throwable t) {
-			t.printStackTrace();
 		}
 	}
 }

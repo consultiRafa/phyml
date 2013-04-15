@@ -1,3 +1,4 @@
+package phyml;
 
 import java.awt.Color;
 
@@ -22,13 +23,11 @@ public class BranchSupport extends JPanel {
 	public BranchSupport() {
 		CustomGridLayout layout = new CustomGridLayout();
 		setLayout(layout);
-		layout.setDimensions(1, 0.26);
+		layout.setDimensions(1, 0.25);
 		add(new Separator("Branch Support", Color.lightGray, null,false));
-		layout.setDimensions(1, 0.68);
+		layout.setDimensions(1, 0.75);
 		booStrAndAprLikRatTes = new BooStrAndAprLikRatTes();
 		add(booStrAndAprLikRatTes);
-		layout.setDimensions(1, 0.06);
-		add(new Separator(false));
 	}
 
 	/**

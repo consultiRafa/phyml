@@ -1,3 +1,4 @@
+package phyml;
 
 import java.awt.Color;
 import javax.swing.JPanel;
@@ -25,27 +26,27 @@ public class InputDataPanel extends JPanel {
 	public InputDataPanel() {
 		CustomGridLayout layout = new CustomGridLayout();
 		setLayout(layout);
-		layout.setDimensions(1, 0.18);
+		layout.setDimensions(1, 0.15);
 		add(new Separator("Input Data", Color.LIGHT_GRAY, null,false));
-		layout.setDimensions(1, 0.18);
+		layout.setDimensions(1, 0.15);
 		fU = new FileUpload("");
 		add(fU);
 		layout.setDimensions(1, 0.02);
 		add(new Separator(null, null, false));
-		layout.setDimensions(1, 0.18);
+		layout.setDimensions(1, 0.15);
 		dT = new DataTypePhyml();
 		add(dT);
 		layout.setDimensions(1, 0.02);
 		add(new Separator(null, null, false));
-		layout.setDimensions(1, 0.18);
+		layout.setDimensions(1, 0.15);
 		sF = new SeqFile();
 		add(sF);
 		layout.setDimensions(1, 0.02);
 		add(new Separator(null, null, false));
-		layout.setDimensions(1, 0.18);
+		layout.setDimensions(1, 0.30);
 		nDS = new NumDataSets();
 		add(nDS);
-		layout.setDimensions(1, 0.05);
+		layout.setDimensions(1, 0.04);
 		add(new Separator(true, false));
 	}
 
@@ -114,6 +115,7 @@ public class InputDataPanel extends JPanel {
 	 */
 	public void SetDna(boolean b) {
 		dT.SetDna(b);
+		fU.setDna(b);
 	}
 
 	/**

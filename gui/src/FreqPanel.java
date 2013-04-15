@@ -1,3 +1,4 @@
+package phyml;
 
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -35,9 +36,6 @@ public class FreqPanel extends JPanel {
 	private CustomTextField t4;
 	private boolean hasAllValues;
 	private JLabel l1;
-	private JLabel l2;
-	private JLabel l3;
-	private JLabel l4;
 
 	/**
 	 * Instantiates the Components displayed in the graphical user interface for
@@ -49,40 +47,40 @@ public class FreqPanel extends JPanel {
 		t2 = new CustomTextField();
 		t3 = new CustomTextField();
 		t4 = new CustomTextField();
-		l1 = new JLabel("f(A)");
-		l2 = new JLabel("f(C)");
-		l3 = new JLabel("f(G)");
-		l4 = new JLabel("f(T)");
+		l1 = new JLabel("Freq A - Freq C - Freq G - Freq T");
 		CustomGridLayout layout = new CustomGridLayout();
 		setLayout(layout);
-		layout.setDimensions(1, 0.1);
+		
+		layout.setDimensions(0.01, 1);
 		add(new JPanel());
-		layout.setDimensions(0.125, 0.8);
+		layout.setDimensions(0.33, 1);
 		add(l1);
-		layout.setDimensions(0.1, 0.8);
-		add(t1);
-		layout.setDimensions(0.025, 0.1);
-		add(new JPanel());
-		layout.setDimensions(0.125, 0.8);
-		add(l2);
-		layout.setDimensions(0.1, 0.8);
-		add(t2);
-		layout.setDimensions(0.025, 0.1);
-		add(new JPanel());
-		layout.setDimensions(0.125, 0.8);
-		add(l3);
-		layout.setDimensions(0.1, 0.8);
-		add(t3);
-		layout.setDimensions(0.025, 0.1);
-		add(new JPanel());
-		layout.setDimensions(0.125, 0.8);
-		add(l4);
-		layout.setDimensions(0.1, 0.8);
-		add(t4);
-		layout.setDimensions(0.025, 0.1);
-		add(new JPanel());
-		layout.setDimensions(1, 0.1);
-		add(new JPanel());
+		JPanel p1 = new JPanel();
+		CustomGridLayout lo1 = new CustomGridLayout();
+		p1.setLayout(lo1);
+		layout.setDimensions(0.27, 1);
+		add(p1);
+		lo1.setDimensions(0.45, 1);
+		p1.add(t1);
+		lo1.setDimensions(0.1, 1);
+		p1.add(new JPanel());
+		lo1.setDimensions(0.45, 1);
+		p1.add(t2);
+		
+		
+		JPanel p2 = new JPanel();
+		CustomGridLayout lo2 = new CustomGridLayout();
+		p2.setLayout(lo2);
+		layout.setDimensions(0.38, 0.9);
+		add(p2);
+		lo2.setDimensions(0.2, 1);
+		p2.add(new JPanel());
+		lo2.setDimensions(0.35, 1);
+		p2.add(t3);
+		lo2.setDimensions(0.08, 1);
+		p2.add(new JPanel());
+		lo2.setDimensions(0.33, 1);
+		p2.add(t4);
 	}
 
 	/**
@@ -110,40 +108,39 @@ public class FreqPanel extends JPanel {
 			t4.setText("" + d1);
 			hasAllValues = true;
 		}
-		l1 = new JLabel("f(A)");
-		l2 = new JLabel("f(C)");
-		l3 = new JLabel("f(G)");
-		l4 = new JLabel("f(T)");
+		l1 = new JLabel("Freq A - Freq C - Freq G - Freq T");
 		CustomGridLayout layout = new CustomGridLayout();
 		setLayout(layout);
-		layout.setDimensions(1, 0.1);
+		
+		layout.setDimensions(0.01, 1);
 		add(new JPanel());
-		layout.setDimensions(0.125, 0.8);
+		layout.setDimensions(0.33, 1);
 		add(l1);
-		layout.setDimensions(0.1, 0.8);
-		add(t1);
-		layout.setDimensions(0.025, 0.1);
+		
+		JPanel p1 = new JPanel();
+		CustomGridLayout lo1 = new CustomGridLayout();
+		p1.setLayout(lo1);
+		layout.setDimensions(0.27, 1);
+		add(p1);
+		lo1.setDimensions(0.45, 1);
+		p1.add(t1);
+		lo1.setDimensions(0.1, 1);
 		add(new JPanel());
-		layout.setDimensions(0.125, 0.8);
-		add(l2);
-		layout.setDimensions(0.1, 0.8);
-		add(t2);
-		layout.setDimensions(0.025, 0.1);
+		layout.setDimensions(0.45, 1);
+		p1.add(t2);
+		JPanel p2 = new JPanel();
+		CustomGridLayout lo2 = new CustomGridLayout();
+		p2.setLayout(lo2);
+		layout.setDimensions(0.38, 1);
+		add(p1);
+		lo2.setDimensions(0.2, 1);
+		p2.add(new JPanel());
+		lo2.setDimensions(0.35, 1);
+		p2.add(t3);
+		layout.setDimensions(0.1, 1);
 		add(new JPanel());
-		layout.setDimensions(0.125, 0.8);
-		add(l3);
-		layout.setDimensions(0.1, 0.8);
-		add(t3);
-		layout.setDimensions(0.025, 0.1);
-		add(new JPanel());
-		layout.setDimensions(0.125, 0.8);
-		add(l4);
-		layout.setDimensions(0.1, 0.8);
-		add(t4);
-		layout.setDimensions(0.025, 0.1);
-		add(new JPanel());
-		layout.setDimensions(1, 0.1);
-		add(new JPanel());
+		layout.setDimensions(0.35, 1);
+		p2.add(t4);
 	}
 
 	/**
@@ -239,6 +236,7 @@ public class FreqPanel extends JPanel {
 			}
 		}
 
+		@Override
 		public void focusGained(FocusEvent e) {
 		}
 
@@ -292,6 +290,7 @@ public class FreqPanel extends JPanel {
 			}
 			return count;
 		}
+		@Override
 		public void focusLost(FocusEvent e) {
 			if (!isDouble(this.getText())) {
 				this.setText("");
@@ -369,9 +368,6 @@ public class FreqPanel extends JPanel {
 	 */
 	public void setCompVisible(boolean b) {
 		l1.setVisible(b);
-		l2.setVisible(b);
-		l3.setVisible(b);
-		l4.setVisible(b);
 		t1.setVisible(b);
 		t2.setVisible(b);
 		t3.setVisible(b);

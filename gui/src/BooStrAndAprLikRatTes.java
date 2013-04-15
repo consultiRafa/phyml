@@ -1,5 +1,5 @@
+package phyml;
 
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -8,6 +8,7 @@ import java.awt.event.FocusListener;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -29,10 +30,12 @@ public class BooStrAndAprLikRatTes extends JPanel implements ActionListener,
 	 * default id
 	 */
 	private static final long serialVersionUID = 1L;
-	private JComboBox booStrBox;
 	private JComboBox likRatBox;
-	private JComboBox priBooBox;
 	private CustomTextField numRepField;
+	private JRadioButton choice1;
+	private JRadioButton choice2;
+	private JRadioButton choice3;
+	private JRadioButton choice4;
 
 	/**
 	 * Constructor method for implementing all components to set the values for
@@ -41,77 +44,133 @@ public class BooStrAndAprLikRatTes extends JPanel implements ActionListener,
 	 * "Approximate Likelihood Ratio Test" is used.
 	 */
 	public BooStrAndAprLikRatTes() {
-		booStrBox = new JComboBox(new String[] { "no", "yes" });
+		choice1 = new JRadioButton("no");
+		choice2 = new JRadioButton("yes");
+		choice1.addActionListener(this);
+		choice2.addActionListener(this);
+		choice1.setSelected(true);
 		likRatBox = new JComboBox(new String[] { "no", "SH-like supports",
 				"aLRT statistics", "Chi2-based supports" });
-		priBooBox = new JComboBox(new String[] { "no", "yes" });
+		choice3 = new JRadioButton("no");
+		choice4 = new JRadioButton("yes");
+		choice3.addActionListener(this);
+		choice4.addActionListener(this);
+		choice3.setSelected(true);
 		likRatBox.setSelectedIndex(1);
 		numRepField = new CustomTextField("");
 		numRepField.setEnabled(false);
 		numRepField.addFocusListener(this);
-		priBooBox.setEnabled(false);
-		booStrBox.addActionListener(this);
+		choice3.setEnabled(false);
+		choice4.setEnabled(false);
 		likRatBox.addActionListener(this);
+		
 		CustomGridLayout layout = new CustomGridLayout();
 		setLayout(layout);
 		layout.setDimensions(1, 0.1);
 		add(new JPanel());
-		layout.setDimensions(0.01, 0.9);
+		layout.setDimensions(0.01, 0.24);
 		add(new JPanel());
-		layout.setDimensions(0.98, 0.36);
+		layout.setDimensions(0.33, 0.24);
+		add(new JLabel("Non Parametric Bootstrapping"));
+		layout.setDimensions(0.27, 0.24);
+		add(numRepField);
+		layout.setDimensions(0.38, 0.24);
 		JPanel p1 = new JPanel();
+		CustomGridLayout lo1 = new CustomGridLayout();
+		p1.setLayout(lo1);
 		add(p1);
-		layout.setDimensions(0.01, 0.9);
+		lo1.setDimensions(0.2, 1);
+		p1.add(new JPanel());
+		lo1.setDimensions(0.4, 1);
+		p1.add(choice1);
+		lo1.setDimensions(0.4, 1);
+		p1.add(choice2);
+		layout.setDimensions(0.01, 0.24);
 		add(new JPanel());
-		layout.setDimensions(0.98, 0.1);
+		layout.setDimensions(1, 0.1);
 		add(new JPanel());
-		layout.setDimensions(0.98, 0.36);
+		layout.setDimensions(0.01, 0.24);
+		add(new JPanel());
+		layout.setDimensions(0.33, 0.24);
+		add(new JLabel("Print Trees"));
+		layout.setDimensions(0.27, 0.24);
+		add(new JPanel());
+		layout.setDimensions(0.38, 0.24);
 		JPanel p2 = new JPanel();
+		CustomGridLayout lo2 = new CustomGridLayout();
+		p2.setLayout(lo2);
 		add(p2);
-		layout.setDimensions(98, 0.1);
+		lo2.setDimensions(0.2, 1);
+		p2.add(new JPanel());
+		lo2.setDimensions(0.4, 1);
+		p2.add(choice3);
+		lo2.setDimensions(0.4, 1);
+		p2.add(choice4);
+		layout.setDimensions(0.01, 0.24);
 		add(new JPanel());
-		CustomGridLayout lO1 = new CustomGridLayout();
-		p1.setLayout(lO1);
-		lO1.setDimensions(0.32, 1);
-		p1.add(new JLabel("Non Parametric Bootstrapping"));
-		lO1.setDimensions(0.13, 1);
-		p1.add(booStrBox);
-		lO1.setDimensions(0.05, 1);
-		p1.add(new JPanel());
-		lO1.setDimensions(0.12, 1);
-		p1.add(new JLabel("Replicates"));
-		lO1.setDimensions(0.08, 1);
-		p1.add(numRepField);
-		lO1.setDimensions(0.05, 1);
-		p1.add(new JPanel());
-		lO1.setDimensions(0.12, 1);
-		p1.add(new JLabel("Print Trees"));
-		lO1.setDimensions(0.1, 1);
-		p1.add(priBooBox);
-		CustomGridLayout lO2 = new CustomGridLayout();
-		p2.setLayout(lO2);
-		lO2.setDimensions(0.737, 1);
-		p2.add(new JLabel("Approximate Likelihood Ratio Test"));
-		lO2.setDimensions(0.23, 1);
-		p2.add(likRatBox);
+		layout.setDimensions(1, 0.1);
+		add(new JPanel());
+		layout.setDimensions(0.01, 0.24);
+		add(new JPanel());
+		layout.setDimensions(0.33, 0.24);
+		add(new JLabel("Approximate Likelihood Ratio Test"));
+		layout.setDimensions(0.27, 0.24);
+		add(likRatBox);
 	}
 
+	@Override
 	public void actionPerformed(ActionEvent e) {
-		if (e.getSource() == booStrBox) {
-			if (booStrBox.getSelectedIndex() == 1) {
+		if(e.getSource() == choice1){
+			if(choice1.isSelected()){
+				choice2.setSelected(false);
+				numRepField.setEnabled(false);
+				choice1.setEnabled(false);
+				choice2.setEnabled(false);
+			}else{
+				choice2.setSelected(true);
 				likRatBox.setSelectedIndex(0);
 				numRepField.setEnabled(true);
 				numRepField.requestFocus();
-				priBooBox.setEnabled(true);
-			} else {
-				numRepField.setEnabled(false);
-				priBooBox.setEnabled(false);
+				choice1.setEnabled(true);
+				choice2.setEnabled(true);
 			}
-		} else if (e.getSource() == likRatBox) {
+		}
+		if(e.getSource() == choice2){
+			if(choice2.isSelected()){
+				choice1.setSelected(false);
+				likRatBox.setSelectedIndex(0);
+				numRepField.setEnabled(true);
+				numRepField.requestFocus();
+				choice1.setEnabled(true);
+				choice2.setEnabled(true);
+			}else{
+				choice1.setSelected(true);
+				numRepField.setEnabled(false);
+				choice1.setEnabled(false);
+				choice2.setEnabled(false);
+			}
+		}
+		if(e.getSource() == choice3){
+			if(choice3.isSelected()){
+				choice4.setSelected(false);
+			}else{
+				choice4.setSelected(true);
+			}
+		}
+		if(e.getSource() == choice4){
+			if(choice4.isSelected()){
+				choice3.setSelected(false);
+			}else{
+				choice3.setSelected(true);
+			}
+		}
+		if (e.getSource() == likRatBox) {
 			if (likRatBox.getSelectedIndex() > 0) {
 				numRepField.setEnabled(false);
-				priBooBox.setEnabled(false);
-				booStrBox.setSelectedIndex(0);
+				choice3.setEnabled(false);
+				choice4.setEnabled(false);
+				choice1.setSelected(true);
+				choice2.setSelected(false);
 			}
 		}
 	}
@@ -195,20 +254,24 @@ public class BooStrAndAprLikRatTes extends JPanel implements ActionListener,
 	 * @return String : number of replicates.
 	 */
 	public String getNumBootstrap() {
-		if (booStrBox.getSelectedItem().toString().equals("yes")
-				&& !numRepField.getText().equals("")) {
+		if (choice2.isSelected() && !numRepField.getText().equals("")) {
 			return numRepField.getText();
 		}
 		return "";
 	}
 
+	@Override
 	public void focusGained(FocusEvent e) {
 	}
 
+	@Override
 	public void focusLost(FocusEvent e) {
-		if (numRepField.getText().equals("")) {
-			booStrBox.setSelectedIndex(0);
-			priBooBox.setSelectedIndex(0);
+		System.out.println("lost");
+		if (choice2.isSelected()&&numRepField.getText().equals("")) {
+			choice1.setSelected(true);
+			choice2.setSelected(false);
+			choice3.setSelected(true);
+			choice4.setSelected(false);
 			likRatBox.setSelectedIndex(1);
 		}
 	}

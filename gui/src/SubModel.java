@@ -1,4 +1,5 @@
-import java.awt.Color;
+package phyml;
+
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -6,12 +7,12 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.io.File;
 
-import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -31,17 +32,18 @@ public class SubModel extends JPanel implements ActionListener {
 	 * default id
 	 */
 	private static final long serialVersionUID = 1L;
-	private JComboBox<String> modelBox;
+	private JComboBox modelBox;
 	private JLabel sMLab;
 	private JLabel cMLab;
 	private JLabel eFLab;
 	private JLabel oRPLab;
 	private CustomTextField curTextField;
-	private JComboBox<String> equiBox;
-	private JComboBox<String> optRateBox;
+	private JComboBox equiBox;
 	private FreqPanel freqPanel;
 	private String modelPath;
 	private String molecularType;
+	private JRadioButton choice1;
+	private JRadioButton choice2;
 
 	/**
 	 * Constructor method for instantiating all components for specifying the
@@ -60,85 +62,87 @@ public class SubModel extends JPanel implements ActionListener {
 			models = new String[] { "HKY85", "F84", "TN93", "GTR", "custom",
 					"JC69", "K80" };
 			equiChoices = new String[] { "empirical", "optimised" ,"user defined" };
-			eFLab = new JLabel("Nucleotide frequencies");
+			eFLab = new JLabel("Equilibrium Frequency");
 		} else {
 			models = new String[] { "LG", "WAG", "Dayhoff", "JTT", "Blossum62",
 					"Mt Rev", "Rt Rev", "Cp Rev", "DcMut", "VT", "Mt Mam",
 					"Mt Art", "HIVw", "HIVb", "Read from file" };
 			equiChoices = new String[] { "model", "empirical" };
-			eFLab = new JLabel("Amino-acid frequencies");
+			eFLab = new JLabel("Amino Acid Frequency");
 		}
-		modelBox = new JComboBox<String>(new DefaultComboBoxModel<String>(models));
+		modelBox = new JComboBox(new DefaultComboBoxModel(models));
 		modelBox.addActionListener(this);
-		equiBox = new JComboBox<String>(equiChoices);
+		equiBox = new JComboBox(equiChoices);
 		equiBox.addActionListener(this);
-		String[] optRateChoices = new String[] { "yes", "no"};
-		optRateBox = new JComboBox<String>(optRateChoices);
+		choice1 = new JRadioButton("Yes");
+		choice2 = new JRadioButton("No");
+		choice1.addActionListener(this);
+		choice2.addActionListener(this);
 		setOptimiseRateOff(true);
 		setOptimiseRate("NO");
 		freqPanel = new FreqPanel();
-    freqPanel.setCompVisible(false);
-		sMLab = new JLabel("Substitution model");
-		cMLab = new JLabel("Current model");
-		oRPLab = new JLabel("Optimise rate parameter");
+		freqPanel.setCompVisible(true);
+		sMLab = new JLabel("Substitution Model");
+		cMLab = new JLabel("Current Model");
+		oRPLab = new JLabel("Optimise Rate Parameter");
 		if (molecularType.equals("AA")) {
 			setCompVisible(false);
 		}
+		
 		CustomGridLayout layout = new CustomGridLayout();
 		setLayout(layout);
-		layout.setDimensions(0.01, 1);
+		layout.setDimensions(1, 0.05);
 		add(new JPanel());
-		layout.setDimensions(0.98, 0.04);
+		layout.setDimensions(0.01, 0.15);
 		add(new JPanel());
-		layout.setDimensions(0.01, 1);
+		layout.setDimensions(0.33, 0.15);
+		add(sMLab);
+		layout.setDimensions(0.27, 0.15);
+		add(modelBox);
+		layout.setDimensions(0.39, 0.15);
 		add(new JPanel());
-		layout.setDimensions(0.45, 0.29);
+		layout.setDimensions(1, 0.05);
+		add(new JPanel());
+		layout.setDimensions(0.01, 0.15);
+		add(new JPanel());
+		layout.setDimensions(0.33, 0.15);
+		add(cMLab);
+		layout.setDimensions(0.27, 0.15);
+		add(curTextField);
+		layout.setDimensions(0.39, 0.15);
+		add(new JPanel());
+		layout.setDimensions(1, 0.05);
+		add(new JPanel());
+		layout.setDimensions(0.01, 0.15);
+		add(new JPanel());
+		layout.setDimensions(0.33, 0.15);
+		add(eFLab);
+		layout.setDimensions(0.27, 0.15);
+		add(equiBox);
+		layout.setDimensions(0.39, 0.15);
+		add(new JPanel());
+		layout.setDimensions(1, 0.05);
+		add(new JPanel());
+		layout.setDimensions(0.01, 0.15);
+		add(new JPanel());
+		layout.setDimensions(0.33, 0.15);
+		add(oRPLab);
+		layout.setDimensions(0.27, 0.15);
+		add(new JPanel());
+		layout.setDimensions(0.38, 0.15);
 		JPanel p1 = new JPanel();
-		add(p1);
 		CustomGridLayout lo1 = new CustomGridLayout();
 		p1.setLayout(lo1);
-		lo1.setDimensions(0.7, 1);
-		p1.add(sMLab);
-		lo1.setDimensions(0.3, 1);
-		p1.add(modelBox);
-		layout.setDimensions(0.08, 0.29);
+		add(p1);
+		lo1.setDimensions(0.2, 1);
+		p1.add(new JPanel());
+		lo1.setDimensions(0.4, 1);
+		p1.add(choice1);
+		lo1.setDimensions(0.4, 1);
+		p1.add(choice2);
+		layout.setDimensions(1, 0.05);
 		add(new JPanel());
-		layout.setDimensions(0.45, 0.29);
-		JPanel p2 = new JPanel();
-		add(p2);
-		CustomGridLayout lo2 = new CustomGridLayout();
-		p2.setLayout(lo2);
-		lo2.setDimensions(0.72, 1);
-		p2.add(cMLab);
-		lo2.setDimensions(0.21, 1);
-		p2.add(curTextField);
-		layout.setDimensions(0.98, 0.04);
-		add(new JPanel());
-		layout.setDimensions(0.45, 0.29);
-		JPanel p4 = new JPanel();
-		add(p4);
-		CustomGridLayout lo3 = new CustomGridLayout();
-		p4.setLayout(lo3);
-		lo3.setDimensions(0.7, 1);
-		p4.add(eFLab);
-		lo3.setDimensions(0.3, 1);
-		p4.add(equiBox);
-		layout.setDimensions(0.08, 0.29);
-		add(new JPanel());
-		layout.setDimensions(0.45, 0.29);
-		JPanel p5 = new JPanel();
-		add(p5);
-		CustomGridLayout lo4 = new CustomGridLayout();
-		p5.setLayout(lo4);
-		lo4.setDimensions(1, 0.1);
-		p5.add(new JPanel());
-		lo4.setDimensions(0.72, 0.9);
-		p5.add(oRPLab);
-		lo4.setDimensions(0.21, 0.9);
-		p5.add(optRateBox);
-		layout.setDimensions(0.98, 0.04);
-		add(new JPanel());
-		layout.setDimensions(0.98, 0.3);
+		layout.setDimensions(1, 0.15);
 		add(freqPanel);
 		setSelectedCompEnabled(2);
 	}
@@ -153,8 +157,8 @@ public class SubModel extends JPanel implements ActionListener {
 		cMLab.setVisible(b);
 		oRPLab.setVisible(b);
 		curTextField.setVisible(b);
-		optRateBox.setVisible(b);
-		//freqPanel.setCompVisible(b);
+		choice1.setVisible(b);
+		choice2.setVisible(b);
 	}
 
 	/**
@@ -167,21 +171,23 @@ public class SubModel extends JPanel implements ActionListener {
 	public void setMoleculeType(String molType) {
 		molecularType = molType;
 		if (molecularType.equals("DNA")) {
-			modelBox.setModel(new DefaultComboBoxModel<String>(new String[] { "HKY85",
+			modelBox.setModel(new DefaultComboBoxModel(new String[] { "HKY85",
 					"F84", "TN93", "GTR", "custom", "JC69", "K80" }));
 			setCompVisible(true);
-			equiBox.setModel(new DefaultComboBoxModel<String>(new String[] { "empirical", 
+			equiBox.setModel(new DefaultComboBoxModel(new String[] { "empirical", 
 					"optimised" ,"user defined" }));
-			eFLab.setText("Nucleotide frequencies");
+			eFLab.setText("Equilibrium Frequency");
+			freqPanel.setVisible(true);
 		} else if (molecularType.equals("AA")) {
-			modelBox.setModel(new DefaultComboBoxModel<String>(new String[] { "LG",
+			modelBox.setModel(new DefaultComboBoxModel(new String[] { "LG",
 					"WAG", "Dayhoff", "JTT", "Blossum62", "Mt Rev", "Rt Rev",
 					"Cp Rev", "DcMut", "VT", "Mt Mam", "Mt Art", "HIVw",
 					"HIVb", "Read from file" }));
 			setCompVisible(false);
-			equiBox.setModel(new DefaultComboBoxModel<String>(new String[] { "model",
+			equiBox.setModel(new DefaultComboBoxModel(new String[] { "model",
 					"empirical" }));
-			eFLab.setText("Amino-acid frequencies");
+			eFLab.setText("Amino Acid Frequency");
+			freqPanel.setVisible(false);
 		}
 	}
 
@@ -201,6 +207,7 @@ public class SubModel extends JPanel implements ActionListener {
 			this.setPreferredSize(new Dimension(60, 18));
 		}
 
+		@Override
 		protected Document createDefaultModel() {
 			return new NumOnlyDocument();
 		}
@@ -216,6 +223,7 @@ public class SubModel extends JPanel implements ActionListener {
 			 */
 			private static final long serialVersionUID = 1L;
 
+			@Override
 			public void insertString(int offs, String str, AttributeSet a)
 					throws BadLocationException {
 				if (str == null || offs > 5 || !isNumber(str)
@@ -236,6 +244,7 @@ public class SubModel extends JPanel implements ActionListener {
 			}
 		}
 
+		@Override
 		public void actionPerformed(ActionEvent e) {
 			if (this.getText().length() < 6) {
 				String txt = this.getText();
@@ -246,9 +255,11 @@ public class SubModel extends JPanel implements ActionListener {
 			}
 		}
 
+		@Override
 		public void focusGained(FocusEvent e) {
 		}
 
+		@Override
 		public void focusLost(FocusEvent e) {
 			if (this.getText().length() < 6) {
 				String txt = this.getText();
@@ -260,6 +271,7 @@ public class SubModel extends JPanel implements ActionListener {
 		}
 	}
 
+	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == modelBox) {
 			if(modelBox.getSelectedItem().toString().equals("JC69")||
@@ -310,21 +322,37 @@ public class SubModel extends JPanel implements ActionListener {
 				freqPanel.setCompVisible(true);
 			} else {
 				freqPanel.setCompEnabled(false);
-				freqPanel.setCompVisible(false);
+				freqPanel.setCompVisible(true);
+			}
+		}
+		if(e.getSource() == choice1){
+			if(choice1.isSelected()){
+				choice2.setSelected(false);
+			}else{
+				choice2.setSelected(true);
+			}
+		}
+		if(e.getSource() == choice2){
+			if(choice2.isSelected()){
+				choice1.setSelected(false);
+			}else{
+				choice1.setSelected(true);
 			}
 		}
 	}
 	private void setOptimiseRate(String string) {
 		if(string.equals("YES")){
-			optRateBox.setSelectedIndex(0);
+			choice1.setSelected(true);
+			choice1.setSelected(false);
 		}else if(string.equals("NO")){
-			optRateBox.setSelectedIndex(1);
+			choice1.setSelected(false);
+			choice1.setSelected(true);
 		}
 	}
 
 	private void setOptimiseRateOff(boolean b) {
-		System.out.println("enabled = " + !b);
-		optRateBox.setEnabled(!b);
+		choice1.setEnabled(!b);
+		choice2.setEnabled(!b);
 	}
 
 	/**
@@ -339,12 +367,10 @@ public class SubModel extends JPanel implements ActionListener {
 			curTextField.setEnabled(false);
 			equiBox.setEnabled(false);
 			freqPanel.setCompEnabled(false);
-			//freqPanel.setCompVisible(false);
 		}else if(i==2){
 			curTextField.setEnabled(false);
 			equiBox.setEnabled(true);
-			//freqPanel.setCompVisible(false);
-      freqPanel.setCompEnabled(false);
+			freqPanel.setCompEnabled(false);
 		}
 	}
 	/**
@@ -444,7 +470,7 @@ public class SubModel extends JPanel implements ActionListener {
 	 *         otherwise.
 	 */
 	public boolean isOptimisedRateParameter() {
-		if (optRateBox.getSelectedItem().toString().equals("yes")) {
+		if (choice1.isSelected()) {
 			return true;
 		}
 		return false;

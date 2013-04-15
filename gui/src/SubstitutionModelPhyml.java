@@ -1,3 +1,4 @@
+package phyml;
 
 import java.awt.Color;
 import javax.swing.JPanel;
@@ -29,18 +30,18 @@ public class SubstitutionModelPhyml extends JPanel {
 	public SubstitutionModelPhyml(String molecularType) {
 		CustomGridLayout layout = new CustomGridLayout();
 		setLayout(layout);
-		layout.setDimensions(1, 0.14);
+		layout.setDimensions(1, 0.1);
 		add(new Separator("Substitution Model", Color.lightGray, null,false));
-		layout.setDimensions(1, 0.43);
+		layout.setDimensions(1, 0.4);
 		sM = new SubModel(molecularType);
 		add(sM);
-		layout.setDimensions(1, 0.14);
+		layout.setDimensions(1, 0.08);
 		oFAR = new OptimiseFreqAndRatio("DNA");
 		add(oFAR);
-		layout.setDimensions(1, 0.14);
+		layout.setDimensions(1, 0.16);
 		pAS = new ProportionAndSubrate();
 		add(pAS);
-		layout.setDimensions(1, 0.14);
+		layout.setDimensions(1, 0.24);
 		nSCGA = new NumSubCatGammaAverage();
 		add(nSCGA);
 	}

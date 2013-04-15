@@ -1,3 +1,4 @@
+package phyml;
 
 import java.awt.Color;
 import javax.swing.JPanel;
@@ -24,19 +25,15 @@ public class TreeSearchingPanel extends JPanel {
 	public TreeSearchingPanel() {
 		CustomGridLayout layout = new CustomGridLayout();
 		setLayout(layout);
-		layout.setDimensions(1, 0.24);
+		layout.setDimensions(1, 0.14);
 		add(new Separator("Tree Searching", Color.lightGray, null,false));
-		layout.setDimensions(1, 0.22);
+		layout.setDimensions(1, 0.28);
 		oTAST = new OptTopologyAndStartingTree();
 		add(oTAST);
-		layout.setDimensions(1, 0.05);
-		add(new Separator(false));
-		layout.setDimensions(1, 0.22);
+		layout.setDimensions(1, 0.28);
 		oBLATT = new OptBraLenAndTreTop(true);
 		add(oBLATT);
-		layout.setDimensions(1, 0.05);
-		add(new Separator(false));
-		layout.setDimensions(1, 0.22);
+		layout.setDimensions(1, 0.28);
 		aRSTANRST = new AddRanStaTreAndNumRanStaTre(true);
 		add(aRSTANRST);
 	}

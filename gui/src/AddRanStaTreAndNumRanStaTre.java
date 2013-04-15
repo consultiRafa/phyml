@@ -1,12 +1,13 @@
+package phyml;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -27,10 +28,12 @@ public class AddRanStaTreAndNumRanStaTre extends JPanel implements
 	 * deafult id
 	 */
 	private static final long serialVersionUID = 1L;
-	private JComboBox addRanStaTreBox;
+//	private JComboBox<String> addRanStaTreBox;
 	private CustomTextField numRanStaTreField;
 	private JLabel lab1;
 	private JLabel lab2;
+	private JRadioButton choice1;
+	private JRadioButton choice2;
 
 	/**
 	 * Constructor method to instantiate all components and set their size and
@@ -41,58 +44,111 @@ public class AddRanStaTreAndNumRanStaTre extends JPanel implements
 	 *            otherwise
 	 */
 	public AddRanStaTreAndNumRanStaTre(boolean isNNI) {
-		addRanStaTreBox = new JComboBox(new String[] { "no", "yes" });
+//		addRanStaTreBox = new JComboBox<String>(new String[] { "no", "yes" });
+		choice1 = new JRadioButton("No");
+		choice2 = new JRadioButton("Yes");
+		choice1.addActionListener(this);
+		choice2.addActionListener(this);
+		choice1.setSelected(true);
 		numRanStaTreField = new CustomTextField("5");
 		lab1 = new JLabel("Add Random Starting Tree");
 		lab2 = new JLabel("# Random Starting Trees");
 		numRanStaTreField.setEnabled(false);
 		if (isNNI) {
-			addRanStaTreBox.setVisible(false);
-			numRanStaTreField.setVisible(false);
-			lab1.setVisible(false);
-			lab2.setVisible(false);
+//			addRanStaTreBox.setVisible(false);
+			choice1.setEnabled(false);
+			choice2.setEnabled(false);
+			numRanStaTreField.setEnabled(false);
+//			lab1.setVisible(false);
+//			lab2.setVisible(false);
 		}
-		addRanStaTreBox.addActionListener(this);
+//		addRanStaTreBox.addActionListener(this);
 		CustomGridLayout layout = new CustomGridLayout();
 		setLayout(layout);
 		layout.setDimensions(1, 0.1);
 		add(new JPanel());
-		layout.setDimensions(0.01, 0.9);
+		layout.setDimensions(0.01, 0.4);
 		add(new JPanel());
+		layout.setDimensions(0.33, 0.4);
+		add(lab1);
+		layout.setDimensions(0.27, 0.4);
+		add(new JPanel());
+		layout.setDimensions(0.38, 0.4);
 		JPanel p1 = new JPanel();
-		layout.setDimensions(0.44, 0.9);
+		CustomGridLayout lo1 = new CustomGridLayout();
+		p1.setLayout(lo1);
 		add(p1);
-		layout.setDimensions(0.1, 0.9);
-		add(new JPanel());
-		JPanel p2 = new JPanel();
-		layout.setDimensions(0.44, 0.9);
-		add(p2);
-		layout.setDimensions(0.01, 0.9);
-		add(new JPanel());
-		CustomGridLayout lO1 = new CustomGridLayout();
-		p1.setLayout(lO1);
-		lO1.setDimensions(0.62, 1);
-		p1.add(lab1);
-		lO1.setDimensions(0.1, 1);
+		lo1.setDimensions(0.2, 1);
 		p1.add(new JPanel());
-		lO1.setDimensions(0.28, 1);
-		p1.add(addRanStaTreBox);
-		CustomGridLayout lO2 = new CustomGridLayout();
-		p2.setLayout(lO2);
-		lO2.setDimensions(0.61, 1);
-		p2.add(lab2);
-		lO2.setDimensions(0.1, 1);
-		p2.add(new JPanel());
-		lO2.setDimensions(0.23, 1);
-		p2.add(numRanStaTreField);
+		lo1.setDimensions(0.4, 1);
+		p1.add(choice1);
+		lo1.setDimensions(0.4, 1);
+		p1.add(choice2);
+		layout.setDimensions(0.01, 0.4);
+		add(new JPanel());
+		layout.setDimensions(1, 0.1);
+		add(new JPanel());
+		layout.setDimensions(0.01, 0.4);
+		add(new JPanel());
+		layout.setDimensions(0.33, 0.4);
+		add(lab2);
+		layout.setDimensions(0.27, 0.4);
+		add(numRanStaTreField);
+		layout.setDimensions(0.39, 0.4);
+		add(new JPanel());
+		
+//		JPanel p1 = new JPanel();
+//		layout.setDimensions(0.44, 0.9);
+//		add(p1);
+//		layout.setDimensions(0.1, 0.9);
+//		add(new JPanel());
+//		JPanel p2 = new JPanel();
+//		layout.setDimensions(0.44, 0.9);
+//		add(p2);
+//		layout.setDimensions(0.01, 0.9);
+//		add(new JPanel());
+//		CustomGridLayout lO1 = new CustomGridLayout();
+//		p1.setLayout(lO1);
+//		lO1.setDimensions(0.62, 1);
+//		p1.add(lab1);
+//		lO1.setDimensions(0.1, 1);
+//		p1.add(new JPanel());
+//		lO1.setDimensions(0.28, 1);
+////		p1.add(addRanStaTreBox);
+//		CustomGridLayout lO2 = new CustomGridLayout();
+//		p2.setLayout(lO2);
+//		lO2.setDimensions(0.61, 1);
+//		p2.add(lab2);
+//		lO2.setDimensions(0.1, 1);
+//		p2.add(new JPanel());
+//		lO2.setDimensions(0.23, 1);
+//		p2.add(numRanStaTreField);
 	}
 
+	@Override
 	public void actionPerformed(ActionEvent e) {
-		if (addRanStaTreBox.getSelectedItem().toString().equals("no")) {
-			numRanStaTreField.setEnabled(false);
-		} else {
-			numRanStaTreField.setEnabled(true);
+		if(e.getSource() == choice1){
+			if(choice1.isSelected()){
+				choice2.setSelected(false);
+				numRanStaTreField.setEnabled(false);
+			}else{
+				choice2.setSelected(true);
+				numRanStaTreField.setEnabled(true);
+			}
+		}else if(e.getSource() == choice2){
+			if(choice2.isSelected()){
+				choice1.setSelected(false);
+				numRanStaTreField.setEnabled(true);
+			}else{
+				choice1.setSelected(true);
+				numRanStaTreField.setEnabled(false);
+			}
 		}
+//		if (addRanStaTreBox.getSelectedItem().toString().equals("no")) {
+//			numRanStaTreField.setEnabled(false);
+//		} else {
+//			numRanStaTreField.setEnabled(true);
+//		}
 	}
 
 	/**
@@ -105,15 +161,19 @@ public class AddRanStaTreAndNumRanStaTre extends JPanel implements
 	 */
 	public void setIsNNI(boolean b) {
 		if (b) {
-			addRanStaTreBox.setVisible(false);
-			numRanStaTreField.setVisible(false);
-			lab1.setVisible(false);
-			lab2.setVisible(false);
+//			addRanStaTreBox.setVisible(false);
+			choice1.setEnabled(false);
+			choice2.setEnabled(false);
+			numRanStaTreField.setEnabled(false);
+			lab1.setEnabled(false);
+			lab2.setEnabled(false);
 		} else {
-			addRanStaTreBox.setVisible(true);
-			numRanStaTreField.setVisible(true);
-			lab1.setVisible(true);
-			lab2.setVisible(true);
+//			addRanStaTreBox.setVisible(true);
+			choice1.setEnabled(true);
+			choice2.setEnabled(true);
+			numRanStaTreField.setEnabled(true);
+			lab1.setEnabled(true);
+			lab2.setEnabled(true);
 		}
 	}
 
@@ -189,9 +249,11 @@ public class AddRanStaTreAndNumRanStaTre extends JPanel implements
 			}
 		}
 
+		@Override
 		public void focusGained(FocusEvent e) {
 		}
 
+		@Override
 		public void focusLost(FocusEvent e) {
 			if (this.getText().equals("")) {
 				this.setText("5");
@@ -205,7 +267,7 @@ public class AddRanStaTreAndNumRanStaTre extends JPanel implements
 	 * @return String : "yes" if random starting trees are used, "" otherwise.
 	 */
 	public String getRandStart() {
-		if (addRanStaTreBox.getSelectedItem().toString().equals("yes")) {
+		if (choice2.isSelected()) {
 			return "yes";
 		}
 		return "";

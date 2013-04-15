@@ -1,3 +1,8 @@
+package phyml;
+
+import grisu.frontend.control.login.LoginManager;
+import grisu.frontend.view.swing.utils.DefaultExceptionHandler;
+import grisu.jcommons.utils.EnvironmentVariableHelpers;
 
 import javax.swing.JFrame;
 
@@ -18,6 +23,19 @@ public class PhymlMain {
 	 *            this case.
 	 */
 	public static void main(String[] args) {
+		
+		// housekeeping for grid stuff
+		LoginManager.initGrisuClient("phyml-grid-swing");
+
+		LoginManager.setClientVersion(grisu.jcommons.utils.Version
+				.get("this-client"));
+
+		EnvironmentVariableHelpers.loadEnvironmentVariablesToSystemProperties();
+
+		Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler());
+
+		LoginManager.initEnvironment();
+		
 		PhymlPanel frameContent = new PhymlPanel();
 		@SuppressWarnings("unused")
 		PhymlFrame startGui = new PhymlFrame("PhyML", 200, 100, 790, 820,

@@ -1,3 +1,4 @@
+package phyml;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -7,6 +8,7 @@ import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 
 /**
  * Class for implementing all "Optimise Tree Topology" and "Starting tree"
@@ -22,11 +24,13 @@ public class OptTopologyAndStartingTree extends JPanel implements
 	 * default id
 	 */
 	private static final long serialVersionUID = 1L;
-	private JComboBox optTopBox;
+//	private JComboBox optTopBox;
 	private JComboBox staTreBox;
 	private String[] staTreArr1;
 	private String[] staTreArr2;
 	private String userDefStartTreePath;
+	private JRadioButton choice1;
+	private JRadioButton choice2;
 
 	/**
 	 * Constructor to instatiate all components and setting their size and
@@ -34,50 +38,88 @@ public class OptTopologyAndStartingTree extends JPanel implements
 	 */
 	public OptTopologyAndStartingTree() {
 		userDefStartTreePath = "";
-		optTopBox = new JComboBox(new String[] { "yes", "no" });
-		optTopBox.addActionListener(this);
+		choice1 = new JRadioButton("Yes");
+		choice2 = new JRadioButton("No");
+		choice1.setSelected(true);
+		choice1.addActionListener(this);
+		choice2.addActionListener(this);
+//		optTopBox = new JComboBox(new String[] { "yes", "no" });
+//		optTopBox.addActionListener(this);
 		staTreArr1 = new String[] { "BioNJ", "parsimony", "user tree" };
 		staTreArr2 = new String[] { "BioNJ", "user tree" };
 		staTreBox = new JComboBox(staTreArr1);
 		staTreBox.addActionListener(this);
+		
 		CustomGridLayout layout = new CustomGridLayout();
 		setLayout(layout);
 		layout.setDimensions(1, 0.1);
 		add(new JPanel());
-		layout.setDimensions(0.01, 0.9);
+		layout.setDimensions(0.01, 0.4);
 		add(new JPanel());
-		layout.setDimensions(0.44, 0.9);
+		layout.setDimensions(0.33, 0.4);
+		add(new JLabel("Optimise Tree Topology"));
+		layout.setDimensions(0.27, 0.4);
+		add(new JPanel());
+		layout.setDimensions(0.38, 0.4);
 		JPanel p1 = new JPanel();
+		CustomGridLayout lo1 = new CustomGridLayout();
+		p1.setLayout(lo1);
 		add(p1);
-		layout.setDimensions(0.1, 0.9);
+		lo1.setDimensions(0.2, 1);
+		p1.add(new JPanel());
+		lo1.setDimensions(0.4, 1);
+		p1.add(choice1);
+		lo1.setDimensions(0.4, 1);
+		p1.add(choice2);
+		layout.setDimensions(0.01, 0.4);
 		add(new JPanel());
-		layout.setDimensions(0.44, 0.9);
-		JPanel p2 = new JPanel();
-		add(p2);
-		layout.setDimensions(0.01, 0.9);
+		layout.setDimensions(1, 0.1);
 		add(new JPanel());
-		CustomGridLayout lO1 = new CustomGridLayout();
-		p1.setLayout(lO1);
-		lO1.setDimensions(0.62, 1);
-		p1.add(new JLabel("Optimise Tree Topology"));
-		lO1.setDimensions(0.1, 1);
-		p1.add(new JLabel());
-		lO1.setDimensions(0.28, 1);
-		p1.add(optTopBox);
-		CustomGridLayout lO2 = new CustomGridLayout();
-		p2.setLayout(lO2);
-		lO2.setDimensions(0.61, 1);
-		p2.add(new JLabel("Starting Tree"));
-		lO2.setDimensions(0.1, 1);
-		p2.add(new JLabel());
-		lO2.setDimensions(0.23, 1);
-		p2.add(staTreBox);
+		layout.setDimensions(0.01, 0.4);
+		add(new JPanel());
+		layout.setDimensions(0.33, 0.4);
+		add(new JLabel("Starting Tree"));
+		layout.setDimensions(0.27, 0.4);
+		add(staTreBox);
+		layout.setDimensions(0.39, 0.4);
+		add(new JPanel());
+//		
+//		layout.setDimensions(0.44, 0.9);
+//		JPanel p2 = new JPanel();
+//		add(p2);
+//		layout.setDimensions(0.01, 0.9);
+//		add(new JPanel());
+//		CustomGridLayout lO1 = new CustomGridLayout();
+//		p1.setLayout(lO1);
+//		lO1.setDimensions(0.62, 1);
+//		p1.add(new JLabel("Optimise Tree Topology"));
+//		lO1.setDimensions(0.1, 1);
+//		p1.add(new JLabel());
+//		lO1.setDimensions(0.28, 1);
+//		p1.add(optTopBox);
+//		CustomGridLayout lO2 = new CustomGridLayout();
+//		p2.setLayout(lO2);
+//		lO2.setDimensions(0.61, 1);
+//		p2.add(new JLabel("Starting Tree"));
+//		lO2.setDimensions(0.1, 1);
+//		p2.add(new JLabel());
+//		lO2.setDimensions(0.23, 1);
+//		p2.add(staTreBox);
 	}
 
+	@Override
 	public void actionPerformed(ActionEvent e) {
-		if (e.getSource() == optTopBox) {
+		if(e.getSource() == choice1){
 			int index = staTreBox.getSelectedIndex();
-			if (optTopBox.getSelectedItem().toString().equals("no")) {
+			if(choice1.isSelected()){
+				choice2.setSelected(false);
+				staTreBox.setModel(new DefaultComboBoxModel(staTreArr1));
+				if (index == 1) {
+					staTreBox.setSelectedIndex(2);
+				}
+				PhymlPanel.tS.setOptBraLenToYes(true);
+			}else{
+				choice2.setSelected(true);
 				staTreBox.setModel(new DefaultComboBoxModel(staTreArr2));
 				if (index == 1) {
 					staTreBox.setSelectedIndex(0);
@@ -85,7 +127,20 @@ public class OptTopologyAndStartingTree extends JPanel implements
 					staTreBox.setSelectedIndex(1);
 				}
 				PhymlPanel.tS.setOptBraLenToYes(false);
-			} else {
+			}
+		}else if(e.getSource() == choice2){
+			int index = staTreBox.getSelectedIndex();
+			if(choice2.isSelected()){
+				choice1.setSelected(false);
+				staTreBox.setModel(new DefaultComboBoxModel(staTreArr2));
+				if (index == 1) {
+					staTreBox.setSelectedIndex(0);
+				} else if (index == 2) {
+					staTreBox.setSelectedIndex(1);
+				}
+				PhymlPanel.tS.setOptBraLenToYes(false);
+			}else{
+				choice1.setSelected(true);
 				staTreBox.setModel(new DefaultComboBoxModel(staTreArr1));
 				if (index == 1) {
 					staTreBox.setSelectedIndex(2);
@@ -146,7 +201,7 @@ public class OptTopologyAndStartingTree extends JPanel implements
 	 * otherwise false.
 	 */
 	public boolean isOptimiseTreeTopology() {
-		if (optTopBox.getSelectedItem().toString().equals("yes")) {
+		if (choice1.isSelected()) {
 			return true;
 		}
 		return false;

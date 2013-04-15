@@ -1,3 +1,4 @@
+package phyml;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -36,27 +37,31 @@ public class SeqFile extends JPanel implements ActionListener {
 		choice2.setToolTipText("If selected, the input file is in Sequential format.");
 		choice1.addActionListener(this);
 		choice2.addActionListener(this);
+		
 		CustomGridLayout layout = new CustomGridLayout();
 		setLayout(layout);
-		layout.setDimensions(0.01, 1);
+		layout.setDimensions(1, 0.1);
 		add(new JPanel());
-		layout.setDimensions(0.3, 1);
+		layout.setDimensions(0.01, 0.9);
+		add(new JPanel());
+		layout.setDimensions(0.33, 0.9);
 		add(lab1);
-		layout.setDimensions(0.3, 1);
+		layout.setDimensions(0.27, 0.9);
 		add(new JPanel());
-		layout.setDimensions(0.38, 1);
+		layout.setDimensions(0.38, 0.9);
 		JPanel p = new JPanel();
 		add(p);
 		CustomGridLayout lO1 = new CustomGridLayout();
 		p.setLayout(lO1);
-		lO1.setDimensions(0.02, 1);
+		lO1.setDimensions(0.2, 1);
 		p.add(new JPanel());
-		lO1.setDimensions(0.45, 1);
+		lO1.setDimensions(0.4, 1);
 		p.add(choice1);
-		lO1.setDimensions(0.53, 1);
+		lO1.setDimensions(0.4, 1);
 		p.add(choice2);
 	}
 
+	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == choice1) {
 			if (choice1.isSelected()) {

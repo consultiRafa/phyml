@@ -1,9 +1,10 @@
+package phyml;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -23,15 +24,13 @@ public class OptimiseFreqAndRatio extends JPanel implements ActionListener {
 	 * default id
 	 */
 	private static final long serialVersionUID = 1L;
-//	private JLabel optimiseLab;
-//	private JComboBox optimiseBox;
 	private JLabel ratioLab;
-	private JComboBox<String> ratioBox;
+	private JRadioButton choice1;
+	private JRadioButton choice2;
 	private CustomTextField ratioField;
 	private final static String DNA = "DNA";
 	private final static String AA = "AA";
 	private boolean isDNA;
-//	private String[] optimiseAray1;
 	private String moleculeType;
 
 	/**
@@ -44,53 +43,73 @@ public class OptimiseFreqAndRatio extends JPanel implements ActionListener {
 	 */
 	public OptimiseFreqAndRatio(String moleculeType) {
 		this.moleculeType = moleculeType;
-//		optimiseAray1 = new String[] { "yes", "no" };
-		ratioLab = new JLabel("Transition/transversion ratio");
-		ratioBox = new JComboBox<String>(new String[] { "estimated", "fixed" });
+		ratioLab = new JLabel("Transition/Transversion Ratio");
+		choice1 = new JRadioButton("Estimated");
+		choice1.setSelected(true);
+		choice2 = new JRadioButton("Fixed");
 		ratioField = new CustomTextField("4.0");
 		ratioField.setEnabled(false);
 		if (moleculeType.equals(DNA)) {
 			isDNA = true;
-//			optimiseLab = new JLabel("Optimise Equ. Freq.");
-//			optimiseLab.setToolTipText("Optimise equilibrium frequencies.");
-//			optimiseBox = new JComboBox(optimiseAray1);
-			isDNA = true;
 		} else if (moleculeType.equals(AA)) {
 			isDNA = false;
-//			optimiseLab.setVisible(false);
 			ratioLab.setVisible(false);
-			ratioBox.setVisible(false);
 			ratioField.setVisible(false);
+			choice1.setVisible(false);
+			choice2.setVisible(false);
 		}
-		ratioBox.addActionListener(this);
+		choice1.addActionListener(this);
+		choice2.addActionListener(this);
+		
+		
 		CustomGridLayout layout = new CustomGridLayout();
 		setLayout(layout);
-		layout.setDimensions(1, 0.04);
+		layout.setDimensions(1, 0.1);
 		add(new JPanel());
-		layout.setDimensions(0.01, 0.96);
+		layout.setDimensions(0.01, 0.9);
 		add(new JPanel());
-		layout.setDimensions(0.98, 0.96);
-		JPanel p2 = new JPanel();
-		add(p2);
-		CustomGridLayout l2 = new CustomGridLayout();
-		p2.setLayout(l2);
-		l2.setDimensions(0.691, 1);
-		p2.add(ratioLab);
-		l2.setDimensions(0.13, 1);
-		p2.add(ratioBox);
-		l2.setDimensions(0.05, 1);
-		p2.add(new JPanel());
-		l2.setDimensions(0.1, 1);
-		p2.add(ratioField);
-		layout.setDimensions(0.01, 0.96);
+		layout.setDimensions(0.33, 0.9);
+		add(ratioLab);
+		layout.setDimensions(0.27, 0.9);
+		add(ratioField);
+		layout.setDimensions(0.38, 0.9);
+		JPanel p1 = new JPanel();
+		CustomGridLayout lo1 = new CustomGridLayout();
+		p1.setLayout(lo1);
+		add(p1);
+		lo1.setDimensions(0.2, 1);
+		p1.add(new JPanel());
+		lo1.setDimensions(0.4, 1);
+		p1.add(choice1);
+		lo1.setDimensions(0.4, 1);
+		p1.add(choice2);
+		layout.setDimensions(0.01, 0.9);
 		add(new JPanel());
 	}
 
+	@Override
 	public void actionPerformed(ActionEvent e) {
-		if (e.getSource() == ratioBox) {
-			if (ratioBox.getSelectedItem() == "fixed") {
+//		if (e.getSource() == ratioBox) {
+//			if (ratioBox.getSelectedItem() == "fixed") {
+//				ratioField.setEnabled(true);
+//			} else {
+//				ratioField.setEnabled(false);
+//			}
+//		}
+		if (e.getSource() == choice1) {
+			if(choice1.isSelected()){
+				choice2.setSelected(false);
+				ratioField.setEnabled(false);
+			}else{
+				choice2.setSelected(true);
 				ratioField.setEnabled(true);
-			} else {
+			}
+		}else if(e.getSource() == choice2){
+			if(choice2.isSelected()){
+				choice1.setSelected(false);
+				ratioField.setEnabled(true);
+			}else{
+				choice1.setSelected(true);
 				ratioField.setEnabled(false);
 			}
 		}
@@ -110,14 +129,18 @@ public class OptimiseFreqAndRatio extends JPanel implements ActionListener {
 //			optimiseLab.setVisible(true);
 //			optimiseBox.setVisible(true);
 			ratioLab.setVisible(true);
-			ratioBox.setVisible(true);
+//			ratioBox.setVisible(true);
+			choice1.setVisible(true);
+			choice2.setVisible(true);
 			ratioField.setVisible(true);
 		} else if (moleType.equals(AA)) {
 			isDNA = false;
 //			optimiseLab.setVisible(false);
 //			optimiseBox.setVisible(false);
 			ratioLab.setVisible(false);
-			ratioBox.setVisible(false);
+//			ratioBox.setVisible(false);
+			choice1.setVisible(false);
+			choice2.setVisible(false);
 			ratioField.setVisible(false);
 		}
 	}
@@ -158,6 +181,7 @@ public class OptimiseFreqAndRatio extends JPanel implements ActionListener {
 			}
 		}
 
+		@Override
 		protected Document createDefaultModel() {
 			return new doubleOnlyDocument();
 		}
@@ -212,7 +236,8 @@ public class OptimiseFreqAndRatio extends JPanel implements ActionListener {
 	 */
 	public String getTsTvRatio() {
 		if (moleculeType.equals(DNA)) {
-			if (ratioBox.getSelectedItem().toString().equals("estimated")) {
+//			if (ratioBox.getSelectedItem().toString().equals("estimated")) {
+			if (choice1.isSelected()) {
 				return "e";
 			}
 			return ratioField.getText();
@@ -226,13 +251,17 @@ public class OptimiseFreqAndRatio extends JPanel implements ActionListener {
 	 * boolean : if true disabled otherwise enabled;
 	 */
 	public void setRatioBoxOff(boolean off){
-		ratioBox.setEnabled(!off);
+//		ratioBox.setEnabled(!off);
+		choice1.setEnabled(!off);
+		choice2.setEnabled(!off);
 	}
 	/**
 	 * Sets the index of ratioBox to 0.
 	 */
 	public void setRatioBoxDefault() {
-		ratioBox.setSelectedIndex(0);
+//		ratioBox.setSelectedIndex(0);
+		choice1.setSelected(true);
+		choice2.setSelected(false);
 	}
 
 }

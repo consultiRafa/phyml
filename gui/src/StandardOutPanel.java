@@ -1,10 +1,11 @@
-import java.awt.Font;
-import java.awt.Rectangle;
+package phyml;
 
+import java.awt.Font;
 import javax.swing.DropMode;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.text.DefaultCaret;
 
 /**
@@ -21,6 +22,7 @@ public class StandardOutPanel extends JPanel {
 	 */
 	private static final long serialVersionUID = 1L;
 	private static JTextArea editorPane;
+	private static  JScrollPane editorScrollPane;
 
 	/**
 	 * Constructor method implements the components to display the standard
@@ -31,17 +33,17 @@ public class StandardOutPanel extends JPanel {
 		setLayout(layout);
 		layout.setDimensions(1, 1);
 		editorPane = new JTextArea();
-    DefaultCaret caret = (DefaultCaret)editorPane.getCaret();
+		DefaultCaret caret = (DefaultCaret)editorPane.getCaret();
 		caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
 		Font font = new Font("Courier", Font.PLAIN, 12);
 		editorPane.setFont(font);
 		editorPane.setEditable(false);
 		editorPane.setDropMode(DropMode.INSERT);
-		JScrollPane editorScrollPane = new JScrollPane(editorPane);
+		editorScrollPane = new JScrollPane(editorPane);
 		editorScrollPane
-				.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+				.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 		editorScrollPane
-				.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+				.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		add(editorScrollPane);
 	}
 

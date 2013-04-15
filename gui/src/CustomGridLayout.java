@@ -1,3 +1,4 @@
+package phyml;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -44,6 +45,7 @@ public class CustomGridLayout implements LayoutManager {
 		areas = new ArrayList<Area>();
 	}
 
+	@Override
 	public void layoutContainer(Container parent) {
 		// TODO Auto-generated method stub
 		setup(parent);
@@ -172,23 +174,27 @@ public class CustomGridLayout implements LayoutManager {
 		return 0;
 	}
 
+	@Override
 	public void addLayoutComponent(String name, Component comp) {
 		// TODO Auto-generated method stub
 		System.out.println(name + comp.toString() + "addLayoutComponent");
 	}
 
+	@Override
 	public Dimension minimumLayoutSize(Container parent) {
 		// TODO Auto-generated method stub
 		System.out.println(parent.toString() + "minimumLayoutSize");
 		return null;
 	}
 
+	@Override
 	public Dimension preferredLayoutSize(Container parent) {
 		// TODO Auto-generated method stub
 		System.out.println(parent.toString() + "preferredLayoutSize");
 		return null;
 	}
 
+	@Override
 	public void removeLayoutComponent(Component comp) {
 		// TODO Auto-generated method stub
 		System.out.println(comp.toString() + "removeLayoutComponent");

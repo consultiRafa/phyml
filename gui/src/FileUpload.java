@@ -1,3 +1,4 @@
+package phyml;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -49,24 +50,25 @@ public class FileUpload extends JPanel implements ActionListener, FocusListener 
 		hasChoice = false;
 		JLabel lab1;
 		lab1 = new JLabel("Sequences (Phylip Format)");
+		
 		CustomGridLayout layout = new CustomGridLayout();
 		setLayout(layout);
-		layout.setDimensions(1, 0.05);
+		layout.setDimensions(1, 0.1);
 		add(new JPanel());
 		layout.setDimensions(0.01, 0.9);
 		add(new JPanel());
-		layout.setDimensions(0.30, 0.9);
+		layout.setDimensions(0.33, 0.9);
 		add(lab1);
 		JPanel p1 = new JPanel();
-		layout.setDimensions(0.30, 0.9);
+		layout.setDimensions(0.27, 0.9);
 		add(p1);
 		CustomGridLayout lO1 = new CustomGridLayout();
 		p1.setLayout(lO1);
-		lO1.setDimensions(0.54, 1);
+		lO1.setDimensions(0.49, 1);
 		p1.add(pathField);
 		lO1.setDimensions(0.03, 1);
 		p1.add(new JPanel());
-		lO1.setDimensions(0.4, 1);
+		lO1.setDimensions(0.45, 1);
 		p1.add(browse);
 		lO1.setDimensions(0.03, 1);
 		p1.add(new JPanel());
@@ -75,11 +77,11 @@ public class FileUpload extends JPanel implements ActionListener, FocusListener 
 		add(p2);
 		CustomGridLayout lO2 = new CustomGridLayout();
 		p2.setLayout(lO2);
-		lO2.setDimensions(0.02, 1);
+		lO2.setDimensions(0.2, 1);
 		p2.add(new JPanel());
-		lO2.setDimensions(0.45, 1);
+		lO2.setDimensions(0.4, 1);
 		p2.add(choice1);
-		lO2.setDimensions(0.53, 1);
+		lO2.setDimensions(0.4, 1);
 		p2.add(choice2);
 		layout.setDimensions(0.01, 0.9);
 		add(new JPanel());
@@ -108,6 +110,7 @@ public class FileUpload extends JPanel implements ActionListener, FocusListener 
 		}
 	}
 
+	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == choice1) {
 			if (choice1.isSelected()) {
@@ -172,9 +175,11 @@ public class FileUpload extends JPanel implements ActionListener, FocusListener 
 		}
 	}
 
+	@Override
 	public void focusGained(FocusEvent e) {
 	}
 
+	@Override
 	public void focusLost(FocusEvent e) {
 		if (!pathField.getText().equals("")) {
 			PhymlPanel.loadTrees();
@@ -201,5 +206,10 @@ public class FileUpload extends JPanel implements ActionListener, FocusListener 
 	 */
 	public void setInputPath(String inputPath) {
 		pathField.setText(inputPath);
+	}
+
+	public void setDna(boolean b) {
+		choice1.setEnabled(b);
+		choice2.setEnabled(b);
 	}
 }

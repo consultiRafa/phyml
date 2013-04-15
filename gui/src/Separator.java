@@ -1,3 +1,4 @@
+package phyml;
 
 import java.awt.Color;
 import java.awt.Graphics;
@@ -123,7 +124,7 @@ public class Separator extends JPanel {
 							this.getHeight() / 2);
 					g.drawLine(
 							(int) (this.getWidth() / 2 + r.getWidth() / 2) + 5,
-							this.getHeight() / 2, (int) (this.getWidth()) - 5,
+							this.getHeight() / 2, (this.getWidth()) - 5,
 							this.getHeight() / 2);
 				}
 				g.drawString(text,

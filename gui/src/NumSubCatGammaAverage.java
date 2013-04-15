@@ -1,13 +1,13 @@
+package phyml;
 
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -27,13 +27,17 @@ public class NumSubCatGammaAverage extends JPanel implements ActionListener,
 	 */
 	private static final long serialVersionUID = 1L;
 	public CustomTextField subCat;
-	private JComboBox gammaBox;
+//	private JComboBox gammaBox;
 	private CustomTextField alpha;
-	private JComboBox average;
+//	private JComboBox average;
 	private JLabel lab2;
 	private JLabel lab1;
 	private JLabel lab3;
 	private JLabel lab4;
+	private JRadioButton choice1;
+	private JRadioButton choice2;
+	private JRadioButton choice3;
+	private JRadioButton choice4;
 
 	/**
 	 * Constructor method implements all components to specify the "# Subcategories", "Gamma", 
@@ -41,71 +45,83 @@ public class NumSubCatGammaAverage extends JPanel implements ActionListener,
 	 * and position of components and adds the components.
 	 */
 	public NumSubCatGammaAverage() {
-		subCat = new CustomTextField("4", false);
-		gammaBox = new JComboBox(new String[] { "estimated", "fixed" });
-		gammaBox.addActionListener(this);
+		subCat = new CustomTextField("", false);
+//		gammaBox = new JComboBox(new String[] { "estimated", "fixed" });
+//		gammaBox.addActionListener(this);
+		choice1 = new JRadioButton("Estimated");
+		choice1.setSelected(true);
+		choice2 = new JRadioButton("Fixed");
+		choice1.addActionListener(this);
+		choice2.addActionListener(this);
 		alpha = new CustomTextField("", true);
 		alpha.setEnabled(false);
 		alpha.addFocusListener(this);
-		average = new JComboBox(new String[] { "mean", "median" });
-		lab1 = new JLabel("# of rate classes");
-		lab2 = new JLabel("Shape parameter");
+//		average = new JComboBox(new String[] { "mean", "median" });
+		choice3 = new JRadioButton("Mean");
+		choice3.setSelected(true);
+		choice4 = new JRadioButton("Median");
+		choice3.addActionListener(this);
+		choice4.addActionListener(this);
+		lab1 = new JLabel("Number of Rate Classes");
+		lab2 = new JLabel("Gamma Shape Parameter");
 		lab3 = new JLabel("Value");
 		lab4 = new JLabel("Average");
+		
 		CustomGridLayout layout = new CustomGridLayout();
 		setLayout(layout);
 		layout.setDimensions(1, 0.1);
 		add(new JPanel());
-		layout.setDimensions(0.01, 0.9);
+		layout.setDimensions(0.01, 0.24);
 		add(new JPanel());
-		layout.setDimensions(0.25, 0.9);
-
+		layout.setDimensions(0.33, 0.24);
+		add(lab1);
+		layout.setDimensions(0.27, 0.24);
+		add(subCat);
+		layout.setDimensions(0.39, 0.24);
+		add(new JPanel());
+		layout.setDimensions(1, 0.1);
+		add(new JPanel());
+		layout.setDimensions(0.01, 0.24);
+		add(new JPanel());
+		layout.setDimensions(0.33, 0.24);
+		add(lab2);
+		layout.setDimensions(0.27, 0.24);
+		add(alpha);
+		layout.setDimensions(0.38, 0.24);
 		JPanel p1 = new JPanel();
+		CustomGridLayout lo1 = new CustomGridLayout();
+		p1.setLayout(lo1);
 		add(p1);
-		//layout.setDimensions(0.01, 0.8);
-		//add(new JPanel());
-		layout.setDimensions(0.5, 0.9);
-
-		JPanel p2 = new JPanel();
-		//p2.setBackground(Color.blue);
-		add(p2);
-		//layout.setDimensions(0.01, 0.8);
-		//add(new JPanel());
-		layout.setDimensions(0.23, 0.9);
-		JPanel p3 = new JPanel();
-		add(p3);
-		layout.setDimensions(0.01, 0.9);
-		add(new JPanel());
-		//layout.setDimensions(1, 0.1);
-		//add(new JPanel());
-		CustomGridLayout lO1 = new CustomGridLayout();
-		p1.setLayout(lO1);
-		lO1.setDimensions(0.7, 1);
-		p1.add(lab1);
-		lO1.setDimensions(0.25, 1);
-		p1.add(subCat);
-		lO1.setDimensions(0.05, 1);
+		lo1.setDimensions(0.2, 1);
 		p1.add(new JPanel());
-		CustomGridLayout lO2 = new CustomGridLayout();
-		p2.setLayout(lO2);
-		lO2.setDimensions(0.36, 1);
-		p2.add(lab2);
-		lO2.setDimensions(0.25, 1);
-		p2.add(gammaBox);
-		lO2.setDimensions(0.03, 1);
+		lo1.setDimensions(0.4, 1);
+		p1.add(choice1);
+		lo1.setDimensions(0.4, 1);
+		p1.add(choice2);
+		layout.setDimensions(0.01, 0.24);
+		add(new JPanel());
+		layout.setDimensions(1, 0.1);
+		add(new JPanel());
+		layout.setDimensions(0.01, 0.24);
+		add(new JPanel());
+		layout.setDimensions(0.33, 0.24);
+		add(lab4);
+		layout.setDimensions(0.27, 0.24);
+		add(new JPanel());
+		layout.setDimensions(0.38, 0.24);
+		JPanel p2 = new JPanel();
+		CustomGridLayout lo2 = new CustomGridLayout();
+		p2.setLayout(lo2);
+		add(p2);
+		lo2.setDimensions(0.2, 1);
 		p2.add(new JPanel());
-		lO2.setDimensions(0.18, 1);
-		p2.add(lab3);
-		lO2.setDimensions(0.18, 1);
-		p2.add(alpha);
-		CustomGridLayout lO3 = new CustomGridLayout();
-		p3.setLayout(lO3);
-		lO3.setDimensions(0.04, 1);
-		p3.add(new JPanel());
-		lO3.setDimensions(0.41, 1);
-		p3.add(lab4);
-		lO3.setDimensions(0.43, 1);
-		p3.add(average);
+		lo2.setDimensions(0.4, 1);
+		p2.add(choice3);
+		lo2.setDimensions(0.4, 1);
+		p2.add(choice4);
+		layout.setDimensions(0.01, 0.24);
+		add(new JPanel());
+
 	}
 
 	/**
@@ -116,21 +132,52 @@ public class NumSubCatGammaAverage extends JPanel implements ActionListener,
 	 */
 	public void setCompVisible(boolean b) {
 		subCat.setVisible(b);
-		gammaBox.setVisible(b);
+		choice1.setVisible(b);
+		choice2.setVisible(b);
+		choice3.setVisible(b);
+		choice4.setVisible(b);
 		alpha.setVisible(b);
-		average.setVisible(b);
 		lab1.setVisible(b);
 		lab2.setVisible(b);
 		lab3.setVisible(b);
 		lab4.setVisible(b);
 	}
 
+	@Override
 	public void actionPerformed(ActionEvent e) {
-		if (gammaBox.getSelectedItem().toString().equals("fixed")) {
-			alpha.setEnabled(true);
-			alpha.requestFocus();
-		} else {
-			alpha.setEnabled(false);
+		if(e.getSource() == choice1){
+			if(choice1.isSelected()){
+				choice2.setSelected(false);
+				alpha.setEnabled(false);
+			}else{
+				choice2.setSelected(true);
+				alpha.setEnabled(true);
+				alpha.requestFocus();
+			}
+		}
+		if(e.getSource() == choice2){
+			if(choice2.isSelected()){
+				choice1.setSelected(false);
+				alpha.setEnabled(true);
+				alpha.requestFocus();
+			}else{
+				choice1.setSelected(true);
+				alpha.setEnabled(false);
+			}
+		}
+		if(e.getSource() == choice3){
+			if(choice3.isSelected()){
+				choice4.setSelected(false);
+			}else{
+				choice4.setSelected(true);
+			}
+		}
+		if(e.getSource() == choice4){
+			if(choice4.isSelected()){
+				choice3.setSelected(false);
+			}else{
+				choice3.setSelected(true);
+			}
 		}
 	}
 
@@ -266,9 +313,9 @@ public class NumSubCatGammaAverage extends JPanel implements ActionListener,
 	 * specified by the user otherwise.
 	 */
 	public String getAlpha() {
-		if (gammaBox.getSelectedItem().toString().equals("estimated")) {
+		if (choice1.isSelected()) {
 			return "e";
-		} else if (!alpha.getText().equals("")) {
+		} else if (choice2.isSelected()) {
 			return alpha.getText();
 		}
 		return "e";
@@ -281,15 +328,25 @@ public class NumSubCatGammaAverage extends JPanel implements ActionListener,
 	 * String : "mean" or "median".
 	 */
 	public String getUseMedian() {
-		return average.getSelectedItem().toString();
+		String ret = "";
+		if(choice3.isSelected()){
+			ret="mean";
+		}else if(choice4.isSelected()){
+			ret="median";
+		}
+		return ret;
 	}
 
+	@Override
 	public void focusGained(FocusEvent e) {
 	}
 
+	@Override
 	public void focusLost(FocusEvent e) {
 		if (alpha.getText().equals("")) {
-			gammaBox.setSelectedIndex(0);
+			choice1.setSelected(true);
+			choice2.setSelected(false);
+			alpha.setEnabled(false);
 		}
 	}
 }
