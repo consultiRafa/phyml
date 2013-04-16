@@ -76,6 +76,27 @@ int Number_Of_Comb(t_cal *calib)
 }
 
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//Function calculates the TOTAL number of calibration combinations, 
+//given the number of nodes to which each calibartion applies to.
+int Number_Of_Calib(t_cal *calib)
+{
+
+  int num_calib;
+
+
+  num_calib = 0;
+  do
+    {
+      num_calib++;
+      if(calib -> next) calib = calib -> next;
+      else break;
+    }
+  while(calib);
+  return(num_calib);
+}
+
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -85,12 +106,13 @@ int Number_Of_Comb(t_cal *calib)
 //to the number the information was read). C1={0,1,2}, C2={0,1}, C3={0};
 //The total number of combinations is 3*2*1=6. The first combination with row number 0 
 //will be {0,0,0}, the second row will be {0,1,0} and so on. Calling the node numbers with 
-//the above indeces will return current calibration.   
+//the above indeces will return current calibration. Also sets the vector of the probabilities
+//for current calibration combination.   
 void Set_Current_Calibration(int row, t_tree *tree)
 {
 
   t_cal *calib;
-  phydbl *t_prior_min, *t_prior_max; 
+  phydbl *t_prior_min, *t_prior_max, *cur_proba; 
   short int *t_has_prior;
   int k, i, j, *curr_nd_for_cal;
 
@@ -98,6 +120,7 @@ void Set_Current_Calibration(int row, t_tree *tree)
   t_prior_min = tree -> rates -> t_prior_min;
   t_prior_max = tree -> rates -> t_prior_max;
   t_has_prior = tree -> rates -> t_has_prior;
+  cur_proba   = tree -> rates -> cur_proba;
   curr_nd_for_cal = tree -> rates -> curr_nd_for_cal;
 
   for(j = tree -> n_otu; j < 2 * tree -> n_otu - 1; j++) 
@@ -116,6 +139,7 @@ void Set_Current_Calibration(int row, t_tree *tree)
       t_prior_max[calib -> all_applies_to[k] -> num] = calib -> upper;
       t_has_prior[calib -> all_applies_to[k] -> num] = YES; 
       curr_nd_for_cal[i] = calib -> all_applies_to[k] -> num;
+      cur_proba[i] = calib -> proba[calib -> all_applies_to[k] -> num];
       i++;
       if(calib->next) calib = calib->next;
       else break;    
@@ -181,8 +205,8 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
       times_lk = TIMES_Lk_Yule_Order(tree);
       constant = 1.0; 
       
-      if(times_lk > -INFINITY) constant = Slicing_Calibrations(tree);
-      else 
+      if(times_lk > -INFINITY && tot_num_comb > 1) constant = Slicing_Calibrations(tree);
+      if(!(times_lk > -INFINITY))
         {
           times_lk = 1.0;
           times_partial_proba[i] = 0.0;
@@ -260,7 +284,7 @@ void Random_Calibration(t_tree *tree)
 int RND_Calibration_And_Node_Number(t_tree *tree)
 {
   int i, j, tot_num_cal, cal_num, node_ind, node_num, *curr_nd_for_cal;
-  phydbl *t_prior_min, *t_prior_max;
+  phydbl *t_prior_min, *t_prior_max, *cur_proba;
   short int *t_has_prior;
   t_cal *cal;
 
@@ -268,6 +292,7 @@ int RND_Calibration_And_Node_Number(t_tree *tree)
   t_prior_min = tree -> rates -> t_prior_min;
   t_prior_max = tree -> rates -> t_prior_max;
   t_has_prior = tree -> rates -> t_has_prior;
+  cur_proba   = tree -> rates -> cur_proba;
   curr_nd_for_cal = tree -> rates -> curr_nd_for_cal;
   cal = tree -> rates -> calib;
 
@@ -285,9 +310,11 @@ int RND_Calibration_And_Node_Number(t_tree *tree)
 
   curr_nd_for_cal[cal_num] = node_num;
 
+  cur_proba[cal_num] = cal -> proba[node_num];
+
   for(j = tree -> n_otu; j < 2 * tree -> n_otu - 1; j++) 
     {
-      t_prior_min[j] = BIG;
+      t_prior_min[j] = -BIG;
       t_prior_max[j] = BIG;
       t_has_prior[j] = NO; 
     }
@@ -1002,7 +1029,8 @@ void PhyTime_XML(char *xml_file)
   //Set_Current_Calibration(0, tree);
   //TIMES_Set_All_Node_Priors(tree);
   //Slicing_Calibrations(tree);
-  
+  //For(j, 3) printf("\n. proba [%f] \n", tree -> rates -> cur_proba[j]);
+  //printf("\n. Number of calibrations [%d] \n", Number_Of_Calib(tree -> rates -> calib));
   ////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////   
   //clear memory:
@@ -1478,7 +1506,7 @@ phydbl Slicing_Calibrations(t_tree *tree)
   free(slice_numbers);  
   free(n_slice);
   //free(tree -> K);
-        
+ 
   return(K); 
 }
 

@@ -8,6 +8,7 @@ int My_main(int argc, char **argv);
 void PhyTime_XML(char *xml_file);
 phydbl TIMES_Calib_Cond_Prob(t_tree *tree);
 int Number_Of_Comb(t_cal *calib);
+int Number_Of_Calib(t_cal *calib);
 void Check_Node_Time(t_node *a, t_node *d, int *result, t_tree *tree);
 void Set_Current_Calibration(int row, t_tree *tree);
 void Random_Calibration(t_tree *tree);
