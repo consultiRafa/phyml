@@ -1181,6 +1181,7 @@ void MCMC_Jump_Calibration(t_tree *tree)
   phydbl u, cur_tot_proba, new_tot_proba, ratio_proba;
   //phydbl t_min, t_max;
   //phydbl t1_cur, t1_new;
+  phydbl *proba_distr;
   phydbl *cur_cal_proba;
   int    *cur_nodes_calib;
   phydbl cur_lnL_data, new_lnL_data;
@@ -1189,7 +1190,7 @@ void MCMC_Jump_Calibration(t_tree *tree)
   phydbl cur_lnL_Hastings_ratio, new_lnL_Hastings_ratio;
   phydbl ratio,alpha;
   //t_edge *b1,*b2,*b3;
-  int i, result, num_calib; //rnd_node
+  int i, j, result, num_calib; //rnd_node
   //phydbl t0,t2,t3;
   //t_node *v2,*v3;
   //phydbl K;
@@ -1202,6 +1203,7 @@ void MCMC_Jump_Calibration(t_tree *tree)
     {
       num_calib       = Number_Of_Calib(tree -> rates -> calib);//number of calibrations
       cur_cal_proba   = (phydbl *)mCalloc(num_calib, sizeof(phydbl)); 
+      proba_distr = (phydbl *)mCalloc(num_calib, sizeof(phydbl)); 
       cur_nodes_calib = (int *)mCalloc(num_calib, sizeof(phydbl));     
       ///////////////////////////////////////////////////////////////////////////////////////////
       //for(i = tree -> n_otu; i < 2 * tree -> n_otu - 1; i++) printf("\n. '%f' '%f' \n", tree -> rates -> t_prior_min[i], tree -> rates -> t_prior_max[i]);
@@ -1226,15 +1228,24 @@ void MCMC_Jump_Calibration(t_tree *tree)
       cur_lnL_time = tree -> rates -> c_lnL_times;
       new_lnL_time = cur_lnL_time;
       
-      cur_tot_proba = 1.0;
-      For(i, num_calib) cur_tot_proba = cur_tot_proba * cur_cal_proba[i];
-
+      //cur_tot_proba = 1.0;
+      //For(i, num_calib) cur_tot_proba = cur_tot_proba * cur_cal_proba[i];
+      For(i, num_calib) printf("\n. [1] [%f] \n", cur_cal_proba[i]);
       //rnd_node = RND_Calibration_And_Node_Number(tree);
       RND_Calibration_And_Node_Number(tree);
 
-      new_tot_proba = 1.0;
-      For(i, num_calib) new_tot_proba = new_tot_proba * tree -> rates -> cur_proba[i];
-      ratio_proba = new_tot_proba / cur_tot_proba;
+      //new_tot_proba = 1.0;
+      For(i, num_calib) 
+        {
+          For(j, i) 
+            {
+              proba_distr[i] = proba_distr[i] + cur_cal_proba[j];
+              printf("\n. [2] [%f] \n", proba_distr[i]);          
+            }
+        }
+      For(i, num_calib) printf("\n. [3] [%f] \n", proba_distr[i]);
+      Exit("\n");
+      //ratio_proba = new_tot_proba / cur_tot_proba;
 
       u = Uni();
       
@@ -1325,14 +1336,14 @@ void MCMC_Jump_Calibration(t_tree *tree)
               tree->mcmc->acc_move[move_num]++;
             }      
           tree->mcmc->run_move[move_num]++;
-          free(cur_cal_proba);
-          free(cur_nodes_calib);
         }
       else
         {
           For(i, num_calib) tree -> rates -> cur_proba[i] = cur_cal_proba[i];
           For(i, num_calib) tree -> rates -> curr_nd_for_cal[i] = cur_nodes_calib[i]; 
-        }      
+        } 
+      free(cur_cal_proba);
+      free(cur_nodes_calib);     
     }
 }
 //////////////////////////////////////////////////////////////
@@ -4321,7 +4332,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_birth_rate]          = 2.0;
   mcmc->move_weight[mcmc->num_move_updown_t_br]         = 1.0;
 #if defined (SERGEII)
-  mcmc->move_weight[mcmc->num_move_jump_calibration]    = 0.0;
+  mcmc->move_weight[mcmc->num_move_jump_calibration]    = 1.0;
 #else
   mcmc->move_weight[mcmc->num_move_jump_calibration]    = 0.0;
 #endif
