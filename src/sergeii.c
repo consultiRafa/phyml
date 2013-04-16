@@ -573,6 +573,7 @@ void PhyTime_XML(char *xml_file)
   mod              = NULL;
   most_likely_tree = NULL;
   n_taxa = 0; 
+  node_num = -1;
 
   //file can/cannot be open:
   if ((f =(FILE *)fopen(xml_file, "r")) == NULL)

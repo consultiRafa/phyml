@@ -969,7 +969,7 @@ phydbl TIMES_Lk_Yule_Order(t_tree *tree)
       sampling fraction set to 1 and death rate set to 0. */
 
   // Check that each node is within its calibration-derived interval
-  For(j,2*tree->n_otu-2) if(t[j] < tp_min[j] || t[j] > tp_max[j]) return(-INFINITY);
+  For(j,2*tree->n_otu-1) if(t[j] < tp_min[j] || t[j] > tp_max[j]) return(-INFINITY);
 
   loglk = 0.0;
   For(j,2*tree->n_otu-2)
