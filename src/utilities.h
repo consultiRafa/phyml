@@ -1265,7 +1265,7 @@ typedef struct __T_Rate {
 
   phydbl     *t_prior_min_buff;
   phydbl     *t_prior_max_buff;
-  phydbl     *cur_proba;
+  phydbl     *times_partial_proba;
 
 }t_rate;
 

@@ -112,7 +112,7 @@ void Set_Current_Calibration(int row, t_tree *tree)
 {
 
   t_cal *calib;
-  phydbl *t_prior_min, *t_prior_max, *cur_proba; 
+  phydbl *t_prior_min, *t_prior_max; 
   short int *t_has_prior;
   int k, i, j, *curr_nd_for_cal;
 
@@ -120,7 +120,6 @@ void Set_Current_Calibration(int row, t_tree *tree)
   t_prior_min = tree -> rates -> t_prior_min;
   t_prior_max = tree -> rates -> t_prior_max;
   t_has_prior = tree -> rates -> t_has_prior;
-  cur_proba   = tree -> rates -> cur_proba;
   curr_nd_for_cal = tree -> rates -> curr_nd_for_cal;
 
   for(j = tree -> n_otu; j < 2 * tree -> n_otu - 1; j++) 
@@ -139,7 +138,6 @@ void Set_Current_Calibration(int row, t_tree *tree)
       t_prior_max[calib -> all_applies_to[k] -> num] = calib -> upper;
       t_has_prior[calib -> all_applies_to[k] -> num] = YES; 
       curr_nd_for_cal[i] = calib -> all_applies_to[k] -> num;
-      cur_proba[i] = calib -> proba[calib -> all_applies_to[k] -> num];
       i++;
       if(calib->next) calib = calib->next;
       else break;    
@@ -168,6 +166,7 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
   t_prior_min = tree -> rates -> t_prior_min;
   t_prior_max = tree -> rates -> t_prior_max;
   t_has_prior = tree -> rates -> t_has_prior;
+  times_partial_proba = tree -> rates -> times_partial_proba;
   //constant = tree -> K;
   tot_num_comb = Number_Of_Comb(calib);
 
@@ -190,8 +189,8 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
           t_prior_min[calib -> all_applies_to[k] -> num] = MAX(t_prior_min[calib -> all_applies_to[k] -> num], calib -> lower);
           t_prior_max[calib -> all_applies_to[k] -> num] = MIN(t_prior_max[calib -> all_applies_to[k] -> num], calib -> upper);
           t_has_prior[calib -> all_applies_to[k] -> num] = YES;
-          if((t_prior_min[calib -> all_applies_to[k] -> num] > t_prior_max[calib -> all_applies_to[k] -> num])) times_partial_proba[i] = 0.0; 
-          else times_partial_proba[i] *= calib -> proba[calib -> all_applies_to[k] -> num]; 
+          //if((t_prior_min[calib -> all_applies_to[k] -> num] > t_prior_max[calib -> all_applies_to[k] -> num])) times_partial_proba[i] = 0.0; 
+          //else times_partial_proba[i] *= calib -> proba[calib -> all_applies_to[k] -> num]; 
           if(calib -> next) calib = calib -> next;
           else break;
         }
@@ -209,7 +208,7 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
       if(!(times_lk > -INFINITY))
         {
           times_lk = 1.0;
-          times_partial_proba[i] = 0.0;
+          //times_partial_proba[i] = 0.0;
         }
 
       //printf("\n. K = [%f] \n", K);
@@ -284,7 +283,7 @@ void Random_Calibration(t_tree *tree)
 int RND_Calibration_And_Node_Number(t_tree *tree)
 {
   int i, j, tot_num_cal, cal_num, node_ind, node_num, *curr_nd_for_cal;
-  phydbl *t_prior_min, *t_prior_max, *cur_proba;
+  phydbl *t_prior_min, *t_prior_max, *times_partial_proba;
   short int *t_has_prior;
   t_cal *cal;
 
@@ -292,7 +291,7 @@ int RND_Calibration_And_Node_Number(t_tree *tree)
   t_prior_min = tree -> rates -> t_prior_min;
   t_prior_max = tree -> rates -> t_prior_max;
   t_has_prior = tree -> rates -> t_has_prior;
-  cur_proba   = tree -> rates -> cur_proba;
+  times_partial_proba = tree -> rates -> times_partial_proba;
   curr_nd_for_cal = tree -> rates -> curr_nd_for_cal;
   cal = tree -> rates -> calib;
 
@@ -309,8 +308,6 @@ int RND_Calibration_And_Node_Number(t_tree *tree)
   node_num = cal -> all_applies_to[node_ind] -> num;
 
   curr_nd_for_cal[cal_num] = node_num;
-
-  cur_proba[cal_num] = cal -> proba[node_num];
 
   for(j = tree -> n_otu; j < 2 * tree -> n_otu - 1; j++) 
     {
@@ -1030,7 +1027,7 @@ void PhyTime_XML(char *xml_file)
   //Set_Current_Calibration(0, tree);
   //TIMES_Set_All_Node_Priors(tree);
   //Slicing_Calibrations(tree);
-  //For(j, 3) printf("\n. proba [%f] \n", tree -> rates -> cur_proba[j]);
+  //For(j, 2) printf("\n. proba [%f] \n", tree -> rates -> times_partial_proba[j]);
   //printf("\n. Number of calibrations [%d] \n", Number_Of_Calib(tree -> rates -> calib));
   ////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////   
@@ -1090,7 +1087,7 @@ void PhyTime_XML(char *xml_file)
   Prepare_Tree_For_Lk(tree);
   Set_Current_Calibration(0, tree);
   TIMES_Set_All_Node_Priors(tree);
-  
+  TIMES_Calib_Partial_Proba(tree);
   //set initial value for Hastings ratio for conditional jump:
   tree -> rates -> c_lnL_Hastings_ratio = 0.0;
  
@@ -1683,3 +1680,42 @@ phydbl *Norm_Constant_Prior_Times(t_tree *tree)
     }
   return(K);
 }
+
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//Sets a vector of the partial probabilities for each combination of calibrations
+void TIMES_Calib_Partial_Proba(t_tree *tree)
+{
+
+  phydbl *times_partial_proba, *t_prior_min, *t_prior_max; 
+  int i, k, tot_num_comb;
+  t_cal *calib;
+  short int *t_has_prior;
+ 
+  times_partial_proba = tree -> rates -> times_partial_proba; 
+  calib = tree -> rates -> calib;
+  //t_prior_min = tree -> rates -> t_prior_min;
+  //t_prior_max = tree -> rates -> t_prior_max;
+  //t_has_prior = tree -> rates -> t_has_prior;
+
+  tot_num_comb = Number_Of_Comb(calib);
+
+  For(i, tot_num_comb)
+    {
+      times_partial_proba[i] = 1.0;
+      do
+        {
+          k = (i % Number_Of_Comb(calib)) / Number_Of_Comb(calib -> next);
+          times_partial_proba[i] *= calib -> proba[calib -> all_applies_to[k] -> num]; 
+          if(calib -> next) calib = calib -> next;
+          else break;
+        }
+      while(calib);
+      while(calib -> prev) calib = calib -> prev;
+    }
+ 
+}
+
+
+

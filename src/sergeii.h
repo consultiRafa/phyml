@@ -26,5 +26,6 @@ void Number_Of_Nodes_In_Slice(t_node *d_start, t_node *d, int *n, phydbl *t_cur_
 void Search_Root_Node_In_Slice(t_node *d_start, t_node *d, int *root_nodes, int *num_elem, phydbl t_slice_min, phydbl t_slice_max, phydbl *t_cur_slice_min, phydbl *t_cur_slice_max, t_tree *tree);
 int Factorial(int base);
 phydbl *Norm_Constant_Prior_Times(t_tree *tree);
+void TIMES_Calib_Partial_Proba(t_tree *tree);
 #endif
 
