@@ -1230,21 +1230,21 @@ void MCMC_Jump_Calibration(t_tree *tree)
       
       //cur_tot_proba = 1.0;
       //For(i, num_calib) cur_tot_proba = cur_tot_proba * cur_cal_proba[i];
-      For(i, num_calib) printf("\n. [1] [%f] \n", cur_cal_proba[i]);
+      //For(i, num_calib) printf("\n. [1] [%f] \n", cur_cal_proba[i]);
       //rnd_node = RND_Calibration_And_Node_Number(tree);
       RND_Calibration_And_Node_Number(tree);
 
       //new_tot_proba = 1.0;
-      For(i, num_calib) 
-        {
-          For(j, i) 
-            {
-              proba_distr[i] = proba_distr[i] + cur_cal_proba[j];
-              printf("\n. [2] [%f] \n", proba_distr[i]);          
-            }
-        }
-      For(i, num_calib) printf("\n. [3] [%f] \n", proba_distr[i]);
-      Exit("\n");
+      //For(i, num_calib) 
+      //  {
+      //    For(j, i) 
+      //      {
+      //         proba_distr[i] = proba_distr[i] + cur_cal_proba[j];
+              //        printf("\n. [2] [%f] \n", proba_distr[i]);          
+      //       }
+      //   }
+      // For(i, num_calib) printf("\n. [3] [%f] \n", proba_distr[i]);
+      //  Exit("\n");
       //ratio_proba = new_tot_proba / cur_tot_proba;
 
       u = Uni();
