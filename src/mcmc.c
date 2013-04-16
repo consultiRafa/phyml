@@ -256,7 +256,7 @@ void MCMC(t_tree *tree)
       /* Covarion change calibration interval */
       else if(!strcmp(tree->mcmc->move_name[move],"jump_calibration"))
       	{
-      	  //MCMC_Jump_Calibration(tree);
+      	  MCMC_Jump_Calibration(tree);
 	}
 
       /* Covarion model parameters */
@@ -1327,6 +1327,11 @@ void MCMC_Jump_Calibration(t_tree *tree)
           tree->mcmc->run_move[move_num]++;
           free(cur_cal_proba);
           free(cur_nodes_calib);
+        }
+      else
+        {
+          For(i, num_calib) tree -> rates -> cur_proba[i] = cur_cal_proba[i];
+          For(i, num_calib) tree -> rates -> curr_nd_for_cal[i] = cur_nodes_calib[i]; 
         }      
     }
 }
