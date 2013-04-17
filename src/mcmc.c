@@ -1237,6 +1237,7 @@ void MCMC_Jump_Calibration(t_tree *tree)
         }
       //For(i, tot_num + 1) printf("\n. [%f] \n", proba_distr[i]); 
       u = Uni();
+      comb_num = -1;
       For(i, tot_num) 
         {
           if(u > proba_distr[i] && (Are_Equal(proba_distr[i + 1], u, 1.E-10) || u < proba_distr[i + 1]))
