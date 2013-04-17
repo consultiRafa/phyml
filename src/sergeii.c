@@ -359,8 +359,8 @@ void PhyTime_XML(char *xml_file)
                       if(!strcmp(clade_name, mon_list[j])) io -> mcmc -> monitor[node_num] = YES;
                     }  
                   //For(i, clade_size) PhyML_Printf("\n. Clade name [%s] Taxon name: [%s]", clade_name, clade[i]);
-                  if(n_r -> child -> attr -> next -> value && String_To_Dbl(n_r -> child -> attr -> next -> value) != 0) 
-                    {
+                  //if(n_r -> child -> attr -> next -> value && String_To_Dbl(n_r -> child -> attr -> next -> value) != 0) 
+                  //{
                       tree -> rates -> calib -> proba[node_num] = String_To_Dbl(n_r -> child -> attr -> next -> value);
                       if(!n_r -> child -> attr -> next && n_r -> child -> next == NULL) tree -> rates -> calib -> proba[node_num] = 1.;
                       if(!n_r -> child -> attr -> next && n_r -> child -> next)
@@ -375,7 +375,7 @@ void PhyTime_XML(char *xml_file)
                       tree -> rates -> calib -> n_all_applies_to++;
                       tree -> rates -> calib -> lower = low;
                       tree -> rates -> calib -> upper = up; 
-                    }
+                      //  }
                   //printf("\n. Porbability [%f] \n", String_To_Dbl(n_r -> child -> attr -> next -> value));
                   
                   /////////////////////////////////////////////////////////////////////////////////////////////////////               
@@ -697,7 +697,7 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
       TIMES_Set_All_Node_Priors(tree);
 
       //printf("\n. p[%i] = %f \n", i + 1, times_partial_proba[i]);     
-      //tree -> rates -> birth_rate = 1.0;
+      //tree -> rates -> birth_rate = 4.0;
 
       times_lk = TIMES_Lk_Yule_Order(tree);
       //printf("\n. Yule %f \n", times_lk);  
