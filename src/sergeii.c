@@ -18,524 +18,6 @@
 #include <stdlib.h>
 
 
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-//Function checks if the randomized node times are within the 
-//upper and lower time limits, taken into account the times of 
-//the ancestor and descendent.
-void Check_Node_Time(t_node *a, t_node *d, int *result, t_tree *tree)
-{
-  phydbl t_low, t_up;
-  phydbl *t_prior_min, *t_prior_max, *nd_t;
-
-  t_prior_min = tree -> rates -> t_prior_min;
-  t_prior_max = tree -> rates -> t_prior_max;
-  nd_t = tree -> rates -> nd_t;
-
-  if(a == tree -> n_root && (nd_t[a -> num] > MIN(t_prior_max[a -> num], MIN(nd_t[a -> v[1] -> num], nd_t[a -> v[2] -> num]))))  
-    {
-      *result = FALSE;
-      return;
-    }
-  if(d -> tax) return;
-  else
-    { 
-      t_low = MAX(t_prior_min[d -> num], nd_t[d -> anc -> num]);
-      t_up = MIN(t_prior_max[d -> num], MIN(nd_t[d -> v[1] -> num], nd_t[d -> v[2] -> num]));
-      if(nd_t[d -> num] < t_low || nd_t[d -> num] > t_up)
-        {
-          *result = FALSE; 
-        }
-
-      int i;
-      For(i,3) 
-	if((d -> v[i] != d -> anc) && (d -> b[i] != tree -> e_root))
-             Check_Node_Time(d, d -> v[i], result, tree);
-    }
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-//Function calculates the TOTAL number of calibration combinations, 
-//given the number of nodes to which each calibartion applies to.
-int Number_Of_Comb(t_cal *calib)
-{
-
-  int num_comb;
-
-  if(!calib) return(1);
-  num_comb = 1;
-  do
-    {
-      num_comb *= calib -> n_all_applies_to;
-      if(calib -> next) calib = calib -> next;
-      else break;
-    }
-  while(calib);
-  return(num_comb);
-}
-
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-//Function calculates the TOTAL number of calibration combinations, 
-//given the number of nodes to which each calibartion applies to.
-int Number_Of_Calib(t_cal *calib)
-{
-
-  int num_calib;
-
-
-  num_calib = 0;
-  do
-    {
-      num_calib++;
-      if(calib -> next) calib = calib -> next;
-      else break;
-    }
-  while(calib);
-  return(num_calib);
-}
-
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-//Function sets current calibartion in the following way:
-//Suppose we have a vector of calibrations C=(C1, C2, C3), each calibration  
-//applies to a set of nodes. we can reach each node number through the indeces (corresponds 
-//to the number the information was read). C1={0,1,2}, C2={0,1}, C3={0};
-//The total number of combinations is 3*2*1=6. The first combination with row number 0 
-//will be {0,0,0}, the second row will be {0,1,0} and so on. Calling the node numbers with 
-//the above indeces will return current calibration. Also sets the vector of the probabilities
-//for current calibration combination.   
-void Set_Current_Calibration(int row, t_tree *tree)
-{
-
-  t_cal *calib;
-  phydbl *t_prior_min, *t_prior_max; 
-  short int *t_has_prior;
-  int k, i, j, *curr_nd_for_cal;
-
-  calib = tree -> rates -> calib;
-  t_prior_min = tree -> rates -> t_prior_min;
-  t_prior_max = tree -> rates -> t_prior_max;
-  t_has_prior = tree -> rates -> t_has_prior;
-  curr_nd_for_cal = tree -> rates -> curr_nd_for_cal;
-
-  for(j = tree -> n_otu; j < 2 * tree -> n_otu - 1; j++) 
-    {
-      t_prior_min[j] = -BIG;
-      t_prior_max[j] = BIG;
-      t_has_prior[j] = NO; 
-    }
-  
-  k = -1;
-  i = 0;
-  do
-    {
-      k = (row % Number_Of_Comb(calib)) / Number_Of_Comb(calib -> next);      
-      t_prior_min[calib -> all_applies_to[k] -> num] = calib -> lower;
-      t_prior_max[calib -> all_applies_to[k] -> num] = calib -> upper;
-      t_has_prior[calib -> all_applies_to[k] -> num] = YES; 
-      curr_nd_for_cal[i] = calib -> all_applies_to[k] -> num;
-      i++;
-      if(calib->next) calib = calib->next;
-      else break;    
-    }
-  while(calib);
-  //while(calib -> prev) calib = calib -> prev;
-}
-
-
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-//Calculate the prior probability for node times taking into account the 
-//probailitis with which each calibration applies to the particular node.
-phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
-{
-
-  phydbl times_lk, *Yule_val, *times_partial_proba, times_tot_proba, *t_prior_min, *t_prior_max, c, constant, ln_t; 
-  short int *t_has_prior;
-  int i, j, k, tot_num_comb;
-  t_cal *calib;
- 
-
-  times_tot_proba = 0.0;
-  calib = tree -> rates -> calib;
-  t_prior_min = tree -> rates -> t_prior_min;
-  t_prior_max = tree -> rates -> t_prior_max;
-  t_has_prior = tree -> rates -> t_has_prior;
-  times_partial_proba = tree -> rates -> times_partial_proba;
-  //constant = tree -> K;
-  tot_num_comb = Number_Of_Comb(calib);
-
-  
-  Yule_val = (phydbl *)mCalloc(tot_num_comb, sizeof(phydbl));    
-  times_partial_proba = (phydbl *)mCalloc(tot_num_comb, sizeof(phydbl));   
-
-  For(i, tot_num_comb)
-    {
-      for(j = tree -> n_otu; j < 2 * tree -> n_otu - 1; j++) 
-        {
-          t_prior_min[j] = -BIG;
-          t_prior_max[j] = BIG;
-          t_has_prior[j] = NO; 
-        }
-      times_partial_proba[i] = 1.0; 
-      do
-        {
-          k = (i % Number_Of_Comb(calib)) / Number_Of_Comb(calib -> next);
-          t_prior_min[calib -> all_applies_to[k] -> num] = MAX(t_prior_min[calib -> all_applies_to[k] -> num], calib -> lower);
-          t_prior_max[calib -> all_applies_to[k] -> num] = MIN(t_prior_max[calib -> all_applies_to[k] -> num], calib -> upper);
-          t_has_prior[calib -> all_applies_to[k] -> num] = YES;
-          //if((t_prior_min[calib -> all_applies_to[k] -> num] > t_prior_max[calib -> all_applies_to[k] -> num])) times_partial_proba[i] = 0.0; 
-          //else times_partial_proba[i] *= calib -> proba[calib -> all_applies_to[k] -> num]; 
-          if(calib -> next) calib = calib -> next;
-          else break;
-        }
-      while(calib);
-      TIMES_Set_All_Node_Priors(tree);
-
-      //printf("\n. p[%i] = %f \n", i + 1, times_partial_proba[i]);     
-      /* tree -> rates -> birth_rate = 1.0; */
-      /* tree -> rates -> nd_t[tree->n_root->num] = -3.7; */
-
-      times_lk = TIMES_Lk_Yule_Order(tree);
-      constant = 1.0; 
-      
-      if(times_lk > -INFINITY && tot_num_comb > 1) constant = Slicing_Calibrations(tree);
-      if(!(times_lk > -INFINITY))
-        {
-          times_lk = 1.0;
-          //times_partial_proba[i] = 0.0;
-        }
-
-      //printf("\n. K = [%f] \n", K);
-      //K = Norm_Constant_Prior_Times(tree);
-      //Yule_val[i] = K[i] * TIMES_Lk_Yule_Order(tree);
-      //For(j, 2 * tree -> n_otu - 1) printf("\n. [1] Node [%d] min [%f] max[%f]\n", j, tree -> rates -> t_prior_min[j], tree -> rates -> t_prior_max[j]);
-      //For(j, 2 * tree -> n_otu - 1) printf("\n. [2] Node [%d] time [%f]\n", j, tree -> rates -> nd_t[j]);
-      //printf("\n. constant = [%f] \n", constant);
-      Yule_val[i] = constant * times_lk;
-
-
-      //Yule_val[i] = TIMES_Lk_Yule_Order(tree);
- 
-      while(calib -> prev) calib = calib -> prev;
-    }
- 
-  /* min_value = 0.0; */
-  /* For(i, tot_num_comb) if(Yule_val[i] < min_value && Yule_val[i] > -INFINITY) min_value = Yule_val[i]; */
-
-  /* c = -600. - min_value; */
-  
-
-  
-  c = .0;
-  times_tot_proba = 0.0;
-  For(i, tot_num_comb)
-    {
-      times_tot_proba += times_partial_proba[i] * EXP(Yule_val[i] + c);
-    }
-
-  For(i, 2 * tree -> n_otu - 1) t_has_prior[i] = NO;
-
-  ln_t = -c + LOG(times_tot_proba);
-
-
-  free(Yule_val);  
-  free(times_partial_proba);
-
-  return(ln_t);
-}
-
-
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-//Randomly choose a combination of calibrations drawing an index of calibration combination, 
-//used function Set_Cur_Calibration.
-void Random_Calibration(t_tree *tree)
-{
-  int rnd, num_comb;
-  t_cal *calib;
-
-  calib = tree -> rates -> calib;
-
-  num_comb =  Number_Of_Comb(calib);
-
-  srand(time(NULL));
-  rnd = rand()%(num_comb);
-  
-  Set_Current_Calibration(rnd, tree);
-  TIMES_Set_All_Node_Priors(tree); 
-
-}
-
-
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-//Variable curr_nd_for_cal is a vector of node numbers, the length of that vector is a number of calibrations. 
-//Function randomly updates that vector by randomly changing one node and setting times limits with respect 
-//to a new vector.  
-int RND_Calibration_And_Node_Number(t_tree *tree)
-{
-  int i, j, tot_num_cal, cal_num, node_ind, node_num, *curr_nd_for_cal;
-  phydbl *t_prior_min, *t_prior_max, *times_partial_proba;
-  short int *t_has_prior;
-  t_cal *cal;
-
-  tot_num_cal = tree -> rates -> tot_num_cal;
-  t_prior_min = tree -> rates -> t_prior_min;
-  t_prior_max = tree -> rates -> t_prior_max;
-  t_has_prior = tree -> rates -> t_has_prior;
-  times_partial_proba = tree -> rates -> times_partial_proba;
-  curr_nd_for_cal = tree -> rates -> curr_nd_for_cal;
-  cal = tree -> rates -> calib;
-
-  cal_num = rand()%(tot_num_cal - 1);
-    
-  i = 0;
-  while (i != cal_num)
-    {
-      cal = cal -> next;
-      i++;
-    }
-
-  node_ind = rand()%(cal -> n_all_applies_to);
-  node_num = cal -> all_applies_to[node_ind] -> num;
-
-  curr_nd_for_cal[cal_num] = node_num;
-
-  for(j = tree -> n_otu; j < 2 * tree -> n_otu - 1; j++) 
-    {
-      t_prior_min[j] = -BIG;
-      t_prior_max[j] = BIG;
-      t_has_prior[j] = NO; 
-    }
-
-  while(cal -> prev) cal = cal -> prev;
-  
-  i = 0;
-  do
-    {
-      t_prior_min[curr_nd_for_cal[i]] = cal -> lower;
-      t_prior_max[curr_nd_for_cal[i]] = cal -> upper;
-      t_has_prior[curr_nd_for_cal[i]] = YES; 
-      i++;
-      if(cal->next) cal = cal -> next;
-      else break;    
-    }
-  while(cal);
-
-  while(cal -> prev) cal = cal -> prev;
-
-  TIMES_Set_All_Node_Priors(tree);
-
-  return(node_num);
-}
-
-
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-//Return the value uniformly distributed between two values.
-phydbl Randomize_One_Node_Time(phydbl min, phydbl max)
-{
-  phydbl u;
-
-  u = Uni();
-  u *= (max - min);
-  u += min;
-
-  return(u);
-}
-
-
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-//Calculates the Hastings ratio for the analysis. Used in case of 
-//calibration conditional jump. NOT THE RIGHT ONE TO USE!
-void Lk_Hastings_Ratio_Times(t_node *a, t_node *d, phydbl *tot_prob, t_tree *tree)
-{
-  phydbl t_low, t_up;
-  phydbl *t_prior_min, *t_prior_max, *nd_t;
-
-  t_prior_min = tree -> rates -> t_prior_min;
-  t_prior_max = tree -> rates -> t_prior_max;
-  nd_t = tree -> rates -> nd_t;
-
-  if(d -> tax) return;
-  else
-    { 
-      t_low = MAX(t_prior_min[d -> num], nd_t[d -> anc -> num]);
-      t_up = MIN(t_prior_max[d -> num], MIN(nd_t[d -> v[1] -> num], nd_t[d -> v[2] -> num]));
-
-      (*tot_prob) += LOG(1) - LOG(t_up - t_low);
-
-      int i;
-      For(i,3) 
-	if((d -> v[i] != d -> anc) && (d -> b[i] != tree -> e_root))
-          { 
-              Lk_Hastings_Ratio_Times(d, d -> v[i], tot_prob, tree);
-          }
-    } 
-}
-
-
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-//Updates nodes which are below a randomized node in case if new proposed time 
-//for that node is below the current value. 
-void Update_Descendent_Cond_Jump(t_node *a, t_node *d, phydbl *L_Hast_ratio, t_tree *tree)
-{
-  int result = TRUE;
-  phydbl t_low, t_up;
-  phydbl *t_prior_min, *t_prior_max, *nd_t;
-
-  t_prior_min = tree -> rates -> t_prior_min;
-  t_prior_max = tree -> rates -> t_prior_max;
-  nd_t = tree -> rates -> nd_t;
-
-  Check_Node_Time(tree -> n_root, tree -> n_root -> v[1], &result, tree);  
-  Check_Node_Time(tree -> n_root, tree -> n_root -> v[2], &result, tree);
-
-  if(d -> tax) return;
-  else
-  {
-    if(result != TRUE)
-      {  
-        int i;
-        t_low = MAX(nd_t[a -> num], t_prior_min[d -> num]);
-        if(t_low < MIN(nd_t[d -> v[1] -> num], nd_t[d -> v[2] -> num])) t_up  = MIN(t_prior_max[d -> num], MIN(nd_t[d -> v[1] -> num], nd_t[d -> v[2] -> num])); 
-        else t_up  = t_prior_max[d -> num]; 
-        nd_t[d -> num] = Randomize_One_Node_Time(t_low, t_up);
-        (*L_Hast_ratio) += LOG(1) - LOG(t_up - t_low);
-        For(i,3) 
-          if((d -> v[i] != d -> anc) && (d -> b[i] != tree -> e_root)) 
-            Update_Descendent_Cond_Jump(d, d -> v[i], L_Hast_ratio, tree);
-      }
-    else return;
-  }
-}
-
-
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-//Updates nodes which are above a randomized node in case if new proposed time 
-//for that node is above the current value.
-void Update_Ancestor_Cond_Jump(t_node *d, phydbl *L_Hast_ratio, t_tree *tree)
-{
-  int result = TRUE;
-  phydbl t_low, t_up;
-  phydbl *t_prior_min, *t_prior_max, *nd_t;
-
-  t_prior_min = tree -> rates -> t_prior_min;
-  t_prior_max = tree -> rates -> t_prior_max;
-  nd_t = tree -> rates -> nd_t;
-  
-  Check_Node_Time(tree -> n_root, tree -> n_root -> v[1], &result, tree);  
-  Check_Node_Time(tree -> n_root, tree -> n_root -> v[2], &result, tree);
-
-  if(result != TRUE) 
-    {      
-      if(d == tree -> n_root)
-        {
-                      
-          t_low = t_prior_min[d -> num];
-          t_up  = MIN(t_prior_max[d -> num], MIN(nd_t[d -> v[1] -> num], nd_t[d -> v[2] -> num])); 
-          nd_t[d -> num] = Randomize_One_Node_Time(t_low, t_up);
-          (*L_Hast_ratio) += LOG(1) - LOG(t_up - t_low);
-          return;
-        }
-      else
-        { 
-          t_up  = MIN(t_prior_max[d -> num], MIN(nd_t[d -> v[1] -> num], nd_t[d -> v[2] -> num]));           
-          if(nd_t[d -> anc -> num] > t_up) t_low =  t_prior_min[d -> num];
-          else  t_low  = MAX(t_prior_min[d -> num], nd_t[d -> anc -> num]); 
-          nd_t[d -> num] = Randomize_One_Node_Time(t_low, t_up);
-          (*L_Hast_ratio) += LOG(1) - LOG(t_up - t_low);
-          Update_Ancestor_Cond_Jump(d -> anc, L_Hast_ratio, tree); 
-        }
-      
-    }
-  else return;
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-//when made a calibration conditional jump, updates node times 
-//with respect to the new calibration which was made with respect 
-//to the randomly chosen node, the root is fixed. Updates only those nodes 
-//that are not within new intervals. Traverse up and down.
-void Update_Times_RND_Node_Ancestor_Descendant(int rnd_node, phydbl *L_Hast_ratio, t_tree *tree)
-{
-  int i;
-  phydbl *t_prior_min, *t_prior_max, *nd_t;
-  phydbl new_time_rnd_node = 0.0;
-
-  t_prior_min = tree -> rates -> t_prior_min;
-  t_prior_max = tree -> rates -> t_prior_max;
-  nd_t = tree -> rates -> nd_t;
-
-  new_time_rnd_node = Randomize_One_Node_Time(t_prior_min[rnd_node], t_prior_max[rnd_node]);
-
-  nd_t[rnd_node] = new_time_rnd_node; 
-
-  Update_Ancestor_Cond_Jump(tree -> a_nodes[rnd_node] -> anc, L_Hast_ratio, tree);
-  For(i,3) 
-    if((tree -> a_nodes[rnd_node] -> v[i] != tree -> a_nodes[rnd_node] -> anc) && (tree -> a_nodes[rnd_node] -> b[i] != tree -> e_root)) 
-      Update_Descendent_Cond_Jump(tree -> a_nodes[rnd_node], tree -> a_nodes[rnd_node] -> v[i], L_Hast_ratio, tree);
- 
-}
-
-
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-//when made a calibration conditional jump, updates node times 
-//with respect to the new calibration which was made with respect 
-//to the randomly chosen node, starting from the root down to the tips. 
-//Updates only those nodes that are not within new intervals. 
-void Update_Times_Down_Tree(t_node *a, t_node *d, phydbl *L_Hastings_ratio, t_tree *tree)
-{
-  int i; 
-  phydbl *t_prior_min, *t_prior_max, *nd_t, t_low, t_up;
-
-  t_prior_min = tree -> rates -> t_prior_min;
-  t_prior_max = tree -> rates -> t_prior_max;
-  nd_t = tree -> rates -> nd_t;
-
-
-  t_low = MAX(t_prior_min[d -> num], nd_t[d -> anc -> num]);
-  t_up  = t_prior_max[d -> num];  
-
-  d -> anc = a;
-  //printf("\n. [1] Node number: [%d] \n", d -> num);
-  if(d -> tax) return;
-  else
-  {    
-    if(nd_t[d -> num] > t_up || nd_t[d -> num] < t_low)
-      { 
-        //printf("\n. [2] Node number: [%d] \n", d -> num);
-        //(*L_Hastings_ratio) += (LOG(1) - LOG(t_up - t_low));
-        (*L_Hastings_ratio) += (- LOG(t_up - t_low));
-        nd_t[d -> num] = Randomize_One_Node_Time(t_low, t_up);
-        t_prior_min[d -> num] = t_low;
-        t_prior_max[d -> num] = t_up;
-      }    
-   
-    For(i,3) 
-      if((d -> v[i] != d -> anc) && (d -> b[i] != tree -> e_root)) 
-        Update_Times_Down_Tree(d, d -> v[i], L_Hastings_ratio, tree);
-  }
-}
-
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -833,7 +315,7 @@ void PhyTime_XML(char *xml_file)
 	  low = -BIG;
 	  up  = BIG;
 	  n_cur = XML_Search_Node_Name("lower", YES, n_r);
-	  if(n_cur != NULL) low = String_To_Dbl(n_cur -> value);
+	  if(n_cur != NULL) low = String_To_Dbl(n_cur -> value); 
 	  n_cur = XML_Search_Node_Name("upper", YES, n_r);
 	  if(n_cur != NULL) up = String_To_Dbl(n_cur -> value);
 	  do
@@ -841,35 +323,41 @@ void PhyTime_XML(char *xml_file)
 	      if(!strcmp("appliesto", n_r -> child -> name)) 
 		{
                   //case of internal node:
-                  strcpy(clade_name, n_r -> child -> attr -> value);//reached clade names
-                  //printf("\n. Clade name [%s] \n", clade_name);//reached clade name n_r -> child -> attr -> value
-                  n_cur = XML_Search_Node_ID(clade_name, NO, n_r -> parent);
-                  //printf("\n. [1] Root node name [%s] \n", n_cur -> attr -> value);  
-                  if(n_cur) //found clade with a given name
-                    {                   
-                      i = 0;  
-                      do
-                        {
-                          strcpy(clade[i], n_cur -> child -> attr -> value); 
-                          i++;
-                          if(n_cur -> child -> next) n_cur -> child = n_cur -> child -> next;
-                          else break;
-                        }
-                      while(n_cur -> child);
-                      clade_size = i;
-                      node_num = Find_Clade(clade, clade_size, io -> tree);
+                  strcpy(clade_name, n_r -> child -> attr -> value);//reached clade names n_r -> child -> attr -> value
+                  if(!strcmp("root", clade_name))
+                    {
+                      node_num = io -> tree -> n_root -> num;
                       //printf("\n. Node number [%d] \n", node_num);
-                      For(j, n_mon)
-                        {
-                          if(!strcmp(clade_name, mon_list[j])) io -> mcmc -> monitor[node_num] = YES;
-                        }  
                     }
                   else
                     {
-                      PhyML_Printf("==Calibration information on the clade [%s] was not found. \n", clade_name);
-                      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
-                      Exit("\n");
+                      n_cur = XML_Search_Node_ID(clade_name, NO, n_r -> parent);
+                      if(n_cur) //found clade with a given name
+                        {                   
+                          i = 0;  
+                          do
+                            {
+                              strcpy(clade[i], n_cur -> child -> attr -> value); 
+                              i++;
+                              if(n_cur -> child -> next) n_cur -> child = n_cur -> child -> next;
+                              else break;
+                            }
+                          while(n_cur -> child);
+                          clade_size = i;
+                          node_num = Find_Clade(clade, clade_size, io -> tree);
+                          //printf("\n. Node number [%d] \n", node_num);
+                        }
+                      else
+                        {
+                          PhyML_Printf("==Calibration information on the clade [%s] was not found. \n", clade_name);
+                          PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+                          Exit("\n");
+                        }
                     }
+                  For(j, n_mon)
+                    {
+                      if(!strcmp(clade_name, mon_list[j])) io -> mcmc -> monitor[node_num] = YES;
+                    }  
                   //For(i, clade_size) PhyML_Printf("\n. Clade name [%s] Taxon name: [%s]", clade_name, clade[i]);
                   if(n_r -> child -> attr -> next -> value && String_To_Dbl(n_r -> child -> attr -> next -> value) != 0) 
                     {
@@ -882,18 +370,19 @@ void PhyTime_XML(char *xml_file)
                           PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
                           Exit("\n");
                         }
+                        
                       tree -> rates -> calib -> all_applies_to[tree -> rates -> calib -> n_all_applies_to] -> num = node_num; 
                       tree -> rates -> calib -> n_all_applies_to++;
                       tree -> rates -> calib -> lower = low;
                       tree -> rates -> calib -> upper = up; 
- 
-                      //printf("\n. Porbability [%f] \n", String_To_Dbl(n_r -> child -> attr -> next -> value));
                     }
+                  //printf("\n. Porbability [%f] \n", String_To_Dbl(n_r -> child -> attr -> next -> value));
+                  
                   /////////////////////////////////////////////////////////////////////////////////////////////////////               
                   PhyML_Printf("\n. .......................................................................");
                   PhyML_Printf("\n");
                   PhyML_Printf("\n. Clade name: [%s]", clade_name);
-                  if(strcmp(clade_name, "@root@"))
+                  if(strcmp(clade_name, "root"))
                     {
                       For(i, clade_size) PhyML_Printf("\n. Taxon name: [%s]", clade[i]);
                     }
@@ -901,7 +390,7 @@ void PhyTime_XML(char *xml_file)
                   PhyML_Printf("\n. Lower bound set to: %15f time units.", low);
                   PhyML_Printf("\n. Upper bound set to: %15f time units.", up);
                   PhyML_Printf("\n. ......................................................................."); 
-                  /////////////////////////////////////////////////////////////////////////////////////////////////////    
+                  /////////////////////////////////////////////////////////////////////////////////////////////////////
                   if(n_r -> child -> next) n_r -> child = n_r -> child -> next;
                   else break;    
                 }
@@ -944,68 +433,9 @@ void PhyTime_XML(char *xml_file)
       else break;
     }
   while(1);
-  //Root to be the last one calibration read from the file..
-  n_cur = XML_Search_Node_Name("calibration_root", NO, n_r -> parent);
-
-  if(n_cur)
-    {         
-      tree -> rates -> tot_num_cal++;
-      if (tree -> rates -> calib == NULL) tree -> rates -> calib = Make_Calib(tree -> n_otu);
-      if(last_calib)
-        {
-          last_calib -> next = tree -> rates -> calib;
-          tree -> rates -> calib -> prev = last_calib;
-        }
-      last_calib = tree -> rates -> calib;
-      
-      low = -BIG;
-      up  =  BIG;     
-      n_cur = XML_Search_Node_Name("lower", YES, n_cur);
-      if(n_cur != NULL) low = String_To_Dbl(n_cur -> value);
-      n_cur = XML_Search_Node_Name("upper", NO, n_cur -> parent);
-      if(n_cur != NULL) up = String_To_Dbl(n_cur -> value); 
-
-      node_num = io -> tree -> n_root -> num;
-      For(j, n_mon)
-        {
-          if(!strcmp("@root@", mon_list[j])) io -> mcmc -> monitor[node_num] = YES;
-        }
-      n_cur = XML_Search_Node_Name("appliesto", NO, n_cur -> parent);
-      if(n_cur)
-        {
-          if(n_cur -> attr -> next) tree -> rates -> calib -> proba[node_num] = String_To_Dbl(n_cur -> attr -> next -> value);
-          if(!n_cur -> attr -> next && n_cur -> next == NULL) tree -> rates -> calib -> proba[node_num] = 1.;
-          if(!n_cur -> attr -> next && n_cur -> next)
-            {
-              PhyML_Printf("==You either need to provide information about probability with which calibration \n");
-              PhyML_Printf("==applies to a node or you need to apply calibartion only to one node. \n");
-              PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
-              Exit("\n");
-            }
-          tree -> rates -> calib -> all_applies_to[tree -> rates -> calib -> n_all_applies_to] -> num = node_num; 
-          tree -> rates -> calib -> n_all_applies_to++;
-          tree -> rates -> calib -> lower = low;
-          tree -> rates -> calib -> upper = up;
-          PhyML_Printf("\n. .......................................................................");
-          PhyML_Printf("\n");
-          PhyML_Printf("\n. Clade name: [%s]", "root");
-          PhyML_Printf("\n. Node number to which calibration applies to is [%d] with probability [%f]", node_num, String_To_Dbl(n_cur-> attr -> next -> value)); 
-          PhyML_Printf("\n. Lower bound set to: %15f time units.", low);
-          PhyML_Printf("\n. Upper bound set to: %15f time units.", up);
-          PhyML_Printf("\n. .......................................................................\n");        
-        }
-    }
-  else
-    {
-      PhyML_Printf("\n==You need to provide calibration information for the root. \n");
-      PhyML_Printf("==Root calibration node name in xml file must be 'calibration_root'. \n");
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
-      Exit("\n");
-    }
  
   tree -> rates -> calib = last_calib;
   while(tree -> rates -> calib -> prev) tree -> rates -> calib = tree -> rates -> calib -> prev;
-
   ////////////////////////////////////////////////////////////////////////////////////////////////
   //Check for the sum of probabilities for one calibration add up to one
   do
@@ -1027,8 +457,6 @@ void PhyTime_XML(char *xml_file)
   //Set_Current_Calibration(0, tree);
   //TIMES_Set_All_Node_Priors(tree);
   //Slicing_Calibrations(tree);
-  //For(j, 2) printf("\n. proba [%f] \n", tree -> rates -> times_partial_proba[j]);
-  //printf("\n. Number of calibrations [%d] \n", Number_Of_Calib(tree -> rates -> calib));
   ////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////   
   //clear memory:
@@ -1087,7 +515,9 @@ void PhyTime_XML(char *xml_file)
   Prepare_Tree_For_Lk(tree);
   Set_Current_Calibration(0, tree);
   TIMES_Set_All_Node_Priors(tree);
+  //calculate the probabilities of each combination of calibrations:
   TIMES_Calib_Partial_Proba(tree);
+
   //set initial value for Hastings ratio for conditional jump:
   tree -> rates -> c_lnL_Hastings_ratio = 0.0;
  
@@ -1173,9 +603,6 @@ void PhyTime_XML(char *xml_file)
   if(tree -> io -> cstr_tree) Find_Surviving_Edges_In_Small_Tree(tree, tree -> io -> cstr_tree); 																				 
   time(&t_beg);
 
-  /* !!!! */
-  //tree->rates->nd_t[7] = -0.001;
-
   tree -> mcmc = MCMC_Make_MCMC_Struct();
  
   MCMC_Copy_MCMC_Struct(tree -> io -> mcmc, tree -> mcmc, "phytime"); 
@@ -1186,15 +613,12 @@ void PhyTime_XML(char *xml_file)
 
   tree -> mcmc -> is_burnin = NO;
 
-  //tree -> rates -> nd_t[tree -> n_root -> num] = -1.1;
   //PhyML_Printf("\n");
   //PhyML_Printf("\n. Computing Normalizing Constant(s) for the Node Times Prior Density...\n");
   //tree -> K = Norm_Constant_Prior_Times(tree);
   //Exit("\n");
 
   MCMC(tree);   
-
-  //PhyML_Printf("\n. Normolizing constant [%f] [%f]\n", tree -> K[0], tree -> K[1]);
                                          															
   MCMC_Close_MCMC(tree -> mcmc);																	
   MCMC_Free_MCMC(tree -> mcmc);														 				
@@ -1220,6 +644,112 @@ void PhyTime_XML(char *xml_file)
  	
   /* return 1;    */
 }
+
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//Calculate the prior probability for node times taking into account the 
+//probailitis with which each calibration applies to the particular node.
+phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
+{
+
+  phydbl times_lk, *Yule_val, *times_partial_proba, times_tot_proba, *t_prior_min, *t_prior_max, c, constant, ln_t; 
+  short int *t_has_prior;
+  int i, j, k, tot_num_comb;
+  t_cal *calib;
+ 
+
+  times_tot_proba = 0.0;
+  calib = tree -> rates -> calib;
+  t_prior_min = tree -> rates -> t_prior_min;
+  t_prior_max = tree -> rates -> t_prior_max;
+  t_has_prior = tree -> rates -> t_has_prior;
+  times_partial_proba = tree -> rates -> times_partial_proba;
+  //constant = tree -> K;
+
+  tot_num_comb = Number_Of_Comb(calib);
+
+  
+  Yule_val = (phydbl *)mCalloc(tot_num_comb, sizeof(phydbl));    
+  //times_partial_proba = (phydbl *)mCalloc(tot_num_comb, sizeof(phydbl));   
+
+  For(i, tot_num_comb)
+    {
+      for(j = tree -> n_otu; j < 2 * tree -> n_otu - 1; j++) 
+        {
+          t_prior_min[j] = -BIG;
+          t_prior_max[j] = BIG;
+          t_has_prior[j] = NO; 
+        }
+      do
+        {
+          k = (i % Number_Of_Comb(calib)) / Number_Of_Comb(calib -> next);
+          t_prior_min[calib -> all_applies_to[k] -> num] = MAX(t_prior_min[calib -> all_applies_to[k] -> num], calib -> lower);
+          t_prior_max[calib -> all_applies_to[k] -> num] = MIN(t_prior_max[calib -> all_applies_to[k] -> num], calib -> upper);
+          t_has_prior[calib -> all_applies_to[k] -> num] = YES;
+          //if((t_prior_min[calib -> all_applies_to[k] -> num] > t_prior_max[calib -> all_applies_to[k] -> num])) times_partial_proba[i] = 0.0; 
+          //else times_partial_proba[i] *= calib -> proba[calib -> all_applies_to[k] -> num]; 
+          if(calib -> next) calib = calib -> next;
+          else break;
+        }
+      while(calib);
+
+      TIMES_Set_All_Node_Priors(tree);
+
+      //printf("\n. p[%i] = %f \n", i + 1, times_partial_proba[i]);     
+      //tree -> rates -> birth_rate = 1.0;
+
+      times_lk = TIMES_Lk_Yule_Order(tree);
+      //printf("\n. Yule %f \n", times_lk);  
+      constant = 1.0; 
+      
+      if(times_lk > -INFINITY) constant = Slicing_Calibrations(tree);
+      //else
+      //  {
+      //    times_lk = 0.0;
+          //times_partial_proba[i] = 0.0;
+      //  }
+
+      //printf("\n. K = [%f] \n", K);
+      //K = Norm_Constant_Prior_Times(tree);
+      //Yule_val[i] = K[i] * TIMES_Lk_Yule_Order(tree);
+      //For(j, 2 * tree -> n_otu - 1) printf("\n. [1] Node [%d] min [%f] max[%f]\n", j, tree -> rates -> t_prior_min[j], tree -> rates -> t_prior_max[j]);
+      //For(j, 2 * tree -> n_otu - 1) printf("\n. [2] Node [%d] time [%f]\n", j, tree -> rates -> nd_t[j]);
+      //printf("\n. constant = [%f] \n", constant);
+      Yule_val[i] = constant * times_lk;
+
+
+      //Yule_val[i] = TIMES_Lk_Yule_Order(tree);
+ 
+      while(calib -> prev) calib = calib -> prev;
+    }
+ 
+  /* min_value = 0.0; */
+  /* For(i, tot_num_comb) if(Yule_val[i] < min_value && Yule_val[i] > -INFINITY) min_value = Yule_val[i]; */
+
+  /* c = -600. - min_value; */
+  
+
+  
+  c = .0;
+  times_tot_proba = 0.0;
+  For(i, tot_num_comb)
+    {
+      times_tot_proba += times_partial_proba[i] * EXP(Yule_val[i] + c);
+    }
+
+  For(i, 2 * tree -> n_otu - 1) t_has_prior[i] = NO;
+
+  ln_t = -c + LOG(times_tot_proba);
+
+
+  free(Yule_val);  
+  //free(times_partial_proba);
+
+  return(ln_t);
+}
+
+
 
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
@@ -1688,10 +1218,10 @@ phydbl *Norm_Constant_Prior_Times(t_tree *tree)
 void TIMES_Calib_Partial_Proba(t_tree *tree)
 {
 
-  phydbl *times_partial_proba, *t_prior_min, *t_prior_max; 
+  phydbl *times_partial_proba; //*t_prior_min, *t_prior_max; 
   int i, k, tot_num_comb;
   t_cal *calib;
-  short int *t_has_prior;
+  //short int *t_has_prior;
  
   times_partial_proba = tree -> rates -> times_partial_proba; 
   calib = tree -> rates -> calib;
@@ -1716,6 +1246,426 @@ void TIMES_Calib_Partial_Proba(t_tree *tree)
     }
  
 }
+
+
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//Function checks if the randomized node times are within the 
+//upper and lower time limits, taken into account the times of 
+//the ancestor and descendent.
+void Check_Node_Time(t_node *a, t_node *d, int *result, t_tree *tree)
+{
+  phydbl t_low, t_up;
+  phydbl *t_prior_min, *t_prior_max, *nd_t;
+
+  t_prior_min = tree -> rates -> t_prior_min;
+  t_prior_max = tree -> rates -> t_prior_max;
+  nd_t = tree -> rates -> nd_t;
+
+  if(a == tree -> n_root && (nd_t[a -> num] > MIN(t_prior_max[a -> num], MIN(nd_t[a -> v[1] -> num], nd_t[a -> v[2] -> num]))))  
+    {
+      *result = FALSE;
+      return;
+    }
+  if(d -> tax) return;
+  else
+    { 
+      t_low = MAX(t_prior_min[d -> num], nd_t[d -> anc -> num]);
+      t_up = MIN(t_prior_max[d -> num], MIN(nd_t[d -> v[1] -> num], nd_t[d -> v[2] -> num]));
+      if(nd_t[d -> num] < t_low || nd_t[d -> num] > t_up)
+        {
+          *result = FALSE; 
+        }
+
+      int i;
+      For(i,3) 
+	if((d -> v[i] != d -> anc) && (d -> b[i] != tree -> e_root))
+             Check_Node_Time(d, d -> v[i], result, tree);
+    }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//Function calculates the TOTAL number of calibration combinations, 
+//given the number of nodes to which each calibartion applies to.
+int Number_Of_Comb(t_cal *calib)
+{
+
+  int num_comb;
+
+  if(!calib) return(1);
+  num_comb = 1;
+  do
+    {
+      num_comb *= calib -> n_all_applies_to;
+      if(calib -> next) calib = calib -> next;
+      else break;
+    }
+  while(calib);
+  return(num_comb);
+}
+
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//Function calculates the TOTAL number of calibration combinations, 
+//given the number of nodes to which each calibartion applies to.
+int Number_Of_Calib(t_cal *calib)
+{
+
+  int num_calib;
+
+
+  num_calib = 0;
+  do
+    {
+      num_calib++;
+      if(calib -> next) calib = calib -> next;
+      else break;
+    }
+  while(calib);
+  return(num_calib);
+}
+
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//Function sets current calibartion in the following way:
+//Suppose we have a vector of calibrations C=(C1, C2, C3), each calibration  
+//applies to a set of nodes. we can reach each node number through the indeces (corresponds 
+//to the number the information was read). C1={0,1,2}, C2={0,1}, C3={0};
+//The total number of combinations is 3*2*1=6. The first combination with row number 0 
+//will be {0,0,0}, the second row will be {0,1,0} and so on. Calling the node numbers with 
+//the above indeces will return current calibration. Also sets the vector of the probabilities
+//for current calibration combination.   
+void Set_Current_Calibration(int row, t_tree *tree)
+{
+
+  t_cal *calib;
+  phydbl *t_prior_min, *t_prior_max; 
+  short int *t_has_prior;
+  int k, i, j, *curr_nd_for_cal;
+
+  calib = tree -> rates -> calib;
+  t_prior_min = tree -> rates -> t_prior_min;
+  t_prior_max = tree -> rates -> t_prior_max;
+  t_has_prior = tree -> rates -> t_has_prior;
+  curr_nd_for_cal = tree -> rates -> curr_nd_for_cal;
+
+  for(j = tree -> n_otu; j < 2 * tree -> n_otu - 1; j++) 
+    {
+      t_prior_min[j] = -BIG;
+      t_prior_max[j] = BIG;
+      t_has_prior[j] = NO; 
+    }
+  
+  k = -1;
+  i = 0;
+  do
+    {
+      k = (row % Number_Of_Comb(calib)) / Number_Of_Comb(calib -> next);      
+      t_prior_min[calib -> all_applies_to[k] -> num] = calib -> lower;
+      t_prior_max[calib -> all_applies_to[k] -> num] = calib -> upper;
+      t_has_prior[calib -> all_applies_to[k] -> num] = YES; 
+      curr_nd_for_cal[i] = calib -> all_applies_to[k] -> num;
+      i++;
+      if(calib->next) calib = calib->next;
+      else break;    
+    }
+  while(calib);
+  //while(calib -> prev) calib = calib -> prev;
+}
+
+
+
+
+
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//Randomly choose a combination of calibrations drawing an index of calibration combination, 
+//used function Set_Cur_Calibration.
+void Random_Calibration(t_tree *tree)
+{
+  int rnd, num_comb;
+  t_cal *calib;
+
+  calib = tree -> rates -> calib;
+
+  num_comb =  Number_Of_Comb(calib);
+
+  srand(time(NULL));
+  rnd = rand()%(num_comb);
+  
+  Set_Current_Calibration(rnd, tree);
+  TIMES_Set_All_Node_Priors(tree); 
+
+}
+
+
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//Variable curr_nd_for_cal is a vector of node numbers, the length of that vector is a number of calibrations. 
+//Function randomly updates that vector by randomly changing one node and setting times limits with respect 
+//to a new vector.  
+int RND_Calibration_And_Node_Number(t_tree *tree)
+{
+  int i, j, tot_num_cal, cal_num, node_ind, node_num, *curr_nd_for_cal;
+  phydbl *t_prior_min, *t_prior_max; //*times_partial_proba;
+  short int *t_has_prior;
+  t_cal *cal;
+
+  tot_num_cal = tree -> rates -> tot_num_cal;
+  t_prior_min = tree -> rates -> t_prior_min;
+  t_prior_max = tree -> rates -> t_prior_max;
+  t_has_prior = tree -> rates -> t_has_prior;
+  //times_partial_proba = tree -> rates -> times_partial_proba;
+  curr_nd_for_cal = tree -> rates -> curr_nd_for_cal;
+  cal = tree -> rates -> calib;
+
+  cal_num = rand()%(tot_num_cal - 1);
+    
+  i = 0;
+  while (i != cal_num)
+    {
+      cal = cal -> next;
+      i++;
+    }
+
+  node_ind = rand()%(cal -> n_all_applies_to);
+  node_num = cal -> all_applies_to[node_ind] -> num;
+
+  curr_nd_for_cal[cal_num] = node_num;
+
+  for(j = tree -> n_otu; j < 2 * tree -> n_otu - 1; j++) 
+    {
+      t_prior_min[j] = -BIG;
+      t_prior_max[j] = BIG;
+      t_has_prior[j] = NO; 
+    }
+
+  while(cal -> prev) cal = cal -> prev;
+  
+  i = 0;
+  do
+    {
+      t_prior_min[curr_nd_for_cal[i]] = cal -> lower;
+      t_prior_max[curr_nd_for_cal[i]] = cal -> upper;
+      t_has_prior[curr_nd_for_cal[i]] = YES; 
+      i++;
+      if(cal->next) cal = cal -> next;
+      else break;    
+    }
+  while(cal);
+
+  while(cal -> prev) cal = cal -> prev;
+
+  TIMES_Set_All_Node_Priors(tree);
+
+  return(node_num);
+}
+
+
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//Return the value uniformly distributed between two values.
+phydbl Randomize_One_Node_Time(phydbl min, phydbl max)
+{
+  phydbl u;
+
+  u = Uni();
+  u *= (max - min);
+  u += min;
+
+  return(u);
+}
+
+
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//Calculates the Hastings ratio for the analysis. Used in case of 
+//calibration conditional jump. NOT THE RIGHT ONE TO USE!
+void Lk_Hastings_Ratio_Times(t_node *a, t_node *d, phydbl *tot_prob, t_tree *tree)
+{
+  phydbl t_low, t_up;
+  phydbl *t_prior_min, *t_prior_max, *nd_t;
+
+  t_prior_min = tree -> rates -> t_prior_min;
+  t_prior_max = tree -> rates -> t_prior_max;
+  nd_t = tree -> rates -> nd_t;
+
+  if(d -> tax) return;
+  else
+    { 
+      t_low = MAX(t_prior_min[d -> num], nd_t[d -> anc -> num]);
+      t_up = MIN(t_prior_max[d -> num], MIN(nd_t[d -> v[1] -> num], nd_t[d -> v[2] -> num]));
+
+      (*tot_prob) += LOG(1) - LOG(t_up - t_low);
+
+      int i;
+      For(i,3) 
+	if((d -> v[i] != d -> anc) && (d -> b[i] != tree -> e_root))
+          { 
+              Lk_Hastings_Ratio_Times(d, d -> v[i], tot_prob, tree);
+          }
+    } 
+}
+
+
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//Updates nodes which are below a randomized node in case if new proposed time 
+//for that node is below the current value. 
+void Update_Descendent_Cond_Jump(t_node *a, t_node *d, phydbl *L_Hast_ratio, t_tree *tree)
+{
+  int result = TRUE;
+  phydbl t_low, t_up;
+  phydbl *t_prior_min, *t_prior_max, *nd_t;
+
+  t_prior_min = tree -> rates -> t_prior_min;
+  t_prior_max = tree -> rates -> t_prior_max;
+  nd_t = tree -> rates -> nd_t;
+
+  Check_Node_Time(tree -> n_root, tree -> n_root -> v[1], &result, tree);  
+  Check_Node_Time(tree -> n_root, tree -> n_root -> v[2], &result, tree);
+
+  if(d -> tax) return;
+  else
+  {
+    if(result != TRUE)
+      {  
+        int i;
+        t_low = MAX(nd_t[a -> num], t_prior_min[d -> num]);
+        if(t_low < MIN(nd_t[d -> v[1] -> num], nd_t[d -> v[2] -> num])) t_up  = MIN(t_prior_max[d -> num], MIN(nd_t[d -> v[1] -> num], nd_t[d -> v[2] -> num])); 
+        else t_up  = t_prior_max[d -> num]; 
+        nd_t[d -> num] = Randomize_One_Node_Time(t_low, t_up);
+        (*L_Hast_ratio) += LOG(1) - LOG(t_up - t_low);
+        For(i,3) 
+          if((d -> v[i] != d -> anc) && (d -> b[i] != tree -> e_root)) 
+            Update_Descendent_Cond_Jump(d, d -> v[i], L_Hast_ratio, tree);
+      }
+    else return;
+  }
+}
+
+
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//Updates nodes which are above a randomized node in case if new proposed time 
+//for that node is above the current value.
+void Update_Ancestor_Cond_Jump(t_node *d, phydbl *L_Hast_ratio, t_tree *tree)
+{
+  int result = TRUE;
+  phydbl t_low, t_up;
+  phydbl *t_prior_min, *t_prior_max, *nd_t;
+
+  t_prior_min = tree -> rates -> t_prior_min;
+  t_prior_max = tree -> rates -> t_prior_max;
+  nd_t = tree -> rates -> nd_t;
+  
+  Check_Node_Time(tree -> n_root, tree -> n_root -> v[1], &result, tree);  
+  Check_Node_Time(tree -> n_root, tree -> n_root -> v[2], &result, tree);
+
+  if(result != TRUE) 
+    {      
+      if(d == tree -> n_root)
+        {
+                      
+          t_low = t_prior_min[d -> num];
+          t_up  = MIN(t_prior_max[d -> num], MIN(nd_t[d -> v[1] -> num], nd_t[d -> v[2] -> num])); 
+          nd_t[d -> num] = Randomize_One_Node_Time(t_low, t_up);
+          (*L_Hast_ratio) += LOG(1) - LOG(t_up - t_low);
+          return;
+        }
+      else
+        { 
+          t_up  = MIN(t_prior_max[d -> num], MIN(nd_t[d -> v[1] -> num], nd_t[d -> v[2] -> num]));           
+          if(nd_t[d -> anc -> num] > t_up) t_low =  t_prior_min[d -> num];
+          else  t_low  = MAX(t_prior_min[d -> num], nd_t[d -> anc -> num]); 
+          nd_t[d -> num] = Randomize_One_Node_Time(t_low, t_up);
+          (*L_Hast_ratio) += LOG(1) - LOG(t_up - t_low);
+          Update_Ancestor_Cond_Jump(d -> anc, L_Hast_ratio, tree); 
+        }
+      
+    }
+  else return;
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//when made a calibration conditional jump, updates node times 
+//with respect to the new calibration which was made with respect 
+//to the randomly chosen node, the root is fixed. Updates only those nodes 
+//that are not within new intervals. Traverse up and down.
+void Update_Times_RND_Node_Ancestor_Descendant(int rnd_node, phydbl *L_Hast_ratio, t_tree *tree)
+{
+  int i;
+  phydbl *t_prior_min, *t_prior_max, *nd_t;
+  phydbl new_time_rnd_node = 0.0;
+
+  t_prior_min = tree -> rates -> t_prior_min;
+  t_prior_max = tree -> rates -> t_prior_max;
+  nd_t = tree -> rates -> nd_t;
+
+  new_time_rnd_node = Randomize_One_Node_Time(t_prior_min[rnd_node], t_prior_max[rnd_node]);
+
+  nd_t[rnd_node] = new_time_rnd_node; 
+
+  Update_Ancestor_Cond_Jump(tree -> a_nodes[rnd_node] -> anc, L_Hast_ratio, tree);
+  For(i,3) 
+    if((tree -> a_nodes[rnd_node] -> v[i] != tree -> a_nodes[rnd_node] -> anc) && (tree -> a_nodes[rnd_node] -> b[i] != tree -> e_root)) 
+      Update_Descendent_Cond_Jump(tree -> a_nodes[rnd_node], tree -> a_nodes[rnd_node] -> v[i], L_Hast_ratio, tree);
+ 
+}
+
+
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//when made a calibration conditional jump, updates node times 
+//with respect to the new calibration which was made with respect 
+//to the randomly chosen node, starting from the root down to the tips. 
+//Updates only those nodes that are not within new intervals. 
+void Update_Times_Down_Tree(t_node *a, t_node *d, phydbl *L_Hastings_ratio, t_tree *tree)
+{
+  int i; 
+  phydbl *t_prior_min, *t_prior_max, *nd_t, t_low, t_up;
+
+  t_prior_min = tree -> rates -> t_prior_min;
+  t_prior_max = tree -> rates -> t_prior_max;
+  nd_t = tree -> rates -> nd_t;
+
+
+  t_low = MAX(t_prior_min[d -> num], nd_t[d -> anc -> num]);
+  t_up  = t_prior_max[d -> num];  
+
+  d -> anc = a;
+  //printf("\n. [1] Node number: [%d] \n", d -> num);
+  if(d -> tax) return;
+  else
+  {    
+    if(nd_t[d -> num] > t_up || nd_t[d -> num] < t_low)
+      { 
+        //printf("\n. [2] Node number: [%d] \n", d -> num);
+        //(*L_Hastings_ratio) += (LOG(1) - LOG(t_up - t_low));
+        (*L_Hastings_ratio) += (- LOG(t_up - t_low));
+        nd_t[d -> num] = Randomize_One_Node_Time(t_low, t_up);
+        t_prior_min[d -> num] = t_low;
+        t_prior_max[d -> num] = t_up;
+      }    
+   
+    For(i,3) 
+      if((d -> v[i] != d -> anc) && (d -> b[i] != tree -> e_root)) 
+        Update_Times_Down_Tree(d, d -> v[i], L_Hastings_ratio, tree);
+  }
+}
+
 
 
 
