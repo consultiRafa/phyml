@@ -697,7 +697,7 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
       TIMES_Set_All_Node_Priors(tree);
 
       //printf("\n. p[%i] = %f \n", i + 1, times_partial_proba[i]);     
-      tree -> rates -> birth_rate = 1.0;
+      //tree -> rates -> birth_rate = 1.0;
 
       times_lk = TIMES_Lk_Yule_Order(tree);
       //printf("\n. Yule %f \n", times_lk);  
