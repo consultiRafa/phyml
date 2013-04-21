@@ -4325,7 +4325,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_birth_rate]          = 2.0;
   mcmc->move_weight[mcmc->num_move_updown_t_br]         = 1.0;
 #if defined (SERGEII)
-  mcmc->move_weight[mcmc->num_move_jump_calibration]    = 1.0;
+  mcmc->move_weight[mcmc->num_move_jump_calibration]    = 0.0;
 #else
   mcmc->move_weight[mcmc->num_move_jump_calibration]    = 0.0;
 #endif

@@ -695,9 +695,9 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
       while(calib);
 
       TIMES_Set_All_Node_Priors(tree);
-
+      //For(j, 2 * tree -> n_otu - 1) printf("\n. [1] Node [%d] min [%f] max [%f] node time [%f]\n", j, tree -> rates -> t_prior_min[j], tree -> rates -> t_prior_max[j], tree -> rates -> nd_t[j]);
       //printf("\n. p[%i] = %f \n", i + 1, times_partial_proba[i]);     
-      //tree -> rates -> birth_rate = 1.0;
+      //tree -> rates -> birth_rate = 4.0;
 
       times_lk = TIMES_Lk_Yule_Order(tree);
       //printf("\n. Yule %f \n", times_lk);  
@@ -710,10 +710,10 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
           //times_partial_proba[i] = 0.0;
       //  }
 
-      //printf("\n. K = [%f] \n", K);
+      //printf("\n. K = [%f] \n", constant);
       //K = Norm_Constant_Prior_Times(tree);
       //Yule_val[i] = K[i] * TIMES_Lk_Yule_Order(tree);
-      //For(j, 2 * tree -> n_otu - 1) printf("\n. [1] Node [%d] min [%f] max[%f]\n", j, tree -> rates -> t_prior_min[j], tree -> rates -> t_prior_max[j]);
+ 
       //For(j, 2 * tree -> n_otu - 1) printf("\n. [2] Node [%d] time [%f]\n", j, tree -> rates -> nd_t[j]);
       //printf("\n. constant = [%f] \n", constant);
       Yule_val[i] = constant * times_lk;
@@ -745,7 +745,7 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
 
   free(Yule_val);  
   //free(times_partial_proba);
-
+  //Exit("\n");
   return(ln_t);
 }
 
@@ -792,7 +792,8 @@ phydbl Slicing_Calibrations(t_tree *tree)
     }
   if(tree -> rates -> nd_t[tree -> n_root -> num] > t_prior_min[tree -> n_root -> num]) chop_bound =  MIN(tree -> rates -> nd_t[tree -> n_root -> num], t_prior_max[tree -> n_root -> num]);
   else chop_bound = t_prior_min[tree -> n_root -> num];
-  t_slice[2 * n_otu - 3] = chop_bound; 
+  t_slice[2 * n_otu - 3] = chop_bound;
+  //printf("\n. Chop bound [%f] \n", chop_bound); 
   //t_slice[2 * n_otu - 3] = -1.1; 
   //For(j, 2 * n_otu - 2) printf("\n. Slice bound [%f] \n", t_slice[j]);
   ////////////////////////////////////////////////////////////////////////////
@@ -841,25 +842,42 @@ phydbl Slicing_Calibrations(t_tree *tree)
           else if(t_prior_min[i + n_otu] < t_slice_min[j] && t_prior_max[i + n_otu] > t_slice_max[j] && !Are_Equal(t_slice_max[j], t_slice_min[j], 1.E-10)) indic[i * (2 * n_otu - 3) + j] = 1;
           else if(Are_Equal(t_prior_min[i + n_otu], t_slice_min[j], 1.E-10) && Are_Equal(t_prior_max[i + n_otu], t_slice_max[j], 1.E-10)) indic[i * (2 * n_otu - 3) + j] = 1;
         }
-    } 
+    }
+
 
   For(i, n_otu - 2)
-    {             
+    {
       indic[i * (2 * n_otu - 3)] = 0;
     }
  
-  /* 
-  printf("\n");
-  For(i, n_otu - 1)
+  for(j = 1; j <  2 * n_otu - 3; j++)
     {
-      printf(" ['%d]' ", i + n_otu);
-      For(j, 2 * n_otu - 3)  
-        {          
-          printf(". '%d' ", indic[i * (2 * n_otu - 3) + j]);          
-        }
-      printf("\n");
+      indic[(n_otu - 2) * (2 * n_otu - 3) + j] = 0;
     }
-  */
+
+  /* For(i, n_otu - 2) */
+  /*   { */
+  /*     indic[i * (2 * n_otu - 3)] = 0; */
+  /*   } */
+
+  /* For(i, n_otu - 1) */
+  /*   { */
+  /*     indic[i * (2 * n_otu - 3) + 1] = 0; */
+  /*   } */
+ 
+  
+  /* printf("\n"); */
+  /* For(i, n_otu - 1) */
+  /*   { */
+  /*     printf(" ['%d]' ", i + n_otu); */
+  /*     For(j, 2 * n_otu - 3)   */
+  /*       {           */
+  /*         printf(". '%d' ", indic[i * (2 * n_otu - 3) + j]);           */
+  /*       } */
+  /*     printf("\n"); */
+  /*   } */
+
+
   ////////////////////////////////////////////////////////////////////////////
   //Get the number of slices that can be applied for each node and the vectors of slice numbers for each node. 
   For(i, n_otu - 1)
@@ -909,7 +927,7 @@ phydbl Slicing_Calibrations(t_tree *tree)
   For(k, tot_num_comb)
     {
       shr_num_slices = 0;
-      //printf("\n"); 
+      //printf("\n");
       For(i, n_otu - 1) //node number i + n_otu
         {
           //printf(" ['%d]' ", i + n_otu);
@@ -1009,7 +1027,7 @@ phydbl Slicing_Calibrations(t_tree *tree)
           lmbd = tree -> rates -> birth_rate;
           num = 1;
           denom = 1;
-          //lmbd = 4.71;
+          //lmbd = 4.0;
           /* For(j, n_otu - 1) num = num * (EXP(-lmbd * t_cur_slice_min[j]) - EXP(-lmbd * t_cur_slice_max[j]));  */
           /* for(j = n_otu; j < 2 * n_otu - 1; j++) denom = denom * (EXP(-lmbd * t_prior_min[j]) - EXP(-lmbd * t_prior_max[j]));  */
           For(j, n_otu - 2) num = num * (EXP(lmbd * t_cur_slice_max[j]) - EXP(lmbd * t_cur_slice_min[j])); 
@@ -1203,7 +1221,8 @@ phydbl *Norm_Constant_Prior_Times(t_tree *tree)
         }
       while(calib);
       TIMES_Set_All_Node_Priors(tree);
-
+      //for(j = tree -> n_otu; j < 2 * tree -> n_otu - 1; j++) printf("\n. [1] Node [%d] min [%f] max[%f]\n", j, tree -> rates -> t_prior_min[j], tree -> rates -> t_prior_max[j]);
+      tree -> rates -> birth_rate = 4.0;
       K[i] = Slicing_Calibrations(tree);     
       //PhyML_Printf("\n. Number [%d] normolizing constant [%f] \n", i+1, K[i]);
       while(calib -> prev) calib = calib -> prev;
