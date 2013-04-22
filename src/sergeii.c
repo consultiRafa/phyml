@@ -57,7 +57,7 @@ void PhyTime_XML(char *xml_file)
   //file can/cannot be open:
   if ((f =(FILE *)fopen(xml_file, "r")) == NULL)
     {
-      PhyML_Printf("\n==File can not be open...\n");
+      PhyML_Printf("\n== File '%s' can not be opened...\n",xml_file);
       Exit("\n");
     }
 
@@ -695,11 +695,9 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
       while(calib);
 
       TIMES_Set_All_Node_Priors(tree);
-      /* printf("\n\n"); */
-      /* For(j, 2 * tree -> n_otu - 1) printf("\n. [1] Node [%d] min [%f] max [%f] node time [%f]\n", j, tree -> rates -> t_prior_min[j], tree -> rates -> t_prior_max[j], tree -> rates -> nd_t[j]); */
-      
-      /* printf("\n. p[%i] = %f \n", i + 1, times_partial_proba[i]);      */
-      /* tree -> rates -> birth_rate = 0.01; */
+      //For(j, 2 * tree -> n_otu - 1) printf("\n. [1] Node [%d] min [%f] max [%f] node time [%f]\n", j, tree -> rates -> t_prior_min[j], tree -> rates -> t_prior_max[j], tree -> rates -> nd_t[j]);
+      //printf("\n. p[%i] = %f \n", i + 1, times_partial_proba[i]);     
+      tree -> rates -> birth_rate = 0.01;
 
       times_lk = TIMES_Lk_Yule_Order(tree);
 
@@ -1661,28 +1659,27 @@ void Update_Times_Down_Tree(t_node *a, t_node *d, phydbl *L_Hastings_ratio, t_tr
   nd_t = tree -> rates -> nd_t;
 
 
-  t_low = MAX(t_prior_min[d -> num], nd_t[d -> anc -> num]);
+  t_low = MAX(t_prior_min[d -> num], nd_t[a -> num]);
   t_up  = t_prior_max[d -> num];  
 
-  d -> anc = a;
   //printf("\n. [1] Node number: [%d] \n", d -> num);
   if(d -> tax) return;
   else
-  {    
-    if(nd_t[d -> num] > t_up || nd_t[d -> num] < t_low)
-      { 
-        //printf("\n. [2] Node number: [%d] \n", d -> num);
-        //(*L_Hastings_ratio) += (LOG(1) - LOG(t_up - t_low));
-        (*L_Hastings_ratio) += (- LOG(t_up - t_low));
-        nd_t[d -> num] = Randomize_One_Node_Time(t_low, t_up);
-        t_prior_min[d -> num] = t_low;
-        t_prior_max[d -> num] = t_up;
-      }    
-   
-    For(i,3) 
-      if((d -> v[i] != d -> anc) && (d -> b[i] != tree -> e_root)) 
-        Update_Times_Down_Tree(d, d -> v[i], L_Hastings_ratio, tree);
-  }
+    {    
+      if(nd_t[d -> num] > t_up || nd_t[d -> num] < t_low)
+        { 
+          //printf("\n. [2] Node number: [%d] \n", d -> num);
+          //(*L_Hastings_ratio) += (LOG(1) - LOG(t_up - t_low));
+          (*L_Hastings_ratio) += (- LOG(t_up - t_low));
+          nd_t[d -> num] = Randomize_One_Node_Time(t_low, t_up);
+          t_prior_min[d -> num] = t_low; // NOT SURE WHY YOU ARE DOING THIS !!!!!!!!!!!
+          t_prior_max[d -> num] = t_up;  // NOT SURE WHY YOU ARE DOING THIS !!!!!!!!!!!
+        }    
+      
+      For(i,3) 
+        if((d -> v[i] != d -> anc) && (d -> b[i] != tree -> e_root)) 
+          Update_Times_Down_Tree(d, d -> v[i], L_Hastings_ratio, tree);
+    }
 }
 
 

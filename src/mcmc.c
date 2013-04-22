@@ -1262,6 +1262,7 @@ void MCMC_Jump_Calibration(t_tree *tree)
       //PhyML_Printf("\n. .......................................................................\n");
       ///////////////////////////////////////////////////////////////////////////////////////////
       //PhyML_Printf("\n. Result:%d \n", result);  
+
       new_lnL_Hastings_ratio = 0.0;
       if(result != TRUE)
         {
@@ -1269,7 +1270,7 @@ void MCMC_Jump_Calibration(t_tree *tree)
           Update_Times_Down_Tree(tree -> n_root, tree -> n_root -> v[2], &new_lnL_Hastings_ratio, tree);
           tree->rates->c_lnL_Hastings_ratio = new_lnL_Hastings_ratio;
         }
-      else return;
+      else return; // FREE MEMORY ALLOCATED FIRST. UPDATE tree->mcmc->acc_move[move_num] and tree->mcmc->run_move[move_num TOO. !!!!!!!!!!!!
       
       //PhyML_Printf("\n. Hastings Ratio:%f \n", cur_lnL_Hastings_ratio);  
       //PhyML_Printf("\n. Hastings Ratio:%f \n", new_lnL_Hastings_ratio);  

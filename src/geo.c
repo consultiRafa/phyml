@@ -43,6 +43,8 @@ int GEO_Estimate(int argc, char **argv)
 
   seed = getpid();
   /* seed = 28224; */
+  /* seed = 21249; */
+  seed = 21596;
   printf("\n. Seed = %d",seed);
   srand(seed);
 
@@ -481,6 +483,7 @@ void GEO_Update_Fmat(t_geo *t)
   
   For(i,t->n_dim) t->cov[i*t->n_dim+i] = t->sigma; // Diagonal covariance matrix. Same variance in every direction
 
+  t->ldscape_sz = 100;
   lognloc = LOG(t->ldscape_sz);
 
   // Fill in F matrix;
@@ -502,7 +505,8 @@ void GEO_Update_Fmat(t_geo *t)
           // Take the exponential
           t->f_mat[i*t->ldscape_sz+j] = EXP(t->f_mat[i*t->ldscape_sz+j]);
           
-          /* printf("\n. i=%3d j=%3d var=%12f f=%12f %12f %12f",i,j,t->sigma,t->f_mat[i*t->ldscape_sz+j],loc1[0]-loc2[0],loc1[1]-loc2[1]); */
+          if(i == 32 && j == 54)
+            printf("\n. i=%3d j=%3d var=%12f f=%G %12f %12f %12f %12f lognloc: %d",i,j,t->sigma,t->f_mat[i*t->ldscape_sz+j],loc1[0],loc2[0],loc1[1],loc2[1],t->ldscape_sz);
 
           // Matrix is symmetric
           t->f_mat[j*t->ldscape_sz+i] = t->f_mat[i*t->ldscape_sz+j];
@@ -664,28 +668,33 @@ phydbl GEO_Lk(t_geo *t, t_tree *tree)
 
       R = GEO_Total_Migration_Rate(curr_n,t); // Total migration rate calculated at node n
 
-      if(i < 2)
-        {
-          printf("\n. t0: %f t1: %f  R: %f tau: %f sigma: %f lbda: %f x1: %f y1: %f x2: %f y2: %f",
-                 tree->rates->nd_t[t->sorted_nd[i-1]->num],
-                 tree->rates->nd_t[t->sorted_nd[i]->num],
-                 R,
-                 t->tau,                 
-                 t->lbda,                 
-                 t->sigma,                 
-                 t->ldscape[t->loc[tree->geo->sorted_nd[i-1]->num]*t->n_dim+0],
-                 t->ldscape[t->loc[tree->geo->sorted_nd[i-1]->num]*t->n_dim+1],
-                 t->ldscape[t->loc[tree->geo->sorted_nd[i]->num]*t->n_dim+0],
-                 t->ldscape[t->loc[tree->geo->sorted_nd[i]->num]*t->n_dim+1]);          
+      /* if(i < 2) */
+      /*   { */
+      /*     printf("\n. t0: %f t1: %f  R: %f tau: %f sigma: %f lbda: %f x1: %f y1: %f x2: %f y2: %f log0: %d loc1: %d rij: %G fij: %G", */
+      /*            tree->rates->nd_t[t->sorted_nd[i-1]->num], */
+      /*            tree->rates->nd_t[t->sorted_nd[i]->num], */
+      /*            R, */
+      /*            t->tau,                  */
+      /*            t->lbda,                  */
+      /*            t->sigma,                  */
+      /*            t->ldscape[t->loc[tree->geo->sorted_nd[i-1]->num]*t->n_dim+0], */
+      /*            t->ldscape[t->loc[tree->geo->sorted_nd[i-1]->num]*t->n_dim+1], */
+      /*            t->ldscape[t->loc[tree->geo->sorted_nd[i]->num]*t->n_dim+0], */
+      /*            t->ldscape[t->loc[tree->geo->sorted_nd[i]->num]*t->n_dim+1], */
+      /*            t->loc[tree->geo->sorted_nd[i-1]->num], */
+      /*            t->loc[tree->geo->sorted_nd[i]->num], */
+      /*            t->r_mat[t->loc[tree->geo->sorted_nd[i-1]->num] * t->ldscape_sz + t->loc[tree->geo->sorted_nd[i]->num]], */
+      /*            t->f_mat[t->loc[tree->geo->sorted_nd[i-1]->num] * t->ldscape_sz + t->loc[tree->geo->sorted_nd[i]->num]] */
+      /*            );           */
           
-          printf("\n >> ");
-          int j;
-          For(j,t->ldscape_sz) 
-            if(t->occup[t->sorted_nd[i]->num * t->ldscape_sz + j] > 0) 
-              printf("%f %f -- ",
-                     t->ldscape[j*t->n_dim+0],
-                     t->ldscape[j*t->n_dim+1]);
-        }
+      /*     printf("\n >> "); */
+      /*     int j; */
+      /*     For(j,t->ldscape_sz)  */
+      /*       if(t->occup[t->sorted_nd[i]->num * t->ldscape_sz + j] > 0)  */
+      /*         printf("%f %f -- ", */
+      /*                t->ldscape[j*t->n_dim+0], */
+      /*                t->ldscape[j*t->n_dim+1]); */
+      /*   } */
 
       
       /* printf("\n. %d %d (%d) %f %p %p \n",i,curr_n->num,curr_n->tax,tree->rates->nd_t[curr_n->num],curr_n->v[1],curr_n->v[2]); */
@@ -703,10 +712,15 @@ phydbl GEO_Lk(t_geo *t, t_tree *tree)
       loglk -= R * FABS(tree->rates->nd_t[curr_n->num] - tree->rates->nd_t[prev_n->num]);
       loglk += LOG(t->r_mat[dep * t->ldscape_sz + arr]);
 
-      /* printf("\n. R = %f r_mat = %f dt = %f loglk = %f", */
-      /*        R, */
-      /*        t->r_mat[dep * t->ldscape_sz + arr], */
-      /*        FABS(t->sorted_nd[i] - t->sorted_nd[i-1]),loglk); */
+      /* if(i<2) */
+      /*   { */
+          /* printf("\n. R = %f r_mat = %f f_mat = %f dt = %f loglk = %f", */
+          /*        R, */
+          /*        t->r_mat[dep * t->ldscape_sz + arr], */
+          /*        t->f_mat[dep * t->ldscape_sz + arr], */
+          /*        FABS(t->sorted_nd[i] - t->sorted_nd[i-1]),loglk); */
+          /* Exit("\n"); */
+        /* } */
 
     }
 
