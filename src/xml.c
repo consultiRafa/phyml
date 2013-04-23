@@ -421,7 +421,7 @@ xml_node *XML_Search_Node_Generic(char *nd_name, char *attr_name, char *attr_val
           if(!strcmp(nd_name,node->name))
             {
               xml_attr *attr = XML_Search_Attribute(node,attr_name);
-              if(attr && !strcmp(attr->val,attr_val)) match = node;
+              if(attr && !strcmp(attr->value,attr_val)) match = node;
             }
         }
       else if(!nd_name && attr_name && attr_val)
@@ -466,7 +466,7 @@ xml_node *XML_Search_Node_Generic(char *nd_name, char *attr_name, char *attr_val
         {
           if(node->parent == NULL) // Reached the root
             {
-              PhyML_Printf("\n== Could not find a node with name '%s'.",name);
+              PhyML_Printf("\n== Could not find a node with name '%s'.", attr_name);
               Exit("\n");
             }
           return NULL;
