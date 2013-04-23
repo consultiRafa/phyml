@@ -27,5 +27,6 @@ void Search_Root_Node_In_Slice(t_node *d_start, t_node *d, int *root_nodes, int 
 int Factorial(int base);
 phydbl *Norm_Constant_Prior_Times(t_tree *tree);
 void TIMES_Calib_Partial_Proba(t_tree *tree);
+xml_node *XML_Search_Node_Attribute_Value_Clade(char *attr_name, char *value, int skip, xml_node *node);
 #endif
 

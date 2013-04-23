@@ -63,6 +63,9 @@ void PhyTime_XML(char *xml_file)
 
   n_r = XML_Load_File(f);
 
+  //XML_Search_Node_Attribute_Value_Clade("id", "clade1", NO, n_r -> child);
+  //Exit("\n");
+
   //memory allocation for model parameters:
   io = (option *)Make_Input();
   mod   = (t_mod *)Make_Model_Basic();
@@ -331,20 +334,31 @@ void PhyTime_XML(char *xml_file)
                     }
                   else
                     {
-                      n_cur = XML_Search_Node_ID(clade_name, NO, n_r -> parent);
-                      if(n_cur) //found clade with a given name
-                        {                   
-                          i = 0;  
+                      xml_node *n_clade = NULL;
+                      /* n_cur = XML_Search_Node_ID(clade_name, NO, n_r -> parent); */
+                      n_clade = XML_Search_Node_Attribute_Value_Clade("id", clade_name, NO, n_r -> parent -> child);
+                      /* printf("\n. Clade node name [%s] \n", n_clade -> name); */
+                      /* printf("\n. Clade next node name [%s] \n", n_clade -> next -> name); */
+                      /* printf("\n. Clade prev node name [%s] \n", n_clade -> prev -> name); */
+                      /* printf("\n. Clade node attr value [%s] \n", n_clade -> attr -> value); */
+                      /* printf("\n. Clade node child name [%s] \n", n_clade -> child -> name); */
+                      /* printf("\n. Clade node child attr value [%s] \n", n_clade -> child -> attr -> value); */
+                      /* printf("\n. Clade node child name [%s] \n", n_clade -> child -> next -> name); */
+                      /* printf("\n. Clade node child attr value [%s] \n", n_clade -> child -> next -> attr -> value); */
+                      if(n_clade) //found clade with a given name
+                        {
+                          i = 0;
                           do
                             {
-                              strcpy(clade[i], n_cur -> child -> attr -> value); 
+                              strcpy(clade[i], n_clade -> child -> attr -> value); /* printf("\n. [%d] Taxa [%s] \n", i, n_clade -> child -> attr -> value); */
                               i++;
-                              if(n_cur -> child -> next) n_cur -> child = n_cur -> child -> next;
+                              if(n_clade -> child -> next) n_clade -> child = n_clade -> child -> next;
                               else break;
                             }
-                          while(n_cur -> child);
+                          while(n_clade -> child);
                           clade_size = i;
                           node_num = Find_Clade(clade, clade_size, io -> tree);
+                          /* printf("\n. Clade size [%d] \n", clade_size); */
                           //printf("\n. Node number [%d] \n", node_num);
                         }
                       else
@@ -357,28 +371,28 @@ void PhyTime_XML(char *xml_file)
                   For(j, n_mon)
                     {
                       if(!strcmp(clade_name, mon_list[j])) io -> mcmc -> monitor[node_num] = YES;
-                    }  
+                    }
                   //For(i, clade_size) PhyML_Printf("\n. Clade name [%s] Taxon name: [%s]", clade_name, clade[i]);
-                  //if(n_r -> child -> attr -> next -> value && String_To_Dbl(n_r -> child -> attr -> next -> value) != 0) 
+                  //if(n_r -> child -> attr -> next -> value && String_To_Dbl(n_r -> child -> attr -> next -> value) != 0)
                   //{
-                      tree -> rates -> calib -> proba[node_num] = String_To_Dbl(n_r -> child -> attr -> next -> value);
-                      if(!n_r -> child -> attr -> next && n_r -> child -> next == NULL) tree -> rates -> calib -> proba[node_num] = 1.;
-                      if(!n_r -> child -> attr -> next && n_r -> child -> next)
-                        {
-                          PhyML_Printf("==You either need to provide information about probability with which calibration \n");
-                          PhyML_Printf("==applies to a node or you need to apply calibartion only to one node. \n");
-                          PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
-                          Exit("\n");
-                        }
-                        
-                      tree -> rates -> calib -> all_applies_to[tree -> rates -> calib -> n_all_applies_to] -> num = node_num; 
-                      tree -> rates -> calib -> n_all_applies_to++;
-                      tree -> rates -> calib -> lower = low;
-                      tree -> rates -> calib -> upper = up; 
-                      //  }
-                      //printf("\n. Porbability [%f] \n", String_To_Dbl(n_r -> child -> attr -> next -> value));
+                  tree -> rates -> calib -> proba[node_num] = String_To_Dbl(n_r -> child -> attr -> next -> value);
+                  if(!n_r -> child -> attr -> next && n_r -> child -> next == NULL) tree -> rates -> calib -> proba[node_num] = 1.;
+                  if(!n_r -> child -> attr -> next && n_r -> child -> next)
+                    {
+                      PhyML_Printf("==You either need to provide information about probability with which calibration \n");
+                      PhyML_Printf("==applies to a node or you need to apply calibartion only to one node. \n");
+                      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+                      Exit("\n");
+                    }
                   
-                  /////////////////////////////////////////////////////////////////////////////////////////////////////               
+                  tree -> rates -> calib -> all_applies_to[tree -> rates -> calib -> n_all_applies_to] -> num = node_num;
+                  tree -> rates -> calib -> n_all_applies_to++;
+                  tree -> rates -> calib -> lower = low;
+                  tree -> rates -> calib -> upper = up;
+                  //  }
+                  //printf("\n. Porbability [%f] \n", String_To_Dbl(n_r -> child -> attr -> next -> value));
+                  
+                  /////////////////////////////////////////////////////////////////////////////////////////////////////
                   PhyML_Printf("\n. .......................................................................");
                   PhyML_Printf("\n");
                   PhyML_Printf("\n. Clade name: [%s]", clade_name);
@@ -389,19 +403,19 @@ void PhyTime_XML(char *xml_file)
                   PhyML_Printf("\n. Node number to which calibration applies to is [%d] with probability [%f]", node_num, String_To_Dbl(n_r -> child -> attr -> next -> value));
                   PhyML_Printf("\n. Lower bound set to: %15f time units.", low);
                   PhyML_Printf("\n. Upper bound set to: %15f time units.", up);
-                  PhyML_Printf("\n. ......................................................................."); 
+                  PhyML_Printf("\n. .......................................................................");
                   /////////////////////////////////////////////////////////////////////////////////////////////////////
                   if(n_r -> child -> next) n_r -> child = n_r -> child -> next;
                   else break;    
                 }
               else if(n_r -> child -> next) n_r -> child = n_r -> child -> next;
-              else break;              
+              else break; 
             }
-          while(n_r -> child);                  
+          while(n_r -> child);      
           //PhyML_Printf("\n. '%d'\n", tree -> rates -> calib -> n_all_applies_to);
           tree -> rates -> calib = tree -> rates -> calib -> next;	   
-	  n_r = n_r -> next;
-	}
+          n_r = n_r -> next;
+        }      
       else if(!strcmp(n_r -> name, "ratematrices"))//initializing rate matrix:
         {
           if(n_r -> child) 
@@ -413,12 +427,12 @@ void PhyTime_XML(char *xml_file)
         }
       else if(!strcmp(n_r -> name, "equfreqs"))//initializing frequencies:
         {
-           if(n_r -> child) 
-             {
+          if(n_r -> child) 
+            {
                Make_Efrq_From_XML_Node(n_r -> child , io, mod);
                n_r = n_r -> next;
-             }
-           else n_r = n_r -> next;
+            }
+          else n_r = n_r -> next;
         }
       else if(!strcmp(n_r -> name, "siterates"))//initializing site rates:
         {
@@ -466,7 +480,6 @@ void PhyTime_XML(char *xml_file)
       free(clade[i]);
     }
   free(clade);
-
   For(i, T_MAX_FILE)
     {
       free(mon_list[i]);
@@ -1682,6 +1695,86 @@ void Update_Times_Down_Tree(t_node *a, t_node *d, phydbl *L_Hastings_ratio, t_tr
     }
 }
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+xml_node *XML_Search_Node_Attribute_Value_Clade(char *attr_name, char *value, int skip, xml_node *node)
+{
+  xml_node *match;
+
+  //printf("\n. Node name [%s] Attr name [%s] Attr value [%s] \n", node -> name, attr_name, value);
+  if(!node)
+    {
+      PhyML_Printf("\n== node: %p attr: %p",node,node?node->attr:NULL);
+      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+      Exit("\n");         
+    }
+  
+  match = NULL;
+
+  if(skip == NO && node -> attr)
+    {
+      xml_attr *attr;
+
+      attr = node -> attr;
+      do
+        {
+          if(!strcmp(attr -> name, attr_name) && !strcmp(attr -> value, value))
+            {
+              match = node;
+              break;
+            }
+          attr = attr->next;
+          if(!attr) break;
+        }
+      while(1);
+    }
+  if(match) return(match);
+  if(node -> next && !match)
+    {
+      match = XML_Search_Node_Attribute_Value_Clade(attr_name, value, NO, node -> next);
+      return match;
+    }
+
+  /* if(skip)  */
+  /*   { */
+  /*     match = XML_Search_Node_Attribute_Value(attr_name, value, NO, node->child); */
+  /*     return match; */
+  /*   } */
+
+  /* if(skip == NO && node->attr) */
+  /*   { */
+  /*     xml_attr *attr; */
+
+  /*     attr = node->attr; */
+  /*     do */
+  /*       { */
+  /*         if(!strcmp(attr->name,attr_name) &&  */
+  /*            !strcmp(attr->value,value))  */
+  /*           { */
+  /*             match = node; */
+  /*             break; */
+  /*           } */
+  /*         attr = attr->next; */
+  /*         if(!attr) break; */
+  /*       } */
+  /*     while(1); */
+  /*   } */
+
+  /* if(match) return(match); */
+
+  /* if(node->child) */
+  /*   { */
+  /*     match = XML_Search_Node_Attribute_Value(attr_name,value,NO,node->child); */
+  /*     return match; */
+  /*   } */
+  /* if(node->next && !match) */
+  /*   { */
+  /*     match = XML_Search_Node_Attribute_Value(attr_name,value,NO,node->next); */
+  /*     return match; */
+  /*   } */
+  return NULL;
+}
 
 
 
