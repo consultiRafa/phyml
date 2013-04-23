@@ -402,6 +402,82 @@ int XML_Set_Node_Value(xml_node *n, char *val)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+xml_node *XML_Search_Node_Generic(char *nd_name, char *attr_name, char *attr_val, int skip, xml_node *node)
+{
+
+  xml_node *match;
+  
+  /* printf("\n. name:%s child:%s next:%s ", */
+  /*     node?node->name:"xx", */
+  /*     node->child?node->child->name:"xx", */
+  /*     node->next?node->next->name:"xx"); fflush(NULL); */
+
+
+  match = NULL;
+  if(skip == NO) 
+    {
+      if(nd_name && attr_name && attr_val)
+        {
+          if(!strcmp(nd_name,node->name))
+            {
+              xml_attr *attr = XML_Search_Attribute(node,attr_name);
+              if(attr && !strcmp(attr->val,attr_val)) match = node;
+            }
+        }
+      else if(!nd_name && attr_name && attr_val)
+        {
+          match = node;
+        }
+      else if(nd_name && !attr_name && attr_val)
+        {
+          match = node;
+        }
+      else if(nd_name && attr_name && !attr_val)
+        {
+          match = node;
+        }
+      else if(nd_name && !attr_name && !attr_val)
+        {
+          match = node;
+        }
+      else if(!nd_name && attr_name && !attr_val)
+        {
+          match = node;
+        }
+      else if(!nd_name && !attr_name && attr_val)
+        {
+          match = node;
+        }
+
+    }
+  else
+    {
+      // If node has a child, node = child, else if node has next, node = next, else if node
+      // has parent, node = parent->next else node = NULL
+      if(node->child)
+        {
+          match = XML_Search_Node_Generic(nd_name,attr_name,attr_val,NO,node->child);
+        }
+      if(match == NULL && node->next)
+        {
+          match = XML_Search_Node_Generic(nd_name,attr_name,attr_val,NO,node->next);
+        }
+      if(match == NULL && node->parent)
+        {
+          if(node->parent == NULL) // Reached the root
+            {
+              PhyML_Printf("\n== Could not find a node with name '%s'.",name);
+              Exit("\n");
+            }
+          return NULL;
+        }
+    }
+  return match;
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 xml_node *XML_Search_Node_Name(char *name, int skip, xml_node *node)
 {
 

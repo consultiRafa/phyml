@@ -353,12 +353,19 @@ void PhyTime_XML(char *xml_file)
                           /* printf("\n. [%d] Taxa [%s] \n", 1, n_clade -> child -> attr -> value);  */
                           /* printf("\n. [%d] Taxa [%s] \n", 2, n_clade -> child -> next -> attr -> value);  */
                           i = 0;
+                          xml_node *nd;
+                          nd = n_clade -> child;
                           do
                             {
-                              strcpy(clade[i], n_clade -> child -> attr -> value); /* printf("\n. [%d] Taxa [%s] \n", i, n_clade -> child -> attr -> value); */
+                              /* strcpy(clade[i], n_clade -> child -> attr -> value); /\* printf("\n. [%d] Taxa [%s] \n", i, n_clade -> child -> attr -> value); *\/ */
+                              /* i++; */
+                              /* if(n_clade -> child -> next) n_clade -> child = n_clade -> child -> next; */
+                              /* else break; */
+
+                              strcpy(clade[i], nd -> attr -> value); /* printf("\n. [%d] Taxa [%s] \n", i, n_clade -> child -> attr -> value); */
                               i++;
-                              if(n_clade -> child -> next) n_clade -> child = n_clade -> child -> next;
-                              else break;
+                              nd = nd -> next;
+                              if(!nd) break;
                             }
                           while(n_clade -> child);
                           clade_size = i;
@@ -1791,15 +1798,11 @@ char **XML_Reading_Clade(xml_node *n_clade)
   char **clade;
 
   clade = (char **)mCalloc(T_MAX_FILE,sizeof(char *));
-  For(i, T_MAX_FILE)
-    {
-      clade[i] = (char *)mCalloc(T_MAX_NAME,sizeof(char));
-    }
   if(n_clade -> child)
     {
       do
         {
-          strcpy(clade[i], n_clade -> child -> attr -> value); 
+          clade[i] =  n_clade -> child -> attr -> value; 
           i++;
           if(n_clade -> child -> next) n_clade -> child = n_clade -> child -> next;
           else break;
