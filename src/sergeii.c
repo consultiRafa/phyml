@@ -717,7 +717,7 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
       TIMES_Set_All_Node_Priors(tree);
       //For(j, 2 * tree -> n_otu - 1) printf("\n. [1] Node [%d] min [%f] max [%f] node time [%f]\n", j, tree -> rates -> t_prior_min[j], tree -> rates -> t_prior_max[j], tree -> rates -> nd_t[j]);
       //printf("\n. p[%i] = %f \n", i + 1, times_partial_proba[i]);     
-      tree -> rates -> birth_rate = 0.01;
+      //tree -> rates -> birth_rate = 4.0;
 
       times_lk = TIMES_Lk_Yule_Order(tree);
 
@@ -1692,8 +1692,8 @@ void Update_Times_Down_Tree(t_node *a, t_node *d, phydbl *L_Hastings_ratio, t_tr
           //(*L_Hastings_ratio) += (LOG(1) - LOG(t_up - t_low));
           (*L_Hastings_ratio) += (- LOG(t_up - t_low));
           nd_t[d -> num] = Randomize_One_Node_Time(t_low, t_up);
-          t_prior_min[d -> num] = t_low; // NOT SURE WHY YOU ARE DOING THIS !!!!!!!!!!!
-          t_prior_max[d -> num] = t_up;  // NOT SURE WHY YOU ARE DOING THIS !!!!!!!!!!!
+          /* t_prior_min[d -> num] = t_low;  */
+          /* t_prior_max[d -> num] = t_up;   */
         }    
       
       For(i,3) 
@@ -1825,7 +1825,7 @@ int XML_Number_Of_Taxa_In_Clade(xml_node *n_clade)
     {
       do
         {
-          clade_size++;
+          clade_size++; 
           if(n_clade -> child -> next) n_clade -> child = n_clade -> child -> next;
           else break;
         }
