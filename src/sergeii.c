@@ -159,8 +159,8 @@ void PhyTime_XML(char *xml_file)
  
   //memory for clade:
   clade_name = (char *)mCalloc(T_MAX_NAME,sizeof(char));
-  clade = (char **)mCalloc(T_MAX_FILE,sizeof(char *));
-  For(i, T_MAX_FILE)
+  clade = (char **)mCalloc(tree -> n_otu, sizeof(char *));
+  For(i, tree -> n_otu)
     {
       clade[i] = (char *)mCalloc(T_MAX_NAME,sizeof(char));
     }
@@ -334,43 +334,26 @@ void PhyTime_XML(char *xml_file)
                     }
                   else
                     {
-                      /* printf("\n\n"); */
-                      xml_node *n_clade;
-                      /* n_cur = XML_Search_Node_ID(clade_name, NO, n_r -> parent); */
-                      n_clade = XML_Search_Node_Attribute_Value_Clade("id", clade_name, NO, n_r -> parent -> child);
-                      /* printf("\n. Clade node name [%s] \n", n_clade -> name); */
-                      /* printf("\n. Clade next node name [%s] \n", n_clade -> next -> name); */
-                      /* printf("\n. Clade prev node name [%s] \n", n_clade -> prev -> name); */
-                      /* printf("\n. Clade node attr value [%s] \n", n_clade -> attr -> value); */
-                      /* printf("\n. Clade node child name [%s] \n", n_clade -> child -> name); */
-                      /* printf("\n. Clade node child attr value [%s] \n", n_clade -> child -> attr -> value); */
-                      /* printf("\n. Clade node child name [%s] \n", n_clade -> child -> next -> name); */
-                      /* printf("\n. Clade node child attr value [%s] \n", n_clade -> child -> next -> attr -> value); */
-                      /* printf("\n\n"); */
+                      xml_node *n_clade, *nd2;
+                      nd2 = n_r -> parent;
+                      /* n_clade = XML_Search_Node_Attribute_Value_Clade("id", clade_name, NO, n_r -> parent -> child); */
+                      n_clade = XML_Search_Node_Generic("clade", "id", clade_name, YES, nd2);
                       if(n_clade) //found clade with a given name
                         {
-                          /* PhyML_Printf("\n. HELLO \n"); */
-                          /* printf("\n. [%d] Taxa [%s] \n", 1, n_clade -> child -> attr -> value);  */
-                          /* printf("\n. [%d] Taxa [%s] \n", 2, n_clade -> child -> next -> attr -> value);  */
                           i = 0;
                           xml_node *nd;
                           nd = n_clade -> child;
-                          do
-                            {
-                              /* strcpy(clade[i], n_clade -> child -> attr -> value); /\* printf("\n. [%d] Taxa [%s] \n", i, n_clade -> child -> attr -> value); *\/ */
-                              /* i++; */
-                              /* if(n_clade -> child -> next) n_clade -> child = n_clade -> child -> next; */
-                              /* else break; */
-
-                              strcpy(clade[i], nd -> attr -> value); /* printf("\n. [%d] Taxa [%s] \n", i, n_clade -> child -> attr -> value); */
-                              i++;
-                              nd = nd -> next;
-                              if(!nd) break;
-                            }
-                          while(n_clade -> child);
-                          clade_size = i;
-                          /* clade = XML_Reading_Clade(n_clade); */
-                          /* clade_size = XML_Number_Of_Taxa_In_Clade(n_clade); */
+                          /* do */
+                          /*   { */
+                          /*     strcpy(clade[i], nd -> attr -> value);  */
+                          /*     i++; */
+                          /*     nd = nd -> next; */
+                          /*     if(!nd) break; */
+                          /*   } */
+                          /* while(n_clade -> child); */
+                          /* clade_size = i; */
+                          clade = XML_Reading_Clade(nd, tree);
+                          clade_size = XML_Number_Of_Taxa_In_Clade(nd);
                           node_num = Find_Clade(clade, clade_size, io -> tree);
                           /* printf("\n. Clade size [%d] \n", clade_size); */
                           /* printf("\n. Node number [%d] \n", node_num); */
@@ -387,8 +370,6 @@ void PhyTime_XML(char *xml_file)
                       if(!strcmp(clade_name, mon_list[j])) io -> mcmc -> monitor[node_num] = YES;
                     }
                   /* For(i, clade_size) PhyML_Printf("\n. Clade name [%s] Taxon name: [%s]", clade_name, clade[i]); */
-                  /* if(n_r -> child -> attr -> next -> value && String_To_Dbl(n_r -> child -> attr -> next -> value) != 0) */
-                  /* { */
                   tree -> rates -> calib -> proba[node_num] = String_To_Dbl(n_r -> child -> attr -> next -> value);
                   if(!n_r -> child -> attr -> next && n_r -> child -> next == NULL) tree -> rates -> calib -> proba[node_num] = 1.;
                   if(!n_r -> child -> attr -> next && n_r -> child -> next)
@@ -403,8 +384,7 @@ void PhyTime_XML(char *xml_file)
                   tree -> rates -> calib -> n_all_applies_to++;
                   tree -> rates -> calib -> lower = low;
                   tree -> rates -> calib -> upper = up;
-                  //  }
-                  //printf("\n. Porbability [%f] \n", String_To_Dbl(n_r -> child -> attr -> next -> value));
+                  /* printf("\n. Porbability [%f] \n", String_To_Dbl(n_r -> child -> attr -> next -> value)); */
                   
                   /////////////////////////////////////////////////////////////////////////////////////////////////////
                   PhyML_Printf("\n. .......................................................................");
@@ -489,7 +469,7 @@ void PhyTime_XML(char *xml_file)
   ////////////////////////////////////////////////////////////////////////////   
   //clear memory:
   free(clade_name);
-  For(i, T_MAX_FILE)
+  For(i, tree -> n_otu)
     {
       free(clade[i]);
     }
@@ -722,7 +702,9 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
       while(calib);
 
       TIMES_Set_All_Node_Priors(tree);
-      //For(j, 2 * tree -> n_otu - 1) printf("\n. [1] Node [%d] min [%f] max [%f] node time [%f]\n", j, tree -> rates -> t_prior_min[j], tree -> rates -> t_prior_max[j], tree -> rates -> nd_t[j]);
+      /* printf("\n\n"); */
+      /* For(j, 2 * tree -> n_otu - 1) printf("\n. [1] Node [%d] min [%f] max [%f] node time [%f]\n", j, tree -> rates -> t_prior_min[j], tree -> rates -> t_prior_max[j], tree -> rates -> nd_t[j]); */
+      /* printf("\n\n");  */
       //printf("\n. p[%i] = %f \n", i + 1, times_partial_proba[i]);     
       //tree -> rates -> birth_rate = 4.0;
 
@@ -770,7 +752,7 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
   /* printf("\n\n"); */
   free(Yule_val);  
   /* free(times_partial_proba); */
-  /* Exit("\n"); */
+  //Exit("\n");
   return(ln_t);
 }
 
@@ -1052,7 +1034,7 @@ phydbl Slicing_Calibrations(t_tree *tree)
           lmbd = tree -> rates -> birth_rate;
           num = 1;
           denom = 1;
-          //lmbd = 0.01;
+          //lmbd = 4.0;
           /* For(j, n_otu - 1) num = num * (EXP(-lmbd * t_cur_slice_min[j]) - EXP(-lmbd * t_cur_slice_max[j]));  */
           /* for(j = n_otu; j < 2 * n_otu - 1; j++) denom = denom * (EXP(-lmbd * t_prior_min[j]) - EXP(-lmbd * t_prior_max[j]));  */
           For(j, n_otu - 2) num = num * (EXP(lmbd * t_cur_slice_max[j]) - EXP(lmbd * t_cur_slice_min[j])); 
@@ -1725,11 +1707,9 @@ xml_node *XML_Search_Node_Attribute_Value_Clade(char *attr_name, char *value, in
     }
   
   match = NULL;
-
   if(skip == NO && node -> attr)
     {
       xml_attr *attr;
-
       attr = node -> attr;
       do
         {
@@ -1749,65 +1729,30 @@ xml_node *XML_Search_Node_Attribute_Value_Clade(char *attr_name, char *value, in
       match = XML_Search_Node_Attribute_Value_Clade(attr_name, value, NO, node -> next);
       return match;
     }
-
-  /* if(skip)  */
-  /*   { */
-  /*     match = XML_Search_Node_Attribute_Value(attr_name, value, NO, node->child); */
-  /*     return match; */
-  /*   } */
-
-  /* if(skip == NO && node->attr) */
-  /*   { */
-  /*     xml_attr *attr; */
-
-  /*     attr = node->attr; */
-  /*     do */
-  /*       { */
-  /*         if(!strcmp(attr->name,attr_name) &&  */
-  /*            !strcmp(attr->value,value))  */
-  /*           { */
-  /*             match = node; */
-  /*             break; */
-  /*           } */
-  /*         attr = attr->next; */
-  /*         if(!attr) break; */
-  /*       } */
-  /*     while(1); */
-  /*   } */
-
-  /* if(match) return(match); */
-
-  /* if(node->child) */
-  /*   { */
-  /*     match = XML_Search_Node_Attribute_Value(attr_name,value,NO,node->child); */
-  /*     return match; */
-  /*   } */
-  /* if(node->next && !match) */
-  /*   { */
-  /*     match = XML_Search_Node_Attribute_Value(attr_name,value,NO,node->next); */
-  /*     return match; */
-  /*   } */
   return NULL;
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-char **XML_Reading_Clade(xml_node *n_clade)
+char **XML_Reading_Clade(xml_node *n_clade, t_tree *tree)
 {
-  int i = 0;
+  int i, n_otu;
   char **clade;
 
-  clade = (char **)mCalloc(T_MAX_FILE,sizeof(char *));
-  if(n_clade -> child)
+  i = 0;
+  n_otu = tree -> n_otu;
+
+  clade = (char **)mCalloc(n_otu, sizeof(char *));
+  if(n_clade)
     {
       do
         {
-          clade[i] =  n_clade -> child -> attr -> value; 
+          clade[i] =  n_clade -> attr -> value; 
           i++;
-          if(n_clade -> child -> next) n_clade -> child = n_clade -> child -> next;
+          if(n_clade -> next) n_clade = n_clade -> next;
           else break;
         }
-      while(n_clade -> child);
+      while(n_clade);
     }
   else
     {
@@ -1824,15 +1769,15 @@ char **XML_Reading_Clade(xml_node *n_clade)
 int XML_Number_Of_Taxa_In_Clade(xml_node *n_clade)
 {
   int clade_size = 0;
-  if(n_clade -> child)
+  if(n_clade)
     {
       do
         {
           clade_size++; 
-          if(n_clade -> child -> next) n_clade -> child = n_clade -> child -> next;
+          if(n_clade -> next) n_clade = n_clade -> next;
           else break;
         }
-      while(n_clade -> child);
+      while(n_clade);
     }
   else
     {

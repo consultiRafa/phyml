@@ -406,6 +406,9 @@ xml_node *XML_Search_Node_Generic(char *nd_name, char *attr_name, char *attr_val
 {
 
   xml_node *match;
+
+  /* if(nd_name) printf("\n. [1] nd_name:%s attr_name:%s attr_val:%s \n", nd_name, attr_name, attr_val); */
+  /* else  printf("\n. attr_name:%s attr_val:%s \n", attr_name, attr_val); */
   
   /* printf("\n. name:%s child:%s next:%s ", */
   /*     node?node->name:"xx", */
@@ -414,63 +417,97 @@ xml_node *XML_Search_Node_Generic(char *nd_name, char *attr_name, char *attr_val
 
 
   match = NULL;
-  if(skip == NO) 
+  if(skip == NO && nd_name && attr_name && attr_val)
     {
-      if(nd_name && attr_name && attr_val)
+      if(!strcmp(nd_name, node -> name))
         {
-          if(!strcmp(nd_name,node->name))
-            {
-              xml_attr *attr = XML_Search_Attribute(node,attr_name);
-              if(attr && !strcmp(attr->value,attr_val)) match = node;
-            }
+          xml_attr *attr = XML_Search_Attribute(node, attr_name);
+          if(attr && !strcmp(attr -> value, attr_val)) match = node;
         }
-      else if(!nd_name && attr_name && attr_val)
-        {
-          match = node;
-        }
-      else if(nd_name && !attr_name && attr_val)
-        {
-          match = node;
-        }
-      else if(nd_name && attr_name && !attr_val)
-        {
-          match = node;
-        }
-      else if(nd_name && !attr_name && !attr_val)
-        {
-          match = node;
-        }
-      else if(!nd_name && attr_name && !attr_val)
-        {
-          match = node;
-        }
-      else if(!nd_name && !attr_name && attr_val)
-        {
-          match = node;
-        }
-
     }
-  else
+  else if(skip == NO && !nd_name && attr_name && attr_val)
     {
-      // If node has a child, node = child, else if node has next, node = next, else if node
-      // has parent, node = parent->next else node = NULL
-      if(node->child)
+      xml_attr *attr = XML_Search_Attribute(node, attr_name);
+      if(attr && !strcmp(attr -> value, attr_val)) match = node;
+    }
+  else if(skip == NO && nd_name && !attr_name && attr_val)
+    {
+      if(!strcmp(nd_name, node -> name))
         {
-          match = XML_Search_Node_Generic(nd_name,attr_name,attr_val,NO,node->child);
-        }
-      if(match == NULL && node->next)
-        {
-          match = XML_Search_Node_Generic(nd_name,attr_name,attr_val,NO,node->next);
-        }
-      if(match == NULL && node->parent)
-        {
-          if(node->parent == NULL) // Reached the root
+          do
             {
-              PhyML_Printf("\n== Could not find a node with name '%s'.", attr_name);
-              Exit("\n");
+              if(!strcmp(node -> attr -> value, attr_val)) 
+                {
+                  match = node;
+                  break;
+                }
+              node -> attr = node -> attr -> next;
+              if(!node -> attr) break;
             }
-          return NULL;
+          while(1);
         }
+    }
+  else if(skip == NO && nd_name && attr_name && !attr_val)
+    {
+      if(!strcmp(nd_name, node -> name))
+        {
+          do
+            {
+              if(!strcmp(node -> attr -> name, attr_name)) 
+                {
+                  match = node;
+                  break;
+                }
+              node -> attr = node -> attr -> next;
+              if(!node -> attr) break;
+            }
+          while(1);
+        }
+    }
+  else if(skip == NO && nd_name && !attr_name && !attr_val)
+    {
+      if(!strcmp(nd_name, node -> name)) match = node;
+    }
+  else if(skip == NO && !nd_name && attr_name && !attr_val)
+    {
+      xml_attr *attr = XML_Search_Attribute(node, attr_name);
+      if(attr) match = node;
+    }
+  else if(skip == NO && !nd_name && !attr_name && attr_val)
+    {
+      do
+        {
+          if(!strcmp(node -> attr -> value, attr_val)) 
+            {
+              match = node;
+              break;
+            }
+          node -> attr = node -> attr -> next;
+          if(!node -> attr) break;
+        }
+      while(1);
+    }
+
+  // If node has a child, node = child, else if node has next, node = next, else if node
+  // has parent, node = parent->next else node = NULL
+
+  if(match) return(match);
+  if(node -> child)
+    {
+      match = XML_Search_Node_Generic(nd_name, attr_name, attr_val, NO, node -> child);
+    }
+  if(!match && node -> next)
+    {
+      match = XML_Search_Node_Generic(nd_name, attr_name, attr_val, NO, node -> next);
+    }
+  if(match == NULL && node -> parent)
+    {
+      if(node -> parent == NULL) // Reached the root
+        {
+          PhyML_Printf("\n== Could not find a node with name '%s'.", attr_name);
+          Exit("\n");
+        }
+      return NULL;
     }
   return match;
 }
