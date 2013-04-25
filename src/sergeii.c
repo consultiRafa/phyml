@@ -332,7 +332,7 @@ void PhyTime_XML(char *xml_file)
                       node_num = io -> tree -> n_root -> num;
                       //printf("\n. Node number [%d] \n", node_num);
                     }
-                  else
+                  else if(strcmp("NO_CLADE", clade_name) && strcmp("root", clade_name))
                     {
                       xml_node *n_clade, *nd2;
                       nd2 = n_r -> parent;
@@ -365,22 +365,30 @@ void PhyTime_XML(char *xml_file)
                           Exit("\n");
                         }
                     }
-                  For(j, n_mon)
+                  if(strcmp("NO_CLADE", clade_name))
                     {
-                      if(!strcmp(clade_name, mon_list[j])) io -> mcmc -> monitor[node_num] = YES;
+                      For(j, n_mon)
+                        {
+                          if(!strcmp(clade_name, mon_list[j])) io -> mcmc -> monitor[node_num] = YES;
+                        }
                     }
                   /* For(i, clade_size) PhyML_Printf("\n. Clade name [%s] Taxon name: [%s]", clade_name, clade[i]); */
-                  tree -> rates -> calib -> proba[node_num] = String_To_Dbl(n_r -> child -> attr -> next -> value);
-                  if(!n_r -> child -> attr -> next && n_r -> child -> next == NULL) tree -> rates -> calib -> proba[node_num] = 1.;
-                  if(!n_r -> child -> attr -> next && n_r -> child -> next)
+                  if(strcmp("NO_CLADE", clade_name)) 
                     {
-                      PhyML_Printf("==You either need to provide information about probability with which calibration \n");
-                      PhyML_Printf("==applies to a node or you need to apply calibartion only to one node. \n");
-                      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
-                      Exit("\n");
+                      tree -> rates -> calib -> proba[node_num] = String_To_Dbl(n_r -> child -> attr -> next -> value);
+                      
+                      if(!n_r -> child -> attr -> next && n_r -> child -> next == NULL) tree -> rates -> calib -> proba[node_num] = 1.;
+                      if(!n_r -> child -> attr -> next && n_r -> child -> next)
+                        {
+                          PhyML_Printf("==You either need to provide information about probability with which calibration \n");
+                          PhyML_Printf("==applies to a node or you need to apply calibartion only to one node. \n");
+                          PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+                          Exit("\n");
+                        }
+                      
+                      tree -> rates -> calib -> all_applies_to[tree -> rates -> calib -> n_all_applies_to] -> num = node_num;
                     }
-                  
-                  tree -> rates -> calib -> all_applies_to[tree -> rates -> calib -> n_all_applies_to] -> num = node_num;
+                  else tree -> rates -> calib -> proba[2 * tree -> n_otu - 1] = String_To_Dbl(n_r -> child -> attr -> next -> value);
                   tree -> rates -> calib -> n_all_applies_to++;
                   tree -> rates -> calib -> lower = low;
                   tree -> rates -> calib -> upper = up;
@@ -389,15 +397,27 @@ void PhyTime_XML(char *xml_file)
                   /////////////////////////////////////////////////////////////////////////////////////////////////////
                   PhyML_Printf("\n. .......................................................................");
                   PhyML_Printf("\n");
-                  PhyML_Printf("\n. Clade name: [%s]", clade_name);
-                  if(strcmp(clade_name, "root"))
+                  if(strcmp(clade_name, "NO_CLADE")) PhyML_Printf("\n. Clade name: [%s]", clade_name);
+                  else 
+                    {
+                      PhyML_Printf("\n. Calibration with:");
+                      PhyML_Printf("\n. Lower bound set to: %15f time units.", low);
+                      PhyML_Printf("\n. Upper bound set to: %15f time units.", up);
+                      PhyML_Printf("\n. DOES NOT apply with probability [%f]", String_To_Dbl(n_r -> child -> attr -> next -> value));
+                      PhyML_Printf("\n. .......................................................................");
+                    }
+       
+                  if(strcmp(clade_name, "root") && strcmp(clade_name, "NO_CLADE"))
                     {
                       For(i, clade_size) PhyML_Printf("\n. Taxon name: [%s]", clade[i]);
                     }
-                  PhyML_Printf("\n. Node number to which calibration applies to is [%d] with probability [%f]", node_num, String_To_Dbl(n_r -> child -> attr -> next -> value));
-                  PhyML_Printf("\n. Lower bound set to: %15f time units.", low);
-                  PhyML_Printf("\n. Upper bound set to: %15f time units.", up);
-                  PhyML_Printf("\n. .......................................................................");
+                  if(strcmp(clade_name, "NO_CLADE")) 
+                    {
+                      PhyML_Printf("\n. Node number to which calibration applies to is [%d] with probability [%f]", node_num, String_To_Dbl(n_r -> child -> attr -> next -> value));
+                      PhyML_Printf("\n. Lower bound set to: %15f time units.", low);
+                      PhyML_Printf("\n. Upper bound set to: %15f time units.", up);
+                      PhyML_Printf("\n. .......................................................................");
+                    }
                   /////////////////////////////////////////////////////////////////////////////////////////////////////
                   if(n_r -> child -> next) n_r -> child = n_r -> child -> next;
                   else break;    
@@ -449,12 +469,26 @@ void PhyTime_XML(char *xml_file)
   do
     {
       phydbl p = 0.0;
-      for(i = tree -> n_otu; i < 2 * tree -> n_otu - 1; i++) p = p + tree -> rates -> calib -> proba[i];
-      if(p != 1.0)
+      for(i = tree -> n_otu; i < 2 * tree -> n_otu; i++) 
         {
-          PhyML_Printf("\n==You need to provide proper probabilities for the calibration. \n");
-          PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
-          Exit("\n");
+          p = p + tree -> rates -> calib -> proba[i];
+          /* PhyML_Printf("\n. # applies to %d \n", tree -> rates -> calib -> n_all_applies_to); */
+          /* PhyML_Printf("\n. %f \n", tree -> rates -> calib -> proba[i]); */
+        }
+      if(!Are_Equal(p, 1.0, 1.E-10))
+        {
+          PhyML_Printf("\n. .......................................................................");
+          PhyML_Printf("\n. WARNING! The sum of the probabilities for the calibration with:");
+          PhyML_Printf("\n. Lower bound set to: %15f time units.", tree -> rates -> calib -> lower);
+          PhyML_Printf("\n. Upper bound set to: %15f time units.", tree -> rates -> calib -> upper);
+          PhyML_Printf("\n. IS NOT equal to 1.");
+          PhyML_Printf("\n. The probability of NOT applying this calibration will be set to [%f].", 1.0 - p);
+          PhyML_Printf("\n. .......................................................................");
+          tree -> rates -> calib -> proba[2 * tree -> n_otu - 1] = 1.0 - p;
+          tree -> rates -> calib -> n_all_applies_to++;
+          /* PhyML_Printf("\n==You need to provide proper probabilities for the calibration. \n"); */
+          /* PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__); */
+          /* Exit("\n"); */
         } 
       if(tree -> rates -> calib -> next) tree -> rates -> calib = tree -> rates -> calib -> next;
       else break;
@@ -691,11 +725,19 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
       do
         {
           k = (i % Number_Of_Comb(calib)) / Number_Of_Comb(calib -> next);
-          t_prior_min[calib -> all_applies_to[k] -> num] = MAX(t_prior_min[calib -> all_applies_to[k] -> num], calib -> lower);
-          t_prior_max[calib -> all_applies_to[k] -> num] = MIN(t_prior_max[calib -> all_applies_to[k] -> num], calib -> upper);
-          t_has_prior[calib -> all_applies_to[k] -> num] = YES;
-          /* if((t_prior_min[calib -> all_applies_to[k] -> num] > t_prior_max[calib -> all_applies_to[k] -> num])) times_partial_proba[i] = 0.0;  */
-          /* else times_partial_proba[i] *= calib -> proba[calib -> all_applies_to[k] -> num];  */
+          if(calib -> all_applies_to[k] -> num)
+            {
+              t_prior_min[calib -> all_applies_to[k] -> num] = MAX(t_prior_min[calib -> all_applies_to[k] -> num], calib -> lower);
+              t_prior_max[calib -> all_applies_to[k] -> num] = MIN(t_prior_max[calib -> all_applies_to[k] -> num], calib -> upper);
+              t_has_prior[calib -> all_applies_to[k] -> num] = YES;
+              /* if((t_prior_min[calib -> all_applies_to[k] -> num] > t_prior_max[calib -> all_applies_to[k] -> num])) times_partial_proba[i] = 0.0;  */
+              /* else times_partial_proba[i] *= calib -> proba[calib -> all_applies_to[k] -> num];  */
+            }
+          else
+            {
+              if(calib -> next) calib = calib -> next;
+              else break;
+            }
           if(calib -> next) calib = calib -> next;
           else break;
         }
@@ -704,8 +746,9 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
       TIMES_Set_All_Node_Priors(tree);
       /* printf("\n\n"); */
       /* For(j, 2 * tree -> n_otu - 1) printf("\n. [1] Node [%d] min [%f] max [%f] node time [%f]\n", j, tree -> rates -> t_prior_min[j], tree -> rates -> t_prior_max[j], tree -> rates -> nd_t[j]); */
-      /* printf("\n\n");  */
-      //printf("\n. p[%i] = %f \n", i + 1, times_partial_proba[i]);     
+      /* printf("\n. p[%i] = %f \n", i + 1, times_partial_proba[i]); */
+      /* printf("\n\n"); */
+
       //tree -> rates -> birth_rate = 4.0;
 
       times_lk = TIMES_Lk_Yule_Order(tree);
@@ -1220,9 +1263,17 @@ phydbl *Norm_Constant_Prior_Times(t_tree *tree)
       do
         {
           k = (i % Number_Of_Comb(calib)) / Number_Of_Comb(calib -> next);
-          t_prior_min[calib -> all_applies_to[k] -> num] = MAX(t_prior_min[calib -> all_applies_to[k] -> num], calib -> lower);
-          t_prior_max[calib -> all_applies_to[k] -> num] = MIN(t_prior_max[calib -> all_applies_to[k] -> num], calib -> upper);
-          t_has_prior[calib -> all_applies_to[k] -> num] = YES;
+          if(calib -> all_applies_to[k] -> num)
+            {
+              t_prior_min[calib -> all_applies_to[k] -> num] = MAX(t_prior_min[calib -> all_applies_to[k] -> num], calib -> lower);
+              t_prior_max[calib -> all_applies_to[k] -> num] = MIN(t_prior_max[calib -> all_applies_to[k] -> num], calib -> upper);
+              t_has_prior[calib -> all_applies_to[k] -> num] = YES;
+            }
+          else
+            {
+              if(calib -> next) calib = calib -> next;
+              else break;
+            }
           if(calib -> next) calib = calib -> next;
           else break;
         }
@@ -1244,10 +1295,12 @@ phydbl *Norm_Constant_Prior_Times(t_tree *tree)
 void TIMES_Calib_Partial_Proba(t_tree *tree)
 {
 
-  phydbl *times_partial_proba; //*t_prior_min, *t_prior_max; 
+  phydbl *times_partial_proba, proba; //*t_prior_min, *t_prior_max; 
   int i, k, tot_num_comb;
   t_cal *calib;
   //short int *t_has_prior;
+
+  proba = 0.0;
  
   times_partial_proba = tree -> rates -> times_partial_proba; 
   calib = tree -> rates -> calib;
@@ -1263,7 +1316,9 @@ void TIMES_Calib_Partial_Proba(t_tree *tree)
       do
         {
           k = (i % Number_Of_Comb(calib)) / Number_Of_Comb(calib -> next);
-          times_partial_proba[i] *= calib -> proba[calib -> all_applies_to[k] -> num]; 
+          if(calib -> all_applies_to[k] -> num) proba = calib -> proba[calib -> all_applies_to[k] -> num]; 
+          else proba = calib -> proba[2 * tree -> n_otu - 1];
+          times_partial_proba[i] *= proba;
           if(calib -> next) calib = calib -> next;
           else break;
         }
@@ -1390,12 +1445,20 @@ void Set_Current_Calibration(int row, t_tree *tree)
   i = 0;
   do
     {
-      k = (row % Number_Of_Comb(calib)) / Number_Of_Comb(calib -> next);      
-      t_prior_min[calib -> all_applies_to[k] -> num] = calib -> lower;
-      t_prior_max[calib -> all_applies_to[k] -> num] = calib -> upper;
-      t_has_prior[calib -> all_applies_to[k] -> num] = YES; 
-      curr_nd_for_cal[i] = calib -> all_applies_to[k] -> num;
-      i++;
+      k = (row % Number_Of_Comb(calib)) / Number_Of_Comb(calib -> next); 
+      if(calib -> all_applies_to[k] -> num) 
+        {
+          t_prior_min[calib -> all_applies_to[k] -> num] = MAX(t_prior_min[calib -> all_applies_to[k] -> num], calib -> lower);
+          t_prior_max[calib -> all_applies_to[k] -> num] = MIN(t_prior_max[calib -> all_applies_to[k] -> num], calib -> upper);     
+          t_has_prior[calib -> all_applies_to[k] -> num] = YES; 
+          curr_nd_for_cal[i] = calib -> all_applies_to[k] -> num;
+          i++;
+        }
+      else 
+        {
+          if(calib->next) calib = calib->next;
+          else break;    
+        }     
       if(calib->next) calib = calib->next;
       else break;    
     }
