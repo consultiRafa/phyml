@@ -555,6 +555,9 @@ void PhyTime_XML(char *xml_file)
   Set_Both_Sides(YES, tree);
   Prepare_Tree_For_Lk(tree);
   Set_Current_Calibration(0, tree);
+  int tot_num_comb;
+  tot_num_comb = Number_Of_Comb(tree -> rates -> calib);														
+  PhyML_Printf("\n. The total number of calibration combinations is going to be considered is %d.\n", tot_num_comb);
   TIMES_Set_All_Node_Priors(tree);
   //calculate the probabilities of each combination of calibrations:
   TIMES_Calib_Partial_Proba(tree);
@@ -568,7 +571,7 @@ void PhyTime_XML(char *xml_file)
 
   tree -> write_br_lens = NO;	
 
-  PhyML_Printf("\n");														
+									
   PhyML_Printf("\n. Input tree with calibration information ('almost' compatible with MCMCtree).\n");
   PhyML_Printf("\n. %s \n", Write_Tree(tree, YES));
 
@@ -795,7 +798,7 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
   /* printf("\n\n"); */
   free(Yule_val);  
   /* free(times_partial_proba); */
-  //Exit("\n");
+  /* Exit("\n"); */
   return(ln_t);
 }
 
