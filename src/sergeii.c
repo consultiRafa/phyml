@@ -554,13 +554,23 @@ void PhyTime_XML(char *xml_file)
   
   Set_Both_Sides(YES, tree);
   Prepare_Tree_For_Lk(tree);
-  Set_Current_Calibration(0, tree);
+
+  //calculate the probabilities of each combination of calibrations:
+  TIMES_Calib_Partial_Proba(tree);
+  int cal_numb = 0;
+  do
+    {
+      if(!Are_Equal(tree -> rates -> times_partial_proba[cal_numb], 0.0, 1.E-10)) break;
+      else cal_numb += 1;
+    }
+  while(1);  
+  /* printf("\n. Calib number [%d] \n", cal_numb); */
+  Set_Current_Calibration(cal_numb, tree);
   int tot_num_comb;
   tot_num_comb = Number_Of_Comb(tree -> rates -> calib);														
   PhyML_Printf("\n. The total number of calibration combinations is going to be considered is %d.\n", tot_num_comb);
   TIMES_Set_All_Node_Priors(tree);
-  //calculate the probabilities of each combination of calibrations:
-  TIMES_Calib_Partial_Proba(tree);
+
 
   //set initial value for Hastings ratio for conditional jump:
   tree -> rates -> c_lnL_Hastings_ratio = 0.0;
@@ -746,19 +756,21 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
         }
       while(calib);
 
-      TIMES_Set_All_Node_Priors(tree);
+      int result;
+      result = TRUE;
+      TIMES_Set_All_Node_Priors_S(&result, tree);
       /* printf("\n\n"); */
       /* For(j, 2 * tree -> n_otu - 1) printf("\n. [1] Node [%d] min [%f] max [%f] node time [%f]\n", j, tree -> rates -> t_prior_min[j], tree -> rates -> t_prior_max[j], tree -> rates -> nd_t[j]); */
       /* printf("\n. p[%i] = %f \n", i + 1, times_partial_proba[i]); */
       /* printf("\n\n"); */
 
       //tree -> rates -> birth_rate = 4.0;
-
       times_lk = TIMES_Lk_Yule_Order(tree);
+      /* if(result != FALSE) times_lk = TIMES_Lk_Yule_Order(tree); */
+      /* else times_lk = 1.0; */
 
       constant = 1.0; 
-      
-      if(times_lk > -INFINITY) constant = Slicing_Calibrations(tree);
+      if(times_lk > -INFINITY && result != FALSE) constant = Slicing_Calibrations(tree);     
       /* else */
       /*   { */
       /*     times_lk = 0.0; */
@@ -795,6 +807,7 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
 
   ln_t = -c + LOG(times_tot_proba);
   /* printf("\n. Prior for node times = [%f] \n", ln_t); */
+  /* Set_Current_Calibration(1, tree); */
   /* printf("\n\n"); */
   free(Yule_val);  
   /* free(times_partial_proba); */
@@ -1298,37 +1311,91 @@ phydbl *Norm_Constant_Prior_Times(t_tree *tree)
 void TIMES_Calib_Partial_Proba(t_tree *tree)
 {
 
-  phydbl *times_partial_proba, proba; //*t_prior_min, *t_prior_max; 
-  int i, k, tot_num_comb;
+  phydbl *times_partial_proba, proba, *t_prior_min, *t_prior_max; 
+  int i, j, k, tot_num_comb;
   t_cal *calib;
-  //short int *t_has_prior;
+  short int *t_has_prior;
 
   proba = 0.0;
  
   times_partial_proba = tree -> rates -> times_partial_proba; 
   calib = tree -> rates -> calib;
-  //t_prior_min = tree -> rates -> t_prior_min;
-  //t_prior_max = tree -> rates -> t_prior_max;
-  //t_has_prior = tree -> rates -> t_has_prior;
+  t_prior_min = tree -> rates -> t_prior_min;
+  t_prior_max = tree -> rates -> t_prior_max;
+  t_has_prior = tree -> rates -> t_has_prior;
 
   tot_num_comb = Number_Of_Comb(calib);
 
   For(i, tot_num_comb)
     {
       times_partial_proba[i] = 1.0;
+      for(j = tree -> n_otu; j < 2 * tree -> n_otu - 1; j++) 
+        {
+          t_prior_min[j] = -BIG;
+          t_prior_max[j] = BIG;
+          t_has_prior[j] = NO; 
+        }
       do
         {
           k = (i % Number_Of_Comb(calib)) / Number_Of_Comb(calib -> next);
-          if(calib -> all_applies_to[k] -> num) proba = calib -> proba[calib -> all_applies_to[k] -> num]; 
-          else proba = calib -> proba[2 * tree -> n_otu - 1];
-          times_partial_proba[i] *= proba;
+          if(calib -> all_applies_to[k] -> num)
+            {
+              t_prior_min[calib -> all_applies_to[k] -> num] = MAX(t_prior_min[calib -> all_applies_to[k] -> num], calib -> lower);
+              t_prior_max[calib -> all_applies_to[k] -> num] = MIN(t_prior_max[calib -> all_applies_to[k] -> num], calib -> upper);
+              t_has_prior[calib -> all_applies_to[k] -> num] = YES;
+              proba = calib -> proba[calib -> all_applies_to[k] -> num]; 
+              times_partial_proba[i] *= proba;
+              /* printf("\n. [1] Proba [%f] \n", proba); */
+              /* if((t_prior_min[calib -> all_applies_to[k] -> num] > t_prior_max[calib -> all_applies_to[k] -> num])) times_partial_proba[i] = 0.0;  */
+              /* else times_partial_proba[i] *= calib -> proba[calib -> all_applies_to[k] -> num];  */
+            }
+          else
+            {
+              proba = calib -> proba[2 * tree -> n_otu - 1]; 
+              times_partial_proba[i] *= proba;
+              /* printf("\n. [2] Proba [%f] \n", proba); */
+              if(calib -> next) calib = calib -> next;
+              else break;
+            }
+          
           if(calib -> next) calib = calib -> next;
           else break;
         }
       while(calib);
+
+      int result;
+
+      result = TRUE;
+
+      /* printf("\n. [3] Partial Proba [%f] \n", times_partial_proba[i]); */
+
+      TIMES_Set_All_Node_Priors_S(&result, tree);
+
+      if(result != TRUE) times_partial_proba[i] = 0; /* printf("\n. [4] Partial Proba [%f] \n", times_partial_proba[i]); */
+      /* times_partial_proba[i] = 1.0; */
+      /* do */
+      /*   { */
+      /*     k = (i % Number_Of_Comb(calib)) / Number_Of_Comb(calib -> next); */
+      /*     if(calib -> all_applies_to[k] -> num) proba = calib -> proba[calib -> all_applies_to[k] -> num];  */
+      /*     else proba = calib -> proba[2 * tree -> n_otu - 1]; */
+      /*     times_partial_proba[i] *= proba; */
+      /*     if(calib -> next) calib = calib -> next; */
+      /*     else break; */
+      /*   } */
+      /* while(calib); */
       while(calib -> prev) calib = calib -> prev;
     }
- 
+
+  phydbl sum_proba;
+  sum_proba = 0.0;
+  /* For(i, tot_num_comb) printf("\n. [1] Partial Proba [%f] \n", times_partial_proba[i]);  */
+  For(i, tot_num_comb) sum_proba += times_partial_proba[i];
+  if(!Are_Equal(sum_proba, 1.0, 1.E-10)) 
+    {
+      For(i, tot_num_comb) times_partial_proba[i] = times_partial_proba[i] / sum_proba;
+    } 
+  /* For(i, tot_num_comb) printf("\n. [2] Partial Proba [%f] \n", times_partial_proba[i]);  */
+  /* Exit("\n"); */
 }
 
 
@@ -1853,3 +1920,156 @@ int XML_Number_Of_Taxa_In_Clade(xml_node *n_clade)
     }
   return(clade_size);
 }
+
+
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+void TIMES_Set_All_Node_Priors_S(int *result, t_tree *tree)
+{
+  int i;
+  phydbl min_prior;
+
+
+  /* Set all t_prior_max values */
+  TIMES_Set_All_Node_Priors_Bottom_Up_S(tree->n_root,tree->n_root->v[2], result, tree);
+  TIMES_Set_All_Node_Priors_Bottom_Up_S(tree->n_root,tree->n_root->v[1], result, tree);
+
+  tree->rates->t_prior_max[tree->n_root->num] = 
+    MIN(tree->rates->t_prior_max[tree->n_root->num],
+	MIN(tree->rates->t_prior_max[tree->n_root->v[2]->num],
+	    tree->rates->t_prior_max[tree->n_root->v[1]->num]));
+
+
+  /* Set all t_prior_min values */
+  if(!tree->rates->t_has_prior[tree->n_root->num])
+    {
+      min_prior = 1.E+10;
+      For(i,2*tree->n_otu-2)
+	{
+	  if(tree->rates->t_has_prior[i])
+	    {
+	      if(tree->rates->t_prior_min[i] < min_prior)
+		min_prior = tree->rates->t_prior_min[i];
+	    }
+	}
+      tree->rates->t_prior_min[tree->n_root->num] = 2.0 * min_prior;
+      /* tree->rates->t_prior_min[tree->n_root->num] = 10. * min_prior; */
+    }
+  
+  if(tree->rates->t_prior_min[tree->n_root->num] > 0.0)
+    {
+      /* PhyML_Printf("\n== Failed to set the lower bound for the root node."); */
+      /* PhyML_Printf("\n== Make sure at least one of the calibration interval"); */
+      /* PhyML_Printf("\n== provides a lower bound."); */
+      /* Exit("\n"); */
+      *result = FALSE;
+    }
+
+
+  TIMES_Set_All_Node_Priors_Top_Down_S(tree->n_root,tree->n_root->v[2], result, tree);
+  TIMES_Set_All_Node_Priors_Top_Down_S(tree->n_root,tree->n_root->v[1], result, tree);
+
+  /* Get_Node_Ranks(tree); */
+  /* TIMES_Set_Floor(tree); */
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+
+void TIMES_Set_All_Node_Priors_Bottom_Up_S(t_node *a, t_node *d, int *result, t_tree *tree)
+{
+  int i;
+  phydbl t_sup;
+
+  if(d->tax) return;
+  else 
+    {
+      t_node *v1, *v2; /* the two sons of d */
+
+      For(i,3)
+	{
+	  if((d->v[i] != a) && (d->b[i] != tree->e_root))
+	    {
+	      TIMES_Set_All_Node_Priors_Bottom_Up_S(d,d->v[i], result, tree);	      
+	    }
+	}
+      
+      v1 = v2 = NULL;
+      For(i,3) if((d->v[i] != a) && (d->b[i] != tree->e_root)) 
+	{
+	  if(!v1) v1 = d->v[i]; 
+	  else    v2 = d->v[i];
+	}
+      
+      if(tree->rates->t_has_prior[d->num] == YES)
+	{
+	  t_sup = MIN(tree->rates->t_prior_max[d->num],
+		      MIN(tree->rates->t_prior_max[v1->num],
+			  tree->rates->t_prior_max[v2->num]));
+
+	  tree->rates->t_prior_max[d->num] = t_sup;
+
+	  if(tree->rates->t_prior_max[d->num] < tree->rates->t_prior_min[d->num])
+	    {
+	      /* PhyML_Printf("\n. prior_min=%f prior_max=%f",tree->rates->t_prior_min[d->num],tree->rates->t_prior_max[d->num]); */
+	      /* PhyML_Printf("\n. Inconsistency in the prior settings detected at t_node %d",d->num); */
+	      /* PhyML_Printf("\n. Err in file %s at line %d\n\n",__FILE__,__LINE__); */
+	      /* Warn_And_Exit("\n"); */
+              *result = FALSE;
+              /* return; */
+	    }
+	}
+      else
+	{
+	  tree->rates->t_prior_max[d->num] = 
+	    MIN(tree->rates->t_prior_max[v1->num],
+		tree->rates->t_prior_max[v2->num]);
+	}
+    }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+
+void TIMES_Set_All_Node_Priors_Top_Down_S(t_node *a, t_node *d, int *result, t_tree *tree)
+{
+  if(d->tax) return;
+  else
+    {
+      int i;      
+      
+      if(tree->rates->t_has_prior[d->num] == YES)
+	{
+	  tree->rates->t_prior_min[d->num] = MAX(tree->rates->t_prior_min[d->num],tree->rates->t_prior_min[a->num]);
+	  
+	  if(tree->rates->t_prior_max[d->num] < tree->rates->t_prior_min[d->num])
+	    {
+	      /* PhyML_Printf("\n. prior_min=%f prior_max=%f",tree->rates->t_prior_min[d->num],tree->rates->t_prior_max[d->num]); */
+	      /* PhyML_Printf("\n. Inconsistency in the prior settings detected at t_node %d",d->num); */
+	      /* PhyML_Printf("\n. Err in file %s at line %d\n\n",__FILE__,__LINE__); */
+	      /* Warn_And_Exit("\n"); */
+              *result = FALSE;
+              /* return; */
+	    }
+	}
+      else
+	{
+	  tree->rates->t_prior_min[d->num] = tree->rates->t_prior_min[a->num];
+	}
+            
+      For(i,3)
+	{
+	  if((d->v[i] != a) && (d->b[i] != tree->e_root))
+	    {
+	      TIMES_Set_All_Node_Priors_Top_Down_S(d,d->v[i], result, tree);
+	    }
+	}
+    }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
