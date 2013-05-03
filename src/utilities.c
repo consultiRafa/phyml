@@ -779,7 +779,6 @@ void Connect_One_Edge_To_Two_Nodes(t_node *a, t_node *d, t_edge *b, t_tree *tree
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Update_Dirs(t_tree *tree)
 {
   int i;
@@ -4316,7 +4315,6 @@ void Hide_Ambiguities(calign *data)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Copy_Tree(t_tree *ori, t_tree *cpy)
 {
   int i,j;
@@ -4429,7 +4427,7 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
       b2 = a->b[dir_v1];
     }
 
-  if(v1->tax && v2->tax) PhyML_Printf("\n. Pruning is meaningless here.\n");
+  /* if(v1->tax && v2->tax) PhyML_Printf("\n. Pruning is meaningless here.\n"); */
 
   a->v[dir_v1] = NULL;
   a->v[dir_v2] = NULL;
@@ -4597,7 +4595,7 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
 	  b2->patt_id_rght     = buff_patt_id;
 	}
     }
-
+  
   For(i,3)
     if(v2->v[i] == a)
       {
@@ -4641,8 +4639,29 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
   if(target)   (*target)   = b1;
   if(residual) (*residual) = b2;
 
+  if(tree->n_root)
+    {
+      if(a->anc == tree->n_root)
+        {
+          v2->anc = tree->n_root;
+          v1->anc = tree->n_root;
+
+          if(tree->n_root->v[1] == v1)      tree->n_root->v[2] = v2;
+          else if(tree->n_root->v[1] == v2) tree->n_root->v[2] = v1;
+          else if(tree->n_root->v[2] == v1) tree->n_root->v[1] = v2;
+          else if(tree->n_root->v[2] == v2) tree->n_root->v[1] = v1;
+
+          tree->e_root = b1;
+        }
+      else
+        {
+          if(v1->anc == a) v1->anc = v2;
+          else             v2->anc = v1;
+        }
+    }
+
 #ifdef DEBUG
-  if(b1->left->tax)
+  if(b1->left->tax == YES && b1->rght->tax == NO)
     {
       PhyML_Printf("\n== b1->left->num = %d",b1->left->num);
       PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
@@ -4656,7 +4675,6 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void Graft_Subtree(t_edge *target, t_node *link, t_edge *residual, t_tree *tree)
 {
@@ -4760,6 +4778,7 @@ void Graft_Subtree(t_edge *target, t_node *link, t_edge *residual, t_tree *tree)
       target->patt_id_left         = buff_patt_id;
     }
 
+
   For(i,3)
     if(v2->b[i] == target)
       {
@@ -4796,6 +4815,52 @@ void Graft_Subtree(t_edge *target, t_node *link, t_edge *residual, t_tree *tree)
   Make_Edge_Dirs(residual,residual->left,residual->rght,tree);
   Make_Edge_Dirs(b_up,b_up->left,b_up->rght,tree);
 
+  if(tree->n_root)
+    {            
+      if(target == tree->e_root)
+        {
+          link->anc = tree->n_root;
+          
+          if(tree->n_root->v[1] == v1) 
+            {
+              tree->n_root->v[2] = link;
+              v2->anc = link;
+              tree->e_root = target;
+            }
+          else if(tree->n_root->v[2] == v1)
+            {
+              tree->n_root->v[1] = link;
+              v2->anc = link;
+              tree->e_root = target;
+            }
+          else if(tree->n_root->v[1] == v2)
+            {
+              tree->n_root->v[1] = link;
+              v1->anc = link;
+              tree->e_root = residual;
+            }
+          else if(tree->n_root->v[2] == v2)
+            {
+              tree->n_root->v[1] = link;
+              v1->anc = link;
+              tree->e_root = residual;
+            }            
+        }
+      else
+        {
+          if(v1->anc == v2) 
+            {
+              v1->anc = link;
+              link->anc = v2;
+            }
+          else
+            {
+              v2->anc = link;
+              link->anc = v1;
+            }
+        }
+    }
+  
   if(tree->is_mixt_tree == YES) MIXT_Graft_Subtree(target,link,residual,tree);
 
 }
@@ -5508,6 +5573,32 @@ void Get_List_Of_Nodes_In_Polytomy(t_node *a, t_node *d, t_node ***list, int *si
 	}
     }
 
+}
+
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Path_Length(t_node *dep, t_node *arr, phydbl *len, t_tree *tree)
+{
+  if(dep==arr) return;
+  else 
+    {
+      t_edge *next;
+
+      next = dep->b[tree->t_dir[dep->num*(2*tree->n_otu-2)+arr->num]];
+
+      if(next == tree->e_root)
+        {
+          (*len) += (tree->n_root->l[1] + tree->n_root->l[2]);
+        }
+      else
+        {
+          (*len) += next->l->v;
+        }
+      Path_Length(dep->v[tree->t_dir[dep->num*(2*tree->n_otu-2)+arr->num]],arr,len,tree);
+      return;
+    }
 }
 
 
@@ -7569,6 +7660,10 @@ void Time_To_Branch(t_tree *tree)
 {
   Time_To_Branch_Pre(tree->n_root,tree->n_root->v[2],tree);
   Time_To_Branch_Pre(tree->n_root,tree->n_root->v[1],tree);
+  tree->n_root->l[1] = tree->rates->nd_t[tree->n_root->v[1]->num] - tree->rates->nd_t[tree->n_root->num];
+  tree->n_root->l[2] = tree->rates->nd_t[tree->n_root->v[1]->num] - tree->rates->nd_t[tree->n_root->num];
+  tree->e_root->l->v = tree->n_root->l[1] + tree->n_root->l[2]; 
+
 }
 
 //////////////////////////////////////////////////////////////
@@ -8526,8 +8621,6 @@ int Scale_Subtree_Rates_Post(t_node *a, t_node *d, phydbl mult, int *n_nodes, t_
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
-
 void Get_Node_Ranks(t_tree *tree)
 {
   tree->n_root->rank = 1;
@@ -8560,7 +8653,6 @@ void Get_Node_Ranks_Pre(t_node *a, t_node *d,t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void Log_Br_Len(t_tree *tree)
 {
@@ -9384,9 +9476,169 @@ void Set_Both_Sides(int yesno, t_tree *mixt_tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+// Returns the matrix of pairwise distances between tips
+phydbl *Dist_Btw_Tips(t_tree *tree)
+{
+  int i,j;
+  phydbl *dist;
+
+  dist = (phydbl *)mCalloc(tree->n_otu*tree->n_otu,sizeof(phydbl));
+
+  Fill_Dir_Table(tree);
+  Update_Dirs(tree);
+
+  For(i,tree->n_otu-1)
+    {
+      for(j=i+1;j<tree->n_otu;j++)
+        {
+          Path_Length(tree->a_nodes[i],tree->a_nodes[j],dist+i*tree->n_otu+j,tree); 
+          dist[j*tree->n_otu+i] = dist[i*tree->n_otu+j];
+        }
+    }
+  
+
+  return(dist);
+
+}
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void Random_SPRs_On_Rooted_Tree(t_tree *tree)
+{
+  int i,j;
+  t_node *a, *d, *v1, *v2,*target_nd;
+  phydbl u;
+  phydbl lim_sup,lim_inf;
+  t_edge *residual,*nouse;
+  phydbl new_t;
+  int err;
+  
+  /* printf("\n. >>>>>>>>>>>>>>.\n"); */
+  /* Print_Node(tree->n_root,tree->n_root->v[1],tree); */
+  /* Print_Node(tree->n_root,tree->n_root->v[2],tree); */
+  /* printf("\n. >>>>>>>>>>>>>>."); */
+  
+
+  target_nd = NULL;
+  residual = NULL;
+  nouse = NULL;
+  a = d = v1 = v2 = NULL;
+  For(i,tree->n_otu) // We will perform tree->n_otu random SPRs
+    {
+      a = tree->a_nodes[Rand_Int(tree->n_otu,2*tree->n_otu-3)];
+      
+      if(a == tree->n_root)
+        {
+          PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);      
+          Exit("\n");
+        }
+
+      v1 = v2 = NULL;
+      For(j,3)
+        {
+          if(a->v[j] != a->anc)
+            {
+              if(!v1) v1 = a->v[j];
+              else    v2 = a->v[j];
+            }
+        }
+
+      u = Uni();
+      if(u < .5) d = v1;
+      else       d = v2;
+      
+
+      For(j,3) if(a->v[j] == d && a->b[j] == tree->e_root) break;
+      if(j != 3) continue;
+
+      lim_sup = tree->rates->nd_t[d->num];
+      lim_inf = tree->rates->nd_t[tree->n_root->num];
+
+      err = NO;
+      new_t = Rnorm_Trunc(tree->rates->nd_t[a->num],
+                          FABS(tree->rates->nd_t[tree->n_root->num]/50.),
+                          lim_inf,
+                          lim_sup,
+                          &err);
+
+      if(err == YES)
+        {
+          PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);      
+          Exit("\n");
+        }
+      
+      if(new_t < tree->rates->nd_t[a->num])
+        {
+          target_nd = a;
+          do
+            {
+              if(tree->rates->nd_t[target_nd->anc->num] < new_t) 
+                {
+                  if(target_nd == a)
+                    {
+                      if(v1 == d) target_nd = v2;
+                      else        target_nd = v1;
+                    }
+                  break;
+                }
+              else
+                {
+                  target_nd = target_nd->anc;
+                }
+            }
+          while(1);
+        }
+      else
+        {
+          For(j,3) if(a->v[j] != a->anc && a->v[j] != d) target_nd = a->v[j];
+          
+          do
+            {
+              if(tree->rates->nd_t[target_nd->num] > new_t)
+                {
+                  break;
+                }
+              else
+                {
+                  v1 = v2 = NULL;
+                  For(j,3)
+                    {
+                      if(target_nd->v[j] != target_nd->anc)
+                        {
+                          if(!v1) v1 = target_nd->v[j];
+                          else    v2 = target_nd->v[j];
+                        }
+                    }
+                  u = Uni();
+                  if(u < 0.5) target_nd = v1;
+                  else        target_nd = v2;
+                }
+            }while(1);
+        }
+      
+      Prune_Subtree(a,d,&nouse,&residual,tree);
+
+      For(j,3)
+        {
+          if(target_nd->v[j] == target_nd->anc || target_nd->b[j] == tree->e_root)
+            {
+              Graft_Subtree(target_nd->b[j],a,residual,tree);
+              break;
+            }
+        }
+
+      tree->rates->nd_t[a->num] = new_t;
+      
+      Time_To_Branch(tree);
+
+      /* Print_Node(tree->n_root,tree->n_root->v[1],tree); */
+      /* Print_Node(tree->n_root,tree->n_root->v[2],tree); */
+
+    }
+
+
+}
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

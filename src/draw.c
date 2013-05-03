@@ -171,11 +171,12 @@ void DR_Print_Tree_Postscript_Pre(t_node *a, t_node *d, int render_name, FILE *f
   
   step = (max-min)/13.;
   
-  val = tree->rates->mean_r[d->num] / (phydbl)(tree->mcmc->run/tree->mcmc->sample_interval+1.);
+  /* val = tree->rates->mean_r[d->num] / (phydbl)(tree->mcmc->run/tree->mcmc->sample_interval+1.); */
   /* val = tree->rates->mean_r[d->num]; */
   /* val = tree->rates->has_survived[d->num]; */
   /* if(val > 0.5) {R=1.; G=.0; B=0.;} */
-
+  val = 0.;
+  
   if(val <= min+1.*step)
     {R=.0; G=1.; B=1.;}
   else if(val > min+1.*step && val <= min+2.*step)
@@ -470,7 +471,6 @@ phydbl DR_Get_Max_Dist_To_Root(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void DR_Get_Tree_Coord_Scaled(tdraw *w, t_tree *tree)
 {
   int i;
@@ -485,7 +485,6 @@ void DR_Get_Tree_Coord_Scaled(tdraw *w, t_tree *tree)
       if(w->xcoord[i] > max_x) max_x = w->xcoord[i];
       if(w->xcoord[i] < min_x) min_x = w->xcoord[i];
     }
-
 
   max_y = -INT_MAX;
   min_y =  INT_MAX;
@@ -506,7 +505,6 @@ void DR_Get_Tree_Coord_Scaled(tdraw *w, t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void DR_Get_Cdf_Mat(t_tree *tree)
 {

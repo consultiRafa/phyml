@@ -18,8 +18,8 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int GEO_Main(int argc, char **argv)
 {
-  /* GEO_Simulate_Estimate(argc,argv); */
-  GEO_Estimate(argc,argv);
+  GEO_Simulate_Estimate(argc,argv);
+  /* GEO_Estimate(argc,argv); */
   return(1);
 }
 
@@ -44,7 +44,8 @@ int GEO_Estimate(int argc, char **argv)
   seed = getpid();
   /* seed = 28224; */
   /* seed = 21249; */
-  seed = 21596;
+  /* seed = 21596; */
+  
   printf("\n. Seed = %d",seed);
   srand(seed);
 
@@ -115,7 +116,7 @@ int GEO_Simulate_Estimate(int argc, char **argv)
 {
   t_geo *t;
   int n_tax;
-  t_tree *tree;
+  t_tree *tree,*ori_tree;
   int seed;
   phydbl *res;
   FILE *fp;
@@ -124,6 +125,7 @@ int GEO_Simulate_Estimate(int argc, char **argv)
   int rand_loc;
   phydbl *probs,sum;
   int i;
+  phydbl mantel_p_val;
 
   s = (char *)mCalloc(T_MAX_NAME,sizeof(char));
   
@@ -137,6 +139,11 @@ int GEO_Simulate_Estimate(int argc, char **argv)
   /* seed = 28224; */
   /* seed = 1718; */
   /* seed = 23680; */
+  /* seed =  30640; */
+  /* seed = 32322; */
+  /* seed = 32739; */
+  /* seed = 2699; */
+  /* seed = 4073; */
   printf("\n. Seed = %d",seed);
   srand(seed);
 
@@ -163,22 +170,98 @@ int GEO_Simulate_Estimate(int argc, char **argv)
 
   GEO_Simulate_Coordinates(t->ldscape_sz,t);
 
+
   GEO_Get_Sigma_Max(t);
 
   t->max_sigma = t->sigma_thresh * 2.;
 
-  PhyML_Printf("\n. Sigma max: %f",t->max_sigma);
+  PhyML_Printf("\n. sigma max: %f threshold: %f",t->max_sigma,t->sigma_thresh);
+
 
   t->tau        = Uni()*(t->max_tau/100.-t->min_tau*10.)  + t->min_tau*10.;
   t->lbda       = EXP(Uni()*(LOG(t->max_lbda/100.)-LOG(t->min_lbda*10.))  + LOG(t->min_lbda*10.));
   t->sigma      = Uni()*(t->max_sigma-t->min_sigma) + t->min_sigma;
 
 
-  PhyML_Fprintf(fp,"\n# SigmaTrue\t SigmaThresh\t LbdaTrue\t TauTrue\txTrue\t yTrue\t xRand\t yRand\t Sigma5\t Sigma50\t Sigma95\t Lbda5\t Lbda50\t Lbda95\t ProbLbdaInf1\t Tau5\t Tau50\t Tau95\t X5\t X50\t X95\t Y5\t Y50\t Y95\t RandX5\t RandX50\t RandX95\t RandY5\t RandY50\t RandY95\t");
+
+  PhyML_Fprintf(fp,"\n# SigmaTrue\t SigmaThresh\t LbdaTrue\t TauTrue\txTrue\t yTrue\t xRand\t yRand\t Sigma5\t Sigma50\t Sigma95\t ProbSigmaInfThresh\t Lbda5\t Lbda50\t Lbda95\t ProbLbdaInf1\t Tau5\t Tau50\t Tau95\t X5\t X50\t X95\t Y5\t Y50\t Y95\t RandX5\t RandX50\t RandX95\t RandY5\t RandY50\t RandY95\t Mantel\t");
   PhyML_Fprintf(fp,"\n");
 
   tree = GEO_Simulate(t,n_tax);
 
+  ori_tree = Make_Tree_From_Scratch(tree->n_otu,NULL);
+  Copy_Tree(tree,ori_tree);
+
+  Random_SPRs_On_Rooted_Tree(tree);
+  
+  Free_Bip(ori_tree);
+  Alloc_Bip(ori_tree);  
+  Get_Bip(ori_tree->a_nodes[0],ori_tree->a_nodes[0]->v[0],ori_tree);
+
+  Free_Bip(tree);
+  Alloc_Bip(tree);  
+  Get_Bip(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree);
+  Match_Tip_Numbers(tree,ori_tree);
+
+  PhyML_Printf("\n. rf: %f",(phydbl)Compare_Bip(ori_tree,tree,NO)/(tree->n_otu-3));
+
+
+  /* // Randomize node heights  */
+  /* int j; */
+  /* phydbl scale; */
+  /* t_node *n,*v1,*v2; */
+  /* scale = EXP(Rnorm(0,0.5)); */
+  /* For(i,2*tree->n_otu-1) tree->rates->nd_t[i] *= scale; */
+  /* n = v1 = v2 = NULL; */
+  /* For(i,tree->n_otu-2)  */
+  /*   { */
+  /*     n = tree->a_nodes[Rand_Int(tree->n_otu,2*tree->n_otu-3)]; */
+
+  /*     v1 = v2 = NULL; */
+  /*     For(j,3) */
+  /*       { */
+  /*         if(n->v[j] != n->anc) */
+  /*           { */
+  /*             if(!v1) v1 = n->v[j]; */
+  /*             else    v2 = n->v[j]; */
+  /*           } */
+  /*       } */
+      
+  /*     tree->rates->nd_t[n->num] =  */
+  /*       Uni() * (MIN(tree->rates->nd_t[v1->num],tree->rates->nd_t[v2->num])- */
+  /*                tree->rates->nd_t[n->anc->num]) + */
+  /*       tree->rates->nd_t[n->anc->num]; */
+  /*   } */
+
+
+
+  phydbl *tree_dist,*geo_dist;
+  int j;
+  
+  Time_To_Branch(tree);
+  tree_dist = Dist_Btw_Tips(tree);
+  
+  geo_dist = (phydbl *)mCalloc(tree->n_otu*tree->n_otu,sizeof(phydbl));
+
+  For(i,tree->n_otu)
+    {
+      For(j,tree->n_otu)
+        {
+          geo_dist[i*tree->n_otu+j] =
+            FABS(t->ldscape[t->loc[i]*t->n_dim+0] -
+                 t->ldscape[t->loc[j]*t->n_dim+0])+
+            FABS(t->ldscape[t->loc[i]*t->n_dim+1] -
+                 t->ldscape[t->loc[j]*t->n_dim+1]);
+
+        }
+    }
+
+  printf("\n. tau: %f lbda: %f sigma: %f",t->tau,t->lbda,t->sigma);
+  mantel_p_val = Mantel(tree_dist,geo_dist,tree->n_otu,tree->n_otu);
+  printf("\n. Mantel test p-value: %f",mantel_p_val);
+
+  Free(tree_dist);
+  Free(geo_dist);
 
   rand_loc = Rand_Int(0,t->ldscape_sz-1);
 
@@ -202,8 +285,6 @@ int GEO_Simulate_Estimate(int argc, char **argv)
                 t->ldscape[rand_loc*t->n_dim+1]);
 
   GEO_Get_Locations_Beneath(t,tree);
-
-
 
   probs = (phydbl *)mCalloc(tree->geo->ldscape_sz,sizeof(phydbl));
   
@@ -232,36 +313,41 @@ int GEO_Simulate_Estimate(int argc, char **argv)
 
   res = GEO_MCMC(tree);
 
-  PhyML_Fprintf(fp,"%f\t %f\t %f\t  %f\t %f\t %f\t  %f\t  %f\t %f\t %f\t  %f\t %f\t %f\t  %f\t %f\t %f\t  %f\t %f\t %f\t  %f\t %f\t %f\t  \n",
-                Quantile(res+0*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.025),
-                Quantile(res+0*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.50),
-                Quantile(res+0*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.975),
+  PhyML_Fprintf(fp,"%f\t %f\t %f\t %f\t  %f\t %f\t %f\t  %f\t  %f\t %f\t %f\t  %f\t %f\t %f\t  %f\t %f\t %f\t  %f\t %f\t %f\t  %f\t %f\t %f\t  %f \n",
+
+                /* Sigma5 */ Quantile(res+0*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.025),
+                /* Sigma50*/ Quantile(res+0*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.50),
+                /* Sigma95*/ Quantile(res+0*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.975),
                 
-                Quantile(res+1*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.025),
-                Quantile(res+1*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.50),
-                Quantile(res+1*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.975),
+                /* ProbInfThesh */ Prob(res+0*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,t->sigma_thresh),
+
+                /* Lbda5 */ Quantile(res+1*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.025),
+                /* Lbda50 */ Quantile(res+1*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.50),
+                /* Lbda95 */ Quantile(res+1*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.975),
                 
-                Prob(res+1*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,1.0),
+                /* ProbInf1 */ Prob(res+1*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,1.0),
                 
-                Quantile(res+2*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.025),
-                Quantile(res+2*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.50),
-                Quantile(res+2*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.975),
+                /* Tau5 */ Quantile(res+2*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.025),
+                /* Tau50 */ Quantile(res+2*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.50),
+                /* Tau 95 */ Quantile(res+2*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.975),
 
-                Quantile(res+4*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.025),
-                Quantile(res+4*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.50),
-                Quantile(res+4*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.975),
+                /* X5 */ Quantile(res+4*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.025),
+                /* X50 */ Quantile(res+4*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.50),
+                /* X95 */ Quantile(res+4*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.975),
 
-                Quantile(res+5*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.025),
-                Quantile(res+5*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.50),
-                Quantile(res+5*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.975),
+                /* Y5 */ Quantile(res+5*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.025),
+                /* Y50 */ Quantile(res+5*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.50),
+                /* Y95 */ Quantile(res+5*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.975),
 
-                Quantile(res+6*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.025),
-                Quantile(res+6*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.50),
-                Quantile(res+6*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.975),
+                /* RandX5 */ Quantile(res+6*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.025),
+                /* RandX50*/ Quantile(res+6*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.50),
+                /* RandX95*/ Quantile(res+6*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.975),
 
-                Quantile(res+7*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.025),
-                Quantile(res+7*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.50),
-                Quantile(res+7*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.975)
+                /* RandY5 */ Quantile(res+7*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.025),
+                /* RandY50*/ Quantile(res+7*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.50),
+                /* RandY95*/ Quantile(res+7*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.975),
+
+                mantel_p_val
                 );
   
   Free(s);
@@ -429,7 +515,7 @@ t_geo *GEO_Make_Geo_Basic()
 
 void GEO_Make_Geo_Complete(int ldscape_sz, int n_dim, int n_tax, t_geo *t)
 {
-  
+
   // F matrix
   t->f_mat = (phydbl *)mCalloc(ldscape_sz*ldscape_sz,sizeof(phydbl));
 
@@ -483,7 +569,6 @@ void GEO_Update_Fmat(t_geo *t)
   
   For(i,t->n_dim) t->cov[i*t->n_dim+i] = t->sigma; // Diagonal covariance matrix. Same variance in every direction
 
-  t->ldscape_sz = 100;
   lognloc = LOG(t->ldscape_sz);
 
   // Fill in F matrix;
@@ -505,9 +590,6 @@ void GEO_Update_Fmat(t_geo *t)
           // Take the exponential
           t->f_mat[i*t->ldscape_sz+j] = EXP(t->f_mat[i*t->ldscape_sz+j]);
           
-          if(i == 32 && j == 54)
-            printf("\n. i=%3d j=%3d var=%12f f=%G %12f %12f %12f %12f lognloc: %d",i,j,t->sigma,t->f_mat[i*t->ldscape_sz+j],loc1[0],loc2[0],loc1[1],loc2[1],t->ldscape_sz);
-
           // Matrix is symmetric
           t->f_mat[j*t->ldscape_sz+i] = t->f_mat[i*t->ldscape_sz+j];
 
@@ -859,12 +941,12 @@ t_tree *GEO_Simulate(t_geo *t, int n_otu)
   int buff_l;
   int swap;
 
-
   tree = Make_Tree_From_Scratch(n_otu,NULL);
   tree->rates = RATES_Make_Rate_Struct(tree->n_otu);
   RATES_Init_Rate_Struct(tree->rates,NULL,tree->n_otu);
   tree->n_root = tree->a_nodes[2*tree->n_otu-2]; // Set the root node to the last element in the list of nodes
   tree->geo = t;
+
 
   For(i,2*tree->n_otu-2) tree->rates->nd_t[i] = -1.;
 
@@ -892,6 +974,7 @@ t_tree *GEO_Simulate(t_geo *t, int n_otu)
   occup[t->loc[tree->n_root->num]] = 1;
 
   dep = arr = -1;
+
 
  // total migration rate
   R = 0.0;
@@ -933,19 +1016,18 @@ t_tree *GEO_Simulate(t_geo *t, int n_otu)
 
       arr = Sample_i_With_Proba_pi(p_mig,t->ldscape_sz);
 
-      printf("\n. Migrate from %d [%5.2f,%5.2f] to %d [%5.2f,%5.2f]",
-             dep,
-             t->ldscape[dep*t->n_dim+0],
-             t->ldscape[dep*t->n_dim+1],
-             arr,
-             t->ldscape[arr*t->n_dim+0],
-             t->ldscape[arr*t->n_dim+1]);
+      /* printf("\n. Migrate from %d [%5.2f,%5.2f] to %d [%5.2f,%5.2f]", */
+      /*        dep, */
+      /*        t->ldscape[dep*t->n_dim+0], */
+      /*        t->ldscape[dep*t->n_dim+1], */
+      /*        arr, */
+      /*        t->ldscape[arr*t->n_dim+0], */
+      /*        t->ldscape[arr*t->n_dim+1]); */
 
       /* printf("\n%f\t%f", */
       /*        t->ldscape[arr*t->n_dim+0]-t->ldscape[dep*t->n_dim+0], */
       /*        t->ldscape[arr*t->n_dim+1]-t->ldscape[dep*t->n_dim+1]); */
              
-
 
       // Update vector of occupation
       occup[arr]++;
@@ -1098,6 +1180,12 @@ t_tree *GEO_Simulate(t_geo *t, int n_otu)
          tree->rates->nd_t[tree->n_root->num]) +
     FABS(tree->rates->nd_t[tree->n_root->v[2]->num] -
          tree->rates->nd_t[tree->n_root->num]);
+  
+  tree->n_root->l[1] = FABS(tree->rates->nd_t[tree->n_root->v[1]->num] -
+                            tree->rates->nd_t[tree->n_root->num]);
+
+  tree->n_root->l[2] = FABS(tree->rates->nd_t[tree->n_root->v[2]->num] -
+                            tree->rates->nd_t[tree->n_root->num]);
 
   tree->n_root_pos = 
     FABS(tree->rates->nd_t[tree->n_root->v[2]->num] -
@@ -1682,9 +1770,10 @@ void GEO_Read_In_Landscape(char *file_name, t_geo *t, phydbl **ldscape, int **lo
 
 }
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
+
 
 
 //////////////////////////////////////////////////////////////

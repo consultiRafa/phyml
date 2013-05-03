@@ -100,5 +100,8 @@ int Sample_i_With_Proba_pi(phydbl *pi, int len);
 phydbl Quantile(phydbl *x, int len, phydbl p);
 phydbl Prob(phydbl *x, int len, phydbl z);
 phydbl Inverse_Truncated_Normal(phydbl y, phydbl mu, phydbl sigma, phydbl lim_inf, phydbl lim_sup);
+phydbl Progressive_EXP(phydbl x);
+int *Permutate(int len);
+phydbl Mantel(phydbl *x, phydbl *y, int nrow, int ncol);
 
 #endif

@@ -81,13 +81,32 @@ int TIMES_main(int argc, char **argv)
   /* r_seed = 1313356025; */
 
 
-  phydbl mean;
-  phydbl T,A,B,u;
-  T = 40.;
-  A = 1.0;
-  B = 5.0;
-  u = 1.E-2;
-  Integrated_Geometric_Brownian_Bridge_Mean(T,A,B,u,&mean);
+  /* phydbl mean; */
+  /* phydbl T,A,B,u; */
+  /* phydbl K; */
+
+  /* u = 1.E-4; */
+
+  /* K = 1.; */
+  /* T = 9 * K; */
+  /* A = LOG(1/K); */
+  /* B = LOG(2/K); */
+
+  /* Integrated_Geometric_Brownian_Bridge_Mean(T,A,B,u,&mean); */
+  /* printf("\n. mean = %f",mean*T); */
+
+  /* K = 1.E+2; */
+  /* T = 9 * K; */
+  /* A = LOG(1/K); */
+  /* B = LOG(2/K); */
+
+  /* Integrated_Geometric_Brownian_Bridge_Mean(T,A,B,u,&mean); */
+  /* printf("\n. mean = %f",mean*T); */
+
+
+  Exit("\n");
+
+
 
   io->r_seed = r_seed;
 

@@ -1713,6 +1713,9 @@ void Set_Both_Sides(int yesno, t_tree *tree);
 void Set_D_States(calign *data, int datatype, int stepsize);
 void Branch_To_Time(t_tree *tree);
 void Branch_To_Time_Pre(t_node *a, t_node *d, t_tree *tree);
+void Path_Length(t_node *dep, t_node *arr, phydbl *len, t_tree *tree);
+phydbl *Dist_Btw_Tips(t_tree *tree);
+void Random_SPRs_On_Rooted_Tree(t_tree *tree);
 
 
 #include "xml.h"

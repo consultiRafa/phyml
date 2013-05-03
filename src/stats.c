@@ -3975,6 +3975,9 @@ void Integrated_Geometric_Brownian_Bridge_Moments(phydbl T, phydbl A, phydbl B, 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+/*
+with(CodeGeneration); C(exp(A)*(int(sum(((B-A)*s/t+(1/2)*u*(t-s)*s/t)^k/factorial(k), k = 0 .. 13), s = 0 .. t))/t, optimize)
+*/
 
 void Integrated_Geometric_Brownian_Bridge_Mean(phydbl T, phydbl A, phydbl B, phydbl u, phydbl *mean)
 {
@@ -4168,15 +4171,29 @@ phydbl t1314 = -0.3450669465600e13 * t97 * t122 - 0.95147136000e11 * t90 * t11 -
 phydbl t1369 = -0.71204290560e11 * t285 * u * T - 0.8638755840e10 * t75 * t70 * t71 - 0.2399654400e10 * t68 * t52 * t56 - 0.26701608960e11 * t25 * t51 * t55 - 0.568339200e9 * t24 * t104 * t105 - 0.18944640e8 * t122 * t199 * t200 + 0.26701608960e11 * t15 * t51 * t55 - 0.568339200e9 * t4 * t104 * t105 + 0.2399654400e10 * t10 * t52 * t56 - 0.71204290560e11 * t21 * u * T + 0.113667840e9 * t61 * t88 * t89 - 0.8638755840e10 * t5 * t70 * t71 - 0.18944640e8 * t86 * t199 * t200 + 0.2583360e7 * t184 * t53 * t57 - 0.280800e6 * t3 * t453 * t455 + 0.23400e5 * t14 * t64 * t65 - 0.1404e4 * t2 * t500 * t502 + 0.54e2 * A * t54 * t58;
 *mean = -t1 * (t126 + t1160 + t823 + t665 + t621 + t1369 + t267 + t1070 + t1314 + t475 + t783 + t1200 + t703 + t1119 + t740 + t582 + t406 + t1239 + t1017 + t979 + t539 + t309 + t224 + t50 + t1277 + t905 + t864 + t998 + t949 + t1038 + t362 + t176) / 0.14324927024144056320000e23;
  
+
+ /* printf("\n. Taylor: %f",*mean); */
  
-  /* C(int(exp((B-A)*s/T+(1/2)*u*(T-s)*s/T), s = 0 .. T)) */
-  /* Correct but numerically unstable dur to EXP(TOO BIG)*/
+ /*  /\* C(int(exp((B-A)*s/T+(1/2)*u*(T-s)*s/T), s = 0 .. T)) *\/ */
+ /*  /\* Correct but numerically unstable dur to EXP(TOO BIG)*\/ */
 
  /* *mean = */
- /*   SQRT(0.2e1) * SQRT(0.3141592654e1) * EXP((double) ((4 * B * B - 8 * B * A + 4 * B * u * T + 4 * A * A - 4 * A * u * T + u * u * T * T) / u / T) / 0.8e1) * (-erf(SQRT(0.2e1) * (double) (-2 * B + 2 * A - u * T) / (double) T * pow((double) (u / T), -0.1e1 / 0.2e1) / 0.4e1) + erf(SQRT(0.2e1) * (double) (u * T - 2 * B + 2 * A) / (double) T * pow((double) (u / T), -0.1e1 / 0.2e1) / 0.4e1)) * pow((double) (u / T), -0.1e1 / 0.2e1) / 0.2e1; */
+ /*   SQRT(0.2e1) *  */
+ /*   SQRT(0.3141592654e1) *  */
+ /*   EXP((double) ((4 * B * B - 8 * B * A + 4 * B * u * T + 4 * A * A - 4 * A * u * T + u * u * T * T) / u / T) / 0.8e1) *  */
+ /*   (-erf(SQRT(0.2e1) * (double) (-2 * B + 2 * A - u * T) / (double) T * pow((double) (u / T), -0.1e1 / 0.2e1) / 0.4e1)  */
+ /*    +erf(SQRT(0.2e1) * (double) (u *  T - 2 * B + 2 * A) / (double) T * pow((double) (u / T), -0.1e1 / 0.2e1) / 0.4e1))*  */
+ /*   pow((double) (u / T), -0.1e1 / 0.2e1) / 0.2e1; */
  
  /* *mean /= T; */
  /* *mean *= EXP(A); */
+
+ /* printf("\nErf: %f [%f %f %f]", */
+ /*        *mean, */
+ /*        EXP((double) ((4 * B * B - 8 * B * A + 4 * B * u * T + 4 * A * A - 4 * A * u * T + u * u * T * T) / u / T) / 0.8e1), */
+ /*        (double) ((4 * B * B - 8 * B * A + 4 * B * u * T + 4 * A * A - 4 * A * u * T + u * u * T * T) / u / T) / 0.8e1, */
+ /*        (-erf(SQRT(0.2e1) * (double) (-2 * B + 2 * A - u * T) / (double) T * pow((double) (u / T), -0.1e1 / 0.2e1) / 0.4e1) + erf(SQRT(0.2e1) * (double) (u * T - 2 * B + 2 * A) / (double) T * pow((double) (u / T), -0.1e1 / 0.2e1) / 0.4e1)) * pow((double) (u / T), -0.1e1 / 0.2e1) / 0.2e1); */
+
  }
  
 //////////////////////////////////////////////////////////////
@@ -4482,21 +4499,93 @@ phydbl Inverse_Truncated_Normal(phydbl y, phydbl mu, phydbl sigma, phydbl lim_in
   return(mu + sigma * SQRT(-LOG( y * y * (p_sup - p_inf) * (p_sup - p_inf) * 2. * PI * sigma * sigma)));
 }
 
-
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+// Returns a vector with a permutation of all the integer from 0
+// to len-1.
 
+int *Permutate(int len)
+{
+  int i,pos,tmp;
+  int *x;
 
+  x = (int *)mCalloc(len,sizeof(int));
+
+  For(i,len) x[i] = i;
+
+  For(i,len)
+    {
+      pos = Rand_Int(0,len-1);
+      
+      tmp    = x[i];
+      x[i]   = x[pos];
+      x[pos] = tmp;
+    }
+
+  return(x);
+} 
+ 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
- 
- 
- 
- 
- 
- 
+// Returns the p-value for the Mantel test of correlation between
+// matrices x and y.
 
+phydbl Mantel(phydbl *x, phydbl *y, int nrow, int ncol)
+{ 
+ 
+  phydbl obs_stat;  // Value of the statistic on the observed data
+  phydbl mc_stat;   // Value of the statistics on the Monte Carlo generated data
+  int N;
+  phydbl sumx, sumy, sumxy, sumxx, sumyy;
+  int i,j,k;
+  int npermut;
+  int *permut;
+  phydbl p_val;
 
+  N = nrow*ncol;
+
+  sumx = .0;
+  For(i,N) sumx += x[i];
+
+  sumy = .0;
+  For(i,N) sumy += y[i];
+
+  sumxx = .0;
+  For(i,N) sumxx += x[i]*x[i];
+
+  sumyy = .0;
+  For(i,N) sumyy += y[i]*y[i];
+
+  sumxy = .0;
+  For(i,N) sumxy += x[i]*y[i];
+
+  obs_stat = (N * sumxy - sumx * sumy) / (SQRT((N-1)*sumxx - (sumx/N)*(sumx/N)) * SQRT((N-1)*sumyy - (sumy/N)*(sumy/N)));
+  
+  npermut = 1000;
+  p_val   = 0.0;
+  For(k,npermut)
+    {
+      permut = Permutate(nrow);
+
+      sumxy = .0;
+      For(i,nrow)
+        {
+          For(j,ncol)
+            {
+              sumxy += x[i*ncol+j] * y[permut[i]*ncol+permut[j]];
+            }
+        }
+           
+      mc_stat = (N * sumxy - sumx * sumy) / (SQRT((N-1)*sumxx - (sumx/N)*(sumx/N)) * SQRT((N-1)*sumyy - (sumy/N)*(sumy/N)));
+
+      Free(permut);
+
+      if(mc_stat > obs_stat) p_val += 1.;
+    }
+    
+  return(p_val / (phydbl)npermut);
+
+}
 
 
 

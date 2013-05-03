@@ -2294,7 +2294,7 @@ void Print_Node(t_node *a, t_node *d, t_tree *tree)
   int dir;
   dir = -1;
   For(i,3) if(a->v[i] == d) {dir = i; break;}
-  PhyML_Printf("Node nums = %3d %3d  (dir=%d);",a->num,d->num,dir);
+  PhyML_Printf("Node nums: %3d %3d  (dir:%3d) (anc:%3d);",a->num,d->num,dir,a->anc?a->anc->num:(-1));
   PhyML_Printf("Node names = '%s' '%s' ; ",a->name,d->name);
   For(i,3) if(a->v[i] == d)
     {

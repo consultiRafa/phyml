@@ -2468,12 +2468,11 @@ void RATES_Update_Cur_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 
 	  Integrated_Geometric_Brownian_Bridge_Moments(dt,ra,rd,nu,&m,&v);
 	  
-	  m *= cr*dt;
+	  m *= cr*dt; // the actual rate average is m * cr. We multiply by dt in order to derive the value for the branch length
 	  v *= (cr*cr)*(dt*dt);
 
 	  tree->rates->cur_gamma_prior_mean[d->num] = m;
 	  tree->rates->cur_gamma_prior_var[d->num]  = v;
-	  	  
 
 	  tree->rates->cur_l[d->num] = tree->rates->cur_gamma_prior_mean[d->num]; // Required for having proper branch lengths in Write_Tree function
 	}
