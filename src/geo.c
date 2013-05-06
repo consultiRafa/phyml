@@ -366,7 +366,6 @@ phydbl *GEO_MCMC(t_tree *tree)
   int rand_loc;
   t_geo *t;
 
-
   t = tree->geo;
 
   tree->mcmc = MCMC_Make_MCMC_Struct();
@@ -488,7 +487,6 @@ phydbl *GEO_MCMC(t_tree *tree)
       if(tree->mcmc->ess[tree->mcmc->num_move_geo_lambda]> 200.) tree->mcmc->adjust_tuning[tree->mcmc->num_move_geo_lambda] = NO;
       
       MCMC_Get_Acc_Rates(tree->mcmc);
-
 
       if(tree->mcmc->ess[tree->mcmc->num_move_geo_sigma] > 1000. &&
          tree->mcmc->ess[tree->mcmc->num_move_geo_tau]   > 1000. &&
@@ -1345,6 +1343,7 @@ void GEO_Randomize_Locations(t_node *n, t_geo *t, t_tree *tree)
       
       if(v1->tax && v2->tax)
         {
+          Free(probs);
           return;
         }
       else if(v1->tax && !v2->tax && t->loc[v1->num] != t->loc[n->num])
