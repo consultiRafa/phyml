@@ -126,6 +126,7 @@ int GEO_Simulate_Estimate(int argc, char **argv)
   phydbl *probs,sum;
   int i;
   phydbl mantel_p_val;
+  phydbl rf;
 
   s = (char *)mCalloc(T_MAX_NAME,sizeof(char));
   
@@ -136,14 +137,6 @@ int GEO_Simulate_Estimate(int argc, char **argv)
   fp = fopen(s,"w");
 
   seed = getpid();
-  /* seed = 28224; */
-  /* seed = 1718; */
-  /* seed = 23680; */
-  /* seed =  30640; */
-  /* seed = 32322; */
-  /* seed = 32739; */
-  /* seed = 2699; */
-  /* seed = 4073; */
   printf("\n. Seed = %d",seed);
   srand(seed);
 
@@ -162,53 +155,57 @@ int GEO_Simulate_Estimate(int argc, char **argv)
 
 
   GEO_Make_Geo_Complete(t->ldscape_sz,t->n_dim,n_tax,t);
-
+  
   t->cov[0*t->n_dim+0] = t->sigma;
   t->cov[1*t->n_dim+1] = t->sigma;
   t->cov[0*t->n_dim+1] = 0.0;
   t->cov[1*t->n_dim+0] = 0.0;
-
+  
   GEO_Simulate_Coordinates(t->ldscape_sz,t);
-
-
+  
+  
   GEO_Get_Sigma_Max(t);
-
+  
   t->max_sigma = t->sigma_thresh * 2.;
-
+  
   PhyML_Printf("\n. sigma max: %f threshold: %f",t->max_sigma,t->sigma_thresh);
-
-
-  t->tau        = Uni()*(t->max_tau/100.-t->min_tau*10.)  + t->min_tau*10.;
-  t->lbda       = EXP(Uni()*(LOG(t->max_lbda/100.)-LOG(t->min_lbda*10.))  + LOG(t->min_lbda*10.));
-  t->sigma      = Uni()*(t->max_sigma-t->min_sigma) + t->min_sigma;
-
-
-
-  PhyML_Fprintf(fp,"\n# SigmaTrue\t SigmaThresh\t LbdaTrue\t TauTrue\txTrue\t yTrue\t xRand\t yRand\t Sigma5\t Sigma50\t Sigma95\t ProbSigmaInfThresh\t Lbda5\t Lbda50\t Lbda95\t ProbLbdaInf1\t Tau5\t Tau50\t Tau95\t X5\t X50\t X95\t Y5\t Y50\t Y95\t RandX5\t RandX50\t RandX95\t RandY5\t RandY50\t RandY95\t Mantel\t");
+  
+  
+  t->tau   = Uni()*(t->max_tau/100.-t->min_tau*10.)  + t->min_tau*10.;
+  t->lbda  = EXP(Uni()*(LOG(t->max_lbda/100.)-LOG(t->min_lbda*10.))  + LOG(t->min_lbda*10.));
+  t->sigma = Uni()*(t->max_sigma-t->min_sigma) + t->min_sigma;
+  
+  
+  PhyML_Fprintf(fp,"\n# SigmaTrue\t SigmaThresh\t LbdaTrue\t TauTrue\txTrue\t yTrue\t xRand\t yRand\t RF\t Sigma5\t Sigma50\t Sigma95\t ProbSigmaInfThresh\t Lbda5\t Lbda50\t Lbda95\t ProbLbdaInf1\t Tau5\t Tau50\t Tau95\t X5\t X50\t X95\t Y5\t Y50\t Y95\t RandX5\t RandX50\t RandX95\t RandY5\t RandY50\t RandY95\t Mantel\t");
   PhyML_Fprintf(fp,"\n");
-
+  
   tree = GEO_Simulate(t,n_tax);
-
+  
   ori_tree = Make_Tree_From_Scratch(tree->n_otu,NULL);
   Copy_Tree(tree,ori_tree);
-
+  
   Random_SPRs_On_Rooted_Tree(tree);
   
   Free_Bip(ori_tree);
   Alloc_Bip(ori_tree);  
   Get_Bip(ori_tree->a_nodes[0],ori_tree->a_nodes[0]->v[0],ori_tree);
-
+  
   Free_Bip(tree);
   Alloc_Bip(tree);  
   Get_Bip(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree);
   Match_Tip_Numbers(tree,ori_tree);
+  
+  rf = (phydbl)Compare_Bip(ori_tree,tree,NO)/(tree->n_otu-3);
+  PhyML_Printf("\n. rf: %f",rf);
+  
+  phydbl scale;
+  scale = EXP(Rnorm(0,0.5));
+  For(i,2*tree->n_otu-1) tree->rates->nd_t[i] *= scale;
+  
 
-  PhyML_Printf("\n. rf: %f",(phydbl)Compare_Bip(ori_tree,tree,NO)/(tree->n_otu-3));
-
-
-  /* // Randomize node heights  */
-  /* int j; */
-  /* phydbl scale; */
+      /* // Randomize node heights  */
+      /* int j; */
+      /* phydbl scale; */
   /* t_node *n,*v1,*v2; */
   /* scale = EXP(Rnorm(0,0.5)); */
   /* For(i,2*tree->n_otu-1) tree->rates->nd_t[i] *= scale; */
@@ -274,7 +271,7 @@ int GEO_Simulate_Estimate(int argc, char **argv)
                t->ldscape[rand_loc*t->n_dim+0],
                t->ldscape[rand_loc*t->n_dim+1]);
 
-  PhyML_Fprintf(fp,"%f\t %f\t %f\t %f\t %f\t %f\t %f\t %f\t",
+  PhyML_Fprintf(fp,"%f\t %f\t %f\t %f\t %f\t %f\t %f\t %f\t %f\t",
                 t->sigma,
                 t->sigma_thresh,
                 t->lbda,
@@ -282,7 +279,8 @@ int GEO_Simulate_Estimate(int argc, char **argv)
                 t->ldscape[t->loc[tree->n_root->num]*t->n_dim+0],
                 t->ldscape[t->loc[tree->n_root->num]*t->n_dim+1],
                 t->ldscape[rand_loc*t->n_dim+0],
-                t->ldscape[rand_loc*t->n_dim+1]);
+                t->ldscape[rand_loc*t->n_dim+1],
+                rf);
 
   GEO_Get_Locations_Beneath(t,tree);
 
@@ -413,10 +411,13 @@ phydbl *GEO_MCMC(t_tree *tree)
   tree->mcmc->run = 0;
   do
     {
-      MCMC_Geo_Lbda(tree);
+      t->update_fmat = YES;
       MCMC_Geo_Sigma(tree);
+      t->update_fmat = NO;
+      MCMC_Geo_Lbda(tree);
       MCMC_Geo_Tau(tree);
       MCMC_Geo_Loc(tree);
+
       /* MCMC_Geo_Updown_Tau_Lbda(tree); */
       /* MCMC_Geo_Updown_Tau_Lbda(tree); */
       /* MCMC_Geo_Updown_Tau_Lbda(tree); */
@@ -710,8 +711,6 @@ void GEO_Update_Rmat(t_node *n, t_geo *t, t_tree *tree)
   int i,j;
   phydbl lbda_j;
 
-  GEO_Update_Fmat(t);
-
   For(i,t->ldscape_sz)
     {
       For(j,t->ldscape_sz)
@@ -736,6 +735,7 @@ phydbl GEO_Lk(t_geo *t, t_tree *tree)
 
   GEO_Update_Occup(t,tree);     // Same here.
 
+  if(t->update_fmat == YES) GEO_Update_Fmat(t);
 
   prev_n = NULL;
   curr_n = NULL;
@@ -1312,6 +1312,8 @@ void GEO_Init_Geo_Struct(t_geo *t)
 
   t->n_dim        = 2;
   t->ldscape_sz   = 1;
+
+  t->update_fmat  = YES;
 }
 
 //////////////////////////////////////////////////////////////

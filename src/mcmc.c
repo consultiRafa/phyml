@@ -582,6 +582,7 @@ void MCMC_Geo_Sigma(t_tree *mixt_tree)
                                 mixt_tree->mcmc->move_type[mixt_tree->mcmc->num_move_geo_sigma],
                                 NO,NULL,mixt_tree,NULL);
 
+      GEO_Update_Fmat(tree->geo);
       tree = tree->next;
     }
   while(tree);

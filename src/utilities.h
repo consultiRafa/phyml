@@ -1459,7 +1459,7 @@ typedef struct __Phylogeo{
   int          *loc_beneath; // Gives the location occupied beneath each node in the tree
   int            ldscape_sz; // Landscape size: number of locations
   int                 n_dim; // Dimension of the data (e.g., longitude + lattitude -> n_dim = 2) 
-
+  int           update_fmat;
 
   phydbl              sigma; // Dispersal parameter
   phydbl          min_sigma;
