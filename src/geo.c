@@ -162,8 +162,7 @@ int GEO_Simulate_Estimate(int argc, char **argv)
   t->cov[1*t->n_dim+0] = 0.0;
   
   GEO_Simulate_Coordinates(t->ldscape_sz,t);
-  
-  
+    
   GEO_Get_Sigma_Max(t);
   
   t->max_sigma = t->sigma_thresh * 2.;
@@ -199,38 +198,10 @@ int GEO_Simulate_Estimate(int argc, char **argv)
   PhyML_Printf("\n. rf: %f",rf);
   
   phydbl scale;
-  scale = EXP(Rnorm(0,0.5));
+  scale = EXP(Rnorm(0,0.2));
+  PhyML_Printf("\n. Scale: %f",scale);
   For(i,2*tree->n_otu-1) tree->rates->nd_t[i] *= scale;
   
-
-      /* // Randomize node heights  */
-      /* int j; */
-      /* phydbl scale; */
-  /* t_node *n,*v1,*v2; */
-  /* scale = EXP(Rnorm(0,0.5)); */
-  /* For(i,2*tree->n_otu-1) tree->rates->nd_t[i] *= scale; */
-  /* n = v1 = v2 = NULL; */
-  /* For(i,tree->n_otu-2)  */
-  /*   { */
-  /*     n = tree->a_nodes[Rand_Int(tree->n_otu,2*tree->n_otu-3)]; */
-
-  /*     v1 = v2 = NULL; */
-  /*     For(j,3) */
-  /*       { */
-  /*         if(n->v[j] != n->anc) */
-  /*           { */
-  /*             if(!v1) v1 = n->v[j]; */
-  /*             else    v2 = n->v[j]; */
-  /*           } */
-  /*       } */
-      
-  /*     tree->rates->nd_t[n->num] =  */
-  /*       Uni() * (MIN(tree->rates->nd_t[v1->num],tree->rates->nd_t[v2->num])- */
-  /*                tree->rates->nd_t[n->anc->num]) + */
-  /*       tree->rates->nd_t[n->anc->num]; */
-  /*   } */
-
-
 
   phydbl *tree_dist,*geo_dist;
   int j;
@@ -297,17 +268,6 @@ int GEO_Simulate_Estimate(int argc, char **argv)
   GEO_Lk(t,tree);
   PhyML_Printf("\n. Init loglk: %f",tree->geo->c_lnL);
 
-  /* Exit("\n"); */
-  /* int c = 0; */
-  /* do */
-  /*   { */
-  /*     GEO_Optimize_Sigma(t,tree); */
-  /*     GEO_Optimize_Lambda(t,tree); */
-  /*     GEO_Optimize_Tau(t,tree); */
-  /*     printf("\n. Sigma = %f Lambda = %f Tau = %f Loglk = %f",tree->geo->sigma,tree->geo->lbda,tree->geo->tau,GEO_Lk(t,tree)); */
-  /*     c++; */
-  /*   } */
-  /* while(c < 30); */
 
   res = GEO_MCMC(tree);
 
@@ -482,15 +442,15 @@ phydbl *GEO_MCMC(t_tree *tree)
 
       tree->mcmc->run++;
 
-      if(tree->mcmc->ess[tree->mcmc->num_move_geo_sigma] > 200.) tree->mcmc->adjust_tuning[tree->mcmc->num_move_geo_sigma]  = NO;
-      if(tree->mcmc->ess[tree->mcmc->num_move_geo_tau]   > 200.) tree->mcmc->adjust_tuning[tree->mcmc->num_move_geo_tau]    = NO;
-      if(tree->mcmc->ess[tree->mcmc->num_move_geo_lambda]> 200.) tree->mcmc->adjust_tuning[tree->mcmc->num_move_geo_lambda] = NO;
+      if(tree->mcmc->ess[tree->mcmc->num_move_geo_sigma] > 20.) tree->mcmc->adjust_tuning[tree->mcmc->num_move_geo_sigma]  = NO;
+      if(tree->mcmc->ess[tree->mcmc->num_move_geo_tau]   > 20.) tree->mcmc->adjust_tuning[tree->mcmc->num_move_geo_tau]    = NO;
+      if(tree->mcmc->ess[tree->mcmc->num_move_geo_lambda]> 20.) tree->mcmc->adjust_tuning[tree->mcmc->num_move_geo_lambda] = NO;
       
       MCMC_Get_Acc_Rates(tree->mcmc);
 
-      if(tree->mcmc->ess[tree->mcmc->num_move_geo_sigma] > 1000. &&
-         tree->mcmc->ess[tree->mcmc->num_move_geo_tau]   > 1000. &&
-         tree->mcmc->ess[tree->mcmc->num_move_geo_lambda]> 1000.) break;
+      if(tree->mcmc->ess[tree->mcmc->num_move_geo_sigma] > 100. &&
+         tree->mcmc->ess[tree->mcmc->num_move_geo_tau]   > 100. &&
+         tree->mcmc->ess[tree->mcmc->num_move_geo_lambda]> 100.) break;
 
     }
   while(tree->mcmc->run < tree->mcmc->chain_len);
