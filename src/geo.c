@@ -174,6 +174,10 @@ int GEO_Simulate_Estimate(int argc, char **argv)
   t->lbda  = EXP(Uni()*(LOG(t->max_lbda/100.)-LOG(t->min_lbda*10.))  + LOG(t->min_lbda*10.));
   t->sigma = Uni()*(t->max_sigma-t->min_sigma) + t->min_sigma;
   
+
+  t->max_sigma = t->sigma_thresh * 5.;
+
+
   
   PhyML_Fprintf(fp,"\n# SigmaTrue\t SigmaThresh\t LbdaTrue\t TauTrue\txTrue\t yTrue\t xRand\t yRand\t RF\t Sigma5\t Sigma50\t Sigma95\t ProbSigmaInfThresh\t Lbda5\t Lbda50\t Lbda95\t ProbLbdaInf1\t Tau5\t Tau50\t Tau95\t X5\t X50\t X95\t Y5\t Y50\t Y95\t RandX5\t RandX50\t RandX95\t RandY5\t RandY50\t RandY95\t Mantel\t");
   PhyML_Fprintf(fp,"\n");
@@ -1491,7 +1495,7 @@ void GEO_Get_Sigma_Max(t_geo *t)
   int n_iter,n_iter_max;
 
   eps = 1.E-6;
-  overlap_target = 0.95;
+  overlap_target = 0.99;
   n_iter_max = 100;
 
   dist = .0;
@@ -1511,7 +1515,7 @@ void GEO_Get_Sigma_Max(t_geo *t)
   inv_max_dist = 1./max_dist;
   
 
-
+  PhyML_Printf("\n. max_dist = %f",max_dist);
 
   sigma_a = t->min_sigma; sigma_b = 1.0; sigma_c = t->max_sigma;
   /* sigma_a = t->min_sigma; sigma_b = 1.0; sigma_c = 10.; */
