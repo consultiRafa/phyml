@@ -669,8 +669,8 @@ void PhyTime_XML(char *xml_file)
 
   //PhyML_Printf("\n");
   //PhyML_Printf("\n. Computing Normalizing Constant(s) for the Node Times Prior Density...\n");
-  //tree -> K = Norm_Constant_Prior_Times(tree);
-  //Exit("\n");
+  /* tree -> K = Norm_Constant_Prior_Times(tree); */
+  /* Exit("\n"); */
 
   MCMC(tree);   
                                          															
@@ -746,11 +746,11 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
               /* if((t_prior_min[calib -> all_applies_to[k] -> num] > t_prior_max[calib -> all_applies_to[k] -> num])) times_partial_proba[i] = 0.0;  */
               /* else times_partial_proba[i] *= calib -> proba[calib -> all_applies_to[k] -> num];  */
             }
-          else
-            {
-              if(calib -> next) calib = calib -> next;
-              else break;
-            }
+          /* else */
+          /*   { */
+          /*     if(calib -> next) calib = calib -> next; */
+          /*     else break; */
+          /*   } */
           if(calib -> next) calib = calib -> next;
           else break;
         }
@@ -764,7 +764,7 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
       /* printf("\n. p[%i] = %f \n", i + 1, times_partial_proba[i]); */
       /* printf("\n\n"); */
 
-      //tree -> rates -> birth_rate = 4.0;
+      /* tree -> rates -> birth_rate = 4.0; */
       times_lk = TIMES_Lk_Yule_Order(tree);
       /* if(result != FALSE) times_lk = TIMES_Lk_Yule_Order(tree); */
       /* else times_lk = 1.0; */
@@ -1327,7 +1327,8 @@ void TIMES_Calib_Partial_Proba(t_tree *tree)
   tot_num_comb = Number_Of_Comb(calib);
 
   For(i, tot_num_comb)
-    {
+    { 
+      /* printf("\n\n"); */
       times_partial_proba[i] = 1.0;
       for(j = tree -> n_otu; j < 2 * tree -> n_otu - 1; j++) 
         {
@@ -1340,8 +1341,9 @@ void TIMES_Calib_Partial_Proba(t_tree *tree)
           k = (i % Number_Of_Comb(calib)) / Number_Of_Comb(calib -> next);
           if(calib -> all_applies_to[k] -> num)
             {
-              t_prior_min[calib -> all_applies_to[k] -> num] = MAX(t_prior_min[calib -> all_applies_to[k] -> num], calib -> lower);
-              t_prior_max[calib -> all_applies_to[k] -> num] = MIN(t_prior_max[calib -> all_applies_to[k] -> num], calib -> upper);
+              /* printf("\n. Node number [%d] \n", calib -> all_applies_to[k] -> num); */
+              t_prior_min[calib -> all_applies_to[k] -> num] = MAX(t_prior_min[calib -> all_applies_to[k] -> num], calib -> lower); /* printf("\n. [1] Min [%f] \n",  t_prior_min[calib -> all_applies_to[k] -> num]); */
+              t_prior_max[calib -> all_applies_to[k] -> num] = MIN(t_prior_max[calib -> all_applies_to[k] -> num], calib -> upper); /* printf("\n. [1] Max [%f] \n",  t_prior_max[calib -> all_applies_to[k] -> num]); */
               t_has_prior[calib -> all_applies_to[k] -> num] = YES;
               proba = calib -> proba[calib -> all_applies_to[k] -> num]; 
               times_partial_proba[i] *= proba;
@@ -1351,11 +1353,12 @@ void TIMES_Calib_Partial_Proba(t_tree *tree)
             }
           else
             {
+              /* printf("\n. k [%d] \n", k);    */         
               proba = calib -> proba[2 * tree -> n_otu - 1]; 
               times_partial_proba[i] *= proba;
               /* printf("\n. [2] Proba [%f] \n", proba); */
-              if(calib -> next) calib = calib -> next;
-              else break;
+              /* if(calib -> next) calib = calib -> next; */
+              /* else break; */
             }
           
           if(calib -> next) calib = calib -> next;
@@ -1384,6 +1387,7 @@ void TIMES_Calib_Partial_Proba(t_tree *tree)
       /*   } */
       /* while(calib); */
       while(calib -> prev) calib = calib -> prev;
+      /* printf("\n\n"); */
     }
 
   phydbl sum_proba;
