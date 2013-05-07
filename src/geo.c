@@ -169,16 +169,10 @@ int GEO_Simulate_Estimate(int argc, char **argv)
   
   PhyML_Printf("\n. sigma max: %f threshold: %f",t->max_sigma,t->sigma_thresh);
   
-  
   t->tau   = Uni()*(t->max_tau/100.-t->min_tau*10.)  + t->min_tau*10.;
   t->lbda  = EXP(Uni()*(LOG(t->max_lbda/100.)-LOG(t->min_lbda*10.))  + LOG(t->min_lbda*10.));
   t->sigma = Uni()*(t->max_sigma-t->min_sigma) + t->min_sigma;
-  
-
-  t->max_sigma = t->sigma_thresh * 5.;
-
-
-  
+    
   PhyML_Fprintf(fp,"\n# SigmaTrue\t SigmaThresh\t LbdaTrue\t TauTrue\txTrue\t yTrue\t xRand\t yRand\t RF\t Sigma5\t Sigma50\t Sigma95\t ProbSigmaInfThresh\t Lbda5\t Lbda50\t Lbda95\t ProbLbdaInf1\t Tau5\t Tau50\t Tau95\t X5\t X50\t X95\t Y5\t Y50\t Y95\t RandX5\t RandX50\t RandX95\t RandY5\t RandY50\t RandY95\t Mantel\t");
   PhyML_Fprintf(fp,"\n");
   
@@ -546,9 +540,9 @@ void GEO_Update_Fmat(t_geo *t)
           t->f_mat[i*t->ldscape_sz+j] = .0;
 
           // Calculate log(f(l_i,l_j)) - log(f(l_i,l_i) - log(m) 
-          For(k,t->n_dim) t->f_mat[i*t->ldscape_sz+j] += Log_Dnorm(loc2[k],loc1[k],SQRT(t->cov[k*t->n_dim+k]),&err);
+          For(k,t->n_dim) t->f_mat[i*t->ldscape_sz+j] += Log_Dnorm(loc2[k],loc1[k],t->cov[k*t->n_dim+k],&err);
           t->f_mat[i*t->ldscape_sz+j] -= lognloc;
-          For(k,t->n_dim) t->f_mat[i*t->ldscape_sz+j] -= Log_Dnorm(loc1[k],loc1[k],SQRT(t->cov[k*t->n_dim+k]),&err);
+          For(k,t->n_dim) t->f_mat[i*t->ldscape_sz+j] -= Log_Dnorm(loc1[k],loc1[k],t->cov[k*t->n_dim+k],&err);
 
           // Take the exponential
           t->f_mat[i*t->ldscape_sz+j] = EXP(t->f_mat[i*t->ldscape_sz+j]);
@@ -1486,7 +1480,7 @@ void GEO_Get_Locations_Beneath_Post(t_node *a, t_node *d, t_geo *t, t_tree *tree
 void GEO_Get_Sigma_Max(t_geo *t)
 {
   int i,j;
-  phydbl max_dist,dist,inv_max_dist;
+  phydbl mean_dist,inv_mean_dist;
   phydbl sigma_a, sigma_b, sigma_c;
   phydbl overlap_a, overlap_b, overlap_c;
   phydbl d_intersect;
@@ -1495,54 +1489,56 @@ void GEO_Get_Sigma_Max(t_geo *t)
   int n_iter,n_iter_max;
 
   eps = 1.E-6;
-  overlap_target = 0.99;
+  overlap_target = 0.95;
   n_iter_max = 100;
 
-  dist = .0;
-  max_dist = -1.;
-  inv_max_dist = -1.;
+  mean_dist = -1.;
+  inv_mean_dist = -1.;
   For(i,t->ldscape_sz-1)
     {
       for(j=i+1;j<t->ldscape_sz;j++)
         {
-          dist = POW(t->ldscape[i*t->n_dim+0] - t->ldscape[j*t->n_dim+0],1);
-          if(dist > max_dist) max_dist = dist;
-          dist = POW(t->ldscape[i*t->n_dim+1] - t->ldscape[j*t->n_dim+1],1);
-          if(dist > max_dist) max_dist = dist;
+          /* dist = POW(t->ldscape[i*t->n_dim+0] - t->ldscape[j*t->n_dim+0],1); */
+          /* if(dist > mean_dist) mean_dist = dist; */
+          /* dist = POW(t->ldscape[i*t->n_dim+1] - t->ldscape[j*t->n_dim+1],1); */
+          /* if(dist > mean_dist) mean_dist = dist; */
+          mean_dist += FABS(t->ldscape[i*t->n_dim+0] - t->ldscape[j*t->n_dim+0]);
+          mean_dist += FABS(t->ldscape[i*t->n_dim+1] - t->ldscape[j*t->n_dim+1]);
         }
     }
   
-  inv_max_dist = 1./max_dist;
+  mean_dist /= t->ldscape_sz*(t->ldscape_sz-1)/2.;
+  inv_mean_dist = 1./mean_dist;
   
 
-  PhyML_Printf("\n. max_dist = %f",max_dist);
+  PhyML_Printf("\n. mean_dist = %f",mean_dist);
 
   sigma_a = t->min_sigma; sigma_b = 1.0; sigma_c = t->max_sigma;
   /* sigma_a = t->min_sigma; sigma_b = 1.0; sigma_c = 10.; */
   n_iter = 0;
   do
     {
-      d_intersect = Inverse_Truncated_Normal(inv_max_dist,0.0,sigma_a,0.0,max_dist);
+      d_intersect = Inverse_Truncated_Normal(inv_mean_dist,0.0,sigma_a,0.0,mean_dist);
       overlap_a = 
-        (Pnorm(max_dist,0.0,sigma_a) - Pnorm(d_intersect,0.0,sigma_a))/
-        (Pnorm(max_dist,0.0,sigma_a) - Pnorm(0.0,0.0,sigma_a)) + 
-        d_intersect / max_dist;
-      /* printf("\n. inter: %f %f [%f]",d_intersect,max_dist,d_intersect / max_dist); */
+        (Pnorm(mean_dist,0.0,sigma_a) - Pnorm(d_intersect,0.0,sigma_a))/
+        (Pnorm(mean_dist,0.0,sigma_a) - Pnorm(0.0,0.0,sigma_a)) + 
+        d_intersect / mean_dist;
+      /* printf("\n. inter: %f %f [%f]",d_intersect,mean_dist,d_intersect / mean_dist); */
 
-      d_intersect = Inverse_Truncated_Normal(inv_max_dist,0.0,sigma_b,0.0,max_dist);
+      d_intersect = Inverse_Truncated_Normal(inv_mean_dist,0.0,sigma_b,0.0,mean_dist);
       overlap_b = 
-        (Pnorm(max_dist,0.0,sigma_b) - Pnorm(d_intersect,0.0,sigma_b))/
-        (Pnorm(max_dist,0.0,sigma_b) - Pnorm(0.0,0.0,sigma_b)) + 
-        d_intersect / max_dist;
-      /* printf("\n. inter: %f %f [%f]",d_intersect,max_dist,d_intersect / max_dist); */
+        (Pnorm(mean_dist,0.0,sigma_b) - Pnorm(d_intersect,0.0,sigma_b))/
+        (Pnorm(mean_dist,0.0,sigma_b) - Pnorm(0.0,0.0,sigma_b)) + 
+        d_intersect / mean_dist;
+      /* printf("\n. inter: %f %f [%f]",d_intersect,mean_dist,d_intersect / mean_dist); */
       
-      d_intersect = Inverse_Truncated_Normal(inv_max_dist,0.0,sigma_c,0.0,max_dist);
+      d_intersect = Inverse_Truncated_Normal(inv_mean_dist,0.0,sigma_c,0.0,mean_dist);
       overlap_c = 
-        (Pnorm(max_dist,0.0,sigma_c) - Pnorm(d_intersect,0.0,sigma_c))/
-        (Pnorm(max_dist,0.0,sigma_c) - Pnorm(0.0,0.0,sigma_c)) + 
-        d_intersect / max_dist;
+        (Pnorm(mean_dist,0.0,sigma_c) - Pnorm(d_intersect,0.0,sigma_c))/
+        (Pnorm(mean_dist,0.0,sigma_c) - Pnorm(0.0,0.0,sigma_c)) + 
+        d_intersect / mean_dist;
 
-      /* printf("\n. inter: %f %f [%f]",d_intersect,max_dist,d_intersect / max_dist); */
+      /* printf("\n. inter: %f %f [%f]",d_intersect,mean_dist,d_intersect / mean_dist); */
       
       /* printf("\n. sigma_a:%f overlap_a:%f sigma_b:%f overlap_b:%f sigma_c:%f overlap_c:%f", */
       /*        sigma_a,overlap_a, */

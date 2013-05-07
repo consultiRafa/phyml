@@ -9524,7 +9524,7 @@ void Random_SPRs_On_Rooted_Tree(t_tree *tree)
   residual = NULL;
   nouse = NULL;
   a = d = v1 = v2 = NULL;
-  For(i,tree->n_otu/2) // We will perform tree->n_otu random SPRs
+  For(i,tree->n_otu/4) // We will perform tree->n_otu random SPRs
     {
       a = tree->a_nodes[Rand_Int(tree->n_otu,2*tree->n_otu-3)];
       
