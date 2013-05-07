@@ -305,7 +305,8 @@ int GEO_Simulate_Estimate(int argc, char **argv)
 
                 mantel_p_val
                 );
-  
+  fflush(NULL);
+
   Free(s);
   Free(res);
 
@@ -440,15 +441,15 @@ phydbl *GEO_MCMC(t_tree *tree)
 
       tree->mcmc->run++;
 
-      if(tree->mcmc->ess[tree->mcmc->num_move_geo_sigma] > 20.) tree->mcmc->adjust_tuning[tree->mcmc->num_move_geo_sigma]  = NO;
-      if(tree->mcmc->ess[tree->mcmc->num_move_geo_tau]   > 20.) tree->mcmc->adjust_tuning[tree->mcmc->num_move_geo_tau]    = NO;
-      if(tree->mcmc->ess[tree->mcmc->num_move_geo_lambda]> 20.) tree->mcmc->adjust_tuning[tree->mcmc->num_move_geo_lambda] = NO;
+      if(tree->mcmc->ess[tree->mcmc->num_move_geo_sigma] > 200.) tree->mcmc->adjust_tuning[tree->mcmc->num_move_geo_sigma]  = NO;
+      if(tree->mcmc->ess[tree->mcmc->num_move_geo_tau]   > 200.) tree->mcmc->adjust_tuning[tree->mcmc->num_move_geo_tau]    = NO;
+      if(tree->mcmc->ess[tree->mcmc->num_move_geo_lambda]> 200.) tree->mcmc->adjust_tuning[tree->mcmc->num_move_geo_lambda] = NO;
       
       MCMC_Get_Acc_Rates(tree->mcmc);
 
-      if(tree->mcmc->ess[tree->mcmc->num_move_geo_sigma] > 100. &&
-         tree->mcmc->ess[tree->mcmc->num_move_geo_tau]   > 100. &&
-         tree->mcmc->ess[tree->mcmc->num_move_geo_lambda]> 100.) break;
+      if(tree->mcmc->ess[tree->mcmc->num_move_geo_sigma] > 1000. &&
+         tree->mcmc->ess[tree->mcmc->num_move_geo_tau]   > 1000. &&
+         tree->mcmc->ess[tree->mcmc->num_move_geo_lambda]> 1000.) break;
 
     }
   while(tree->mcmc->run < tree->mcmc->chain_len);

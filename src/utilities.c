@@ -9524,7 +9524,7 @@ void Random_SPRs_On_Rooted_Tree(t_tree *tree)
   residual = NULL;
   nouse = NULL;
   a = d = v1 = v2 = NULL;
-  For(i,tree->n_otu/4) // We will perform tree->n_otu random SPRs
+  For(i,tree->n_otu) // We will perform tree->n_otu random SPRs
     {
       a = tree->a_nodes[Rand_Int(tree->n_otu,2*tree->n_otu-3)];
       
@@ -9557,7 +9557,7 @@ void Random_SPRs_On_Rooted_Tree(t_tree *tree)
 
       err = NO;
       new_t = Rnorm_Trunc(tree->rates->nd_t[a->num],
-                          FABS(tree->rates->nd_t[tree->n_root->num]/40.),
+                          FABS(tree->rates->nd_t[tree->n_root->num]/50.),
                           lim_inf,
                           lim_sup,
                           &err);
