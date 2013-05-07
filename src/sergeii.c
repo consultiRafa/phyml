@@ -1093,7 +1093,7 @@ phydbl Slicing_Calibrations(t_tree *tree)
           lmbd = tree -> rates -> birth_rate;
           num = 1;
           denom = 1;
-          //lmbd = 4.0;
+          lmbd = 4.0;
           /* For(j, n_otu - 1) num = num * (EXP(-lmbd * t_cur_slice_min[j]) - EXP(-lmbd * t_cur_slice_max[j]));  */
           /* for(j = n_otu; j < 2 * n_otu - 1; j++) denom = denom * (EXP(-lmbd * t_prior_min[j]) - EXP(-lmbd * t_prior_max[j]));  */
           For(j, n_otu - 2) num = num * (EXP(lmbd * t_cur_slice_max[j]) - EXP(lmbd * t_cur_slice_min[j])); 
@@ -1105,7 +1105,7 @@ phydbl Slicing_Calibrations(t_tree *tree)
     }
   //printf("\n. [P] of the tree for one combination of slices [%f] \n", P);
   K = 1 / P;
-  //printf("\n. [K] of the tree for one combination of slices [%f] \n", K);
+ /* printf("\n. [K] of the tree for one combination of slices [%f] \n", K); */
   ////////////////////////////////////////////////////////////////////////////
   free(t_cur_slice_min);
   free(t_cur_slice_max);
@@ -1285,20 +1285,21 @@ phydbl *Norm_Constant_Prior_Times(t_tree *tree)
               t_prior_max[calib -> all_applies_to[k] -> num] = MIN(t_prior_max[calib -> all_applies_to[k] -> num], calib -> upper);
               t_has_prior[calib -> all_applies_to[k] -> num] = YES;
             }
-          else
-            {
-              if(calib -> next) calib = calib -> next;
-              else break;
-            }
+          /* else */
+          /*   { */
+          /*     if(calib -> next) calib = calib -> next; */
+          /*     else break; */
+          /*   } */
           if(calib -> next) calib = calib -> next;
           else break;
         }
       while(calib);
-      TIMES_Set_All_Node_Priors(tree);
+      int result;
+      TIMES_Set_All_Node_Priors_S(&result, tree);
       //for(j = tree -> n_otu; j < 2 * tree -> n_otu - 1; j++) printf("\n. [1] Node [%d] min [%f] max[%f]\n", j, tree -> rates -> t_prior_min[j], tree -> rates -> t_prior_max[j]);
       //tree -> rates -> birth_rate = 4.0;
       K[i] = Slicing_Calibrations(tree);     
-      //PhyML_Printf("\n. Number [%d] normolizing constant [%f] \n", i+1, K[i]);
+      /* PhyML_Printf("\n. Number [%d] normolizing constant [%f] \n", i+1, K[i]); */
       while(calib -> prev) calib = calib -> prev;
     }
   return(K);
