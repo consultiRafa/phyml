@@ -364,7 +364,7 @@ phydbl *GEO_MCMC(t_tree *tree)
   tree->mcmc->start_ess[tree->mcmc->num_move_geo_lambda] = YES;
   tree->mcmc->start_ess[tree->mcmc->num_move_geo_tau]    = YES;
 
-  n_vars = 100;
+  n_vars = 10;
   res = (phydbl *)mCalloc(tree->mcmc->chain_len / tree->mcmc->sample_interval * n_vars,sizeof(phydbl));
 
 
