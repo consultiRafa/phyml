@@ -137,6 +137,7 @@ int GEO_Simulate_Estimate(int argc, char **argv)
   fp = fopen(s,"w");
 
   seed = getpid();
+  seed = 5080;
   printf("\n. Seed = %d",seed);
   srand(seed);
 
@@ -272,37 +273,37 @@ int GEO_Simulate_Estimate(int argc, char **argv)
 
   PhyML_Fprintf(fp,"%f\t %f\t %f\t %f\t  %f\t %f\t %f\t  %f\t  %f\t %f\t %f\t  %f\t %f\t %f\t  %f\t %f\t %f\t  %f\t %f\t %f\t  %f\t %f\t %f\t  %f \n",
 
-                /* Sigma5 */ Quantile(res+0*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.025),
-                /* Sigma50*/ Quantile(res+0*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.50),
-                /* Sigma95*/ Quantile(res+0*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.975),
+                /* Sigma5 */ Quantile(res+0*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval+1,0.025),
+                /* Sigma50*/ Quantile(res+0*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval+1,0.50),
+                /* Sigma95*/ Quantile(res+0*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval+1,0.975),
                 
                 /* ProbInfThesh */ Prob(res+0*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,t->sigma_thresh),
 
-                /* Lbda5 */ Quantile(res+1*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.025),
-                /* Lbda50 */ Quantile(res+1*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.50),
-                /* Lbda95 */ Quantile(res+1*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.975),
+                /* Lbda5 */ Quantile(res+1*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval+1,0.025),
+                /* Lbda50 */ Quantile(res+1*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval+1,0.50),
+                /* Lbda95 */ Quantile(res+1*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval+1,0.975),
                 
                 /* ProbInf1 */ Prob(res+1*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,1.0),
                 
-                /* Tau5 */ Quantile(res+2*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.025),
-                /* Tau50 */ Quantile(res+2*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.50),
-                /* Tau 95 */ Quantile(res+2*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.975),
+                /* Tau5 */ Quantile(res+2*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval+1,0.025),
+                /* Tau50 */ Quantile(res+2*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval+1,0.50),
+                /* Tau 95 */ Quantile(res+2*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval+1,0.975),
 
-                /* X5 */ Quantile(res+4*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.025),
-                /* X50 */ Quantile(res+4*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.50),
-                /* X95 */ Quantile(res+4*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.975),
+                /* X5 */ Quantile(res+4*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval+1,0.025),
+                /* X50 */ Quantile(res+4*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval+1,0.50),
+                /* X95 */ Quantile(res+4*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval+1,0.975),
 
-                /* Y5 */ Quantile(res+5*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.025),
-                /* Y50 */ Quantile(res+5*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.50),
-                /* Y95 */ Quantile(res+5*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.975),
+                /* Y5 */ Quantile(res+5*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval+1,0.025),
+                /* Y50 */ Quantile(res+5*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval+1,0.50),
+                /* Y95 */ Quantile(res+5*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval+1,0.975),
 
-                /* RandX5 */ Quantile(res+6*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.025),
-                /* RandX50*/ Quantile(res+6*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.50),
-                /* RandX95*/ Quantile(res+6*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.975),
+                /* RandX5 */ Quantile(res+6*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval+1,0.025),
+                /* RandX50*/ Quantile(res+6*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval+1,0.50),
+                /* RandX95*/ Quantile(res+6*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval+1,0.975),
 
-                /* RandY5 */ Quantile(res+7*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.025),
-                /* RandY50*/ Quantile(res+7*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.50),
-                /* RandY95*/ Quantile(res+7*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval,0.975),
+                /* RandY5 */ Quantile(res+7*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval+1,0.025),
+                /* RandY50*/ Quantile(res+7*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval+1,0.50),
+                /* RandY95*/ Quantile(res+7*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval+1,0.975),
 
                 mantel_p_val
                 );
@@ -364,7 +365,7 @@ phydbl *GEO_MCMC(t_tree *tree)
   tree->mcmc->start_ess[tree->mcmc->num_move_geo_lambda] = YES;
   tree->mcmc->start_ess[tree->mcmc->num_move_geo_tau]    = YES;
 
-  n_vars = 10;
+  n_vars = 100;
   res = (phydbl *)mCalloc(tree->mcmc->chain_len / tree->mcmc->sample_interval * n_vars,sizeof(phydbl));
 
 
@@ -450,15 +451,15 @@ phydbl *GEO_MCMC(t_tree *tree)
 
       tree->mcmc->run++;
 
-      if(tree->mcmc->ess[tree->mcmc->num_move_geo_sigma] > 200.) tree->mcmc->adjust_tuning[tree->mcmc->num_move_geo_sigma]  = NO;
-      if(tree->mcmc->ess[tree->mcmc->num_move_geo_tau]   > 200.) tree->mcmc->adjust_tuning[tree->mcmc->num_move_geo_tau]    = NO;
-      if(tree->mcmc->ess[tree->mcmc->num_move_geo_lambda]> 200.) tree->mcmc->adjust_tuning[tree->mcmc->num_move_geo_lambda] = NO;
+      if(tree->mcmc->ess[tree->mcmc->num_move_geo_sigma] > 20.) tree->mcmc->adjust_tuning[tree->mcmc->num_move_geo_sigma]  = NO;
+      if(tree->mcmc->ess[tree->mcmc->num_move_geo_tau]   > 20.) tree->mcmc->adjust_tuning[tree->mcmc->num_move_geo_tau]    = NO;
+      if(tree->mcmc->ess[tree->mcmc->num_move_geo_lambda]> 20.) tree->mcmc->adjust_tuning[tree->mcmc->num_move_geo_lambda] = NO;
       
       MCMC_Get_Acc_Rates(tree->mcmc);
 
-      if(tree->mcmc->ess[tree->mcmc->num_move_geo_sigma] > 1000. &&
-         tree->mcmc->ess[tree->mcmc->num_move_geo_tau]   > 1000. &&
-         tree->mcmc->ess[tree->mcmc->num_move_geo_lambda]> 1000.) break;
+      if(tree->mcmc->ess[tree->mcmc->num_move_geo_sigma] > 100. &&
+         tree->mcmc->ess[tree->mcmc->num_move_geo_tau]   > 100. &&
+         tree->mcmc->ess[tree->mcmc->num_move_geo_lambda]> 100.) break;
 
     }
   while(tree->mcmc->run < tree->mcmc->chain_len);

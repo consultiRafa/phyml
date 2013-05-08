@@ -4433,14 +4433,13 @@ int Sample_i_With_Proba_pi(phydbl *pi, int len)
 // Return the value y such that Prob(x<y) = p
 phydbl Quantile(phydbl *x, int len, phydbl p)
 {
-  phydbl *y;
+  phydbl *y,q;
   int i;
   int swap;
   phydbl buff;
 
   y = (phydbl *)mCalloc(len,sizeof(phydbl));
   For(i,len) y[i] = x[i];
-
 
   do
     {
@@ -4459,9 +4458,11 @@ phydbl Quantile(phydbl *x, int len, phydbl p)
     }
   while(swap == YES);
   
+  q = y[(int)((len-1)*p)];
+
   Free(y);
 
-  return(y[(int)((len-1)*p)]);
+  return(q);
 
 }
 
