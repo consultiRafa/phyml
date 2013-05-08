@@ -137,7 +137,6 @@ int GEO_Simulate_Estimate(int argc, char **argv)
   fp = fopen(s,"w");
 
   seed = getpid();
-  seed = 5080;
   printf("\n. Seed = %d",seed);
   srand(seed);
 
