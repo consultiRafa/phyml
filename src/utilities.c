@@ -9569,8 +9569,22 @@ void Random_SPRs_On_Rooted_Tree(t_tree *tree)
       dir12 = -1;
       For(j,3) if(tree->n_root->v[1]->v[j] == tree->n_root->v[2]) dir12 = j;
 
+      if(dir12 == -1)
+        {
+          PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);      
+          Exit("\n");
+        }
+
       dir21 = -1;
       For(j,3) if(tree->n_root->v[2]->v[j] == tree->n_root->v[1]) dir21 = j;
+
+      if(dir21 == -1)
+        {
+          PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);      
+          Exit("\n");
+        }
+
+
 
       /* a = tree->a_nodes[101]; */
       /* d = tree->a_nodes[105]; */
@@ -9585,12 +9599,25 @@ void Random_SPRs_On_Rooted_Tree(t_tree *tree)
       
       tree->rates->nd_t[a->num] = new_t;
       
+      if(target_nd == tree->n_root->v[1])
+        {
+          tree->n_root->v[1] = a;
+          tree->e_root = tree->n_root->v[2]->b[dir21];          
+        }
+
+      if(target_nd == tree->n_root->v[2])
+        {
+          tree->n_root->v[2] = a;
+          tree->e_root = tree->n_root->v[1]->b[dir12];          
+        }
+
       if(tree->n_root->v[1] == NULL)
         {
           tree->n_root->v[1] = tree->n_root->v[2]->v[dir21];
           tree->e_root = tree->n_root->v[2]->b[dir21];
         }
-      else if(tree->n_root->v[2] == NULL)
+      
+      if(tree->n_root->v[2] == NULL)
         {
           tree->n_root->v[2] = tree->n_root->v[1]->v[dir12];
           tree->e_root = tree->n_root->v[1]->b[dir12];
