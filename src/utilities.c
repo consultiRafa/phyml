@@ -4641,23 +4641,8 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
 
   if(tree->n_root)
     {
-      if(a->anc == tree->n_root)
-        {
-          v2->anc = tree->n_root;
-          v1->anc = tree->n_root;
-
-          if(tree->n_root->v[1] == v1)      tree->n_root->v[2] = v2;
-          else if(tree->n_root->v[1] == v2) tree->n_root->v[2] = v1;
-          else if(tree->n_root->v[2] == v1) tree->n_root->v[1] = v2;
-          else if(tree->n_root->v[2] == v2) tree->n_root->v[1] = v1;
-
-          tree->e_root = b1;
-        }
-      else
-        {
-          if(v1->anc == a) v1->anc = v2;
-          else             v2->anc = v1;
-        }
+      if(tree->n_root->v[1] == a) tree->n_root->v[1] = NULL;
+      if(tree->n_root->v[2] == a) tree->n_root->v[2] = NULL;
     }
 
 #ifdef DEBUG
@@ -4814,52 +4799,6 @@ void Graft_Subtree(t_edge *target, t_node *link, t_edge *residual, t_tree *tree)
   Make_Edge_Dirs(target,target->left,target->rght,tree);
   Make_Edge_Dirs(residual,residual->left,residual->rght,tree);
   Make_Edge_Dirs(b_up,b_up->left,b_up->rght,tree);
-
-  if(tree->n_root)
-    {            
-      if(target == tree->e_root)
-        {
-          link->anc = tree->n_root;
-          
-          if(tree->n_root->v[1] == v1) 
-            {
-              tree->n_root->v[2] = link;
-              v2->anc = link;
-              tree->e_root = target;
-            }
-          else if(tree->n_root->v[2] == v1)
-            {
-              tree->n_root->v[1] = link;
-              v2->anc = link;
-              tree->e_root = target;
-            }
-          else if(tree->n_root->v[1] == v2)
-            {
-              tree->n_root->v[1] = link;
-              v1->anc = link;
-              tree->e_root = residual;
-            }
-          else if(tree->n_root->v[2] == v2)
-            {
-              tree->n_root->v[1] = link;
-              v1->anc = link;
-              tree->e_root = residual;
-            }            
-        }
-      else
-        {
-          if(v1->anc == v2) 
-            {
-              v1->anc = link;
-              link->anc = v2;
-            }
-          else
-            {
-              v2->anc = link;
-              link->anc = v1;
-            }
-        }
-    }
   
   if(tree->is_mixt_tree == YES) MIXT_Graft_Subtree(target,link,residual,tree);
 
@@ -9513,11 +9452,15 @@ void Random_SPRs_On_Rooted_Tree(t_tree *tree)
   t_edge *residual,*nouse;
   phydbl new_t;
   int err;
-  
+  int ok_dir,dir12,dir21;
+
   /* printf("\n. >>>>>>>>>>>>>>.\n"); */
   /* Print_Node(tree->n_root,tree->n_root->v[1],tree); */
   /* Print_Node(tree->n_root,tree->n_root->v[2],tree); */
   /* printf("\n. >>>>>>>>>>>>>>."); */
+  /* GEO_Update_Occup(tree->geo,tree); */
+  /* GEO_Lk(tree->geo,tree); */
+  /* PhyML_Printf("\n>> Init loglk: %f",tree->geo->c_lnL); */
   
 
   target_nd = NULL;
@@ -9533,11 +9476,12 @@ void Random_SPRs_On_Rooted_Tree(t_tree *tree)
           PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);      
           Exit("\n");
         }
+      /* if(a == tree->n_root->v[1] || a == tree->n_root->v[2]) continue; */
 
       v1 = v2 = NULL;
       For(j,3)
         {
-          if(a->v[j] != a->anc)
+          if(a->v[j] != a->anc && a->b[j] != tree->e_root)
             {
               if(!v1) v1 = a->v[j];
               else    v2 = a->v[j];
@@ -9561,6 +9505,7 @@ void Random_SPRs_On_Rooted_Tree(t_tree *tree)
                           lim_inf,
                           lim_sup,
                           &err);
+      
 
       if(err == YES)
         {
@@ -9591,8 +9536,9 @@ void Random_SPRs_On_Rooted_Tree(t_tree *tree)
         }
       else
         {
-          For(j,3) if(a->v[j] != a->anc && a->v[j] != d) target_nd = a->v[j];
-          
+          if(v1 == d) target_nd = v2;
+          else        target_nd = v1;
+
           do
             {
               if(tree->rates->nd_t[target_nd->num] > new_t)
@@ -9616,24 +9562,52 @@ void Random_SPRs_On_Rooted_Tree(t_tree *tree)
                 }
             }while(1);
         }
+
+      ok_dir = -1;
+      For(j,3) if(target_nd->v[j] == target_nd->anc || target_nd->b[j] == tree->e_root) ok_dir = j;
       
+      dir12 = -1;
+      For(j,3) if(tree->n_root->v[1]->v[j] == tree->n_root->v[2]) dir12 = j;
+
+      dir21 = -1;
+      For(j,3) if(tree->n_root->v[2]->v[j] == tree->n_root->v[1]) dir21 = j;
+
+      /* a = tree->a_nodes[101]; */
+      /* d = tree->a_nodes[105]; */
+      /* target_nd = tree->a_nodes[105]; */
+      /* printf("\n pull %d %d target %d",a->num,d->num,target_nd->num); */
+      /* printf("\n. %d %d %d",tree->n_root->num,tree->n_root->v[1]->num,tree->n_root->v[2]->num); */
+      /* printf("\n. %d %d",tree->e_root->num,target_nd->b[ok_dir]->num); */
+
       Prune_Subtree(a,d,&nouse,&residual,tree);
 
-      For(j,3)
-        {
-          if(target_nd->v[j] == target_nd->anc || target_nd->b[j] == tree->e_root)
-            {
-              Graft_Subtree(target_nd->b[j],a,residual,tree);
-              break;
-            }
-        }
-
+      Graft_Subtree(target_nd->b[ok_dir],a,residual,tree);
+      
       tree->rates->nd_t[a->num] = new_t;
       
-      Time_To_Branch(tree);
+      if(tree->n_root->v[1] == NULL)
+        {
+          tree->n_root->v[1] = tree->n_root->v[2]->v[dir21];
+          tree->e_root = tree->n_root->v[2]->b[dir21];
+        }
+      else if(tree->n_root->v[2] == NULL)
+        {
+          tree->n_root->v[2] = tree->n_root->v[1]->v[dir12];
+          tree->e_root = tree->n_root->v[1]->b[dir12];
+        }
+
+      Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
+      Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
+      tree->n_root->anc = NULL;
 
       /* Print_Node(tree->n_root,tree->n_root->v[1],tree); */
       /* Print_Node(tree->n_root,tree->n_root->v[2],tree); */
+
+      Time_To_Branch(tree);
+
+      /* GEO_Update_Occup(tree->geo,tree); */
+      /* GEO_Lk(tree->geo,tree); */
+      /* PhyML_Printf("\nxx Init loglk: %f",tree->geo->c_lnL); */
 
     }
 

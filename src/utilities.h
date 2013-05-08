@@ -1308,6 +1308,7 @@ typedef struct __Tmcmc {
   int num_move_geo_sigma;
   int num_move_geo_tau;
   int num_move_geo_updown_tau_lbda;
+  int num_move_geo_updown_lbda_sigma;
 
   int         nd_t_digits;
   int *monitor;

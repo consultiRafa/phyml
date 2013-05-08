@@ -172,6 +172,7 @@ int GEO_Simulate_Estimate(int argc, char **argv)
   t->tau   = Uni()*(t->max_tau/100.-t->min_tau*10.)  + t->min_tau*10.;
   t->lbda  = EXP(Uni()*(LOG(t->max_lbda/100.)-LOG(t->min_lbda*10.))  + LOG(t->min_lbda*10.));
   t->sigma = Uni()*(t->max_sigma-t->min_sigma) + t->min_sigma;
+
     
   PhyML_Fprintf(fp,"\n# SigmaTrue\t SigmaThresh\t LbdaTrue\t TauTrue\txTrue\t yTrue\t xRand\t yRand\t RF\t Sigma5\t Sigma50\t Sigma95\t ProbSigmaInfThresh\t Lbda5\t Lbda50\t Lbda95\t ProbLbdaInf1\t Tau5\t Tau50\t Tau95\t X5\t X50\t X95\t Y5\t Y50\t Y95\t RandX5\t RandX50\t RandX95\t RandY5\t RandY50\t RandY95\t Mantel\t");
   PhyML_Fprintf(fp,"\n");
@@ -258,7 +259,7 @@ int GEO_Simulate_Estimate(int argc, char **argv)
   sum = 0.0;
   For(i,tree->geo->ldscape_sz) sum += tree->geo->loc_beneath[tree->n_root->num * tree->geo->ldscape_sz + i];
   For(i,tree->geo->ldscape_sz) probs[i] = tree->geo->loc_beneath[tree->n_root->num * tree->geo->ldscape_sz + i]/sum;
-  tree->geo->loc[tree->n_root->num] = Sample_i_With_Proba_pi(probs,tree->geo->ldscape_sz);        
+  tree->geo->loc[tree->n_root->num] = Sample_i_With_Proba_pi(probs,tree->geo->ldscape_sz);
   Free(probs);
   GEO_Randomize_Locations(tree->n_root,tree->geo,tree);
 
@@ -366,15 +367,23 @@ phydbl *GEO_MCMC(t_tree *tree)
   n_vars = 10;
   res = (phydbl *)mCalloc(tree->mcmc->chain_len / tree->mcmc->sample_interval * n_vars,sizeof(phydbl));
 
+
   tree->mcmc->run = 0;
   do
     {
-      t->update_fmat = YES;
-      MCMC_Geo_Sigma(tree);
-      t->update_fmat = NO;
       MCMC_Geo_Lbda(tree);
       MCMC_Geo_Tau(tree);
       MCMC_Geo_Loc(tree);
+
+      t->update_fmat = YES;
+      MCMC_Geo_Sigma(tree);
+      t->update_fmat = NO;
+
+
+      /* t->update_fmat = YES; */
+      /* MCMC_Geo_Updown_Lbda_Sigma(tree); */
+      /* t->update_fmat = NO; */
+
 
       /* MCMC_Geo_Updown_Tau_Lbda(tree); */
       /* MCMC_Geo_Updown_Tau_Lbda(tree); */
@@ -652,9 +661,11 @@ void GEO_Update_Occup(t_geo *t, t_tree *tree)
   /*     printf("\n. Node %3d: ",t->sorted_nd[i]->num); */
   /*     For(j,t->ldscape_sz) */
   /*       { */
-  /*         printf("%3d [%12f;%12f]   ", */
-  /*                t->occup[t->sorted_nd[i]->num*t->ldscape_sz + j], */
-  /*                t->ldscape[j*t->n_dim+0],t->ldscape[j*t->n_dim+1]); */
+  /*         /\* printf("%3d [%12f;%12f]   ", *\/ */
+  /*         /\*        t->occup[t->sorted_nd[i]->num*t->ldscape_sz + j], *\/ */
+  /*         /\*        t->ldscape[j*t->n_dim+0],t->ldscape[j*t->n_dim+1]); *\/ */
+  /*         /\* printf("%3d ", *\/ */
+  /*         /\*        t->occup[t->sorted_nd[i]->num*t->ldscape_sz + j]); *\/ */
   /*       } */
   /*   } */
 }
@@ -683,11 +694,11 @@ void GEO_Update_Rmat(t_node *n, t_geo *t, t_tree *tree)
 
 phydbl GEO_Lk(t_geo *t, t_tree *tree)
 {
-  int i;
+  int i,j;
   phydbl loglk;
   phydbl R;
   int dep,arr; // departure and arrival location indices;
-  t_node *curr_n,*prev_n;
+  t_node *curr_n,*prev_n,*v1,*v2;
   phydbl sum;
 
   GEO_Update_Occup(t,tree);     // Same here.
@@ -738,11 +749,19 @@ phydbl GEO_Lk(t_geo *t, t_tree *tree)
       
       /* printf("\n. %d %d (%d) %f %p %p \n",i,curr_n->num,curr_n->tax,tree->rates->nd_t[curr_n->num],curr_n->v[1],curr_n->v[2]); */
 
+      v1 = v2 = NULL;
+      For(j,3) 
+        if(curr_n->v[j] != curr_n->anc && curr_n->b[j] != tree->e_root)
+          {
+            if(!v1) v1 = curr_n->v[j];
+            else    v2 = curr_n->v[j];
+          }
+
       dep = t->loc[curr_n->num]; // departure location
       arr =                      // arrival location
-        (t->loc[curr_n->v[1]->num] == t->loc[curr_n->num] ? 
-         t->loc[curr_n->v[2]->num] : 
-         t->loc[curr_n->v[1]->num]);
+        (t->loc[v1->num] == t->loc[curr_n->num] ? 
+         t->loc[v2->num] : 
+         t->loc[v1->num]);
       
       /* printf("\n%f\t%f", */
       /*        t->ldscape[arr*t->n_dim+0]-t->ldscape[dep*t->n_dim+0], */
@@ -750,6 +769,12 @@ phydbl GEO_Lk(t_geo *t, t_tree *tree)
 
       loglk -= R * FABS(tree->rates->nd_t[curr_n->num] - tree->rates->nd_t[prev_n->num]);
       loglk += LOG(t->r_mat[dep * t->ldscape_sz + arr]);
+
+      /* printf("\n <> %d %f %f %d %d v1:%d v2:%d anc:%d %d %d %d", */
+      /*        curr_n->num, */
+      /*        R * FABS(tree->rates->nd_t[curr_n->num] - tree->rates->nd_t[prev_n->num]), */
+      /*        LOG(t->r_mat[dep * t->ldscape_sz + arr]), */
+      /*        dep,arr,v1->num,v2->num,curr_n->anc->num,curr_n->v[0]->num,curr_n->v[1]->num,curr_n->v[2]->num); */
 
       /* if(i<2) */
       /*   { */
@@ -1417,7 +1442,6 @@ void GEO_Randomize_Locations(t_node *n, t_geo *t, t_tree *tree)
 void GEO_Get_Locations_Beneath(t_geo *t, t_tree *tree)
 {
   int i;
-
   GEO_Get_Locations_Beneath_Post(tree->n_root,tree->n_root->v[1],t,tree);
   GEO_Get_Locations_Beneath_Post(tree->n_root,tree->n_root->v[2],t,tree);
 
@@ -1466,6 +1490,7 @@ void GEO_Get_Locations_Beneath_Post(t_node *a, t_node *d, t_geo *t, t_tree *tree
             }
         }
           
+
       For(i,t->ldscape_sz) 
         {
           t->loc_beneath[ d->num*t->ldscape_sz+i] = 
@@ -1587,7 +1612,6 @@ void GEO_Get_Sigma_Max(t_geo *t)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void MCMC_Geo_Updown_Tau_Lbda(t_tree *tree)
 {
   phydbl K,mult,u,alpha,ratio;
@@ -1652,6 +1676,76 @@ void MCMC_Geo_Updown_Tau_Lbda(t_tree *tree)
     }
 
   tree->mcmc->run_move[tree->mcmc->num_move_geo_updown_tau_lbda]++;
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+
+void MCMC_Geo_Updown_Lbda_Sigma(t_tree *tree)
+{
+  phydbl K,mult,u,alpha,ratio;
+  phydbl cur_lnL,new_lnL;
+  phydbl cur_lbda,new_lbda;
+  phydbl cur_sigma,new_sigma;
+  
+  K        = tree->mcmc->tune_move[tree->mcmc->num_move_geo_updown_lbda_sigma];
+  cur_lnL  = tree->geo->c_lnL;
+  new_lnL  = tree->geo->c_lnL;
+  cur_lbda  = tree->geo->lbda;
+  new_lbda  = tree->geo->lbda;
+  cur_sigma = tree->geo->sigma;
+  new_sigma = tree->geo->sigma;
+
+  u = Uni();
+  mult = EXP(K*(u-0.5));
+
+  /* Multiply lbda by K */
+  new_lbda = cur_lbda * K;
+  
+  /* Divide sigma by same amount */
+  new_sigma = cur_sigma / K;
+
+
+  if(
+     new_sigma < tree->geo->min_sigma || new_sigma > tree->geo->max_sigma ||
+     new_lbda  < tree->geo->min_lbda  || new_lbda  > tree->geo->max_lbda
+     )
+    {
+      tree->mcmc->run_move[tree->mcmc->num_move_geo_updown_lbda_sigma]++;
+      return;
+    }
+  
+  tree->geo->lbda   = new_lbda;
+  tree->geo->sigma = new_sigma;
+
+  if(tree->mcmc->use_data) new_lnL = GEO_Lk(tree->geo,tree);
+
+  ratio = 0.0;
+  /* Proposal ratio: 2n-2=> number of multiplications, 1=>number of divisions */
+  ratio += 0.0*LOG(mult); /* (1-1)*LOG(mult); */
+  /* Likelihood density ratio */
+  ratio += (new_lnL - cur_lnL);
+
+  /* printf("\n. new_lbda: %f new_sigma:%f cur_lnL:%f new_lnL:%f",new_lbda,new_sigma,cur_lnL,new_lnL); */
+
+
+  ratio = EXP(ratio);
+  alpha = MIN(1.,ratio);
+  u = Uni();
+  
+  if(u > alpha) /* Reject */
+    {
+      tree->geo->lbda   = cur_lbda;
+      tree->geo->sigma  = cur_sigma;
+      tree->geo->c_lnL = cur_lnL;
+    }
+  else
+    {
+      tree->mcmc->acc_move[tree->mcmc->num_move_geo_updown_lbda_sigma]++;
+    }
+
+  tree->mcmc->run_move[tree->mcmc->num_move_geo_updown_lbda_sigma]++;
 }
 
 //////////////////////////////////////////////////////////////
