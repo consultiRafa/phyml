@@ -9501,7 +9501,7 @@ void Random_SPRs_On_Rooted_Tree(t_tree *tree)
 
       err = NO;
       new_t = Rnorm_Trunc(tree->rates->nd_t[a->num],
-                          FABS(tree->rates->nd_t[tree->n_root->num]/50.),
+                          FABS(tree->rates->nd_t[tree->n_root->num]/5.),
                           lim_inf,
                           lim_sup,
                           &err);
