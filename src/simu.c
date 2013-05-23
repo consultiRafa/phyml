@@ -66,7 +66,6 @@ void Simu_Loop(t_tree *mixt_tree)
   Lk(NULL,mixt_tree);
 
 
-  mixt_tree->mod->s_opt->print             = YES;
   mixt_tree->best_pars                     = 1E+8;
   mixt_tree->mod->s_opt->spr_pars          = NO;
   mixt_tree->mod->s_opt->quickdirty        = NO;
@@ -225,8 +224,10 @@ int Simu(t_tree *tree, int n_step_max)
 
       if(tree->io->print_trace)
 	{
-	  PhyML_Fprintf(tree->io->fp_out_trace,"[%f]%s\n",tree->c_lnL,Write_Tree(tree,NO)); fflush(tree->io->fp_out_trace);
+          char *s = Write_Tree(tree,NO);
+	  PhyML_Fprintf(tree->io->fp_out_trace,"[%f]%s\n",tree->c_lnL,s); fflush(tree->io->fp_out_trace);
 	  if(tree->io->print_site_lnl) Print_Site_Lk(tree,tree->io->fp_out_lk); fflush(tree->io->fp_out_lk);
+          Free(s);
 	}
 
       if((tree->mod->s_opt->print) && (!tree->io->quiet)) Print_Lk(tree,"[Topology           ]");

@@ -613,9 +613,9 @@ void Free_Model(t_mod *mod)
 {
   Free_Custom_Model(mod);
   Free_Model_Complete(mod);
+  if(mod->m4mod) M4_Free_M4_Model(mod->m4mod);
   Free_Model_Basic(mod);
-  M4_Free_M4_Model(mod->m4mod);
-  Free(mod);
+  /* Free(mod); */
 }
 
 //////////////////////////////////////////////////////////////

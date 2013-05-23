@@ -323,6 +323,7 @@ int main(int argc, char **argv)
   if(io->fp_out_tree)           fclose(io->fp_out_tree);
   if(io->fp_out_trees)          fclose(io->fp_out_trees);
   if(io->fp_out_stats)          fclose(io->fp_out_stats);
+  if(io->fp_out_trace)          fclose(io->fp_out_trace);
 
   Free_Input(io);
 

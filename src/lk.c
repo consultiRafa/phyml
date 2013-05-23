@@ -410,16 +410,10 @@ phydbl Lk(t_edge *b, t_tree *tree)
   if(!b)
     {
       For(br,2*tree->n_otu-3) Update_PMat_At_Given_Edge(tree->a_edges[br],tree);
-      /* printf("\n. L0=%f P0=%f RR=%f", */
-      /* 	     tree->a_edges[0]->l->v,tree->a_edges[0]->Pij_rr[0], */
-      /* 	     tree->prev->mod->ras->gamma_rr->v[tree->mod->ras->prev_class_number]); */
     }
   else
     {
       Update_PMat_At_Given_Edge(b,tree);
-      /* printf("\n. L0=%f P0=%f RR=%f", */
-      /* 	     b->l->v,b->Pij_rr[0], */
-      /* 	     tree->prev->mod->ras->gamma_rr->v[tree->mod->ras->prev_class_number]); */
     }
 
   if(!b)
@@ -506,7 +500,6 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
   sum_scale_left_cat = b->sum_scale_left_cat;
   sum_scale_rght_cat = b->sum_scale_rght_cat;
 
-
   /* Actual likelihood calculation */
   /* For all classes of rates */
   For(catg,tree->mod->ras->n_catg)
@@ -525,7 +518,8 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
                   sum +=
                     b->Pij_rr[catg*dim3+state*dim2+l] *
                     b->p_lk_left[site*dim1+catg*dim2+l];
-		  
+                  
+                  
 		  /* if(tree->curr_site == 0) printf("\n. %f %f %d",  */
 		  /* 				  b->Pij_rr[catg*dim3+state*dim2+l],                     */
 		  /* 				  b->p_lk_left[site*dim1+catg*dim2+l],b->left->num); */
@@ -574,7 +568,7 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
                   site_lk_cat +=
                     sum *
                     tree->mod->e_frq->pi->v[k] *
-                    b->p_lk_rght[site*dim1+catg*dim2+k];
+                    b->p_lk_rght[site*dim1+catg*dim2+k];                 
 		}
             }
 	}
@@ -711,7 +705,7 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
 
   tree->c_lnL += tree->data->wght[site]*log_site_lk;
   /* tree->sum_min_sum_scale += (int)tree->data->wght[site]*min_sum_scale; */
-  /* printf("\n. site = %d loglk = %f",site,log_site_lk); */
+  /* printf("\n. site = %d loglk = %f %d",site,log_site_lk,tree->data->wght[site]); */
   
   return log_site_lk;
 }
@@ -953,6 +947,7 @@ void Update_P_Lk_Generic(t_tree *tree, t_edge *b, t_node *d)
 
   p_lk_lim_inf = (phydbl)P_LK_LIM_INF;
  
+
   NsNg = tree->mod->ras->n_catg * tree->mod->ns;
   Ns = tree->mod->ns;
   NsNs = tree->mod->ns * tree->mod->ns;
@@ -1268,6 +1263,7 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
   n_v2 = d->v[dir2];
 
 
+
   /* Get the partial likelihood vectors on edge b and the two pendant
      edges (i.e., the two other edges connected to d) */
   if(d == b->left)
@@ -1332,7 +1328,8 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
               if(ambiguity_check_v2 == NO) state_v2 = n_v2->c_seq->d_state[site];
 	    }
 	}
-      
+       
+
       if(tree->mod->use_m4mod)
 	{
 	  ambiguity_check_v1 = YES;
@@ -1358,7 +1355,7 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
 		  
 		  /* n_v1 is a tip */
 		  if((n_v1->tax) && (!tree->mod->s_opt->greedy))
-		    {
+		    {                      
 		      if(ambiguity_check_v1 == NO)
 			{
 			  /* For the (non-ambiguous) state at node n_v1 */
@@ -1372,6 +1369,7 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
 			  p2=Pij1[catg*dim3+i*dim2+2] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+2];
 			  p3=Pij1[catg*dim3+i*dim2+3] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+3];
 			  p1_lk1 = p0+p1+p2+p3;
+                          
 
 			  if(isnan(p1_lk1))
 			    {
@@ -1431,6 +1429,8 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
 			  p2=Pij2[catg*dim3+i*dim2+2] * (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+2];
 			  p3=Pij2[catg*dim3+i*dim2+3] * (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+3];
 			  p2_lk2 = p0+p1+p2+p3;
+
+
 			  if(isnan(p2_lk2))
 			    {
 			      PhyML_Printf("\n. p0=%f p1=%f p2=%f p3=%f",p0,p1,p2,p3);
@@ -1460,7 +1460,14 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
 		  
 		  p_lk[site*dim1+catg*dim2+i] = p1_lk1 * p2_lk2;	    
 		  
-		  
+                  /* printf("\n.<< site %3d catg: %3d i: %3d  p_lk %f p1_lk1: %f p2_lk2: %f", */
+                  /*        site, */
+                  /*        catg, */
+                  /*        i, */
+                  /*        p_lk[site*dim1+catg*dim2+i], */
+                  /*        p1_lk1, */
+                  /*        p2_lk2); */
+
 		  if(isnan(p2_lk2))
 		    {
 		      PhyML_Printf("\n. Err in file %s at line %d.",__FILE__,__LINE__);
@@ -1471,25 +1478,49 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
 		}
 	      	      
               /* if(n_v1->tax == NO && n_v2->tax == NO) */
-              /*   printf("\n<< site %3d node %3d %3d %3d %f %f %f %f  v1 : %f %f %f %f v2: %f %f %f %f>>",                        */
+              /*   printf("\n<< site %3d node %3d %3d %3d %f %f %f %f  v1 : %f %f %f %f v2: %f %f %f %f>>", */
               /*          site,d->num,n_v1->num,n_v2->num,p_lk[0],p_lk[1],p_lk[2],p_lk[3], */
-              /*          (phydbl)p_lk_v1[0],(phydbl)p_lk_v1[1],(phydbl)p_lk_v1[2],(phydbl)p_lk_v1[3], */
-              /*          (phydbl)p_lk_v2[0],(phydbl)p_lk_v2[1],(phydbl)p_lk_v2[2],(phydbl)p_lk_v2[3]); */
+              /*          (phydbl)p_lk_v1[site*dim1+catg*dim2+0], */
+              /*          (phydbl)p_lk_v1[site*dim1+catg*dim2+1], */
+              /*          (phydbl)p_lk_v1[site*dim1+catg*dim2+2], */
+              /*          (phydbl)p_lk_v1[site*dim1+catg*dim2+3], */
+              /*          (phydbl)p_lk_v2[site*dim1+catg*dim2+0], */
+              /*          (phydbl)p_lk_v2[site*dim1+catg*dim2+1], */
+              /*          (phydbl)p_lk_v2[site*dim1+catg*dim2+2], */
+              /*          (phydbl)p_lk_v2[site*dim1+catg*dim2+3]); */
               /* else if(n_v1->tax == NO && n_v2->tax == YES) */
               /*   printf("\n<< site %3d node %3d %3d %3d %f %f %f %f  v1 : %f %f %f %f v2*: %f %f %f %f>>", */
               /*          site,d->num,n_v1->num,n_v2->num,p_lk[0],p_lk[1],p_lk[2],p_lk[3], */
-              /*          (phydbl)p_lk_v1[0],(phydbl)p_lk_v1[1],(phydbl)p_lk_v1[2],(phydbl)p_lk_v1[3], */
-              /*          (phydbl)n_v2->b[0]->p_lk_tip_r[0],(phydbl)n_v2->b[0]->p_lk_tip_r[1],(phydbl)n_v2->b[0]->p_lk_tip_r[2],(phydbl)n_v2->b[0]->p_lk_tip_r[3]); */
+              /*          (phydbl)p_lk_v1[site*dim1+catg*dim2+0], */
+              /*          (phydbl)p_lk_v1[site*dim1+catg*dim2+1], */
+              /*          (phydbl)p_lk_v1[site*dim1+catg*dim2+2], */
+              /*          (phydbl)p_lk_v1[site*dim1+catg*dim2+3], */
+              /*          (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+0], */
+              /*          (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+1], */
+              /*          (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+2], */
+              /*          (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+3]); */
               /* else if(n_v1->tax == YES && n_v2->tax == NO) */
               /*   printf("\n<< site %3d node %3d %3d %3d %f %f %f %f  v1*: %f %f %f %f v2 : %f %f %f %f>>", */
               /*          site,d->num,n_v1->num,n_v2->num,p_lk[0],p_lk[1],p_lk[2],p_lk[3], */
-              /*          (phydbl)n_v1->b[0]->p_lk_tip_r[0],(phydbl)n_v1->b[0]->p_lk_tip_r[1],(phydbl)n_v1->b[0]->p_lk_tip_r[2],(phydbl)n_v1->b[0]->p_lk_tip_r[3], */
-              /*          (phydbl)p_lk_v2[0],(phydbl)p_lk_v2[1],(phydbl)p_lk_v2[2],(phydbl)p_lk_v2[3]); */
+              /*          (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+0], */
+              /*          (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+1], */
+              /*          (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+2], */
+              /*          (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+3], */
+              /*          (phydbl)p_lk_v2[site*dim1+catg*dim2+0], */
+              /*          (phydbl)p_lk_v2[site*dim1+catg*dim2+1], */
+              /*          (phydbl)p_lk_v2[site*dim1+catg*dim2+2], */
+              /*          (phydbl)p_lk_v2[site*dim1+catg*dim2+3]); */
               /* else if(n_v1->tax == YES && n_v2->tax == YES) */
               /*   printf("\n<< site %3d node %3d %3d %3d %f %f %f %f  v1*: %f %f %f %f v2*: %f %f %f %f>>", */
               /*          site,d->num,n_v1->num,n_v2->num,p_lk[0],p_lk[1],p_lk[2],p_lk[3], */
-              /*          (phydbl)n_v1->b[0]->p_lk_tip_r[0],(phydbl)n_v1->b[0]->p_lk_tip_r[1],(phydbl)n_v1->b[0]->p_lk_tip_r[2],(phydbl)n_v1->b[0]->p_lk_tip_r[3], */
-              /*          (phydbl)n_v2->b[0]->p_lk_tip_r[0],(phydbl)n_v2->b[0]->p_lk_tip_r[1],(phydbl)n_v2->b[0]->p_lk_tip_r[2],(phydbl)n_v2->b[0]->p_lk_tip_r[3]); */
+              /*          (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+0], */
+              /*          (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+1], */
+              /*          (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+2], */
+              /*          (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+3], */
+              /*          (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+0], */
+              /*          (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+1], */
+              /*          (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+2], */
+              /*          (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+3]); */
               /* Print_Square_Matrix_Generic(4,Pij1); */
               /* Print_Square_Matrix_Generic(4,Pij2); */
 
@@ -2160,9 +2191,6 @@ void Unconstraint_Lk(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
-
-
 void Init_P_Lk_Tips_Double(t_tree *tree)
 {
   int curr_site,i,j,k,dim1,dim2;
@@ -2253,7 +2281,8 @@ void Init_P_Lk_Tips_Int(t_tree *tree)
   For(curr_site,tree->data->crunch_len)
     {
       For(i,tree->n_otu)
-	{	  
+	{
+          /* printf("\n. site: %3d %c",curr_site,tree->a_nodes[i]->c_seq->state[curr_site]); */
 	  if(tree->io->datatype == NT)
 	    {
 	      Init_Tips_At_One_Site_Nucleotides_Int(tree->a_nodes[i]->c_seq->state[curr_site],

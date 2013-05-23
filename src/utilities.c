@@ -2805,6 +2805,8 @@ void Bootstrap(t_tree *tree)
 	  init_len++;
 	}
       
+      Set_D_States(boot_data,tree->io->datatype,tree->io->state_len);
+
       if(init_len != tree->data->init_len) Exit("\n== Pb when copying sequences\n");
 
       init_len = 0;
@@ -2846,7 +2848,7 @@ void Bootstrap(t_tree *tree)
       boot_tree->mod                = boot_mod;
       boot_tree->io                 = tree->io;
       boot_tree->data               = boot_data;
-      boot_tree->mod->s_opt->print  = 0;
+      boot_tree->mod->s_opt->print  = NO;
       boot_tree->n_pattern          = boot_tree->data->crunch_len;
       boot_tree->io->print_site_lnl = 0;
       boot_tree->io->print_trace    = 0;
@@ -2876,6 +2878,7 @@ void Bootstrap(t_tree *tree)
 	  Lk(NULL,boot_tree);
 	  MIXT_Set_Alias_Subpatt(NO,boot_tree);
 	}
+      
 
       if(boot_tree->mod->s_opt->opt_topo)
 	{
@@ -2935,7 +2938,6 @@ fflush(stdout);
 	  if(replicate != tree->mod->bootstrap-1) PhyML_Printf("[");
 	}
 
-      if(boot_tree->mat) Free_Mat(boot_tree->mat);
       Free_Tree(boot_tree);      
       Free_Model(boot_mod);
     }
@@ -7265,7 +7267,6 @@ char *Bootstrap_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
   s_tree = Write_Tree(tree,NO);
   
   Free_Spr_List(tree);
-  Free_One_Spr(tree->best_spr);
   Free_Triplet(tree->triplet_struct);
   Free_Tree_Pars(tree);
   Free_Tree_Lk(tree);
@@ -9501,7 +9502,7 @@ void Random_SPRs_On_Rooted_Tree(t_tree *tree)
 
       err = NO;
       new_t = Rnorm_Trunc(tree->rates->nd_t[a->num],
-                          FABS(tree->rates->nd_t[tree->n_root->num]/5.),
+                          FABS(tree->rates->nd_t[tree->n_root->num]/50.),
                           lim_inf,
                           lim_sup,
                           &err);

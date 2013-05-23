@@ -599,7 +599,7 @@ void Round_Optimize(t_tree *tree, calign *data, int n_round_max)
       n_round++;
       each--;
     }
-  
+    
   Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->mod->s_opt->print));
 }
 

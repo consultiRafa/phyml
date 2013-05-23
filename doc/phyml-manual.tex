@@ -996,7 +996,7 @@ define. For instance, the following constraints:
 ((A,B,C),(D,E,F));
 \end{Verbatim} 
 indicate that taxa A, B and C belong to the same clade. D, E and F also belong to the
-same  clade and the  two clades  hence defined  should not  overlap. For  instance, under  these two
+same  clade and the  two clades  hence defined  should not  overlap. Under  these two
 constraints, the tree ((A,B),D,((E,F),C)) is not valid. From the example above, you will notice that
 the constraints are defined  using a multifurcating tree in NEWICK format.  Note that this tree does
 not need to display the whole list of taxa. For instance, while the only taxa involved in specifying
@@ -1006,10 +1006,13 @@ these six taxa only.
 PhyML tree topology  search algorithms all rely on  improving a starting tree. By  default, BioNJ is
 the method  of choice  for building this  tree. However,  there is no  guarantee that  the phylogeny
 estimated with PhyML does comply with the  topological constraints. While it is probably possible to
-implement  BioNJ  with  topological constraints,  we  have  not  done  so  yet.  Instead,  the  same
-multifurcating tree  that defines the topological constraints  should also be used  as starting tree
+implement  BioNJ  with  topological constraints,  we  have  not  done  so yet.   Instead,  the  same
+multifurcating tree that  defines the topological constraints  should also be used  as starting tree
 using  the \x{-u}  (\x{--inputtree})  option. Altogether,  the  command line  should  look like  the
-following: \x{-u}=\x{file\_name} \x{--constraint\_file}=\x{file\_name}.
+following: \x{-u}=\x{file\_name} \x{--constraint\_file}=\x{file\_name}. It is not possible to use as
+input  tree a  non-binary phylogeny  that is  distinct  from that  provided in  the constraint  tree
+file. However, any binary tree compatible with the constraint one can be used as input tree.
+
 
 \subsection{Output files}
 

@@ -110,9 +110,11 @@ void Bootstrap_MPI(t_tree *tree)
               init_len++;
             }
             
+          Set_D_States(boot_data,tree->io->datatype,tree->io->state_len);
+
           if (init_len != tree->data->init_len) {
             MPI_Finalize();
-            Warn_And_Exit("\n. Pb when copying sequences\n");
+            Warn_And_Exit("\n== Pb. when copying sequences...\n");
           }
           // Send random data to other process, not to current process
           if (i < nbElem-1) {
