@@ -9500,9 +9500,11 @@ void Random_SPRs_On_Rooted_Tree(t_tree *tree)
       lim_sup = tree->rates->nd_t[d->num];
       lim_inf = tree->rates->nd_t[tree->n_root->num];
 
+      phydbl scale = Uni()*(50.-5.)+5.;
+      
       err = NO;
       new_t = Rnorm_Trunc(tree->rates->nd_t[a->num],
-                          FABS(tree->rates->nd_t[tree->n_root->num]/50.),
+                          FABS(tree->rates->nd_t[tree->n_root->num]/scale),
                           lim_inf,
                           lim_sup,
                           &err);
