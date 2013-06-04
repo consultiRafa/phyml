@@ -170,7 +170,6 @@ void R_rtree(char *s_tree_a, char *s_tree_d, t_node *a, t_tree *tree, int *n_int
       if(a != tree->n_root)
 	{
 	  Connect_One_Edge_To_Two_Nodes(a,d,tree->a_edges[tree->num_curr_branch_available],tree);
-	  tree->num_curr_branch_available++;
 	}
       
       subs=Sub_Trees(s_tree_d,&degree);
@@ -233,7 +232,6 @@ void R_rtree(char *s_tree_a, char *s_tree_d, t_node *a, t_tree *tree, int *n_int
       if(a != tree->n_root)
 	{
 	  Connect_One_Edge_To_Two_Nodes(a,d,tree->a_edges[tree->num_curr_branch_available],tree);
-	  tree->num_curr_branch_available++;
 	}
 
       d->num=*n_ext;

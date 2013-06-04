@@ -18,8 +18,8 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int GEO_Main(int argc, char **argv)
 {
-  GEO_Simulate_Estimate(argc,argv);
-  /* GEO_Estimate(argc,argv); */
+  /* GEO_Simulate_Estimate(argc,argv); */
+  GEO_Estimate(argc,argv);
   return(1);
 }
 
@@ -137,6 +137,7 @@ int GEO_Simulate_Estimate(int argc, char **argv)
   fp = fopen(s,"w");
 
   seed = getpid();
+  seed = 15520;
   printf("\n. Seed = %d",seed);
   srand(seed);
 
@@ -450,15 +451,15 @@ phydbl *GEO_MCMC(t_tree *tree)
 
       tree->mcmc->run++;
 
-      if(tree->mcmc->ess[tree->mcmc->num_move_geo_sigma] > 200.) tree->mcmc->adjust_tuning[tree->mcmc->num_move_geo_sigma]  = NO;
-      if(tree->mcmc->ess[tree->mcmc->num_move_geo_tau]   > 200.) tree->mcmc->adjust_tuning[tree->mcmc->num_move_geo_tau]    = NO;
-      if(tree->mcmc->ess[tree->mcmc->num_move_geo_lambda]> 200.) tree->mcmc->adjust_tuning[tree->mcmc->num_move_geo_lambda] = NO;
+      if(tree->mcmc->ess[tree->mcmc->num_move_geo_sigma] > 2000.) tree->mcmc->adjust_tuning[tree->mcmc->num_move_geo_sigma]  = NO;
+      if(tree->mcmc->ess[tree->mcmc->num_move_geo_tau]   > 2000.) tree->mcmc->adjust_tuning[tree->mcmc->num_move_geo_tau]    = NO;
+      if(tree->mcmc->ess[tree->mcmc->num_move_geo_lambda]> 2000.) tree->mcmc->adjust_tuning[tree->mcmc->num_move_geo_lambda] = NO;
       
       MCMC_Get_Acc_Rates(tree->mcmc);
 
-      if(tree->mcmc->ess[tree->mcmc->num_move_geo_sigma] > 1000. &&
-         tree->mcmc->ess[tree->mcmc->num_move_geo_tau]   > 1000. &&
-         tree->mcmc->ess[tree->mcmc->num_move_geo_lambda]> 1000.) break;
+      if(tree->mcmc->ess[tree->mcmc->num_move_geo_sigma] > 10000. &&
+         tree->mcmc->ess[tree->mcmc->num_move_geo_tau]   > 10000. &&
+         tree->mcmc->ess[tree->mcmc->num_move_geo_lambda]> 10000.) break;
 
     }
   while(tree->mcmc->run < tree->mcmc->chain_len);
@@ -1799,7 +1800,7 @@ void GEO_Read_In_Landscape(char *file_name, t_geo *t, phydbl **ldscape, int **lo
       if(i == tree->n_otu)
         {
           PhyML_Printf("\n== Could not find a taxon with name '%s' in the tree provided.",s);
-          /* PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__); */
+          /* PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__); */
           /* Exit("\n"); */
           continue;
         }
@@ -1809,7 +1810,7 @@ void GEO_Read_In_Landscape(char *file_name, t_geo *t, phydbl **ldscape, int **lo
       
       sscanf(line+pos,"%lf %lf",&longitude,&lattitude);
 
-      PhyML_Printf("\n. Taxon %30s, longitude: %12f, lattitude: %12f [%4d]",tree->a_nodes[i]->name,longitude,lattitude,loc_hash[i]);
+      PhyML_Printf("\n. Taxon %30s, longitude: %12f, lattitude: %12f [%4d]",tree->a_nodes[i]->name,longitude,lattitude,(*loc_hash)[i]);
 
       t->ldscape_sz++;
       if(!(t->ldscape_sz%10))

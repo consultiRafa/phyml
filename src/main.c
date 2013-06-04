@@ -195,6 +195,35 @@ int main(int argc, char **argv)
 		    }
 
 
+                  /* /\* !!!!!!!!!!!!!!!!!!!!!!!!!!! *\/ */
+                  /* int i; */
+                  /* For(i,2*tree->n_otu-3) */
+                  /*   { */
+                  /*     tree->c_lnL = UNLIKELY; */
+                  /*     printf("\n\n. Add root on edge %d [%d %d] %f",i,tree->a_edges[i]->left->num,tree->a_edges[i]->rght->num,tree->a_edges[i]->l->v); */
+                  /*     Add_Root(tree->a_edges[i],tree); */
+                  /*     printf("\n %d %p %p  %d %p %p", */
+                  /*            tree->n_root->v[1]->num, */
+                  /*            tree->n_root->b[1]->p_lk_left, */
+                  /*            tree->n_root->b[1]->p_lk_rght, */
+                  /*            tree->n_root->v[2]->num, */
+                  /*            tree->n_root->b[2]->p_lk_left, */
+                  /*            tree->n_root->b[2]->p_lk_rght); */
+                  /*     printf("\n"); */
+                  /*     Print_Node(tree->n_root,tree->n_root->v[1],tree); */
+                  /*     Print_Node(tree->n_root,tree->n_root->v[2],tree); */
+                  /*     /\* Print_Node(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree); *\/ */
+                  /*     tree->both_sides = YES; */
+                  /*     printf("\n. %f",Lk(NULL,tree)); */
+                  /*     /\* Round_Optimize(tree,tree->data,100); *\/ */
+                  /*     Simu_Loop(tree); */
+                  /*     fflush(NULL); */
+                  /*   } */
+
+                  /* Exit("\n"); */
+
+
+
 		  if(tree->mod->s_opt->opt_topo)
 		    {
 		      if(tree->mod->s_opt->topo_search      == NNI_MOVE) Simu_Loop(tree);
@@ -248,6 +277,7 @@ int main(int argc, char **argv)
 
 		  time(&t_end);
 
+
 		  Print_Fp_Out(io->fp_out_stats,t_beg,t_end,tree,
 			       io,num_data_set+1,
 			       (tree->mod->s_opt->n_rand_starts > 1)?
@@ -255,6 +285,7 @@ int main(int argc, char **argv)
                                (num_rand_tree == io->mod->s_opt->n_rand_starts-1)?(YES):(NO));
 		  
 		  if(tree->io->print_site_lnl) Print_Site_Lk(tree,io->fp_out_lk);
+
 
 		  /* Start from BioNJ tree */
 		  if((num_rand_tree == io->mod->s_opt->n_rand_starts-1) && (tree->mod->s_opt->random_input_tree))

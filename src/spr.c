@@ -374,7 +374,6 @@ void Clean_SPR (t_tree *tree)
 void Optim_SPR (t_tree *tree, int max_size, int method)
 {
   int   nr_moves, improvement;
-  t_node *root;
   
   if(tree->mod->s_opt->print) PhyML_Printf("\n\n. Starting SPR moves...\n");
 
@@ -390,8 +389,7 @@ void Optim_SPR (t_tree *tree, int max_size, int method)
   ** Optimize all t_edge lengths and calculate the new likelihood value.
   */
 /*   PhyML_Printf("\n. Optimizing t_edge lengths."); */
-  root = tree->a_nodes[0];
-  Optimize_Br_Len_Serie (root, root->v[2], root->b[2], tree);
+  Optimize_Br_Len_Serie (tree);
   Set_Both_Sides(YES,tree);
   cur_lk = Lk(NULL,tree);
   time(&(tree->t_current));
@@ -622,7 +620,7 @@ int Perform_SPR_Moves (t_tree *tree, int max_size)
   Set_Both_Sides(YES,tree);
   cur_lk = Lk(NULL,tree);
   root = tree->a_nodes[0];
-  Optimize_Br_Len_Serie (root, root->v[2], root->b[2], tree);
+  Optimize_Br_Len_Serie (tree);
   Set_Both_Sides(YES,tree);
   cur_lk = Lk(NULL,tree);
   time(&(tree->t_current));
@@ -781,11 +779,11 @@ int Perform_Best_SPR (t_tree *tree, int max_size)
   Set_Both_Sides(YES,tree);
   cur_lk = Lk(NULL,tree);
   root = tree->a_nodes[0];
-  Optimize_Br_Len_Serie (root, root->v[2], root->b[2], tree);
+  Optimize_Br_Len_Serie (tree);
   Set_Both_Sides(YES,tree);
   cur_lk = Lk(NULL,tree);
   time(&(tree->t_current));
-  if(tree->mod->s_opt->print) Print_Lk(tree,"topoLOGy");
+  if(tree->mod->s_opt->print) Print_Lk(tree,"topology");
 
   /*
   ** Return the result.
@@ -960,7 +958,7 @@ int Perform_One_SPR(t_tree *tree, int max_size)
   Set_Both_Sides(YES,tree);
   cur_lk = Lk(NULL,tree);
   root = tree->a_nodes[0];
-  Optimize_Br_Len_Serie (root, root->v[2], root->b[2], tree);
+  Optimize_Br_Len_Serie (tree);
   Set_Both_Sides(YES,tree);
   cur_lk = Lk(NULL,tree);
   time(&(tree->t_current));
@@ -2540,7 +2538,7 @@ int Find_Optim_Local (t_tree *tree)
 int Find_Optim_Globl (t_tree *tree)
 {
   int     best_cand, cand, i;
-  t_node   *v_prune, *u_prune, *v_n, *root;
+  t_node   *v_prune, *u_prune, *v_n;
   t_edge   *e_prune, *e_regraft, *e_connect, *e_avail;
   phydbl  max_change, new_lk;
   _move_ *move;
@@ -2593,8 +2591,7 @@ int Find_Optim_Globl (t_tree *tree)
       
       Set_Both_Sides(YES,tree);
       Lk(NULL,tree);
-      root = tree->a_nodes[0];
-      Optimize_Br_Len_Serie (root, root->v[2], root->b[2], tree);
+      Optimize_Br_Len_Serie (tree);
       Set_Both_Sides(YES,tree);
       new_lk = Lk (NULL,tree);
 
@@ -3745,10 +3742,7 @@ void Speed_Spr(t_tree *tree, int max_cycles)
 	{
 
           /* Optimise branch lengths */
-          Optimize_Br_Len_Serie(tree->a_nodes[0],
-                                tree->a_nodes[0]->v[0],
-                                tree->a_nodes[0]->b[0],
-                                tree);
+          Optimize_Br_Len_Serie(tree);
 
 	  /* Update partial likelihoods */
 	  Set_Both_Sides(YES,tree);
@@ -4376,10 +4370,7 @@ int Try_One_Spr_Move_Full(t_spr *move, t_tree *tree)
   Lk(NULL,tree);
   MIXT_Set_Alias_Subpatt(NO,tree);
 
-  Optimize_Br_Len_Serie(tree->a_nodes[0],
-			tree->a_nodes[0]->v[0],
-			tree->a_nodes[0]->b[0],
-			tree);
+  Optimize_Br_Len_Serie(tree);
   
   Set_Both_Sides(YES,tree);
   Lk(NULL,tree);
@@ -4664,7 +4655,7 @@ void SPR_Shuffle(t_tree *mixt_tree)
   Set_Both_Sides(YES,mixt_tree);
   Lk(NULL,mixt_tree);
 
-  mixt_tree->mod->s_opt->print             = YES;
+  /* mixt_tree->mod->s_opt->print             = YES; */
   mixt_tree->best_pars                     = 1E+8;
   mixt_tree->mod->s_opt->spr_pars          = NO;
   mixt_tree->mod->s_opt->quickdirty        = NO;
@@ -4672,7 +4663,6 @@ void SPR_Shuffle(t_tree *mixt_tree)
   mixt_tree->mod->s_opt->max_delta_lnL_spr = 0.;
   mixt_tree->mod->s_opt->max_depth_path    = 2*mixt_tree->n_otu-3;
   mixt_tree->mod->s_opt->spr_lnL           = NO;
-
 
   do
     {
@@ -4690,10 +4680,7 @@ void SPR_Shuffle(t_tree *mixt_tree)
       Spr(UNLIKELY,mixt_tree);
 
       Optimiz_All_Free_Param(mixt_tree,(mixt_tree->io->quiet)?(0):(mixt_tree->mod->s_opt->print));
-      Optimize_Br_Len_Serie(mixt_tree->a_nodes[0],
-			    mixt_tree->a_nodes[0]->v[0],
-			    mixt_tree->a_nodes[0]->b[0],
-			    mixt_tree);
+      Optimize_Br_Len_Serie(mixt_tree);
       
       if(mixt_tree->n_improvements < 20 || mixt_tree->max_spr_depth  < 5 ||
 	 (FABS(lk_old-mixt_tree->c_lnL) < 1.)) break;

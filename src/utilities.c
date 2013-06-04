@@ -23,7 +23,7 @@ phydbl String_To_Dbl(char *string)
   if(!string)
     {
       PhyML_Printf("\n== String object empty.");
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);      
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);      
       Exit("\n");
     }
 
@@ -69,8 +69,6 @@ void Unroot_Tree(char **subtrees)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
-
 void Make_Edge_Dirs(t_edge *b, t_node *a, t_node *d, t_tree *tree)
 {
   int i;
@@ -81,6 +79,7 @@ void Make_Edge_Dirs(t_edge *b, t_node *a, t_node *d, t_tree *tree)
       PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
       Exit("\n");
     }
+
   if(d == b->left)
     {
       PhyML_Printf("\n== a->num = %3d ; d->num = %3d",a->num,d->num);
@@ -733,7 +732,6 @@ void Connect_Edges_To_Nodes_Recur(t_node *a, t_node *d, t_tree *tree)
   int i;
 
   Connect_One_Edge_To_Two_Nodes(a,d,tree->a_edges[tree->num_curr_branch_available],tree);
-  tree->num_curr_branch_available += 1;
 
   if(d->tax) return;
   else For(i,3) if(d->v[i] != a) Connect_Edges_To_Nodes_Recur(d,d->v[i],tree);
@@ -741,7 +739,6 @@ void Connect_Edges_To_Nodes_Recur(t_node *a, t_node *d, t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void Connect_One_Edge_To_Two_Nodes(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 {
@@ -755,7 +752,7 @@ void Connect_One_Edge_To_Two_Nodes(t_node *a, t_node *d, t_edge *b, t_tree *tree
 
   if(dir_a_d == -1 || dir_d_a == -1)
     {
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
 
@@ -766,6 +763,8 @@ void Connect_One_Edge_To_Two_Nodes(t_node *a, t_node *d, t_edge *b, t_tree *tree
   b->rght       = d;
   if(a->tax) {b->rght = a; b->left = d;} /* root */
   /* a tip is necessary on the right hand side of the t_edge */
+
+  tree->num_curr_branch_available += 1;
   
   (b->left == a)?
     (Make_Edge_Dirs(b,a,d,tree)):
@@ -4641,11 +4640,20 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
   if(target)   (*target)   = b1;
   if(residual) (*residual) = b2;
 
+  /* if(tree->n_root) */
+  /*   { */
+  /*     if(tree->n_root->v[1] == a) tree->n_root->v[1] = NULL; */
+  /*     if(tree->n_root->v[2] == a) tree->n_root->v[2] = NULL; */
+  /*   } */
+
   if(tree->n_root)
     {
-      if(tree->n_root->v[1] == a) tree->n_root->v[1] = NULL;
-      if(tree->n_root->v[2] == a) tree->n_root->v[2] = NULL;
+      tree->n_root->v[1]       = tree->e_root->left;
+      tree->n_root->v[2]       = tree->e_root->rght;
+      tree->n_root->b[1]->rght = tree->e_root->left;
+      tree->n_root->b[2]->rght = tree->e_root->rght;
     }
+
 
 #ifdef DEBUG
   if(b1->left->tax == YES && b1->rght->tax == NO)
@@ -4802,6 +4810,15 @@ void Graft_Subtree(t_edge *target, t_node *link, t_edge *residual, t_tree *tree)
   Make_Edge_Dirs(residual,residual->left,residual->rght,tree);
   Make_Edge_Dirs(b_up,b_up->left,b_up->rght,tree);
   
+  if(tree->n_root)
+    {
+      tree->n_root->v[1]       = tree->e_root->left;
+      tree->n_root->v[2]       = tree->e_root->rght;
+      tree->n_root->b[1]->rght = tree->e_root->left;
+      tree->n_root->b[2]->rght = tree->e_root->rght;
+    }
+
+
   if(tree->is_mixt_tree == YES) MIXT_Graft_Subtree(target,link,residual,tree);
 
 }
@@ -6153,6 +6170,8 @@ void Update_Root_Pos(t_tree *tree)
 
 void Add_Root(t_edge *target, t_tree *tree)
 {
+  t_edge *b1, *b2;
+  
   #ifndef PHYML
   PhyML_Printf("\n. Adding root on t_edge %d left = %d right = %d\n.",target->num,target->left->num,target->rght->num); fflush(NULL);
   #endif
@@ -6175,11 +6194,11 @@ void Add_Root(t_edge *target, t_tree *tree)
 
   /* Set the position of the root */
   tree->n_root->v[0] = NULL;
-  tree->n_root->v[2] = tree->e_root->left;
-  tree->n_root->v[1] = tree->e_root->rght;
+  tree->n_root->v[1] = tree->e_root->left;
+  tree->n_root->v[2] = tree->e_root->rght;
 
-  tree->n_root->b[2] = tree->e_root;
-  tree->n_root->b[1] = tree->e_root;
+  /* tree->n_root->b[2] = tree->e_root; */
+  /* tree->n_root->b[1] = tree->e_root; */
 
   if(tree->n_root_pos > -1.0)
     {
@@ -6199,6 +6218,70 @@ void Add_Root(t_edge *target, t_tree *tree)
       tree->n_root_pos = 0.5;
     }
   
+  b1 = tree->a_edges[2*tree->n_otu-3];
+  b2 = tree->a_edges[2*tree->n_otu-2];
+
+  tree->n_root->b[0] = NULL;
+  tree->n_root->b[1] = b1;
+  tree->n_root->b[2] = b2;
+
+  b1->num  = tree->num_curr_branch_available;
+  b2->num  = tree->num_curr_branch_available+1;
+  b1->left = tree->n_root;
+  b1->rght = tree->n_root->v[1];
+  b2->left = tree->n_root;
+  b2->rght = tree->n_root->v[2];
+
+  b1->l->v     = tree->n_root->l[1];
+  b2->l->v     = tree->n_root->l[2];
+  b1->l_old->v = tree->n_root->l[1];
+  b2->l_old->v = tree->n_root->l[2];
+
+  b1->l_r = 1;
+  b2->l_r = 2;
+
+  b1->r_l = 0;
+  b2->r_l = 0;
+
+  b1->l_v1 = 0;
+  b1->l_v2 = 2;
+
+  b2->l_v1 = 0;
+  b2->l_v2 = 1;
+
+  b1->r_v1 = 1;
+  b1->r_v2 = 2;
+
+  b2->r_v1 = 1;
+  b2->r_v2 = 2;
+
+
+  /* WARNING: make sure you have freed the memory for p_lk_rght on b1 and b2 */
+
+  b1->p_lk_rght = tree->e_root->p_lk_left;
+  b2->p_lk_rght = tree->e_root->p_lk_rght;
+  
+  b1->sum_scale_rght = tree->e_root->sum_scale_left;
+  b2->sum_scale_rght = tree->e_root->sum_scale_rght;
+
+  b1->p_lk_loc_rght = tree->e_root->p_lk_loc_left;
+  b2->p_lk_loc_rght = tree->e_root->p_lk_loc_rght;
+
+  b1->p_lk_tip_r = tree->e_root->p_lk_tip_l;
+  b2->p_lk_tip_r = tree->e_root->p_lk_tip_r;
+
+  b1->patt_id_rght = tree->e_root->patt_id_left;
+  b2->patt_id_rght = tree->e_root->patt_id_rght;
+  
+  b1->pars_r = tree->e_root->pars_l;
+  b2->pars_r = tree->e_root->pars_r;
+
+  b1->ui_r = tree->e_root->ui_l;
+  b2->ui_r = tree->e_root->ui_r;
+
+  b1->p_pars_r = tree->e_root->p_pars_l;
+  b2->p_pars_r = tree->e_root->p_pars_r;
+
   Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
   Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
   tree->n_root->anc = NULL;
@@ -7058,8 +7141,11 @@ void Best_Of_NNI_And_SPR(t_tree *tree)
       Free_Tree(ori_tree);
       Free_Tree(best_tree);
       
-      Free_Model(ori_mod);
-      Free_Model(best_mod);
+      Free_Model_Complete(ori_mod);
+      Free_Model_Complete(best_mod);
+
+      Free_Model_Basic(ori_mod);
+      Free_Model_Basic(best_mod);
     }
 }
 
@@ -7328,9 +7414,8 @@ char *aLRT_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Prepare_Tree_For_Lk(t_tree *tree)
-{      
+{
   Connect_CSeqs_To_Nodes(tree->data,tree);
   Fill_Dir_Table(tree);
   Update_Dirs(tree);
@@ -7346,8 +7431,6 @@ void Prepare_Tree_For_Lk(t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
-
 
 void Find_Common_Tips(t_tree *tree1, t_tree *tree2)
 {
@@ -8493,7 +8576,7 @@ void Check_Br_Len_Bounds(t_tree *mixt_tree)
     {
       b = NULL;
       
-      For(i,2*tree->n_otu-3)
+      For(i,2*tree->n_otu-1)
         {
           b = tree->a_edges[i];
     
@@ -8503,7 +8586,7 @@ void Check_Br_Len_Bounds(t_tree *mixt_tree)
       
       if(tree->rates)
         {
-          For(i,2*tree->n_otu-3)
+          For(i,2*tree->n_otu-1)
             {
               if(tree->rates->u_cur_l[i] > tree->mod->l_max) tree->rates->u_cur_l[i] = tree->mod->l_max;
               if(tree->rates->u_cur_l[i] < tree->mod->l_min) tree->rates->u_cur_l[i] = tree->mod->l_min;
@@ -9501,7 +9584,7 @@ void Random_SPRs_On_Rooted_Tree(t_tree *tree)
       lim_inf = tree->rates->nd_t[tree->n_root->num];
 
       phydbl scale = Uni()*(50.-5.)+5.;
-      
+      scale = 50;
       err = NO;
       new_t = Rnorm_Trunc(tree->rates->nd_t[a->num],
                           FABS(tree->rates->nd_t[tree->n_root->num]/scale),
@@ -9647,8 +9730,264 @@ void Random_SPRs_On_Rooted_Tree(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+/*     |
+       |
+       |d
+      /  \
+     /    \
+    /      \b
+   /        \
+  /          \x
+            
+  Returns p_lk and sum_scale for subtree with x as root, Pij for edge b
+*/
+
+void Set_P_Lk_One_Side(phydbl **Pij, phydbl **p_lk,  int **sum_scale, t_node *d, t_edge *b, t_tree *tree)
+{
+  if(Pij) *Pij = b->Pij_rr;
+
+  if(!d->tax)
+    {
+      if(d == b->left)
+        {
+          *p_lk      = b->p_lk_rght;
+          *sum_scale = b->sum_scale_rght;
+        }
+      else
+        {
+          *p_lk      = b->p_lk_left;
+          *sum_scale = b->sum_scale_left;
+        }
+    }
+  else
+    {
+
+      *p_lk        = NULL;
+      *sum_scale   = NULL;
+    }
+}
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+/*     |
+       |
+       |b
+       |
+       |d
+      /  \
+     /    \
+    /      \
+   /        \
+  /v1        \v2
+            
+  Set p_lk and sum_scale for subtrees with d, v1 and v2 as root, 
+  Pij for edges b, and the two edges connecting d to v1 and d to
+  v2;
+  Account for rooted trees.
+*/
+
+void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
+                                 phydbl **p_lk   , int **sum_scale   , int **p_lk_loc,
+                  phydbl **Pij1, phydbl **p_lk_v1, int **sum_scale_v1,
+                  phydbl **Pij2, phydbl **p_lk_v2, int **sum_scale_v2,
+                  t_node *d, t_edge *b, t_tree *tree)
+{
+  int i;
+  
+
+  if(!tree->n_root)
+    {
+      if(d == b->left)
+        {
+          *p_lk      = b->p_lk_left;
+          *sum_scale = b->sum_scale_left;
+          *p_lk_loc  = b->p_lk_loc_left;
+        }
+      else
+        {
+          *p_lk      = b->p_lk_rght;
+          *sum_scale = b->sum_scale_rght;
+          *p_lk_loc  = b->p_lk_loc_rght;
+        }
+
+      *n_v1 = *n_v2 = NULL;
+      For(i,3)
+        {
+          if(d->b[i] != b)
+            {
+              if(!(*n_v1)) 
+                { 
+                  *n_v1 = d->v[i]; 
+                  Set_P_Lk_One_Side(Pij1,p_lk_v1,sum_scale_v1,d,d->b[i],tree); 
+                }
+              else      
+                { 
+                  *n_v2 = d->v[i]; 
+                  Set_P_Lk_One_Side(Pij2,p_lk_v2,sum_scale_v2,d,d->b[i],tree); 
+                }
+            }
+        }      
+    }
+  else
+    {
+      if(b == tree->e_root)
+        {
+          if(d == tree->n_root->v[1]) b = tree->n_root->b[1];
+          else if(d == tree->n_root->v[2]) b = tree->n_root->b[2];
+          else
+            {
+              PhyML_Printf("\n== Err. in file %s at line %d.",__FILE__,__LINE__);
+              Warn_And_Exit("\n");
+            }
+        }
+
+      if(d == tree->n_root)
+        {
+          if(b == tree->n_root->b[1]) 
+            {
+              *p_lk      = tree->n_root->b[1]->p_lk_left;
+              *sum_scale = tree->n_root->b[1]->sum_scale_left;
+              *p_lk_loc  = tree->n_root->b[1]->p_lk_loc_left;
+            }
+          else
+            {
+              *p_lk      = tree->n_root->b[2]->p_lk_left;
+              *sum_scale = tree->n_root->b[2]->sum_scale_left;
+              *p_lk_loc  = tree->n_root->b[2]->p_lk_loc_left;
+            }
+          
+          *n_v1         = NULL;
+          *Pij1         = NULL;
+          *p_lk_v1      = NULL;
+          *sum_scale_v1 = NULL;
+          
+          if(b == tree->n_root->b[1])
+            {
+              *n_v2         = tree->n_root->v[2];
+              *Pij2         = tree->n_root->b[2]->Pij_rr;
+              *p_lk_v2      = tree->n_root->b[2]->p_lk_rght;
+              *sum_scale_v2 = tree->n_root->b[2]->sum_scale_rght;
+            }
+          else if(b == tree->n_root->b[2])
+            {
+              *n_v2         = tree->n_root->v[1];
+              *Pij2         = tree->n_root->b[1]->Pij_rr;
+              *p_lk_v2      = tree->n_root->b[1]->p_lk_rght;
+              *sum_scale_v2 = tree->n_root->b[1]->sum_scale_rght;
+            }
+          else
+            {
+              PhyML_Printf("\n== Err. in file %s at line %d.",__FILE__,__LINE__);
+              Warn_And_Exit("\n");
+            }
+        }
+      else if(d == tree->n_root->v[1] || d == tree->n_root->v[2])
+        {              
+          if(b == tree->n_root->b[1] || b == tree->n_root->b[2])
+            {
+              if(b == tree->n_root->b[1]) 
+                {
+                  *p_lk      = tree->n_root->b[1]->p_lk_rght;
+                  *sum_scale = tree->n_root->b[1]->sum_scale_rght;
+                  *p_lk_loc  = tree->n_root->b[1]->p_lk_loc_left;
+                }
+              else
+                {
+                  *p_lk      = tree->n_root->b[2]->p_lk_rght;
+                  *sum_scale = tree->n_root->b[2]->sum_scale_rght;
+                  *p_lk_loc  = tree->n_root->b[2]->p_lk_loc_rght;
+                }
+              
+              
+              *n_v1 = *n_v2 = NULL;
+              For(i,3)
+                {
+                  if(d->b[i] != tree->e_root)
+                    {
+                      if(!(*n_v1)) 
+                        { 
+                          *n_v1 = d->v[i]; 
+                          Set_P_Lk_One_Side(Pij1,p_lk_v1,sum_scale_v1,d,d->b[i],tree); 
+                        }
+                      else      
+                        { 
+                          *n_v2 = d->v[i]; 
+                          Set_P_Lk_One_Side(Pij2,p_lk_v2,sum_scale_v2,d,d->b[i],tree); 
+                        }
+                    }
+                }
+            }
+          else
+            {
+              if(d == b->left)
+                {
+                  *p_lk      = b->p_lk_left;
+                  *sum_scale = b->sum_scale_left;
+                  *p_lk_loc  = b->p_lk_loc_left;
+                }
+              else
+                {
+                  *p_lk      = b->p_lk_rght;
+                  *sum_scale = b->sum_scale_rght;
+                  *p_lk_loc  = b->p_lk_loc_rght;
+                }
+              
+              
+              *n_v1 = tree->n_root;
+              Set_P_Lk_One_Side(Pij1,p_lk_v1,sum_scale_v1,d,
+                                (d == tree->n_root->v[1])?
+                                (tree->n_root->b[1]):
+                                (tree->n_root->b[2]),
+                                tree);
+              
+              For(i,3)
+                {
+                  if(d->b[i] != tree->e_root && d->b[i] != b)
+                    {
+                      *n_v2 = d->v[i]; 
+                      Set_P_Lk_One_Side(Pij2,p_lk_v2,sum_scale_v2,d,d->b[i],tree); 
+                      break;
+                    }
+                }
+              
+            }
+        }
+      else
+        {
+          if(d == b->left)
+            {
+              *p_lk      = b->p_lk_left;
+              *sum_scale = b->sum_scale_left;
+              *p_lk_loc  = b->p_lk_loc_left;
+            }
+          else
+            {
+              *p_lk      = b->p_lk_rght;
+              *sum_scale = b->sum_scale_rght;
+              *p_lk_loc  = b->p_lk_loc_rght;
+            }
+          
+          *n_v1 = *n_v2 = NULL;
+          For(i,3)
+            {
+              if(d->b[i] != b)
+                {
+                  if(!(*n_v1)) 
+                    { 
+                      *n_v1 = d->v[i]; 
+                      Set_P_Lk_One_Side(Pij1,p_lk_v1,sum_scale_v1,d,d->b[i],tree); 
+                    }
+                  else      
+                    { 
+                      *n_v2 = d->v[i]; 
+                      Set_P_Lk_One_Side(Pij2,p_lk_v2,sum_scale_v2,d,d->b[i],tree); 
+                    }
+                }
+            }      
+        }
+    }
+}
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

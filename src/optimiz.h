@@ -117,7 +117,8 @@ int Generic_Brak(phydbl *param,
 		 t_tree *tree);
 phydbl Generic_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol, 
 		     phydbl *xmin, t_tree *tree, int n_iter_max,int quickdirty);
-void Optimize_Br_Len_Serie(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tree);
+void Optimize_Br_Len_Serie(t_tree *tree);
+void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tree);
 void Optimize_Global_Rate(t_tree *tree);
 phydbl Br_Len_Brent_Default(t_edge *b_fcus, t_tree *tree);
 

@@ -92,12 +92,9 @@ void Finish(matrix *mat)
 
   
   Connect_One_Edge_To_Two_Nodes(new,nx,mat->tree->a_edges[mat->tree->num_curr_branch_available],mat->tree);
-  mat->tree->num_curr_branch_available++;
   Connect_One_Edge_To_Two_Nodes(new,ny,mat->tree->a_edges[mat->tree->num_curr_branch_available],mat->tree);
-  mat->tree->num_curr_branch_available++;
   Connect_One_Edge_To_Two_Nodes(new,nz,mat->tree->a_edges[mat->tree->num_curr_branch_available],mat->tree);
-  mat->tree->num_curr_branch_available++;
-
+  
  
   nx->b[0]->l->v = .5*(dxy-dyz+dxz);
   ny->b[0]->l->v = .5*(dyz-dxz+dxy);
@@ -156,9 +153,7 @@ void Update_Tree(matrix *mat, int x, int y, phydbl lx, phydbl ly, phydbl score)
   new->num      = mat->curr_int;
 
   Connect_One_Edge_To_Two_Nodes(new,nx,mat->tree->a_edges[mat->tree->num_curr_branch_available],mat->tree);
-  mat->tree->num_curr_branch_available++;
   Connect_One_Edge_To_Two_Nodes(new,ny,mat->tree->a_edges[mat->tree->num_curr_branch_available],mat->tree);
-  mat->tree->num_curr_branch_available++;
 
   nx->b[0]->l->v   = lx;
   ny->b[0]->l->v   = ly;

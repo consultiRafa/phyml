@@ -42,15 +42,14 @@ void Free_All_Edges_Light(t_tree *mixt_tree)
 
   tree = mixt_tree;
 
-  For(i,2*tree->n_otu-2) 
+  For(i,2*tree->n_otu-1) 
     {
       Free_Scalar_Dbl(tree->a_edges[i]->l);
       Free_Scalar_Dbl(tree->a_edges[i]->l_old);
     }
-
   do
     {
-      For(i,2*tree->n_otu-2) Free_Edge(tree->a_edges[i]);
+      For(i,2*tree->n_otu-1) Free_Edge(tree->a_edges[i]);
       Free(tree->a_edges);
       tree = tree->next;
     }
@@ -314,7 +313,7 @@ void Free_Tree_Pars(t_tree *mixt_tree)
       Free(tree->step_mat);
       Free(tree->site_pars);
       
-      For(i,2*tree->n_otu-3) Free_Edge_Pars(tree->a_edges[i],tree);           
+      For(i,2*tree->n_otu-1) Free_Edge_Pars(tree->a_edges[i],tree);           
 
       tree = tree->next;
     }
@@ -359,7 +358,7 @@ void Free_Tree_Lk(t_tree *mixt_tree)
         Free(tree->log_site_lk_cat[i]);
       Free(tree->log_site_lk_cat);
 
-      For(i,2*tree->n_otu-3) Free_Edge_Lk(tree->a_edges[i]);
+      For(i,2*tree->n_otu-1) Free_Edge_Lk(tree->a_edges[i]);
 
       tree = tree->next;
     }
@@ -702,7 +701,7 @@ void Free_St(supert_tree *st)
 {
   int i;
 
-  For(i,2*st->tree->n_otu-3) 
+  For(i,2*st->tree->n_otu-1) 
     Free(st->tree->a_edges[i]->nni);
 
   For(i,st->n_part) Free(st->match_st_node_in_gt[i]);
