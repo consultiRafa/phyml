@@ -621,16 +621,8 @@ void Optimize_Br_Len_Serie(t_tree *tree)
         }
     }
 
-  /* printf("\n\n = = = = \n\n"); */
   if(tree->n_root)
     {
-      printf("\n");
-      Print_Node(tree->n_root,tree->n_root->v[1],tree);
-      Print_Node(tree->n_root,tree->n_root->v[2],tree);
-      printf("\n Root edge %d left: %d rght: %d",tree->e_root->num,tree->e_root->left->num,tree->e_root->rght->num);
-
-      Check_Lk_At_Given_Edge(YES,tree);
-
       Update_P_Lk(tree,tree->n_root->b[1],tree->n_root);
       Optimize_Br_Len_Serie_Post(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree);
       Update_P_Lk(tree,tree->n_root->b[2],tree->n_root);
@@ -674,8 +666,6 @@ void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tr
 
   l_infa = tree->mod->l_max/b_fcus->l->v;
   l_infb = tree->mod->l_min/b_fcus->l->v;
-
-  /* printf("\n. xx Edge %d %f",b_fcus->num,lk_init); fflush(NULL); */
 
   if(tree->io->mod->s_opt->opt_bl == YES)
     Br_Len_Brent(l_infb,l_infa,b_fcus,tree);

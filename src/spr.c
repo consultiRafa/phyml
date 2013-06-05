@@ -3443,7 +3443,6 @@ void Test_One_Spr_Target_Recur(t_node *a, t_node *d, t_edge *pulled, t_node *lin
 		    }
 		}
 
-
 	      if(tree->depth_curr_path < tree->mod->s_opt->max_depth_path)
 		Test_One_Spr_Target_Recur(d,d->v[i],pulled,link,residual,best_found,tree);
 	      
@@ -3470,7 +3469,7 @@ phydbl Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
 
   if(tree->mixt_tree != NULL)
     {
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Exit("\n");
     }
 
@@ -3740,7 +3739,6 @@ void Speed_Spr(t_tree *tree, int max_cycles)
       
       if(!tree->mod->s_opt->spr_pars)
 	{
-
           /* Optimise branch lengths */
           Optimize_Br_Len_Serie(tree);
 
@@ -4614,6 +4612,7 @@ void SPR_Shuffle(t_tree *mixt_tree)
   t_tree *tree,**tree_list;
   
   if(mixt_tree->mod->s_opt->print) PhyML_Printf("\n\n. Refining the tree...\n");
+
 
   /*! Get the number of classes in each mixture */
   orig_catg = MIXT_Get_Number_Of_Classes_In_All_Mixtures(mixt_tree);

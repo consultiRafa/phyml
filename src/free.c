@@ -313,8 +313,19 @@ void Free_Tree_Pars(t_tree *mixt_tree)
       Free(tree->step_mat);
       Free(tree->site_pars);
       
-      For(i,2*tree->n_otu-1) Free_Edge_Pars(tree->a_edges[i],tree);           
-
+      For(i,2*tree->n_otu-3) Free_Edge_Pars(tree->a_edges[i]);           
+      
+      if(tree->n_root)
+        {
+          Free_Edge_Pars_Left(tree->n_root->b[1]);
+          Free_Edge_Pars_Left(tree->n_root->b[2]);
+        }
+      else
+        {
+          Free_Edge_Pars(tree->a_edges[2*tree->n_otu-3]);
+          Free_Edge_Pars(tree->a_edges[2*tree->n_otu-2]);
+        }
+      
       tree = tree->next;
     }
   while(tree);
@@ -323,15 +334,30 @@ void Free_Tree_Pars(t_tree *mixt_tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
-void Free_Edge_Pars(t_edge *b, t_tree *tree)
+void Free_Edge_Pars_Left(t_edge *b)
 {
-  Free(b->pars_l);
-  Free(b->pars_r);    
-  Free(b->ui_l);
-  Free(b->ui_r);
-  Free(b->p_pars_l);
-  Free(b->p_pars_r);
+  if(b->pars_l)   Free(b->pars_l);
+  if(b->ui_l)     Free(b->ui_l);
+  if(b->p_pars_l) Free(b->p_pars_l);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Free_Edge_Pars_Rght(t_edge *b)
+{
+  if(b->pars_r)   Free(b->pars_r);    
+  if(b->ui_r)     Free(b->ui_r);
+  if(b->p_pars_r) Free(b->p_pars_r);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Free_Edge_Pars(t_edge *b)
+{
+  Free_Edge_Pars_Left(b);
+  Free_Edge_Pars_Rght(b);
 }
 
 //////////////////////////////////////////////////////////////
@@ -358,8 +384,22 @@ void Free_Tree_Lk(t_tree *mixt_tree)
         Free(tree->log_site_lk_cat[i]);
       Free(tree->log_site_lk_cat);
 
-      For(i,2*tree->n_otu-1) Free_Edge_Lk(tree->a_edges[i]);
-
+      For(i,2*tree->n_otu-3) Free_Edge_Lk(tree->a_edges[i]);
+      
+      if(tree->n_root)
+        {
+          Free(tree->n_root->b[1]->nni);
+          Free(tree->n_root->b[2]->nni);
+          Free(tree->n_root->b[1]->Pij_rr);
+          Free(tree->n_root->b[2]->Pij_rr);
+          Free_Edge_Lk_Left(tree->n_root->b[1]);
+          Free_Edge_Lk_Left(tree->n_root->b[2]);
+        }
+      else
+        {
+          Free_Edge_Lk(tree->a_edges[2*tree->n_otu-3]);
+          Free_Edge_Lk(tree->a_edges[2*tree->n_otu-2]);
+        }
       tree = tree->next;
     }
   while(tree);
@@ -378,21 +418,9 @@ void Free_Node_Lk(t_node *n)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Free_Edge_Lk(t_edge *b)
+void Free_Edge_Lk_Rght(t_edge *b)
 {
-
-  Free(b->nni);
-
-  Free(b->div_post_pred_left);
   Free(b->div_post_pred_rght);
-
-  if(b->p_lk_left)
-    {
-      Free(b->p_lk_left);
-      if(b->sum_scale_left) Free(b->sum_scale_left);
-    }
-
-  if(b->p_lk_tip_l) Free(b->p_lk_tip_l);
 
   if(b->p_lk_rght)
     {
@@ -402,16 +430,43 @@ void Free_Edge_Lk(t_edge *b)
   
   if(b->p_lk_tip_r) Free(b->p_lk_tip_r);
 
-  Free(b->sum_scale_left_cat);
   Free(b->sum_scale_rght_cat);
-
-  Free(b->patt_id_left);
   Free(b->patt_id_rght);
-  Free(b->p_lk_loc_left);
   Free(b->p_lk_loc_rght);
+  
+}
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Free_Edge_Lk_Left(t_edge *b)
+{
+
+  Free(b->div_post_pred_left);
+
+  if(b->p_lk_left)
+    {
+      Free(b->p_lk_left);
+      if(b->sum_scale_left) Free(b->sum_scale_left);
+    }
+
+  if(b->p_lk_tip_l) Free(b->p_lk_tip_l);
+
+  Free(b->sum_scale_left_cat);
+  Free(b->patt_id_left);
+  Free(b->p_lk_loc_left);
+  
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Free_Edge_Lk(t_edge *b)
+{
+  Free(b->nni);
   Free(b->Pij_rr);
-
+  Free_Edge_Lk_Left(b);
+  Free_Edge_Lk_Rght(b);
 }
 
 //////////////////////////////////////////////////////////////

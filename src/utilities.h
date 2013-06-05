@@ -1724,6 +1724,7 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
                   phydbl **Pij2, phydbl **p_lk2, int **sum_scale2,
                   t_node *d, t_edge *b, t_tree *tree);
 
+void Optimum_Root_Position_IL_Model(t_tree *tree);
 
 #include "xml.h"
 #include "free.h"

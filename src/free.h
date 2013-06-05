@@ -32,7 +32,9 @@ void Free_All(align **d,calign *cdata,t_tree *tree);
 void Free_SubTree(t_edge *b_fcus,t_node *a,t_node *d,t_tree *tree);
 void Free_Tree_Ins_Tar(t_tree *tree);
 void Free_Tree_Pars(t_tree *tree);
-void Free_Edge_Pars(t_edge *b,t_tree *tree);
+void Free_Edge_Pars(t_edge *b);
+void Free_Edge_Pars_Left(t_edge *b);
+void Free_Edge_Pars_Rght(t_edge *b);
 void Free_Tree_Lk(t_tree *tree);
 void Free_Node_Lk(t_node *n);
 void Free_Edge_Lk(t_edge *b);
@@ -69,5 +71,7 @@ void Free_Edge_Core(t_edge *b);
 void M4_Free_M4_Model(m4 *m4mod);
 void RATES_Free_Rates(t_rate *rates);
 void Free_Calib(t_cal *cal);
+void Free_Edge_Lk_Left(t_edge *b);
+void Free_Edge_Lk_Rght(t_edge *b);
 
 #endif

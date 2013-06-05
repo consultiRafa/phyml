@@ -195,35 +195,6 @@ int main(int argc, char **argv)
 		    }
 
 
-                  /* /\* !!!!!!!!!!!!!!!!!!!!!!!!!!! *\/ */
-                  /* int i; */
-                  /* For(i,2*tree->n_otu-3) */
-                  /*   { */
-                  /*     tree->c_lnL = UNLIKELY; */
-                  /*     printf("\n\n. Add root on edge %d [%d %d] %f",i,tree->a_edges[i]->left->num,tree->a_edges[i]->rght->num,tree->a_edges[i]->l->v); */
-                  /*     Add_Root(tree->a_edges[i],tree); */
-                  /*     printf("\n %d %p %p  %d %p %p", */
-                  /*            tree->n_root->v[1]->num, */
-                  /*            tree->n_root->b[1]->p_lk_left, */
-                  /*            tree->n_root->b[1]->p_lk_rght, */
-                  /*            tree->n_root->v[2]->num, */
-                  /*            tree->n_root->b[2]->p_lk_left, */
-                  /*            tree->n_root->b[2]->p_lk_rght); */
-                  /*     printf("\n"); */
-                  /*     Print_Node(tree->n_root,tree->n_root->v[1],tree); */
-                  /*     Print_Node(tree->n_root,tree->n_root->v[2],tree); */
-                  /*     /\* Print_Node(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree); *\/ */
-                  /*     tree->both_sides = YES; */
-                  /*     printf("\n. %f",Lk(NULL,tree)); */
-                  /*     /\* Round_Optimize(tree,tree->data,100); *\/ */
-                  /*     Simu_Loop(tree); */
-                  /*     fflush(NULL); */
-                  /*   } */
-
-                  /* Exit("\n"); */
-
-
-
 		  if(tree->mod->s_opt->opt_topo)
 		    {
 		      if(tree->mod->s_opt->topo_search      == NNI_MOVE) Simu_Loop(tree);
@@ -238,6 +209,13 @@ int main(int argc, char **argv)
 			 tree->mod->s_opt->opt_bl)                       Round_Optimize(tree,tree->data,ROUND_MAX);
 		      else                                               Lk(NULL,tree);
 		    }
+
+
+                  if(tree->mod->gamma_mgf_bl == YES)
+                    {
+                      Optimum_Root_Position_IL_Model(tree);
+                    }
+                  
 
                   Set_Both_Sides(YES,tree);
 		  Lk(NULL,tree);

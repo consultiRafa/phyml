@@ -893,11 +893,8 @@ phydbl Invariant_Lk(int *fact_sum_scale, int site, int *num_prec_issue, t_tree *
 
 }
 
-
-
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 /* Update partial likelihood on edge b on the side of b where
    node d lies.
@@ -905,15 +902,13 @@ phydbl Invariant_Lk(int *fact_sum_scale, int site, int *num_prec_issue, t_tree *
 
 void Update_P_Lk(t_tree *tree, t_edge *b, t_node *d)
 {
-  /* printf("\n. Update on edge %d node %d",b->num,d->num); */
   
   if(tree->is_mixt_tree) 
     {
       MIXT_Update_P_Lk(tree,b,d);
       return;
     }
-       
-  
+
   if((tree->io->do_alias_subpatt == YES) && 
      (tree->update_alias_subpatt == YES)) 
     Alias_One_Subpatt((d==b->left)?(b->rght):(b->left),d,tree);
@@ -1250,6 +1245,8 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
                &Pij2,&p_lk_v2,&sum_scale_v2,
                d,b,tree);
 
+
+  /* printf("\n. Update on edge %d node %d [%d %d]",b->num,d->num,n_v1?n_v1->num:-1,n_v2?n_v2->num:-1); */
 
   /* printf("\n. p_lk: %p p_lk_v1: %p p_lk_v2: %p",p_lk,p_lk_v1,p_lk_v2); */
 
@@ -3371,6 +3368,22 @@ int Check_Lk_At_Given_Edge(int verbose, t_tree *tree)
                                       tree->a_edges[i]->num,tree->a_edges[i]->l->v,lk[i],
                                       tree->a_edges[i]->l_var
                                       );
+    }
+
+  if(tree->n_root)
+    {
+      Lk(tree->n_root->b[1],tree);
+      if(verbose == YES) PhyML_Printf("\n. Edge %3d %13f %13f %13f",
+                                      tree->n_root->b[1]->num,tree->n_root->b[1]->l->v,tree->c_lnL,
+                                      tree->n_root->b[1]->l_var
+                                      );
+
+      Lk(tree->n_root->b[2],tree);
+      if(verbose == YES) PhyML_Printf("\n. Edge %3d %13f %13f %13f",
+                                      tree->n_root->b[2]->num,tree->n_root->b[2]->l->v,tree->c_lnL,
+                                      tree->n_root->b[2]->l_var
+                                      );
+
     }
 
   res=1;

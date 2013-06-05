@@ -145,19 +145,28 @@ t_edge *Make_Edge_Light(t_node *a, t_node *d, int num)
 
 void Make_Edge_Pars(t_edge *b, t_tree *tree)
 {
-/*   int site; */
+  Make_Edge_Pars_Left(b,tree);
+  Make_Edge_Pars_Rght(b,tree);
+}
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Make_Edge_Pars_Left(t_edge *b, t_tree *tree)
+{
   b->pars_l = (int *)mCalloc(tree->data->crunch_len,sizeof(int));
-  b->pars_r = (int *)mCalloc(tree->data->crunch_len,sizeof(int));
-
-
   b->ui_l = (unsigned int *)mCalloc(tree->data->crunch_len,sizeof(unsigned int));
-  b->ui_r = (unsigned int *)mCalloc(tree->data->crunch_len,sizeof(unsigned int));
-
-
   b->p_pars_l = (int *)mCalloc(tree->data->crunch_len*tree->mod->ns,sizeof(int ));
-  b->p_pars_r = (int *)mCalloc(tree->data->crunch_len*tree->mod->ns,sizeof(int ));
+}
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Make_Edge_Pars_Rght(t_edge *b, t_tree *tree)
+{
+  b->pars_r = (int *)mCalloc(tree->data->crunch_len,sizeof(int));
+  b->ui_r = (unsigned int *)mCalloc(tree->data->crunch_len,sizeof(unsigned int));
+  b->p_pars_r = (int *)mCalloc(tree->data->crunch_len*tree->mod->ns,sizeof(int ));
 }
 
 //////////////////////////////////////////////////////////////
@@ -165,38 +174,36 @@ void Make_Edge_Pars(t_edge *b, t_tree *tree)
 
 void Make_Edge_Lk(t_edge *b, t_tree *tree)
 {
-  int ns;
-  
-  ns = -1;
-
   if(tree->is_mixt_tree)
     {
       PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
 
-  ns = tree->mod->ns;
-
   b->l_old->v = b->l->v;
-
-  b->div_post_pred_left = (short int *)mCalloc(ns,sizeof(short int));
-  b->div_post_pred_rght = (short int *)mCalloc(ns,sizeof(short int));
 
   b->Pij_rr = (phydbl *)mCalloc(tree->mod->ras->n_catg*tree->mod->ns*tree->mod->ns,sizeof(phydbl));
   
+  Make_Edge_Lk_Left(b,tree);
+  Make_Edge_Lk_Rght(b,tree);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Make_Edge_Lk_Left(t_edge *b, t_tree *tree)
+{
+  int ns = tree->mod->ns;
+
+  b->div_post_pred_left = (short int *)mCalloc(ns,sizeof(short int));
+
   b->sum_scale_left_cat = (int *)mCalloc(MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes),sizeof(int));  
-  b->sum_scale_rght_cat = (int *)mCalloc(MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes),sizeof(int));
 
   if(b->left && !b->left->tax)
     b->sum_scale_left = (int *)mCalloc(tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes),sizeof(int));
   else
     b->sum_scale_left = NULL;
   
-  if(b->rght && !b->rght->tax)
-    b->sum_scale_rght = (int *)mCalloc(tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes),sizeof(int));
-  else
-    b->sum_scale_rght = NULL;
-
 
   if(b->left)
     {
@@ -217,6 +224,34 @@ void Make_Edge_Lk(t_edge *b, t_tree *tree)
       b->p_lk_tip_l = NULL;
     }
   
+  if(b->num >= 2*tree->n_otu-3)
+    {
+      b->sum_scale_left = (int *)mCalloc(tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes),sizeof(int));
+      b->p_lk_left      = (phydbl *)mCalloc(tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns,sizeof(phydbl));
+    }
+
+
+  b->patt_id_left  = (int *)mCalloc(tree->data->crunch_len,sizeof(int));
+  b->p_lk_loc_left = (int *)mCalloc(tree->data->crunch_len,sizeof(int));
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Make_Edge_Lk_Rght(t_edge *b, t_tree *tree)
+{
+  int ns = tree->mod->ns;
+
+  b->div_post_pred_rght = (short int *)mCalloc(ns,sizeof(short int));
+
+  b->sum_scale_rght_cat = (int *)mCalloc(MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes),sizeof(int));  
+
+  if(b->rght && !b->rght->tax)
+    b->sum_scale_rght = (int *)mCalloc(tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes),sizeof(int));
+  else
+    b->sum_scale_rght = NULL;
+  
+
   if(b->rght)
     {
       if((!b->rght->tax) || (tree->mod->s_opt->greedy))
@@ -226,8 +261,8 @@ void Make_Edge_Lk(t_edge *b, t_tree *tree)
         }
       else if(b->rght->tax)
         {
-          b->p_lk_rght = NULL;      
-          b->p_lk_tip_r  = (short int *)mCalloc(tree->data->crunch_len*tree->mod->ns,sizeof(short int));
+          b->p_lk_rght   = NULL;      
+          b->p_lk_tip_r  = (short int *)mCalloc(tree->data->crunch_len*tree->mod->ns,sizeof(short int ));
         }
     }
   else
@@ -235,21 +270,16 @@ void Make_Edge_Lk(t_edge *b, t_tree *tree)
       b->p_lk_rght  = NULL;
       b->p_lk_tip_r = NULL;
     }
-
+  
   if(b->num >= 2*tree->n_otu-3)
     {
-      b->sum_scale_left = (int *)mCalloc(tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes),sizeof(int));
-      b->p_lk_left      = (phydbl *)mCalloc(tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns,sizeof(phydbl));
+      b->sum_scale_rght = (int *)mCalloc(tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes),sizeof(int));
+      b->p_lk_rght      = (phydbl *)mCalloc(tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns,sizeof(phydbl));
     }
 
-
-  b->patt_id_left  = (int *)mCalloc(tree->data->crunch_len,sizeof(int));
   b->patt_id_rght  = (int *)mCalloc(tree->data->crunch_len,sizeof(int));
-  b->p_lk_loc_left = (int *)mCalloc(tree->data->crunch_len,sizeof(int));
   b->p_lk_loc_rght = (int *)mCalloc(tree->data->crunch_len,sizeof(int));
-
 }
-
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

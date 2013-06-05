@@ -23,8 +23,9 @@ void Simu_Loop(t_tree *mixt_tree)
   int n;
   t_tree *tree,**tree_list;
   
+
   if((mixt_tree->mod->s_opt->print) && 
-     (!mixt_tree->io->quiet)) PhyML_Printf("\n\n. Refining the input tree...\n");
+     (!mixt_tree->io->quiet)) PhyML_Printf("\n\n. Refining the tree...\n");
 
   /*! Get the number of classes in each mixture */
   orig_catg = MIXT_Get_Number_Of_Classes_In_All_Mixtures(mixt_tree);

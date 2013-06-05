@@ -6261,27 +6261,33 @@ void Add_Root(t_edge *target, t_tree *tree)
   b1->p_lk_rght = tree->e_root->p_lk_left;
   b2->p_lk_rght = tree->e_root->p_lk_rght;
   
-  b1->sum_scale_rght = tree->e_root->sum_scale_left;
-  b2->sum_scale_rght = tree->e_root->sum_scale_rght;
-
-  b1->p_lk_loc_rght = tree->e_root->p_lk_loc_left;
-  b2->p_lk_loc_rght = tree->e_root->p_lk_loc_rght;
-
   b1->p_lk_tip_r = tree->e_root->p_lk_tip_l;
   b2->p_lk_tip_r = tree->e_root->p_lk_tip_r;
-
-  b1->patt_id_rght = tree->e_root->patt_id_left;
-  b2->patt_id_rght = tree->e_root->patt_id_rght;
+  
+  b1->sum_scale_rght = tree->e_root->sum_scale_left;
+  b2->sum_scale_rght = tree->e_root->sum_scale_rght;
+  
+  b1->sum_scale_rght_cat = tree->e_root->sum_scale_left_cat;
+  b2->sum_scale_rght_cat = tree->e_root->sum_scale_rght_cat;
+  
+  b1->p_lk_loc_rght = tree->e_root->p_lk_loc_left;
+  b2->p_lk_loc_rght = tree->e_root->p_lk_loc_rght;
   
   b1->pars_r = tree->e_root->pars_l;
   b2->pars_r = tree->e_root->pars_r;
-
+  
   b1->ui_r = tree->e_root->ui_l;
   b2->ui_r = tree->e_root->ui_r;
-
+  
   b1->p_pars_r = tree->e_root->p_pars_l;
   b2->p_pars_r = tree->e_root->p_pars_r;
-
+  
+  b1->p_lk_loc_rght = tree->e_root->p_lk_loc_left;
+  b2->p_lk_loc_rght = tree->e_root->p_lk_loc_rght;
+  
+  b1->patt_id_rght = tree->e_root->patt_id_left;
+  b2->patt_id_rght = tree->e_root->patt_id_rght;
+  
   Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
   Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
   tree->n_root->anc = NULL;
@@ -9833,7 +9839,7 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
     {
       if(b == tree->e_root)
         {
-          if(d == tree->n_root->v[1]) b = tree->n_root->b[1];
+          if(d == tree->n_root->v[1])      b = tree->n_root->b[1];
           else if(d == tree->n_root->v[2]) b = tree->n_root->b[2];
           else
             {
@@ -9991,3 +9997,49 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void Optimum_Root_Position_IL_Model(t_tree *tree)
+{
+
+  if(tree->n_root)
+    {
+      PhyML_Printf("\n== The tree already has a root node");
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);      
+      Exit("\n");
+    }
+  else
+    {
+      int i;
+      t_edge *best_edge;
+      phydbl best_lnL;
+
+      Free_Edge_Lk_Rght(tree->a_edges[2*tree->n_otu-3]);
+      Free_Edge_Lk_Rght(tree->a_edges[2*tree->n_otu-2]);
+      Free_Edge_Pars_Rght(tree->a_edges[2*tree->n_otu-3]);
+      Free_Edge_Pars_Rght(tree->a_edges[2*tree->n_otu-2]);
+      
+      best_edge = NULL;
+      best_lnL  = UNLIKELY;
+      For(i,2*tree->n_otu-3)
+        {
+          PhyML_Printf("\n. Positionning root node on edge %4d",tree->a_edges[i]->num);
+          Add_Root(tree->a_edges[i],tree);
+          Set_Both_Sides(YES,tree);
+          Lk(NULL,tree);
+          tree->mod->s_opt->print = NO;
+          Optimize_Br_Len_Serie(tree);
+          PhyML_Printf(" -- lnL: %20f",tree->c_lnL);
+          if(tree->c_lnL > best_lnL)
+            {
+              best_lnL  = tree->c_lnL;
+              best_edge = tree->a_edges[i];
+            }
+        }
+
+      Add_Root(best_edge,tree);
+      Set_Both_Sides(YES,tree);
+      Lk(NULL,tree);
+      Optimize_Br_Len_Serie(tree);
+
+    }
+}
