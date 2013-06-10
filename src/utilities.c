@@ -9948,7 +9948,14 @@ void Optimum_Root_Position_IL_Model(t_tree *tree)
           Set_Both_Sides(YES,tree);
           Lk(NULL,tree);
           tree->mod->s_opt->print = NO;
-          Optimize_Br_Len_Serie(tree);
+
+          /* Optimize_Br_Len_Serie(tree); */
+
+          Update_P_Lk(tree,tree->n_root->b[1],tree->n_root);
+          Br_Len_Brent(tree->mod->l_min,tree->mod->l_max,tree->n_root->b[1],tree);
+          Update_P_Lk(tree,tree->n_root->b[2],tree->n_root);
+          Br_Len_Brent(tree->mod->l_min,tree->mod->l_max,tree->n_root->b[2],tree);
+
           PhyML_Printf(" -- lnL: %20f",tree->c_lnL);
           if(tree->c_lnL > best_lnL)
             {
