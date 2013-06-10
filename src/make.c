@@ -114,6 +114,12 @@ t_edge *Make_Edge_Light(t_node *a, t_node *d, int num)
   b->l_old = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
   Init_Scalar_Dbl(b->l_old);
 
+  b->l_var = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
+  Init_Scalar_Dbl(b->l_var);
+
+  b->l_var_old = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
+  Init_Scalar_Dbl(b->l_var_old);
+
   Init_Edge_Light(b,num);
 
   if(a && b)
@@ -685,11 +691,14 @@ t_ras *Make_RAS_Basic()
   Init_Vect_Dbl(0,ras->gamma_rr_unscaled);
   ras->gamma_rr_unscaled->v = NULL;
   
-  ras->alpha             = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
+  ras->alpha                  = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
   Init_Scalar_Dbl(ras->alpha);
 
-  ras->pinvar            = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
+  ras->pinvar                 = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
   Init_Scalar_Dbl(ras->pinvar);
+
+  ras->free_rate_mr           = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
+  Init_Scalar_Dbl(ras->free_rate_mr);
 
   return(ras);
 }

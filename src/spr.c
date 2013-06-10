@@ -3945,8 +3945,8 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
 	  orig_move = move;
 	  do
 	    {
-	      move->n_link->b[dir_v0]->l->v = move->l0;	      
-              move->n_link->b[dir_v0]->l_var = move->v0;
+	      move->n_link->b[dir_v0]->l->v     = move->l0;	      
+              move->n_link->b[dir_v0]->l_var->v = move->v0;
 
 	      if(move->n_link->v[dir_v1]->num > move->n_link->v[dir_v2]->num)
 		{
@@ -3955,8 +3955,8 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
 
                   if(tree->io->mod->gamma_mgf_bl == YES)
                     {
-                      move->n_link->b[dir_v2]->l_var  = move->v1;
-                      move->n_link->b[dir_v1]->l_var  = move->v2;
+                      move->n_link->b[dir_v2]->l_var->v = move->v1;
+                      move->n_link->b[dir_v1]->l_var->v = move->v2;
                     }
 		}
 	      else
@@ -3966,8 +3966,8 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
 
                   if(tree->io->mod->gamma_mgf_bl == YES)
                     {
-                      move->n_link->b[dir_v1]->l_var  = move->v1;
-                      move->n_link->b[dir_v2]->l_var  = move->v2;
+                      move->n_link->b[dir_v1]->l_var->v = move->v1;
+                      move->n_link->b[dir_v2]->l_var->v = move->v2;
                     }
 		}
               
@@ -4010,7 +4010,7 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
 	  do
 	    {
 	      move->l0 = move->n_link->b[dir_v0]->l->v;
-              move->v0 = move->n_link->b[dir_v0]->l_var;
+              move->v0 = move->n_link->b[dir_v0]->l_var->v;
 	      
 
 	      if(move->n_link->v[dir_v1]->num > move->n_link->v[dir_v2]->num)
@@ -4020,8 +4020,8 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
 
                   if(tree->io->mod->gamma_mgf_bl == YES)
                     {
-                      move->v1 = move->n_link->b[dir_v2]->l_var;
-                      move->v2 = move->n_link->b[dir_v1]->l_var;
+                      move->v1 = move->n_link->b[dir_v2]->l_var->v;
+                      move->v2 = move->n_link->b[dir_v1]->l_var->v;
                     }
 		}
 	      else
@@ -4031,8 +4031,8 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
 
                   if(tree->io->mod->gamma_mgf_bl == YES)
                     {
-                      move->v1 = move->n_link->b[dir_v1]->l_var;
-                      move->v2 = move->n_link->b[dir_v2]->l_var;
+                      move->v1 = move->n_link->b[dir_v1]->l_var->v;
+                      move->v2 = move->n_link->b[dir_v2]->l_var->v;
                     }
 		}
 
@@ -4041,7 +4041,7 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
               /*   printf("\n== %d %f %f", */
               /*          j, */
               /*          tree->a_edges[j]->gamma_prior_mean, */
-              /*          tree->a_edges[j]->l_var); */
+              /*          tree->a_edges[j]->l_var->v); */
               
 	      if(tree->next) 
 		{
@@ -4182,8 +4182,8 @@ int Try_One_Spr_Move_Triple(t_spr *move, t_tree *tree)
   orig_move = move;
   do
     {
-      init_target->l->v             = move->init_target_l;
-      init_target->l_var  = move->init_target_v;
+      init_target->l->v     = move->init_target_l;
+      init_target->l_var->v = move->init_target_v;
       
       if(tree->next) 
 	{
@@ -4217,8 +4217,8 @@ int Try_One_Spr_Move_Triple(t_spr *move, t_tree *tree)
   orig_tree = tree;
   do
     {
-      move->n_link->b[dir_v0]->l->v = move->l0;
-      move->n_link->b[dir_v0]->l_var = move->v0;
+      move->n_link->b[dir_v0]->l->v     = move->l0;
+      move->n_link->b[dir_v0]->l_var->v = move->v0;
       
       if(move->n_link->v[dir_v1]->num > move->n_link->v[dir_v2]->num)
 	{
@@ -4227,8 +4227,8 @@ int Try_One_Spr_Move_Triple(t_spr *move, t_tree *tree)
 
           if(tree->io->mod->gamma_mgf_bl == YES)
             {
-              move->n_link->b[dir_v2]->l_var  = move->v1;
-              move->n_link->b[dir_v1]->l_var  = move->v2;
+              move->n_link->b[dir_v2]->l_var->v = move->v1;
+              move->n_link->b[dir_v1]->l_var->v = move->v2;
             }
 	}
       else
@@ -4238,8 +4238,8 @@ int Try_One_Spr_Move_Triple(t_spr *move, t_tree *tree)
 
           if(tree->io->mod->gamma_mgf_bl == YES)
             {
-              move->n_link->b[dir_v1]->l_var  = move->v1;
-              move->n_link->b[dir_v2]->l_var  = move->v2;
+              move->n_link->b[dir_v1]->l_var->v = move->v1;
+              move->n_link->b[dir_v2]->l_var->v = move->v2;
             }
 	}
       
@@ -4280,14 +4280,14 @@ int Try_One_Spr_Move_Triple(t_spr *move, t_tree *tree)
             printf("\n== %d %f %f",
                    i,
                    tree->a_edges[i]->l->v,
-                   tree->a_edges[i]->l_var);
+                   tree->a_edges[i]->l_var->v);
 
           /* printf("\n. %f %f  %f %f", */
           /*        tree->next->c_lnL, */
           /*        tree->next->next->c_lnL, */
           /*        tree->next->next->c_lnL, */
           /*        tree->next->next->next->c_lnL); */
-          PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+          PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
 	  Exit("\n");
 	}
 

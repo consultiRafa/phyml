@@ -182,8 +182,6 @@ int main(int argc, char **argv)
 
 		  
 #ifdef PHYML
-		  /* ///////////////////////////////////////// */
-		  /* Make_Mixtmod(3,tree); */
 		  
 		  if(io->in_tree == 1) Spr_Pars(tree);
 		 
@@ -210,12 +208,7 @@ int main(int argc, char **argv)
 		      else                                               Lk(NULL,tree);
 		    }
 
-
-                  if(tree->mod->gamma_mgf_bl == YES)
-                    {
-                      Optimum_Root_Position_IL_Model(tree);
-                    }
-                  
+                  if(tree->mod->gamma_mgf_bl) Optimum_Root_Position_IL_Model(tree);
 
                   Set_Both_Sides(YES,tree);
 		  Lk(NULL,tree);

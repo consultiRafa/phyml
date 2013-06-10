@@ -1517,13 +1517,13 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
 
   if(FABS(lk0_init - lk_init) > tree->mod->s_opt->min_diff_lk_local)
     {
-      PhyML_Printf("\n== lk_init = %f; lk = %f diff = %f l = %G\n",
+      PhyML_Printf("\n== lk_init = %f; lk = %f diff = %f l = %G",
 		   lk_init,
 		   lk0_init,
 		   lk_init-lk0_init,
 		   b_fcus->l->v);
-      PhyML_Printf("\n== Curr_lnL = %f\n",Lk(NULL,tree));
-      Exit("\n== Err. in NNI (3)\n");
+      PhyML_Printf("\n== Curr_lnL = %f",Lk(NULL,tree));
+      Exit("\n== Err. in NNI (3)");
     }
   
   l_infa = 10.;
@@ -3230,6 +3230,7 @@ void Record_Model(t_mod *ori, t_mod *cpy)
   cpy->ras->free_mixt_rates = ori->ras->free_mixt_rates;
   cpy->ras->gamma_median    = ori->ras->gamma_median;
   
+ 
   if((ori->whichmodel == CUSTOM) || (ori->whichmodel == GTR))
     {
       For(i,ori->ns*(ori->ns-1)/2)
@@ -4350,7 +4351,6 @@ void Copy_Tree(t_tree *ori, t_tree *cpy)
       cpy->a_edges[i]->l_r              = ori->a_edges[i]->l_r;
       cpy->a_edges[i]->r_l              = ori->a_edges[i]->r_l;
       cpy->a_edges[i]->does_exist       = ori->a_edges[i]->does_exist;
-      cpy->a_edges[i]->l_var            = ori->a_edges[i]->l_var;
     }
 
 
@@ -5416,22 +5416,17 @@ void Record_Br_Len(t_tree *mixt_tree)
   if(mixt_tree->br_len_recorded == YES)
     {
       PhyML_Printf("\n== Overwriting recorded edge lengths.\n");
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Exit("\n");    
     }
 
   tree = mixt_tree;
-
+  
   do
     {
-      For(i,2*tree->n_otu-3) 
-	{
-	  tree->a_edges[i]->l_old->v  = tree->a_edges[i]->l->v;
-	  tree->a_edges[i]->l_var_old = tree->a_edges[i]->l_var;
-	}
-
+      For(i,2*tree->n_otu-1) tree->a_edges[i]->l_old->v     = tree->a_edges[i]->l->v;
+      For(i,2*tree->n_otu-1) tree->a_edges[i]->l_var_old->v = tree->a_edges[i]->l_var->v;
       tree = tree->next;
-
     }
   while(tree);
 }
@@ -5451,14 +5446,9 @@ void Restore_Br_Len(t_tree *mixt_tree)
 
   do
     {
-      For(i,2*tree->n_otu-3) 
-	{
-	  tree->a_edges[i]->l->v  = tree->a_edges[i]->l_old->v;
-	  tree->a_edges[i]->l_var = tree->a_edges[i]->l_var_old;
-	}
-
+      For(i,2*tree->n_otu-1) tree->a_edges[i]->l->v     = tree->a_edges[i]->l_old->v;
+      For(i,2*tree->n_otu-1) tree->a_edges[i]->l_var->v = tree->a_edges[i]->l_var_old->v;
       tree = tree->next;
-
     }
   while(tree);
 }
@@ -6623,7 +6613,7 @@ void Evolve(calign *data, t_mod *mod, t_tree *tree)
 
           /* tree->a_edges[i]->l->v = Rgamma(shape,scale); */
 
-          var   = mod->l_var;
+          var   = mod->l_var_sigma;
           mean  = 1.0;
           
           shape = mean * mean / var;
@@ -7100,8 +7090,8 @@ void Best_Of_NNI_And_SPR(t_tree *tree)
 
       if(FABS(tree->c_lnL - ori_lnL) > tree->mod->s_opt->min_diff_lk_local)
 	{
-	  PhyML_Printf("\n. ori_lnL = %f, c_lnL = %f",ori_lnL,tree->c_lnL);
-	  PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+	  PhyML_Printf("\n== ori_lnL = %f, c_lnL = %f",ori_lnL,tree->c_lnL);
+	  PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
 	  Warn_And_Exit("");
 	}
 
@@ -7149,6 +7139,9 @@ void Best_Of_NNI_And_SPR(t_tree *tree)
       
       Free_Model_Complete(ori_mod);
       Free_Model_Complete(best_mod);
+
+      M4_Free_M4_Model(ori_mod->m4mod);
+      M4_Free_M4_Model(best_mod->m4mod);
 
       Free_Model_Basic(ori_mod);
       Free_Model_Basic(best_mod);
@@ -7321,10 +7314,13 @@ char *Bootstrap_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
   t_tree *tree;
 
   tree = Read_Tree(&s_tree);
+  
+  tree->n_root = NULL;
+  tree->e_root = NULL;
 
   if(!tree)
     {
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Exit("");
     }
 
@@ -7345,6 +7341,7 @@ char *Bootstrap_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
   Br_Len_Not_Involving_Invar(tree);
   Make_Spr_List(tree);
   Make_Best_Spr(tree);
+
 
   Set_Both_Sides(YES,tree);
   Lk(NULL,tree);
@@ -8412,7 +8409,7 @@ int Check_Sequence_Name(char *s)
       if(s[i] == ':')
 	{
 	  PhyML_Printf("\n== Character ':' is not permitted in sequence name (%s).",s);
-	  PhyML_Printf("\n== Err in file %s at line %d",__FILE__,__LINE__);
+	  PhyML_Printf("\n== Err. in file %s at line %d",__FILE__,__LINE__);
 	  Warn_And_Exit("");
 	}
     }
@@ -8568,45 +8565,6 @@ int Scale_Subtree_Rates(t_node *a, phydbl mult, int *n_nodes, t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
-
-void Check_Br_Len_Bounds(t_tree *mixt_tree)
-{
-  int i;
-  t_edge *b;
-  t_tree *tree;
-  
-  tree = mixt_tree;
-  
-  do
-    {
-      b = NULL;
-      
-      For(i,2*tree->n_otu-1)
-        {
-          b = tree->a_edges[i];
-    
-          if(b->l->v > tree->mod->l_max) b->l->v = tree->mod->l_max;
-          if(b->l->v < tree->mod->l_min) b->l->v = tree->mod->l_min;
-        }
-      
-      if(tree->rates)
-        {
-          For(i,2*tree->n_otu-1)
-            {
-              if(tree->rates->u_cur_l[i] > tree->mod->l_max) tree->rates->u_cur_l[i] = tree->mod->l_max;
-              if(tree->rates->u_cur_l[i] < tree->mod->l_min) tree->rates->u_cur_l[i] = tree->mod->l_min;
-            }
-        }
-
-      tree = tree->next;
-
-    }
-  while(tree);
-}
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
 
 int Scale_Subtree_Rates_Post(t_node *a, t_node *d, phydbl mult, int *n_nodes, t_tree *tree)
 {
@@ -8808,25 +8766,6 @@ phydbl Effective_Sample_Size(phydbl first_val, phydbl last_val, phydbl sum, phyd
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
-phydbl Rescale_Free_Rate_Tree(t_tree *tree)
-{
-  int i;
-  phydbl sum;
-
-  sum = 0.0;
-  For(i,tree->mod->ras->n_catg) sum += tree->mod->ras->gamma_rr->v[i]*tree->mod->ras->gamma_r_proba->v[i];
-  For(i,tree->mod->ras->n_catg) tree->mod->ras->gamma_rr->v[i] /= sum;
-  
-  For(i,2*tree->n_otu-3) tree->a_edges[i]->l->v *= sum;
-  
-  return(-1.);
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-
 phydbl Rescale_Br_Len_Multiplier_Tree(t_tree *tree)
 {
   int i;
@@ -8837,24 +8776,7 @@ phydbl Rescale_Br_Len_Multiplier_Tree(t_tree *tree)
       return(-1.);
     }
 
-  For(i,2*tree->n_otu-3) tree->a_edges[i]->l->v *= tree->mod->br_len_multiplier->v;
-  return(-1.);
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-
-phydbl Unscale_Free_Rate_Tree(t_tree *tree)
-{
-  int i;
-  phydbl sum;
-
-  sum = 0.0;
-  For(i,tree->mod->ras->n_catg) sum += tree->mod->ras->gamma_rr->v[i]*tree->mod->ras->gamma_r_proba->v[i];
-  For(i,tree->mod->ras->n_catg) tree->mod->ras->gamma_rr->v[i] *= sum;
-  For(i,2*tree->n_otu-3) tree->a_edges[i]->l->v /= sum;
-  
+  For(i,2*tree->n_otu-1) tree->a_edges[i]->l->v *= tree->mod->br_len_multiplier->v;
   return(-1.);
 }
 
@@ -8871,8 +8793,7 @@ phydbl Unscale_Br_Len_Multiplier_Tree(t_tree *tree)
       return(-1.);
     }
 
-  For(i,2*tree->n_otu-3) tree->a_edges[i]->l->v /= tree->mod->br_len_multiplier->v;
-
+  For(i,2*tree->n_otu-1) tree->a_edges[i]->l->v /= tree->mod->br_len_multiplier->v;
   return(-1.);
 }
 
@@ -10043,3 +9964,41 @@ void Optimum_Root_Position_IL_Model(t_tree *tree)
 
     }
 }
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Set_Br_Len_Var(t_tree *tree)
+{
+  if(!tree->rates)
+    {
+      int i;
+      For(i,2*tree->n_otu-1) tree->a_edges[i]->l_var->v = POW(tree->a_edges[i]->l->v,2)*tree->mod->l_var_sigma; 
+    }    
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+

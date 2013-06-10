@@ -155,7 +155,7 @@ void Init_Edge_Light(t_edge *b, int num)
   b->topo_dist_btw_edges  = 0;
   b->has_zero_br_len      = NO;
   b->n_jumps              = 0;
-  b->l_var                = 1.E-2;
+  b->l_var->v             = -1.;
   b->does_exist           = YES;
   b->l->v                 = -1.;
   b->bin_cod_num          = -1.;
@@ -571,12 +571,15 @@ void Set_Defaults_Model(t_mod *mod)
   mod->mod_num                 = 0;
   mod->update_eigen            = NO;
   mod->is_mixt_mod             = NO;
+  mod->ras->normalise_rr       = YES;
 
   mod->kappa->v                = 4.0;
   mod->ras->alpha->v           = 1.0;
   mod->lambda->v               = 1.0;
   mod->ras->pinvar->v          = 0.0;
-  mod->l_var                   = 1.E-2;
+  mod->l_var_sigma             = 1.E-2;
+  mod->l_var_min               = 1.E-3;
+  mod->l_var_max               = 1.E+2;
   mod->e_frq_weight->v         = 1.0;
   mod->r_mat_weight->v         = 1.0;
 
@@ -618,61 +621,63 @@ void Set_Defaults_Model(t_mod *mod)
 
 void Set_Defaults_Optimiz(t_opt *s_opt)
 {
-  s_opt->print                = YES;
-  s_opt->last_opt             = YES;
-  s_opt->opt_subst_param      = YES;
-  s_opt->opt_alpha            = YES;
-  s_opt->opt_kappa            = YES;
-  s_opt->opt_bl               = YES;
-  s_opt->opt_lambda           = NO;
-  s_opt->opt_pinvar           = NO;
-  s_opt->opt_cov_delta        = NO;
-  s_opt->opt_cov_alpha        = NO;
-  s_opt->opt_cov_free_rates   = NO;
-  s_opt->opt_rr               = NO;
-  s_opt->init_lk              = UNLIKELY;
-  s_opt->n_it_max             = 1000;
-  s_opt->opt_topo             = YES;
-  s_opt->topo_search          = NNI_MOVE;
-  s_opt->random_input_tree    = 0;
-  s_opt->n_rand_starts        = 5;
-  s_opt->brent_it_max         = BRENT_IT_MAX;
-  s_opt->steph_spr            = YES;
-  s_opt->user_state_freq      = NO;
-  s_opt->min_diff_lk_local    = 1.E-04;
-  s_opt->min_diff_lk_global   = 1.E-03;
-  s_opt->min_diff_lk_move     = 1.E-02;
-  s_opt->p_moves_to_examine   = 0.15;
-  s_opt->fast_nni             = NO;
-  s_opt->greedy               = NO;
-  s_opt->general_pars         = NO;
-  s_opt->tree_size_mult       = 1;
-  s_opt->opt_five_branch      = YES;
+  s_opt->print                   = YES;
+  s_opt->last_opt                = YES;
+  s_opt->opt_subst_param         = YES;
+  s_opt->opt_alpha               = YES;
+  s_opt->opt_kappa               = YES;
+  s_opt->opt_bl                  = YES;
+  s_opt->opt_lambda              = NO;
+  s_opt->opt_pinvar              = NO;
+  s_opt->opt_cov_delta           = NO;
+  s_opt->opt_cov_alpha           = NO;
+  s_opt->opt_cov_free_rates      = NO;
+  s_opt->opt_rr                  = NO;
+  s_opt->init_lk                 = UNLIKELY;
+  s_opt->n_it_max                = 1000;
+  s_opt->opt_topo                = YES;
+  s_opt->topo_search             = NNI_MOVE;
+  s_opt->random_input_tree       = 0;
+  s_opt->n_rand_starts           = 5;
+  s_opt->brent_it_max            = BRENT_IT_MAX;
+  s_opt->steph_spr               = YES;
+  s_opt->user_state_freq         = NO;
+  s_opt->min_diff_lk_local       = 1.E-04;
+  s_opt->min_diff_lk_global      = 1.E-03;
+  s_opt->min_diff_lk_move        = 1.E-02;
+  s_opt->p_moves_to_examine      = 0.15;
+  s_opt->fast_nni                = NO;
+  s_opt->greedy                  = NO;
+  s_opt->general_pars            = NO;
+  s_opt->tree_size_mult          = 1;
+  s_opt->opt_five_branch         = YES;
 
-  s_opt->pars_thresh          = 5;
+  s_opt->pars_thresh             = 5;
 
-  s_opt->hybrid_thresh        = NO;
-  s_opt->quickdirty           = NO;
-  s_opt->spr_pars             = YES;
-  s_opt->spr_lnL              = NO;
-  s_opt->min_depth_path       = 0;
-  s_opt->max_depth_path       = 20;
-  s_opt->deepest_path         = 20;
-  s_opt->max_delta_lnL_spr    = 50.;
-  s_opt->br_len_in_spr        = 10;
-  s_opt->opt_free_mixt_rates  = YES;
-  s_opt->constrained_br_len   = NO;
-  s_opt->opt_gamma_br_len     = NO;
+  s_opt->hybrid_thresh           = NO;
+  s_opt->quickdirty              = NO;
+  s_opt->spr_pars                = YES;
+  s_opt->spr_lnL                 = NO;
+  s_opt->min_depth_path          = 0;
+  s_opt->max_depth_path          = 20;
+  s_opt->deepest_path            = 20;
+  s_opt->max_delta_lnL_spr       = 50.;
+  s_opt->br_len_in_spr           = 10;
+  s_opt->opt_free_mixt_rates     = YES;
+  s_opt->constrained_br_len      = NO;
+  s_opt->opt_gamma_br_len        = NO;
 
-  s_opt->wim_n_rgrft          = -1;
-  s_opt->wim_n_globl          = -1;
-  s_opt->wim_max_dist         = -1;
-  s_opt->wim_n_optim          = -1;
-  s_opt->wim_n_best           = -1;
-  s_opt->wim_inside_opt       =  0;
+  s_opt->wim_n_rgrft             = -1;
+  s_opt->wim_n_globl             = -1;
+  s_opt->wim_max_dist            = -1;
+  s_opt->wim_n_optim             = -1;
+  s_opt->wim_n_best              = -1;
+  s_opt->wim_inside_opt          =  0;
 
-  s_opt->opt_rmat_weight      = NO;
-  s_opt->opt_efrq_weight      = NO;
+  s_opt->opt_rmat_weight         = NO;
+  s_opt->opt_efrq_weight         = NO;
+
+  s_opt->skip_tree_traversal     = NO;
 }
 
 //////////////////////////////////////////////////////////////

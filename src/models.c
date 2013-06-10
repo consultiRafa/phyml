@@ -744,6 +744,8 @@ void Update_RAS(t_mod *mod)
   phydbl sum;
   int i;
 
+
+
   if(mod->ras->free_mixt_rates == NO) DiscreteGamma(mod->ras->gamma_r_proba->v, 
 						    mod->ras->gamma_rr->v, 
 						    mod->ras->alpha->v, 
@@ -766,7 +768,7 @@ void Update_RAS(t_mod *mod)
 	      (mod->ras->gamma_r_proba_unscaled->v[mod->ras->n_catg-1]) ;
       	}
 
-      // Update class rates
+
       do
       	{
       	  sum = .0;
@@ -780,9 +782,20 @@ void Update_RAS(t_mod *mod)
       	}
       while((sum > 1.01) || (sum < 0.99));
 
+
+      // Update class rates
       sum = .0;
       For(i,mod->ras->n_catg) sum += mod->ras->gamma_r_proba->v[i] * FABS(mod->ras->gamma_rr_unscaled->v[i]);
-      For(i,mod->ras->n_catg) mod->ras->gamma_rr->v[i] = FABS(mod->ras->gamma_rr_unscaled->v[i])/sum;
+
+      mod->ras->free_rate_mr->v = sum;
+
+      if(mod->ras->normalise_rr == YES)
+        For(i,mod->ras->n_catg) 
+          mod->ras->gamma_rr->v[i] = FABS(mod->ras->gamma_rr_unscaled->v[i])/mod->ras->free_rate_mr->v;
+      else
+        For(i,mod->ras->n_catg) 
+          mod->ras->gamma_rr->v[i] = FABS(mod->ras->gamma_rr_unscaled->v[i]);
+
 
       /* sum = .0; */
       /* For(i,mod->ras->n_catg) sum += mod->ras->gamma_r_proba->v[i] * FABS(mod->ras->gamma_rr->v[i]); */

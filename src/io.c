@@ -1659,6 +1659,8 @@ align **Read_Seq_Sequential(option *io)
 /*   while((c=fgetc(in))!='\n'); */
  /*  while(((c=fgetc(io->fp_in_align))!='\n') && (c != ' ') && (c != '\r') && (c != '\t')); */
 
+  sprintf(format, "%%%ds", T_MAX_NAME);
+
   For(i,io->n_otu)
     {
       data[i]        = (align *)mCalloc(1,sizeof(align));
@@ -1667,8 +1669,6 @@ align **Read_Seq_Sequential(option *io)
 
       data[i]->is_ambigu = NULL;
       data[i]->len = 0;
-
-      sprintf(format, "%%%ds", T_MAX_NAME);
 
       if(!fscanf(io->fp_in_align,format,data[i]->name)) Exit("\n");
 
@@ -1704,6 +1704,7 @@ align **Read_Seq_Interleaved(option *io)
   align **data;
 /*   char c; */
   char *format;
+  fpos_t curr_pos;
 
   line   = (char *)mCalloc(T_MAX_LINE,sizeof(char));
   format = (char *)mCalloc(T_MAX_NAME, sizeof(char));
@@ -1711,6 +1712,7 @@ align **Read_Seq_Interleaved(option *io)
 
 /*   while(((c=fgetc(io->fp_in_align))!='\n') && (c != ' ') && (c != '\r') && (c != '\t')); */
 
+  sprintf(format, "%%%ds", T_MAX_NAME);
 
   end = 0;
   For(i,io->n_otu)
@@ -1721,9 +1723,6 @@ align **Read_Seq_Interleaved(option *io)
 
       data[i]->len       = 0;
       data[i]->is_ambigu = NULL;
-
-      sprintf(format, "%%%ds", T_MAX_NAME);
-/*       sprintf(format, "%%%ds", 10); */
       
       if(!fscanf(io->fp_in_align,format,data[i]->name)) Exit("\n");
 
@@ -1734,9 +1733,10 @@ align **Read_Seq_Interleaved(option *io)
 	  end = 1;
 	  if((i != io->n_otu) && (i != io->n_otu-1))
 	    {
-	      PhyML_Printf("\n. Err: Problem with species %s's sequence.\n",data[i]->name);
-	      PhyML_Printf("\n. Observed sequence length: %d, expected length: %d\n",data[i]->len, io->init_len * io->state_len);
-	      Warn_And_Exit("");
+              PhyML_Printf("\n== i:%d n_otu:%d",i,io->n_otu);
+	      PhyML_Printf("\n== Err.: problem with species %s's sequence.\n",data[i]->name);
+	      PhyML_Printf("\n== Observed sequence length: %d, expected length: %d\n",data[i]->len, io->init_len * io->state_len);
+	      Exit("");
 	    }
 	  break;
 	}
@@ -1760,8 +1760,8 @@ align **Read_Seq_Interleaved(option *io)
 
 	  if(line[0] != 13 && line[0] != 10)
 	    {
-	      PhyML_Printf("\n. One or more missing sequences in block %d.\n",num_block-1);
-	      Warn_And_Exit("");
+	      PhyML_Printf("\n== Err.: one or more missing sequences in block %d.\n",num_block-1);
+	      Exit("");
 	    }
 
 	  For(i,io->n_otu) if(data[i]->len != io->init_len * io->state_len) break;
@@ -1770,20 +1770,29 @@ align **Read_Seq_Interleaved(option *io)
 
 	  For(i,io->n_otu)
 	    {
+              /* Skip the taxon name, if any, in this interleaved block */
+              fgetpos(io->fp_in_align,&curr_pos);
+              if(!fscanf(io->fp_in_align,format,line)) 
+                {
+                  PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+                  Warn_And_Exit("");
+                }
+              if(line && strcmp(line,data[i]->name)) fsetpos(io->fp_in_align,&curr_pos);                  
+
 	      if(data[i]->len > io->init_len * io->state_len)
 		{
-		  PhyML_Printf("\n. Observed length=%d expected length=%d.\n",data[i]->len,io->init_len * io->state_len);
-		  PhyML_Printf("\n. Err: Problem with species %s's sequence.\n",data[i]->name);
-		  Warn_And_Exit("");
+		  PhyML_Printf("\n== Observed sequence length=%d expected length=%d.\n",data[i]->len,io->init_len * io->state_len);
+		  PhyML_Printf("\n== Err.: Problem with species %s's sequence.\n",data[i]->name);
+		  Exit("");
 		}
 	      else if(!Read_One_Line_Seq(&data,i,io->fp_in_align))
 		{
 		  end = 1;
 		  if((i != io->n_otu) && (i != io->n_otu-1))
 		    {
-		      PhyML_Printf("\n. Err: Problem with species %s's sequence.\n",data[i]->name);
-		      PhyML_Printf("\n. Observed sequence length: %d, expected length: %d.\n",data[i]->len, io->init_len * io->state_len);
-		      Warn_And_Exit("");
+		      PhyML_Printf("\n== Err.: Problem with species %s's sequence.\n",data[i]->name);
+		      PhyML_Printf("\n== Observed sequence length: %d, expected length: %d.\n",data[i]->len, io->init_len * io->state_len);
+		      Exit("");
 		    }
 		  break;
 		}
@@ -1797,8 +1806,8 @@ align **Read_Seq_Interleaved(option *io)
     {
       if(data[i]->len != io->init_len * io->state_len)
 	{
-	  PhyML_Printf("\n. Check sequence '%s' length (expected length: %d, observed length: %d) [OTU %d].\n",data[i]->name,io->init_len,data[i]->len,i+1);
-	  Warn_And_Exit("");
+	  PhyML_Printf("\n== Check sequence '%s' length (expected length: %d, observed length: %d) [OTU %d].\n",data[i]->name,io->init_len,data[i]->len,i+1);
+	  Exit("");
 	}
     }
 
@@ -1825,7 +1834,7 @@ int Read_One_Line_Seq(align ***data, int num_otu, FILE *in)
       
       if((c == 13) || (c == 10)) 
 	{
-/* 	  PhyML_Printf("[%d %d]\n",c,nchar); fflush(NULL); */
+	  /* PhyML_Printf("[%d %d]\n",c,nchar); fflush(NULL); */
 	  if(!nchar)
 	    {
 	      c=(char)fgetc(in);
@@ -1833,7 +1842,7 @@ int Read_One_Line_Seq(align ***data, int num_otu, FILE *in)
 	    }
 	  else 
 	    { 
-/* 	      PhyML_Printf("break\n");  */
+	      /* PhyML_Printf("break\n"); */
 	      break; 
 	    }
 	}
@@ -1860,11 +1869,12 @@ int Read_One_Line_Seq(align ***data, int num_otu, FILE *in)
 	}
       (*data)[num_otu]->state[(*data)[num_otu]->len]=c;
       (*data)[num_otu]->len++;
-/*       PhyML_Printf("%c",c); */
       c = (char)fgetc(in);
+      /* PhyML_Printf("[%c %d]",c,c); */
       if(c == ';') break;
     }
 
+  /* printf("\n. Exit nchar: %d [%d]\n",nchar,c==EOF); */
   if(c == EOF) return 0;
   else return 1;  
 }
@@ -1912,7 +1922,7 @@ t_tree *Read_Tree_File(option *io)
       }
     default:
       {
-	PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+	PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
 	Warn_And_Exit("");
 	break;
       }
@@ -2617,7 +2627,7 @@ void Print_Fp_Out(FILE *fp_out, time_t t_beg, time_t t_end, t_tree *tree, option
 
   if(tree->mod->ras->invar) PhyML_Fprintf(fp_out,"\n. Proportion of invariant: \t\t%.3f",tree->mod->ras->pinvar->v);
 
-  if(tree->mod->gamma_mgf_bl == YES) PhyML_Fprintf(fp_out,"\n. Variance of branch lengths: \t\t%f",tree->mod->l_var);
+  if(tree->mod->gamma_mgf_bl == YES) PhyML_Fprintf(fp_out,"\n. Variance of branch lengths: \t\t%f",tree->mod->l_var_sigma);
 
   /*was before Discrete gamma model ; moved here FLT*/
   if((tree->mod->whichmodel == K80)   ||
@@ -4228,7 +4238,7 @@ void PhyML_XML(char *xml_filename)
   int i,j,n_components;
   int first_m_elem;
   int class_number;
-  scalar_dbl **lens,**ori_lens,**lens_old,**ori_lens_old;
+  scalar_dbl **lens,**lens_var,**ori_lens,**lens_old,**lens_var_old,**ori_lens_old,**ori_lens_var,**ori_lens_var_old;
   t_ds *ds;
   char *outputfile;
   char *alignment;
@@ -4259,21 +4269,26 @@ void PhyML_XML(char *xml_filename)
 
   component = (char *)mCalloc(T_MAX_NAME,sizeof(char));
 
-  m_elem       = NULL;
-  p_elem       = root;
-  io           = NULL;
-  mixt_tree    = NULL;
-  root_tree    = NULL;
-  mod          = NULL;
-  tree         = NULL;
-  lens         = NULL;
-  select       = -1;
-  class_number = -1;
-  ds           = NULL;
-  lens_size    = 0;
-  ori_lens     = NULL;
-  ori_lens_old = NULL;
-  first        = YES;
+  m_elem           = NULL;
+  p_elem           = root;
+  io               = NULL;
+  mixt_tree        = NULL;
+  root_tree        = NULL;
+  mod              = NULL;
+  tree             = NULL;
+  lens             = NULL;
+  lens_var         = NULL;
+  lens_old         = NULL;
+  lens_var_old     = NULL;
+  select           = -1;
+  class_number     = -1;
+  ds               = NULL;
+  lens_size        = 0;
+  ori_lens         = NULL;
+  ori_lens_old     = NULL;
+  ori_lens_var     = NULL;
+  ori_lens_var_old = NULL;
+  first            = YES;
 
   // Make sure there are no duplicates in node's IDs
   XML_Check_Duplicate_ID(root);
@@ -4536,6 +4551,8 @@ void PhyML_XML(char *xml_filename)
         {
           Free_Scalar_Dbl(mixt_tree->a_edges[i]->l);
           Free_Scalar_Dbl(mixt_tree->a_edges[i]->l_old);
+          Free_Scalar_Dbl(mixt_tree->a_edges[i]->l_var);
+          Free_Scalar_Dbl(mixt_tree->a_edges[i]->l_var_old);
         }
 
       /*! Connect last tree of the mixture for the
@@ -4956,22 +4973,38 @@ void PhyML_XML(char *xml_filename)
 			  {
 			    if(!lens)                               
                               {
-                                ori_lens     = (scalar_dbl **)mCalloc(2*tree->n_otu-2,sizeof(scalar_dbl *));
-                                ori_lens_old = (scalar_dbl **)mCalloc(2*tree->n_otu-2,sizeof(scalar_dbl *));
-                                lens     = ori_lens;
-                                lens_old = ori_lens_old;
-                                lens_size = 2*tree->n_otu-2;
+                                ori_lens         = (scalar_dbl **)mCalloc(2*tree->n_otu-1,sizeof(scalar_dbl *));
+                                ori_lens_old     = (scalar_dbl **)mCalloc(2*tree->n_otu-1,sizeof(scalar_dbl *));
+
+                                ori_lens_var     = (scalar_dbl **)mCalloc(2*tree->n_otu-1,sizeof(scalar_dbl *));
+                                ori_lens_var_old = (scalar_dbl **)mCalloc(2*tree->n_otu-1,sizeof(scalar_dbl *));
+
+                                lens         = ori_lens;
+                                lens_old     = ori_lens_old;
+
+                                lens_var     = ori_lens_var;
+                                lens_var_old = ori_lens_var_old;
+
+                                lens_size = 2*tree->n_otu-1;
                               }
                             else
                               {
-                                ori_lens     = (scalar_dbl **)mRealloc(ori_lens,2*tree->n_otu-2+lens_size,sizeof(scalar_dbl *));
-                                ori_lens_old = (scalar_dbl **)mRealloc(ori_lens_old,2*tree->n_otu-2+lens_size,sizeof(scalar_dbl *));
-                                lens     = ori_lens     + lens_size;;
-                                lens_old = ori_lens_old + lens_size;;
-                                lens_size += 2*tree->n_otu-2;
+                                ori_lens         = (scalar_dbl **)mRealloc(ori_lens,2*tree->n_otu-1+lens_size,sizeof(scalar_dbl *));
+                                ori_lens_old     = (scalar_dbl **)mRealloc(ori_lens_old,2*tree->n_otu-1+lens_size,sizeof(scalar_dbl *));
+
+                                ori_lens_var     = (scalar_dbl **)mRealloc(ori_lens,2*tree->n_otu-1+lens_size,sizeof(scalar_dbl *));
+                                ori_lens_var_old = (scalar_dbl **)mRealloc(ori_lens_old,2*tree->n_otu-1+lens_size,sizeof(scalar_dbl *));
+
+                                lens         = ori_lens     + lens_size;;
+                                lens_old     = ori_lens_old + lens_size;;
+
+                                lens_var     = ori_lens_var     + lens_size;;
+                                lens_var_old = ori_lens_var_old + lens_size;;
+
+                                lens_size += 2*tree->n_otu-1;
                               }
 
-                            For(i,2*tree->n_otu-2)
+                            For(i,2*tree->n_otu-1)
 			      {
 			    	lens[i] = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
 			    	Init_Scalar_Dbl(lens[i]);
@@ -4979,8 +5012,17 @@ void PhyML_XML(char *xml_filename)
 			    	lens_old[i] = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
 			    	Init_Scalar_Dbl(lens_old[i]);
 
+			    	lens_var[i] = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
+			    	Init_Scalar_Dbl(lens_var[i]);
+
+			    	lens_var_old[i] = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
+			    	Init_Scalar_Dbl(lens_var_old[i]);
+
                                 Free_Scalar_Dbl(tree->a_edges[i]->l);
                                 Free_Scalar_Dbl(tree->a_edges[i]->l_old);
+
+                                Free_Scalar_Dbl(tree->a_edges[i]->l_var);
+                                Free_Scalar_Dbl(tree->a_edges[i]->l_var_old);
 
                                 if(tree->prev && 
                                    tree->prev->a_edges[i]->l == mixt_tree->a_edges[i]->l &&
@@ -5022,10 +5064,12 @@ void PhyML_XML(char *xml_filename)
 			  }
 			else
 			  {
-                            For(i,2*tree->n_otu-2) 
+                            For(i,2*tree->n_otu-1) 
                               {
                                 Free_Scalar_Dbl(tree->a_edges[i]->l);
                                 Free_Scalar_Dbl(tree->a_edges[i]->l_old);
+                                Free_Scalar_Dbl(tree->a_edges[i]->l_var);
+                                Free_Scalar_Dbl(tree->a_edges[i]->l_var_old);
                               }
 
                             ds = instance->ds;
@@ -5052,9 +5096,13 @@ void PhyML_XML(char *xml_filename)
                             mixt_tree->a_edges[i]->l     = lens[i];
                             tree->a_edges[i]->l_old      = lens_old[i];
                             mixt_tree->a_edges[i]->l_old = lens_old[i];
+
+                            tree->a_edges[i]->l_var          = lens_var[i];
+                            mixt_tree->a_edges[i]->l_var     = lens_var[i];
+                            tree->a_edges[i]->l_var_old      = lens_var_old[i];
+                            mixt_tree->a_edges[i]->l_var_old = lens_var_old[i];
                           }
                       }
-
 
 		    ///////////////////////////////////////////////
 		    ///////////////////////////////////////////////
@@ -5083,13 +5131,13 @@ void PhyML_XML(char *xml_filename)
   while(1);
 
 
-  if(ori_lens)     Free(ori_lens);
-  if(ori_lens_old) Free(ori_lens_old);
+  if(ori_lens)         Free(ori_lens);
+  if(ori_lens_old)     Free(ori_lens_old);
+  if(ori_lens_var)     Free(ori_lens_var);
+  if(ori_lens_var_old) Free(ori_lens_var_old);
   
   while(io->prev != NULL) io = io->prev;
   while(mixt_tree->prev != NULL) mixt_tree = mixt_tree->prev;
-
-
 
   /*! Finish making the models */
   mod = mixt_tree->mod;

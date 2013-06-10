@@ -46,6 +46,8 @@ void Free_All_Edges_Light(t_tree *mixt_tree)
     {
       Free_Scalar_Dbl(tree->a_edges[i]->l);
       Free_Scalar_Dbl(tree->a_edges[i]->l_old);
+      Free_Scalar_Dbl(tree->a_edges[i]->l_var);
+      Free_Scalar_Dbl(tree->a_edges[i]->l_var_old);
     }
   do
     {
@@ -653,6 +655,7 @@ void Free_RAS(t_ras *ras)
   Free(ras->gamma_rr_unscaled);
   Free(ras->pinvar);
   Free(ras->alpha);
+  Free(ras->free_rate_mr);
   
   if(ras->next) Free_RAS(ras->next);
 
@@ -750,7 +753,6 @@ void Free_Tree_List(t_treelist *list)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void Free_St(supert_tree *st)
 {

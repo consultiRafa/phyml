@@ -691,7 +691,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   if((lk_temp > lk_init + tree->mod->s_opt->min_diff_lk_local) || (lk_temp < lk_init - tree->mod->s_opt->min_diff_lk_local))
     {
       PhyML_Printf("\n== lk_temp = %f lk_init = %f",lk_temp,lk_init);
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
 

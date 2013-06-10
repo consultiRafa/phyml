@@ -461,6 +461,7 @@ phydbl *GEO_MCMC(t_tree *tree)
          tree->mcmc->ess[tree->mcmc->num_move_geo_tau]   > 10000. &&
          tree->mcmc->ess[tree->mcmc->num_move_geo_lambda]> 10000.) break;
 
+
     }
   while(tree->mcmc->run < tree->mcmc->chain_len);
 
@@ -1757,7 +1758,7 @@ void GEO_Read_In_Landscape(char *file_name, t_geo *t, phydbl **ldscape, int **lo
   FILE *fp;
   char *s,*line;
   phydbl longitude, lattitude;
-  int i, pos;
+  int i, pos, tax,loc;
 
   PhyML_Printf("\n");
   PhyML_Printf("\n. Reading landscape file '%s'.\n",file_name);
@@ -1765,10 +1766,12 @@ void GEO_Read_In_Landscape(char *file_name, t_geo *t, phydbl **ldscape, int **lo
   line        = (char *)mCalloc(T_MAX_LINE,sizeof(char));
   s           = (char *)mCalloc(T_MAX_LINE,sizeof(char));
   (*ldscape)  = (phydbl *)mCalloc(10*t->n_dim,sizeof(phydbl));
-  (*loc_hash) = (int *)mCalloc(10*t->n_dim,sizeof(int));
+  (*loc_hash) = (int *)mCalloc(tree->n_otu,sizeof(int));
   
   fp = Openfile(file_name,0);
-  
+
+  tax = loc = -1;
+
   t->ldscape_sz = 0;
 
   do
@@ -1795,9 +1798,9 @@ void GEO_Read_In_Landscape(char *file_name, t_geo *t, phydbl **ldscape, int **lo
         pos++;
       }while(1);
       
-      if(strlen(s) > 0) For(i,tree->n_otu) if(!strcmp(tree->a_nodes[i]->name,s)) break;
+      if(strlen(s) > 0) For(tax,tree->n_otu) if(!strcmp(tree->a_nodes[tax]->name,s)) break;
 
-      if(i == tree->n_otu)
+      if(tax == tree->n_otu)
         {
           PhyML_Printf("\n== Could not find a taxon with name '%s' in the tree provided.",s);
           /* PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__); */
@@ -1805,25 +1808,43 @@ void GEO_Read_In_Landscape(char *file_name, t_geo *t, phydbl **ldscape, int **lo
           continue;
         }
 
-      (*loc_hash)[i] = t->ldscape_sz;
-
       
       sscanf(line+pos,"%lf %lf",&longitude,&lattitude);
 
-      PhyML_Printf("\n. Taxon %30s, longitude: %12f, lattitude: %12f [%4d]",tree->a_nodes[i]->name,longitude,lattitude,(*loc_hash)[i]);
-
-      t->ldscape_sz++;
-      if(!(t->ldscape_sz%10))
+      For(loc,t->ldscape_sz)
         {
-          (*ldscape)  = (phydbl *)mRealloc((*ldscape),(t->ldscape_sz+10)*t->n_dim,sizeof(phydbl));
-          (*loc_hash) = (int *)mRealloc((*loc_hash),(t->ldscape_sz+10)*t->n_dim,sizeof(int));
+          if(FABS(longitude-(*ldscape)[loc*t->n_dim+0]) < 1.E-10 &&
+             FABS(lattitude-(*ldscape)[loc*t->n_dim+1]) < 1.E-10)
+            {
+              break;
+            }
         }
 
-      (*ldscape)[(t->ldscape_sz-1)*t->n_dim+0] = longitude;
-      (*ldscape)[(t->ldscape_sz-1)*t->n_dim+1] = lattitude;
+      if(loc == t->ldscape_sz)
+        {
+          t->ldscape_sz++;
+          (*ldscape)[(t->ldscape_sz-1)*t->n_dim+0] = longitude;
+          (*ldscape)[(t->ldscape_sz-1)*t->n_dim+1] = lattitude;
 
+          printf("\n. new loc: %f %f",longitude,lattitude);
+          if(!(t->ldscape_sz%10))
+            {
+              (*ldscape)  = (phydbl *)mRealloc((*ldscape),(t->ldscape_sz+10)*t->n_dim,sizeof(phydbl));
+            }
+        }
+
+      (*loc_hash)[tax] = loc;
+      
     }
   while(1);
+
+  For(tax,tree->n_otu)
+    PhyML_Printf("\n. Taxon %30s, longitude: %12f, lattitude: %12f [%4d]",
+                 tree->a_nodes[tax]->name,
+                 (*ldscape)[(*loc_hash)[tax]*t->n_dim+0],
+                 (*ldscape)[(*loc_hash)[tax]*t->n_dim+1],
+                 (*loc_hash)[tax]);
+
 
 }
 

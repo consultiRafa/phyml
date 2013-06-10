@@ -601,8 +601,9 @@ void Optimize_Br_Len_Serie(t_tree *tree)
     {
       phydbl lk_init = tree->c_lnL;
 
-      Generic_Brent_Lk(&(tree->mod->l_var),
-		       1.E-10,1.E+3,
+      Generic_Brent_Lk(&(tree->mod->l_var_sigma),
+                       tree->mod->l_var_min,
+                       tree->mod->l_var_max,
 		       tree->mod->s_opt->min_diff_lk_local,
 		       tree->mod->s_opt->brent_it_max,
 		       tree->mod->s_opt->quickdirty,
@@ -617,7 +618,7 @@ void Optimize_Br_Len_Serie(t_tree *tree)
       if((tree->io->quiet)?(0):(tree->mod->s_opt->print)) 
         {
           Print_Lk(tree,"[Branch len. var.   ]");
-          PhyML_Printf("[%10f]",tree->mod->l_var);
+          PhyML_Printf("[%10f]",tree->mod->l_var_sigma);
         }
     }
 
@@ -768,58 +769,8 @@ void Optimiz_All_Free_Param(t_tree *tree, int verbose)
   Optimize_State_Freqs(tree,verbose);
   Optimize_Rmat_Weights(tree,verbose);
   Optimize_Efrq_Weights(tree,verbose);
+  Optimize_Free_Rate(tree,verbose);
 
-  if((tree->mod->s_opt->opt_free_mixt_rates) && (tree->mod->ras->free_mixt_rates == YES))
-    {
-      int failed;
-      int i;
-        
-      if(verbose) Print_Lk(tree,"[Rate class freqs.  ]");
-
-      failed = 0;
-      BFGS(tree,tree->mod->ras->gamma_r_proba_unscaled->v,tree->mod->ras->n_catg,1.e-5,1.e-5,
-      	   &Return_Abs_Lk,
-      	   &Num_Derivative_Several_Param,
-      	   &Lnsrch,&failed);
-
-      For(i,tree->mod->ras->n_catg-1)
-      	{
-      	  if(!i)
-      	    Generic_Brent_Lk(&(tree->mod->ras->gamma_r_proba_unscaled->v[i]),
-      			     0.,
-      			     tree->mod->ras->gamma_r_proba_unscaled->v[i+1],
-      			     tree->mod->s_opt->min_diff_lk_local,
-      			     tree->mod->s_opt->brent_it_max,
-      			     tree->mod->s_opt->quickdirty,
-      			     Wrap_Lk,NULL,tree,NULL);
-          else
-      	    Generic_Brent_Lk(&(tree->mod->ras->gamma_r_proba_unscaled->v[i]),
-      			     tree->mod->ras->gamma_r_proba_unscaled->v[i-1],
-      			     tree->mod->ras->gamma_r_proba_unscaled->v[i+1],
-      			     tree->mod->s_opt->min_diff_lk_local,
-      			     tree->mod->s_opt->brent_it_max,
-      			     tree->mod->s_opt->quickdirty,
-      			     Wrap_Lk,NULL,tree,NULL);          
-      	}
-      
-      if(verbose) Print_Lk(tree,"[Rate class values  ]");
-
-      /* failed = 0; */
-      /* BFGS(tree,tree->mod->ras->gamma_rr_unscaled->v,tree->mod->ras->n_catg,1.e-5,1.e-5, */
-      /* 	   &Return_Abs_Lk, */
-      /* 	   &Num_Derivative_Several_Param, */
-      /* 	   &Lnsrch,&failed); */
-
-      For(i,tree->mod->ras->n_catg) 
-	{
-	  Generic_Brent_Lk(&(tree->mod->ras->gamma_rr_unscaled->v[i]),
-			   0.,100.,
-			   tree->mod->s_opt->min_diff_lk_local,
-			   tree->mod->s_opt->brent_it_max,
-			   tree->mod->s_opt->quickdirty,
-			   Wrap_Lk,NULL,tree,NULL);
-	}
-    }
 
   if(tree->mod->use_m4mod)
     {
@@ -2718,9 +2669,7 @@ void Optimize_Alpha(t_tree *mixt_tree, int verbose)
                 }
             }
 	}
-
       tree = tree->next_mixt;
-
     }
   while(tree);
   
@@ -2729,6 +2678,93 @@ void Optimize_Alpha(t_tree *mixt_tree, int verbose)
 }
 
 //////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Optimize_Free_Rate(t_tree *mixt_tree, int verbose)
+{
+
+  t_tree *tree;
+
+  tree = mixt_tree;
+
+  do
+    {
+      if((tree->mod->s_opt->opt_free_mixt_rates) && (tree->mod->ras->free_mixt_rates == YES))
+        {
+          int failed;
+          int i;
+          
+          if(verbose) Print_Lk(tree,"[Rate class freqs.  ]");
+
+
+          /*! Only skip tree traversal when data is not partitionned */ 
+          if(tree->prev == NULL && tree->next == NULL)
+            {
+              tree->mod->s_opt->skip_tree_traversal = YES;
+              tree->mod->ras->normalise_rr          = NO;
+
+              For(i,2*tree->n_otu-1) tree->a_edges[i]->l->v /= tree->mod->ras->free_rate_mr->v;
+            }
+
+          failed = NO;
+          BFGS(tree,tree->mod->ras->gamma_r_proba_unscaled->v,tree->mod->ras->n_catg,1.e-5,1.e-5,
+               &Return_Abs_Lk,
+               &Num_Derivative_Several_Param,
+               &Lnsrch,&failed);
+          
+
+          For(i,tree->mod->ras->n_catg-1)
+            {
+              if(!i)
+                Generic_Brent_Lk(&(tree->mod->ras->gamma_r_proba_unscaled->v[i]),
+                                 0.,
+                                 tree->mod->ras->gamma_r_proba_unscaled->v[i+1],
+                                 tree->mod->s_opt->min_diff_lk_local,
+                                 tree->mod->s_opt->brent_it_max,
+                                 tree->mod->s_opt->quickdirty,
+                                 Wrap_Lk,NULL,tree,NULL);
+              else
+                Generic_Brent_Lk(&(tree->mod->ras->gamma_r_proba_unscaled->v[i]),
+                                 tree->mod->ras->gamma_r_proba_unscaled->v[i-1],
+                                 tree->mod->ras->gamma_r_proba_unscaled->v[i+1],
+                                 tree->mod->s_opt->min_diff_lk_local,
+                                 tree->mod->s_opt->brent_it_max,
+                                 tree->mod->s_opt->quickdirty,
+                                 Wrap_Lk,NULL,tree,NULL);          
+            }
+        
+          if(tree->mod->s_opt->skip_tree_traversal == YES)
+            {
+              tree->mod->s_opt->skip_tree_traversal = NO;
+              tree->mod->ras->normalise_rr          = YES;
+              
+              For(i,2*tree->n_otu-1) tree->a_edges[i]->l->v *= tree->mod->ras->free_rate_mr->v;
+            }
+
+          
+          if(verbose) Print_Lk(tree,"[Rate class values  ]");
+          
+          /* failed = 0; */
+          /* BFGS(tree,tree->mod->ras->gamma_rr_unscaled->v,tree->mod->ras->n_catg,1.e-5,1.e-5, */
+          /* 	   &Return_Abs_Lk, */
+          /* 	   &Num_Derivative_Several_Param, */
+          /* 	   &Lnsrch,&failed); */
+          
+          For(i,tree->mod->ras->n_catg) 
+            {
+              Generic_Brent_Lk(&(tree->mod->ras->gamma_rr_unscaled->v[i]),
+                               0.,100.,
+                               tree->mod->s_opt->min_diff_lk_local,
+                               tree->mod->s_opt->brent_it_max,
+                               tree->mod->s_opt->quickdirty,
+                               Wrap_Lk,NULL,tree,NULL);
+            }
+        }
+      tree = tree->next_mixt;
+    }
+  while(tree);
+}
+      //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
 void Optimize_State_Freqs(t_tree *mixt_tree, int verbose)
