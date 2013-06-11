@@ -2749,7 +2749,7 @@ void Optimize_Free_Rate(t_tree *mixt_tree, int verbose)
           /* 	   &Num_Derivative_Several_Param, */
           /* 	   &Lnsrch,&failed); */
           
-          For(i,tree->mod->ras->n_catg) 
+          For(i,tree->mod->ras->n_catg-1) 
             {
               Generic_Brent_Lk(&(tree->mod->ras->gamma_rr_unscaled->v[i]),
                                0.,100.,
