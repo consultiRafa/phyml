@@ -1007,32 +1007,32 @@ typedef struct __Optimiz { /*! parameters to be optimised (mostly used in 'optim
   int           pars_thresh;
   int         hybrid_thresh;
 
-  phydbl     tree_size_mult; /*! tree size multiplier */
-  phydbl  min_diff_lk_local;
-  phydbl min_diff_lk_global;
-  phydbl   min_diff_lk_move;
-  phydbl p_moves_to_examine;
-  int              fast_nni;
-  int                greedy;
-  int          general_pars;
-  int            quickdirty;
-  int              spr_pars;
-  int               spr_lnL;
-  int        max_depth_path;
-  int        min_depth_path;
-  int          deepest_path;
-  phydbl  max_delta_lnL_spr;
-  int         br_len_in_spr; 
-  int   opt_free_mixt_rates;
-  int    constrained_br_len;
-  int      opt_gamma_br_len;
-
-  int           wim_n_rgrft;
-  int           wim_n_globl;
-  int          wim_max_dist;
-  int           wim_n_optim;
-  int            wim_n_best;
-  int        wim_inside_opt;
+  phydbl         tree_size_mult; /*! tree size multiplier */
+  phydbl      min_diff_lk_local;
+  phydbl     min_diff_lk_global;
+  phydbl       min_diff_lk_move;
+  phydbl     p_moves_to_examine;
+  int                  fast_nni;
+  int                    greedy;
+  int              general_pars;
+  int                quickdirty;
+  int                  spr_pars;
+  int                   spr_lnL;
+  int            max_depth_path;
+  int            min_depth_path;
+  int              deepest_path;
+  phydbl      max_delta_lnL_spr;
+  int             br_len_in_spr; 
+  int       opt_free_mixt_rates;
+  int        constrained_br_len;
+  int          opt_gamma_br_len;
+  int first_opt_free_mixt_rates;
+  int               wim_n_rgrft;
+  int               wim_n_globl;
+  int              wim_max_dist;
+  int               wim_n_optim;
+  int                wim_n_best;
+  int            wim_inside_opt;
 
   int       opt_rmat_weight;
   int       opt_efrq_weight;

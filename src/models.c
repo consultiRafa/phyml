@@ -761,7 +761,7 @@ void Update_RAS(t_mod *mod)
       	{
       	  if(!i)
       	    mod->ras->gamma_r_proba->v[i] =
-      	      mod->ras->gamma_r_proba_unscaled->v[i] /  (mod->ras->gamma_r_proba_unscaled->v[mod->ras->n_catg-1]) ;
+      	      mod->ras->gamma_r_proba_unscaled->v[i] / (mod->ras->gamma_r_proba_unscaled->v[mod->ras->n_catg-1]);
       	  else
       	    mod->ras->gamma_r_proba->v[i] =
       	      (mod->ras->gamma_r_proba_unscaled->v[i] - mod->ras->gamma_r_proba_unscaled->v[i-1]) /  

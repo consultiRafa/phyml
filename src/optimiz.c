@@ -2647,7 +2647,7 @@ void Optimize_Alpha(t_tree *mixt_tree, int verbose)
               alpha[n_alpha] = tree->mod->ras->alpha;
               n_alpha++;
               
-              if(tree->mod->s_opt->opt_alpha && 
+              if(tree->mod->s_opt->opt_alpha == YES && 
                  tree->mod->ras->free_mixt_rates == NO && 
                  tree->mod->s_opt->opt_pinvar == NO)
                 {
@@ -2693,25 +2693,43 @@ void Optimize_Free_Rate(t_tree *mixt_tree, int verbose)
           int failed;
           int i;
           
-          if(verbose) Print_Lk(tree,"[Rate class freqs.  ]");
+          if(tree->mod->s_opt->first_opt_free_mixt_rates == YES)
+            {
+              tree->mod->s_opt->opt_alpha     = YES;
+              tree->mod->s_opt->opt_pinvar    = NO;
+              tree->mod->ras->free_mixt_rates = NO;
+              Optimize_Alpha(tree,YES);
+              For(i,tree->mod->ras->n_catg)
+                {
+                  tree->mod->ras->gamma_r_proba_unscaled->v[i] = (phydbl)(i+1);
+                  tree->mod->ras->gamma_rr_unscaled->v[i]      = tree->mod->ras->gamma_rr->v[i];
+                }
+              tree->mod->s_opt->opt_alpha                 = NO;
+              tree->mod->ras->free_mixt_rates             = YES;
+              tree->mod->s_opt->first_opt_free_mixt_rates = NO;
 
+              Lk(NULL,tree);
+            }
+
+
+          if(verbose) Print_Lk(tree,"[Rate class freqs.  ]");
 
           /*! Only skip tree traversal when data is not partitionned */ 
           if(tree->prev == NULL && tree->next == NULL)
             {
               tree->mod->s_opt->skip_tree_traversal = YES;
               tree->mod->ras->normalise_rr          = NO;
-
+              
               For(i,2*tree->n_otu-1) tree->a_edges[i]->l->v /= tree->mod->ras->free_rate_mr->v;
             }
-
+          
           failed = NO;
           BFGS(tree,tree->mod->ras->gamma_r_proba_unscaled->v,tree->mod->ras->n_catg,1.e-5,1.e-5,
                &Return_Abs_Lk,
                &Num_Derivative_Several_Param,
                &Lnsrch,&failed);
           
-
+          
           For(i,tree->mod->ras->n_catg-1)
             {
               if(!i)
@@ -2731,7 +2749,7 @@ void Optimize_Free_Rate(t_tree *mixt_tree, int verbose)
                                  tree->mod->s_opt->quickdirty,
                                  Wrap_Lk,NULL,tree,NULL);          
             }
-        
+          
           if(tree->mod->s_opt->skip_tree_traversal == YES)
             {
               tree->mod->s_opt->skip_tree_traversal = NO;
@@ -2739,7 +2757,7 @@ void Optimize_Free_Rate(t_tree *mixt_tree, int verbose)
               
               For(i,2*tree->n_otu-1) tree->a_edges[i]->l->v *= tree->mod->ras->free_rate_mr->v;
             }
-
+          
           
           if(verbose) Print_Lk(tree,"[Rate class values  ]");
           
@@ -2758,12 +2776,12 @@ void Optimize_Free_Rate(t_tree *mixt_tree, int verbose)
                                tree->mod->s_opt->quickdirty,
                                Wrap_Lk,NULL,tree,NULL);
             }
-        }
+        }      
       tree = tree->next_mixt;
     }
   while(tree);
 }
-      //////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
 void Optimize_State_Freqs(t_tree *mixt_tree, int verbose)
