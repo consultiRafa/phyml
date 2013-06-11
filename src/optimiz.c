@@ -673,7 +673,7 @@ void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tr
 
   if(tree->c_lnL < lk_init - tree->mod->s_opt->min_diff_lk_local)
     {
-      PhyML_Printf("\n== %f %f %f",l_infa,l_infb,b_fcus->l->v);
+      PhyML_Printf("\n== %f %f %G",l_infa,l_infb,b_fcus->l->v);
       PhyML_Printf("\n== %f -- %f",lk_init,tree->c_lnL);
       PhyML_Printf("\n== Edge: %d",b_fcus->num);
       Warn_And_Exit("\n== Err. in Optimize_Br_Len_Serie_Post\n");
@@ -770,7 +770,6 @@ void Optimiz_All_Free_Param(t_tree *tree, int verbose)
   Optimize_Rmat_Weights(tree,verbose);
   Optimize_Efrq_Weights(tree,verbose);
   Optimize_Free_Rate(tree,verbose);
-
 
   if(tree->mod->use_m4mod)
     {

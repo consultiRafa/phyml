@@ -4640,21 +4640,20 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
   if(target)   (*target)   = b1;
   if(residual) (*residual) = b2;
 
-  /* if(tree->n_root) */
-  /*   { */
-  /*     if(tree->n_root->v[1] == a) tree->n_root->v[1] = NULL; */
-  /*     if(tree->n_root->v[2] == a) tree->n_root->v[2] = NULL; */
-  /*   } */
-
   if(tree->n_root)
     {
-      tree->n_root->v[1]       = tree->e_root->left;
-      tree->n_root->v[2]       = tree->e_root->rght;
-      tree->n_root->b[1]->rght = tree->e_root->left;
-      tree->n_root->b[2]->rght = tree->e_root->rght;
+      if(tree->n_root->v[1] == a) tree->n_root->v[1] = NULL;
+      if(tree->n_root->v[2] == a) tree->n_root->v[2] = NULL;
     }
 
-
+  /* if(tree->n_root) */
+  /*   { */
+  /*     tree->n_root->v[1]       = tree->e_root->left; */
+  /*     tree->n_root->v[2]       = tree->e_root->rght; */
+  /*     tree->n_root->b[1]->rght = tree->e_root->left; */
+  /*     tree->n_root->b[2]->rght = tree->e_root->rght; */
+  /*   } */
+ 
 #ifdef DEBUG
   if(b1->left->tax == YES && b1->rght->tax == NO)
     {
@@ -4810,13 +4809,13 @@ void Graft_Subtree(t_edge *target, t_node *link, t_edge *residual, t_tree *tree)
   Make_Edge_Dirs(residual,residual->left,residual->rght,tree);
   Make_Edge_Dirs(b_up,b_up->left,b_up->rght,tree);
   
-  if(tree->n_root)
-    {
-      tree->n_root->v[1]       = tree->e_root->left;
-      tree->n_root->v[2]       = tree->e_root->rght;
-      tree->n_root->b[1]->rght = tree->e_root->left;
-      tree->n_root->b[2]->rght = tree->e_root->rght;
-    }
+  /* if(tree->n_root) */
+  /*   { */
+  /*     tree->n_root->v[1]       = tree->e_root->left; */
+  /*     tree->n_root->v[2]       = tree->e_root->rght; */
+  /*     tree->n_root->b[1]->rght = tree->e_root->left; */
+  /*     tree->n_root->b[2]->rght = tree->e_root->rght; */
+  /*   } */
 
 
   if(tree->is_mixt_tree == YES) MIXT_Graft_Subtree(target,link,residual,tree);
@@ -7374,9 +7373,12 @@ char *aLRT_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
 
   tree = Read_Tree(&s_tree);
 
+  tree->n_root = NULL;
+  tree->e_root = NULL;
+
   if(!tree)
     {
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
 
@@ -9484,7 +9486,7 @@ void Random_SPRs_On_Rooted_Tree(t_tree *tree)
       
       if(a == tree->n_root)
         {
-          PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);      
+          PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);      
           Exit("\n");
         }
       /* if(a == tree->n_root->v[1] || a == tree->n_root->v[2]) continue; */
@@ -9584,7 +9586,7 @@ void Random_SPRs_On_Rooted_Tree(t_tree *tree)
 
       if(dir12 == -1)
         {
-          PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);      
+          PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);      
           Exit("\n");
         }
 
@@ -9593,7 +9595,7 @@ void Random_SPRs_On_Rooted_Tree(t_tree *tree)
 
       if(dir21 == -1)
         {
-          PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);      
+          PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);      
           Exit("\n");
         }
 
@@ -9947,7 +9949,6 @@ void Optimum_Root_Position_IL_Model(t_tree *tree)
           Add_Root(tree->a_edges[i],tree);
           Set_Both_Sides(YES,tree);
           Lk(NULL,tree);
-          tree->mod->s_opt->print = NO;
 
           /* Optimize_Br_Len_Serie(tree); */
 
@@ -9967,8 +9968,10 @@ void Optimum_Root_Position_IL_Model(t_tree *tree)
       Add_Root(best_edge,tree);
       Set_Both_Sides(YES,tree);
       Lk(NULL,tree);
-      Optimize_Br_Len_Serie(tree);
-
+      Update_P_Lk(tree,tree->n_root->b[1],tree->n_root);
+      Br_Len_Brent(tree->mod->l_min,tree->mod->l_max,tree->n_root->b[1],tree);
+      Update_P_Lk(tree,tree->n_root->b[2],tree->n_root);
+      Br_Len_Brent(tree->mod->l_min,tree->mod->l_max,tree->n_root->b[2],tree);
     }
 }
 

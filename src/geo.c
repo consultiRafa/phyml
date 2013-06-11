@@ -18,8 +18,8 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int GEO_Main(int argc, char **argv)
 {
-  /* GEO_Simulate_Estimate(argc,argv); */
-  GEO_Estimate(argc,argv);
+  GEO_Simulate_Estimate(argc,argv);
+  /* GEO_Estimate(argc,argv); */
   return(1);
 }
 
@@ -137,7 +137,8 @@ int GEO_Simulate_Estimate(int argc, char **argv)
   fp = fopen(s,"w");
 
   seed = getpid();
-  seed = 15520;
+  /* seed = 15520; */
+  seed = 5023;
   printf("\n. Seed = %d",seed);
   srand(seed);
 
@@ -156,6 +157,7 @@ int GEO_Simulate_Estimate(int argc, char **argv)
 
 
   GEO_Make_Geo_Complete(t->ldscape_sz,t->n_dim,n_tax,t);
+
   
   t->cov[0*t->n_dim+0] = t->sigma;
   t->cov[1*t->n_dim+1] = t->sigma;
@@ -451,15 +453,15 @@ phydbl *GEO_MCMC(t_tree *tree)
 
       tree->mcmc->run++;
 
-      if(tree->mcmc->ess[tree->mcmc->num_move_geo_sigma] > 2000.) tree->mcmc->adjust_tuning[tree->mcmc->num_move_geo_sigma]  = NO;
-      if(tree->mcmc->ess[tree->mcmc->num_move_geo_tau]   > 2000.) tree->mcmc->adjust_tuning[tree->mcmc->num_move_geo_tau]    = NO;
-      if(tree->mcmc->ess[tree->mcmc->num_move_geo_lambda]> 2000.) tree->mcmc->adjust_tuning[tree->mcmc->num_move_geo_lambda] = NO;
+      if(tree->mcmc->ess[tree->mcmc->num_move_geo_sigma] > 200.) tree->mcmc->adjust_tuning[tree->mcmc->num_move_geo_sigma]  = NO;
+      if(tree->mcmc->ess[tree->mcmc->num_move_geo_tau]   > 200.) tree->mcmc->adjust_tuning[tree->mcmc->num_move_geo_tau]    = NO;
+      if(tree->mcmc->ess[tree->mcmc->num_move_geo_lambda]> 200.) tree->mcmc->adjust_tuning[tree->mcmc->num_move_geo_lambda] = NO;
       
       MCMC_Get_Acc_Rates(tree->mcmc);
 
-      if(tree->mcmc->ess[tree->mcmc->num_move_geo_sigma] > 10000. &&
-         tree->mcmc->ess[tree->mcmc->num_move_geo_tau]   > 10000. &&
-         tree->mcmc->ess[tree->mcmc->num_move_geo_lambda]> 10000.) break;
+      if(tree->mcmc->ess[tree->mcmc->num_move_geo_sigma] > 1000. &&
+         tree->mcmc->ess[tree->mcmc->num_move_geo_tau]   > 1000. &&
+         tree->mcmc->ess[tree->mcmc->num_move_geo_lambda]> 1000.) break;
 
 
     }
