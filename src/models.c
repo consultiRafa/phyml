@@ -756,6 +756,9 @@ void Update_RAS(t_mod *mod)
     {
       Qksort(mod->ras->gamma_r_proba_unscaled->v,NULL,0,mod->ras->n_catg-1); // Unscaled class frequencies sorted in increasing order
 
+     /* For(i,mod->ras->n_catg)  */
+     /*   mod->ras->gamma_rr_unscaled->v[i] *= mod->br_len_multiplier->v; */
+
       // Update class frequencies
       For(i,mod->ras->n_catg)
       	{
@@ -764,10 +767,9 @@ void Update_RAS(t_mod *mod)
       	      mod->ras->gamma_r_proba_unscaled->v[i] / (mod->ras->gamma_r_proba_unscaled->v[mod->ras->n_catg-1]);
       	  else
       	    mod->ras->gamma_r_proba->v[i] =
-      	      (mod->ras->gamma_r_proba_unscaled->v[i] - mod->ras->gamma_r_proba_unscaled->v[i-1]) /  
-	      (mod->ras->gamma_r_proba_unscaled->v[mod->ras->n_catg-1]) ;
+      	      (mod->ras->gamma_r_proba_unscaled->v[i] - mod->ras->gamma_r_proba_unscaled->v[i-1]) /
+              (mod->ras->gamma_r_proba_unscaled->v[mod->ras->n_catg-1]) ;
       	}
-
 
       do
       	{
@@ -796,6 +798,9 @@ void Update_RAS(t_mod *mod)
         For(i,mod->ras->n_catg) 
           mod->ras->gamma_rr->v[i] = FABS(mod->ras->gamma_rr_unscaled->v[i]);
 
+
+     /* For(i,mod->ras->n_catg)  */
+     /*   mod->ras->gamma_rr_unscaled->v[i] /= mod->br_len_multiplier->v; */
 
       /* sum = .0; */
       /* For(i,mod->ras->n_catg) sum += mod->ras->gamma_r_proba->v[i] * FABS(mod->ras->gamma_rr->v[i]); */

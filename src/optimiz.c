@@ -558,13 +558,13 @@ void Round_Optimize(t_tree *tree, calign *data, int n_round_max)
 
   while(n_round < n_round_max)
     {     
+      if(tree->mod->s_opt->opt_bl || tree->mod->s_opt->constrained_br_len)
+	Optimize_Br_Len_Serie(tree);
+      
       if((tree->mod->s_opt->opt_bl || tree->mod->s_opt->constrained_br_len) && 	 
 	 (tree->mod->s_opt->print) && 
 	 (!tree->io->quiet)) Print_Lk(tree,"[Branch lengths     ]");
 
-      if(tree->mod->s_opt->opt_bl || tree->mod->s_opt->constrained_br_len)
-	Optimize_Br_Len_Serie(tree);
-      
       Set_Both_Sides(YES,tree);
       Lk(NULL,tree);
 
@@ -2681,7 +2681,6 @@ void Optimize_Alpha(t_tree *mixt_tree, int verbose)
 
 void Optimize_Free_Rate(t_tree *mixt_tree, int verbose)
 {
-
   t_tree *tree;
 
   tree = mixt_tree;
@@ -2690,86 +2689,16 @@ void Optimize_Free_Rate(t_tree *mixt_tree, int verbose)
     {
       if((tree->mod->s_opt->opt_free_mixt_rates) && (tree->mod->ras->free_mixt_rates == YES))
         {
-          int failed;
           int i;
-          
-          if(tree->mod->s_opt->first_opt_free_mixt_rates == YES)
-            {
-              tree->mod->s_opt->opt_alpha     = YES;
-              tree->mod->s_opt->opt_pinvar    = NO;
-              tree->mod->ras->free_mixt_rates = NO;
-              Optimize_Alpha(tree,YES);
-              For(i,tree->mod->ras->n_catg)
-                {
-                  tree->mod->ras->gamma_r_proba_unscaled->v[i] = (phydbl)(i+1);
-                  tree->mod->ras->gamma_rr_unscaled->v[i]      = tree->mod->ras->gamma_rr->v[i];
-                }
-              tree->mod->s_opt->opt_alpha                 = NO;
-              tree->mod->ras->free_mixt_rates             = YES;
-              tree->mod->s_opt->first_opt_free_mixt_rates = NO;
+                    
+          Optimize_Free_Rate_Weights(tree,verbose);
 
-              Lk(NULL,tree);
-            }
-
-
-
-          /*! Only skip tree traversal when data is not partitionned */ 
-          if(tree->prev == NULL && tree->next == NULL)
-            {
-              tree->mod->s_opt->skip_tree_traversal = YES;
-              tree->mod->ras->normalise_rr          = NO;
-              For(i,2*tree->n_otu-1) tree->a_edges[i]->l->v /= tree->mod->ras->free_rate_mr->v;
-            }
-          
-          failed = NO;
-          BFGS(tree,tree->mod->ras->gamma_r_proba_unscaled->v,tree->mod->ras->n_catg,1.e-5,1.e-5,
-               &Return_Abs_Lk,
-               &Num_Derivative_Several_Param,
-               &Lnsrch,&failed);
-          
-          
-
-
-
-          For(i,tree->mod->ras->n_catg-1)
-            {
-
-              if(!i)
-                Generic_Brent_Lk(&(tree->mod->ras->gamma_r_proba_unscaled->v[i]),
-                                 0.,
-                                 tree->mod->ras->gamma_r_proba_unscaled->v[i+1],
-                                 tree->mod->s_opt->min_diff_lk_local,
-                                 tree->mod->s_opt->brent_it_max,
-                                 tree->mod->s_opt->quickdirty,
-                                 Wrap_Lk,NULL,tree,NULL);
-              else
-                Generic_Brent_Lk(&(tree->mod->ras->gamma_r_proba_unscaled->v[i]),
-                                 tree->mod->ras->gamma_r_proba_unscaled->v[i-1],
-                                 tree->mod->ras->gamma_r_proba_unscaled->v[i+1],
-                                 tree->mod->s_opt->min_diff_lk_local,
-                                 tree->mod->s_opt->brent_it_max,
-                                 tree->mod->s_opt->quickdirty,
-                                 Wrap_Lk,NULL,tree,NULL);
-
-            }
-          
-          if(tree->mod->s_opt->skip_tree_traversal == YES)
-            {
-              tree->mod->s_opt->skip_tree_traversal = NO;
-              tree->mod->ras->normalise_rr          = YES;              
-              For(i,2*tree->n_otu-1) tree->a_edges[i]->l->v *= tree->mod->ras->free_rate_mr->v;
-            }
-          
-          if(verbose) Print_Lk(tree,"[Rate class freqs.  ]");
-          
-          
           /* failed = NO; */
           /* BFGS(tree,tree->mod->ras->gamma_rr_unscaled->v,tree->mod->ras->n_catg,1.e-5,1.e-5, */
           /* 	   &Return_Abs_Lk, */
           /* 	   &Num_Derivative_Several_Param, */
           /* 	   &Lnsrch,&failed); */
           
-
           if(tree->prev == NULL && tree->next == NULL)
             {
               For(i,tree->mod->ras->n_catg) tree->mod->ras->skip_rate_cat[i] = YES;
@@ -2781,12 +2710,13 @@ void Optimize_Free_Rate(t_tree *mixt_tree, int verbose)
                   tree->mod->ras->skip_rate_cat[i] = NO;
                   
                   Generic_Brent_Lk(&(tree->mod->ras->gamma_rr_unscaled->v[i]),
-                                   0.,100.,
+                                   1.E-2,100.,
                                    tree->mod->s_opt->min_diff_lk_local,
                                    tree->mod->s_opt->brent_it_max,
                                    tree->mod->s_opt->quickdirty,
                                    Wrap_Lk,NULL,tree,NULL);
                   
+
                   tree->mod->ras->skip_rate_cat[i] = YES;
                 }
               
@@ -2800,7 +2730,7 @@ void Optimize_Free_Rate(t_tree *mixt_tree, int verbose)
               For(i,tree->mod->ras->n_catg-1)
                 {
                   Generic_Brent_Lk(&(tree->mod->ras->gamma_rr_unscaled->v[i]),
-                                   0.,100.,
+                                   1.E-2,100.,
                                    tree->mod->s_opt->min_diff_lk_local,
                                    tree->mod->s_opt->brent_it_max,
                                    tree->mod->s_opt->quickdirty,
@@ -2808,14 +2738,94 @@ void Optimize_Free_Rate(t_tree *mixt_tree, int verbose)
                 }
             }
 
-
           if(verbose) Print_Lk(tree,"[Rate class values  ]");
 
+          /* For(i,tree->mod->ras->n_catg) */
+          /*   { */
+          /*     printf("\n+ c %2d p: %15f r: %15f up: %15f ur: %5f", */
+          /*            i+1, */
+          /*            tree->mod->ras->gamma_r_proba->v[i], */
+          /*            tree->mod->ras->gamma_rr->v[i], */
+          /*            tree->mod->ras->gamma_r_proba_unscaled->v[i], */
+          /*            tree->mod->ras->gamma_rr_unscaled->v[i]); */
+          /*   } */
+          /* fflush(NULL); */
         }      
       tree = tree->next_mixt;
     }
   while(tree);
 }
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Optimize_Free_Rate_Weights(t_tree *tree, int verbose)
+{
+  int i;
+
+  if(tree->mod->s_opt->first_opt_free_mixt_rates == YES)
+    {
+      tree->mod->s_opt->opt_alpha     = YES;
+      tree->mod->s_opt->opt_pinvar    = NO;
+      tree->mod->ras->free_mixt_rates = NO;
+      Optimize_Alpha(tree,YES);
+      For(i,tree->mod->ras->n_catg)
+        {
+          tree->mod->ras->gamma_r_proba_unscaled->v[i] = (phydbl)(i+1);
+          tree->mod->ras->gamma_rr_unscaled->v[i]      = tree->mod->ras->gamma_rr->v[i];
+        }
+      tree->mod->s_opt->opt_alpha                 = NO;
+      tree->mod->ras->free_mixt_rates             = YES;
+      tree->mod->s_opt->first_opt_free_mixt_rates = NO;
+      
+      Lk(NULL,tree);
+    }
+  
+  /*! Only skip tree traversal when data is not partitionned */ 
+  if(tree->prev == NULL && tree->next == NULL)
+    {
+      tree->mod->s_opt->skip_tree_traversal = YES;
+      tree->mod->ras->normalise_rr          = NO;
+      For(i,2*tree->n_otu-1) tree->a_edges[i]->l->v /= tree->mod->ras->free_rate_mr->v;
+    }
+  
+  int failed = NO;
+  BFGS(tree,tree->mod->ras->gamma_r_proba_unscaled->v,tree->mod->ras->n_catg,1.e-5,1.e-5,
+       &Return_Abs_Lk,
+       &Num_Derivative_Several_Param,
+       &Lnsrch,&failed);
+  
+  For(i,tree->mod->ras->n_catg-1)
+    {
+      if(!i)
+        Generic_Brent_Lk(&(tree->mod->ras->gamma_r_proba_unscaled->v[i]),
+                         1.E-3,
+                         tree->mod->ras->gamma_r_proba_unscaled->v[i+1],
+                         tree->mod->s_opt->min_diff_lk_local,
+                         tree->mod->s_opt->brent_it_max,
+                         tree->mod->s_opt->quickdirty,
+                         Wrap_Lk,NULL,tree,NULL);
+      else
+        Generic_Brent_Lk(&(tree->mod->ras->gamma_r_proba_unscaled->v[i]),
+                         tree->mod->ras->gamma_r_proba_unscaled->v[i-1],
+                         tree->mod->ras->gamma_r_proba_unscaled->v[i+1],
+                         tree->mod->s_opt->min_diff_lk_local,
+                         tree->mod->s_opt->brent_it_max,
+                         tree->mod->s_opt->quickdirty,
+                         Wrap_Lk,NULL,tree,NULL);
+    }
+  
+  if(tree->mod->s_opt->skip_tree_traversal == YES)
+    {
+      tree->mod->s_opt->skip_tree_traversal = NO;
+      tree->mod->ras->normalise_rr          = YES;              
+      For(i,2*tree->n_otu-1) tree->a_edges[i]->l->v *= tree->mod->ras->free_rate_mr->v;
+    }
+  
+  if(verbose) Print_Lk(tree,"[Rate class freqs.  ]");
+
+}
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 

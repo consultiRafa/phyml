@@ -529,7 +529,7 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
   For(catg,tree->mod->ras->n_catg)
     {
       site_lk_cat = .0;
-
+      
       /* b is an external edge */
       if((b->rght->tax) && (!tree->mod->s_opt->greedy))
         {
@@ -559,8 +559,6 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
                           sum +=
                             b->Pij_rr[catg*dim3+k*dim2+l] *
                             b->p_lk_left[site*dim1+catg*dim2+l];
-
-                                 
                         }
                       
                       site_lk_cat +=
@@ -595,70 +593,70 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
         }
       tree->site_lk_cat[catg] = site_lk_cat;
     }
-
+  
   if(tree->apply_lk_scaling == YES)
     {
       max_sum_scale =   (phydbl)BIG;
       min_sum_scale =  -(phydbl)BIG;
-
+      
       For(catg,tree->mod->ras->n_catg)
-	{
-	  sum_scale_left_cat[catg] =
-	    (b->sum_scale_left)?
-	    (b->sum_scale_left[catg*tree->n_pattern+site]):
-	    (0.0);
-	  
-	  sum_scale_rght_cat[catg] =
-	    (b->sum_scale_rght)?
-	    (b->sum_scale_rght[catg*tree->n_pattern+site]):
-	    (0.0);
-	  
-	  sum = sum_scale_left_cat[catg] + sum_scale_rght_cat[catg];
-	  
-	  if(sum < .0)
-	    {
-	      PhyML_Printf("\n== b->num = %d  sum = %G",sum,b->num);
-	      PhyML_Printf("\n== Err. in file %s at line %d\n\n",__FILE__,__LINE__);
-	      Exit("\n");
-	    }
-	  
-	  tmp = sum + ((phydbl)LOGBIG - LOG(tree->site_lk_cat[catg]))/(phydbl)LOG2;
-	  if(tmp < max_sum_scale) max_sum_scale = tmp; /* min of the maxs */
-	  
-	  tmp = sum + ((phydbl)LOGSMALL - LOG(tree->site_lk_cat[catg]))/(phydbl)LOG2;
-	  if(tmp > min_sum_scale) min_sum_scale = tmp; /* max of the mins */
-
-	}
+        {
+          sum_scale_left_cat[catg] =
+            (b->sum_scale_left)?
+            (b->sum_scale_left[catg*tree->n_pattern+site]):
+            (0.0);
+          
+          sum_scale_rght_cat[catg] =
+            (b->sum_scale_rght)?
+            (b->sum_scale_rght[catg*tree->n_pattern+site]):
+            (0.0);
+          
+          sum = sum_scale_left_cat[catg] + sum_scale_rght_cat[catg];
+          
+          if(sum < .0)
+            {
+              PhyML_Printf("\n== b->num = %d  sum = %G",sum,b->num);
+              PhyML_Printf("\n== Err. in file %s at line %d\n\n",__FILE__,__LINE__);
+              Exit("\n");
+            }
+          
+          tmp = sum + ((phydbl)LOGBIG - LOG(tree->site_lk_cat[catg]))/(phydbl)LOG2;
+          if(tmp < max_sum_scale) max_sum_scale = tmp; /* min of the maxs */
+          
+          tmp = sum + ((phydbl)LOGSMALL - LOG(tree->site_lk_cat[catg]))/(phydbl)LOG2;
+          if(tmp > min_sum_scale) min_sum_scale = tmp; /* max of the mins */
+          
+        }
       
       if(min_sum_scale > max_sum_scale)
-	{
-	  /* PhyML_Printf("\n== Numerical precision issue alert."); */
-	  /* PhyML_Printf("\n== min_sum_scale = %G max_sum_scale = %G",min_sum_scale,max_sum_scale); */
-	  /* PhyML_Printf("\n== Err in file %s at line %d\n\n",__FILE__,__LINE__); */
-	  /* Warn_And_Exit("\n"); */
-	  min_sum_scale = max_sum_scale;
-	}
-
+        {
+          /* PhyML_Printf("\n== Numerical precision issue alert."); */
+          /* PhyML_Printf("\n== min_sum_scale = %G max_sum_scale = %G",min_sum_scale,max_sum_scale); */
+          /* PhyML_Printf("\n== Err in file %s at line %d\n\n",__FILE__,__LINE__); */
+          /* Warn_And_Exit("\n"); */
+          min_sum_scale = max_sum_scale;
+        }
+      
       fact_sum_scale = (int)((max_sum_scale + min_sum_scale) / 2);
-
-
+      
+      
       /* fact_sum_scale = (int)(max_sum_scale / 2); */
-
+      
       /* Apply scaling factors */
       For(catg,tree->mod->ras->n_catg)
-	{
-	  exponent = -(sum_scale_left_cat[catg]+sum_scale_rght_cat[catg])+fact_sum_scale;
-	  site_lk_cat = tree->site_lk_cat[catg];     
- 	  Rate_Correction(exponent,&site_lk_cat,tree);
-	  tree->site_lk_cat[catg] = site_lk_cat;
-	}
+        {
+          exponent = -(sum_scale_left_cat[catg]+sum_scale_rght_cat[catg])+fact_sum_scale;
+          site_lk_cat = tree->site_lk_cat[catg];     
+          Rate_Correction(exponent,&site_lk_cat,tree);
+          tree->site_lk_cat[catg] = site_lk_cat;
+        }
     }
   else // No scaling of lk
     {
       fact_sum_scale = 0;
     }
   
-
+  
   site_lk = .0;
   For(catg,tree->mod->ras->n_catg) 
     {
