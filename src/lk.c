@@ -1039,6 +1039,8 @@ void Update_P_Lk_Generic(t_tree *tree, t_edge *b, t_node *d)
 	  /* For all the rate classes */
 	  For(catg,tree->mod->ras->n_catg)
 	    {
+              if(tree->mod->ras->skip_rate_cat[catg] == YES) continue;
+              
 	      smallest_p_lk  =  BIG;
 	      
 	      /* For all the states at node d */
@@ -2270,6 +2272,9 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
   
   For(i,tree->mod->ras->n_catg)
     {
+
+      if(tree->mod->ras->skip_rate_cat[i] == YES) continue;
+
       if(b_fcus->has_zero_br_len == YES) 
         {
           len = -1.0;
@@ -2283,6 +2288,7 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
           else if(len > l_max) len = l_max;
         }
       
+
       if(tree->mod->gamma_mgf_bl == NO)
         PMat(len,tree->mod,tree->mod->ns*tree->mod->ns*i,b_fcus->Pij_rr);
       else

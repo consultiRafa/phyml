@@ -649,6 +649,7 @@ void Free_RAS(t_ras *ras)
     }
   
   Free(ras->gamma_r_proba);
+  Free(ras->skip_rate_cat);
   
   Free(ras->gamma_r_proba_unscaled);
   Free(ras->gamma_rr);

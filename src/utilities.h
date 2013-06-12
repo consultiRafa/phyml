@@ -772,6 +772,8 @@ typedef struct __RAS {
   short int           init_r_proba;
   short int           normalise_rr;
 
+  short int         *skip_rate_cat;
+
   struct __RAS               *next;
   struct __RAS               *prev;
 

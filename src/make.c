@@ -715,6 +715,7 @@ void Make_RAS_Complete(t_ras *ras)
       ras->gamma_r_proba_unscaled->v = (phydbl *)mCalloc(ras->n_catg,sizeof(phydbl));
       ras->gamma_rr->v               = (phydbl *)mCalloc(ras->n_catg,sizeof(phydbl));
       ras->gamma_rr_unscaled->v      = (phydbl *)mCalloc(ras->n_catg,sizeof(phydbl));
+      ras->skip_rate_cat             = (short int *)mCalloc(ras->n_catg,sizeof(short int));
     }
 }
 

@@ -2968,7 +2968,7 @@ void Br_Len_Involving_Invar(t_tree *tree)
       return;
     }
 
-  For(i,2*tree->n_otu-3) tree->a_edges[i]->l->v *= (1.0-tree->mod->ras->pinvar->v);
+  For(i,2*tree->n_otu-1) tree->a_edges[i]->l->v *= (1.0-tree->mod->ras->pinvar->v);
 }
 
 //////////////////////////////////////////////////////////////
@@ -2984,10 +2984,7 @@ void Br_Len_Not_Involving_Invar(t_tree *tree)
       return;
     }
 
-  For(i,2*tree->n_otu-3) 
-    {
-      tree->a_edges[i]->l->v /= (1.0-tree->mod->ras->pinvar->v);
-    }
+  For(i,2*tree->n_otu-1) tree->a_edges[i]->l->v /= (1.0-tree->mod->ras->pinvar->v);
 }
 
 //////////////////////////////////////////////////////////////
