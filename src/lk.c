@@ -2286,7 +2286,7 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
           else if(len > l_max) len = l_max;
         }
       
-
+      
       if(tree->mod->gamma_mgf_bl == NO)
         PMat(len,tree->mod,tree->mod->ns*tree->mod->ns*i,b_fcus->Pij_rr);
       else
