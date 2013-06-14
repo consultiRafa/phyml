@@ -2740,7 +2740,7 @@ void Optimize_Free_Rate(t_tree *mixt_tree, int verbose)
               Optimize_Free_Rate_Weights(tree,fast,verbose);
               Optimize_Free_Rate_Rr(tree,fast,verbose);
               lk_after = tree->c_lnL;
-              if(FABS(lk_before - lk_after) < 0.1) tree->mod->s_opt->serial_free_rates = NO;
+              if(FABS(lk_before - lk_after) < 0.01) tree->mod->s_opt->serial_free_rates = NO;
             }
           
           else
@@ -2810,11 +2810,7 @@ void Optimize_Free_Rate_Rr(t_tree *tree, int fast, int verbose)
         {
           if(fast == YES) tree->mod->ras->skip_rate_cat[i] = NO;
           
-          /* tree->mod->ras->gamma_rr_unscaled->v[i] = LOG(MAX(1.E-10,tree->mod->ras->gamma_rr_unscaled->v[i])); */
-
           Generic_Brent_Lk(&(tree->mod->ras->gamma_rr_unscaled->v[i]),
-                           /* LOG(1.E-10), */
-                           /* LOG(0.1), */
                            0.0,
                            100.,
                            tree->mod->s_opt->min_diff_lk_local,
@@ -2822,8 +2818,6 @@ void Optimize_Free_Rate_Rr(t_tree *tree, int fast, int verbose)
                            tree->mod->s_opt->quickdirty,
                            Wrap_Lk,NULL,tree,NULL,NO);
                     
-          /* tree->mod->ras->gamma_rr_unscaled->v[i] = EXP(tree->mod->ras->gamma_rr_unscaled->v[i]); */
-
           if(fast == YES) tree->mod->ras->skip_rate_cat[i] = YES;
         }
 
@@ -2866,13 +2860,13 @@ void Optimize_Free_Rate_Rr(t_tree *tree, int fast, int verbose)
   /*   } */
   /* fflush(NULL); */
   
-  /* int i; */
-  /* printf("\n"); */
-  /* printf("X*X %f ",tree->c_lnL); */
-  /* /\* For(i,tree->mod->ras->n_catg) printf("%f ",tree->mod->ras->gamma_rr_unscaled->v[i]); *\/ */
-  /* For(i,tree->mod->ras->n_catg) printf("%f ",tree->mod->ras->gamma_rr->v[i]); */
-  /* For(i,tree->mod->ras->n_catg) printf("%f ",tree->mod->ras->gamma_r_proba->v[i]); */
-  /* For(i,2*tree->n_otu-3) printf("%f ",tree->a_edges[i]->l->v); */
+  int i;
+  printf("\n");
+  printf("X*X %f ",tree->c_lnL);
+  /* For(i,tree->mod->ras->n_catg) printf("%f ",tree->mod->ras->gamma_rr_unscaled->v[i]); */
+  For(i,tree->mod->ras->n_catg) printf("%f ",tree->mod->ras->gamma_rr->v[i]);
+  For(i,tree->mod->ras->n_catg) printf("%f ",tree->mod->ras->gamma_r_proba->v[i]);
+  For(i,2*tree->n_otu-3) printf("%f ",tree->a_edges[i]->l->v);
 }
 
 //////////////////////////////////////////////////////////////
@@ -2925,25 +2919,16 @@ void Optimize_Free_Rate_Weights(t_tree *tree, int fast, int verbose)
        &Num_Derivative_Several_Param,
        &Lnsrch,&failed);
   
-  /* tree->mod->ras->gamma_r_proba_unscaled->v[tree->mod->ras->n_catg-1] = .1; */
 
   For(i,tree->mod->ras->n_catg-1)
     {
-      /* tree->mod->ras->gamma_r_proba_unscaled->v[i] = LOG(MAX(1.E-10,tree->mod->ras->gamma_r_proba_unscaled->v[i])); */
-      
-      /* printf("\n beginning of proba %d",i); */
       Generic_Brent_Lk(&(tree->mod->ras->gamma_r_proba_unscaled->v[i]),
-                       /* LOG(1.E-10), */
-                       /* LOG(0.1), */
                        0.0,
                        100.,
                        tree->mod->s_opt->min_diff_lk_local,
                        tree->mod->s_opt->brent_it_max,
                        tree->mod->s_opt->quickdirty,
                        Wrap_Lk,NULL,tree,NULL,NO);
-      /* printf("\n end of proba %d",i); */
-
-      /* tree->mod->ras->gamma_r_proba_unscaled->v[i] = EXP(tree->mod->ras->gamma_r_proba_unscaled->v[i]); */
     }
   
   if(tree->mod->s_opt->skip_tree_traversal == YES && fast == YES)
