@@ -773,12 +773,9 @@ void Update_RAS(t_mod *mod)
 
 #else
 
-
-
       sum = 0.0;
       For(i,mod->ras->n_catg) sum += mod->ras->gamma_r_proba_unscaled->v[i];
-      For(i,mod->ras->n_catg) mod->ras->gamma_r_proba->v[i] = mod->ras->gamma_r_proba_unscaled->v[i]/ sum; 
-
+      For(i,mod->ras->n_catg) mod->ras->gamma_r_proba->v[i] = mod->ras->gamma_r_proba_unscaled->v[i] / sum;
 
 
 #endif
@@ -799,19 +796,22 @@ void Update_RAS(t_mod *mod)
 
       // Update class rates
       sum = .0;
-      For(i,mod->ras->n_catg) sum += mod->ras->gamma_r_proba->v[i] * FABS(mod->ras->gamma_rr_unscaled->v[i]);
-      mod->ras->free_rate_mr->v = sum;
+      For(i,mod->ras->n_catg) sum += mod->ras->gamma_r_proba->v[i] * mod->ras->gamma_rr_unscaled->v[i];
 
       if(mod->ras->normalise_rr == YES)
         For(i,mod->ras->n_catg) 
-          mod->ras->gamma_rr->v[i] = FABS(mod->ras->gamma_rr_unscaled->v[i])/mod->ras->free_rate_mr->v;
+          mod->ras->gamma_rr->v[i] = mod->ras->gamma_rr_unscaled->v[i]/sum;
       else
         For(i,mod->ras->n_catg) 
-          mod->ras->gamma_rr->v[i] = FABS(mod->ras->gamma_rr_unscaled->v[i]);
+          mod->ras->gamma_rr->v[i] = mod->ras->gamma_rr_unscaled->v[i] * mod->ras->free_rate_mr->v;
 
-      /* sum = .0; */
-      /* For(i,mod->ras->n_catg) sum += mod->ras->gamma_r_proba->v[i] * FABS(mod->ras->gamma_rr->v[i]); */
-      /* printf("\n. sum=%f",sum); */
+      /* printf("\n"); */
+      /* For(i,mod->ras->n_catg)  */
+      /*   printf("\nx %12f %12f xx %12f %12f", */
+      /*          mod->ras->gamma_r_proba->v[i], */
+      /*          mod->ras->gamma_rr->v[i], */
+      /*          LOG(mod->ras->gamma_r_proba_unscaled->v[i]), */
+      /*          LOG(mod->ras->gamma_rr_unscaled->v[i])); */
     }  
 
 }

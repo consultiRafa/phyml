@@ -3002,70 +3002,81 @@ void Getstring_Stdin(char *s)
 //////////////////////////////////////////////////////////////
 
 phydbl Num_Derivatives_One_Param(phydbl (*func)(t_tree *tree), t_tree *tree,
-				 phydbl f0, phydbl *param, phydbl stepsize,
+				 phydbl f0, phydbl *param, int which, int n_param, phydbl stepsize, int logt,
 				 phydbl *err, int precise)
 {
   int i,j;
   phydbl errt,fac,hh,**a,ans;
   int n_iter;
+
   a = (phydbl **)mCalloc(11,sizeof(phydbl *));
   For(i,11) a[i] = (phydbl *)mCalloc(11,sizeof(phydbl));
-
 
   n_iter = 10; /* */
 
   ans  = .0;
 
-  if(stepsize < SMALL) Warn_And_Exit("\n. h must be nonzero in Dfridr.");
+  if(stepsize < SMALL) Warn_And_Exit("\n== h must be nonzero in Dfridr.");
 
   hh=stepsize;
 
   if(!precise)
     {
-      *param   = *param+hh;
+      param[which]   = param[which]+hh;
+
+      if(logt == YES) For(i,n_param) param[i] = EXP(param[i]);
       a[0][0]  = (*func)(tree);
-/*       printf("\n. f0=%f f1=%f hh=%G",f0,a[0][0],hh); */
+      if(logt == YES) For(i,n_param) param[i] = LOG(param[i]);
+
+      /* printf("\n. f0=%f f1=%f hh=%G %f",f0,a[0][0],hh,param[which]); */
+
       a[0][0]  -= f0;
       a[0][0]  /= hh;
-      *param   = *param-hh;
+      param[which]   = param[which]-hh;
 
       ans =  a[0][0];
-
     }
   else
     {
-      *param   = *param+hh;
+      param[which]   = param[which]+hh;
+
+      if(logt == YES) For(i,n_param) param[i] = EXP(param[i]);
       a[0][0]  = (*func)(tree);
-      /*   *param   = *param-2*hh; */
+      if(logt == YES) For(i,n_param) param[i] = LOG(param[i]);
+
+      /*   param[which]   = param[which]-2*hh; */
       /*   a[0][0] -= (*func)(tree); */
       /*   a[0][0] /= (2.0*hh); */
-      /*   *param   = *param+hh; */
+      /*   param[which]   = param[which]+hh; */
       a[0][0]  -= f0;
       a[0][0]  /= hh;
-      *param   = *param-hh;
+      param[which]   = param[which]-hh;
 
       *err=1e30;
       for(i=1;i<n_iter;i++)
 	{
 	  hh /= 1.4;
 
-	  /*       *param   = *param+hh; */
+	  /*       param[which]   = param[which]+hh; */
 	  /*       a[0][i]  = (*func)(tree); */
-	  /*       *param   = *param-2*hh; */
+	  /*       param[which]   = param[which]-2*hh; */
 	  /*       a[0][i] -= (*func)(tree); */
 	  /*       a[0][i] /= (2.0*hh); */
-	  /*       *param   = *param+hh; */
+	  /*       param[which]   = param[which]+hh; */
 
+	  param[which]   = param[which]+hh;
 
-	  *param   = *param+hh;
+          if(logt == YES) For(j,n_param) param[j] = EXP(param[j]);
 	  a[0][i]  = (*func)(tree);
-	  /*   *param   = *param-2*hh; */
+          if(logt == YES) For(j,n_param) param[j] = LOG(param[j]);
+
+	  /*   param[which]   = param[which]-2*hh; */
 	  /*   a[0][i] -= (*func)(tree); */
 	  /*   a[0][i] /= (2.0*hh); */
-	  /*   *param   = *param+hh; */
+	  /*   param[which]   = param[which]+hh; */
 	  a[0][i]  -= f0;
 	  a[0][i]  /= hh;
-	  *param   = *param-hh;
+	  param[which]   = param[which]-hh;
 
 
 	  fac=1.4*1.4;
@@ -3095,21 +3106,131 @@ phydbl Num_Derivatives_One_Param(phydbl (*func)(t_tree *tree), t_tree *tree,
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-int Num_Derivative_Several_Param(t_tree *tree, phydbl *param, int n_param, phydbl stepsize,
-				  phydbl (*func)(t_tree *tree), phydbl *derivatives)
+phydbl Num_Derivatives_One_Param_Nonaligned(phydbl (*func)(t_tree *tree), t_tree *tree,
+                                            phydbl f0, phydbl **param, int which, int n_param, phydbl stepsize, int logt,
+                                            phydbl *err, int precise)
+{
+  int i,j;
+  phydbl errt,fac,hh,**a,ans;
+  int n_iter;
+
+  a = (phydbl **)mCalloc(11,sizeof(phydbl *));
+  For(i,11) a[i] = (phydbl *)mCalloc(11,sizeof(phydbl));
+
+  n_iter = 10; /* */
+
+  ans  = .0;
+
+  if(stepsize < SMALL) Warn_And_Exit("\n== h must be nonzero in Dfridr.");
+
+  hh=stepsize;
+
+  if(!precise)
+    {
+      *(param[which])   = *(param[which])+hh;
+
+      if(logt == YES) For(i,n_param) *(param[i]) = EXP(*(param[i]));
+      a[0][0]  = (*func)(tree);
+      if(logt == YES) For(i,n_param) *(param[i]) = LOG(*(param[i]));
+
+      /* printf("\n. f0=%f f1=%f hh=%G %f",f0,a[0][0],hh,*(param[which])); */
+
+      a[0][0]  -= f0;
+      a[0][0]  /= hh;
+      *(param[which])   = *(param[which])-hh;
+
+      ans =  a[0][0];
+    }
+  else
+    {
+      *(param[which])   = *(param[which])+hh;
+
+      if(logt == YES) For(i,n_param) *(param[i]) = EXP(*(param[i]));
+      a[0][0]  = (*func)(tree);
+      if(logt == YES) For(i,n_param) *(param[i]) = LOG(*(param[i]));
+
+      /*   *(param[which]   = *(param[which]-2*hh; */
+      /*   a[0][0] -= (*func)(tree); */
+      /*   a[0][0] /= (2.0*hh); */
+      /*   *(param[which]   = *(param[which]+hh; */
+      a[0][0]  -= f0;
+      a[0][0]  /= hh;
+      *(param[which])   = *(param[which])-hh;
+
+      *err=1e30;
+      for(i=1;i<n_iter;i++)
+	{
+	  hh /= 1.4;
+
+	  /*       *(param[which]   = *(param[which]+hh; */
+	  /*       a[0][i]  = (*func)(tree); */
+	  /*       *(param[which]   = *(param[which]-2*hh; */
+	  /*       a[0][i] -= (*func)(tree); */
+	  /*       a[0][i] /= (2.0*hh); */
+	  /*       *(param[which]   = *(param[which]+hh; */
+
+	  *(param[which])   = *(param[which])+hh;
+
+          if(logt == YES) For(j,n_param) *(param[j]) = EXP(*(param[j]));
+	  a[0][i]  = (*func)(tree);
+          if(logt == YES) For(j,n_param) *(param[j]) = LOG(*(param[j]));
+
+	  /*   *(param[which]   = *(param[which]-2*hh; */
+	  /*   a[0][i] -= (*func)(tree); */
+	  /*   a[0][i] /= (2.0*hh); */
+	  /*   *(param[which]   = *(param[which]+hh; */
+	  a[0][i]  -= f0;
+	  a[0][i]  /= hh;
+	  *(param[which])   = *(param[which])-hh;
+
+
+	  fac=1.4*1.4;
+	  for (j=1;j<=i;j++)
+	    {
+	      a[j][i]=(a[j-1][i]*fac-a[j-1][i-1])/(fac-1.0);
+	      fac=1.4*1.4*fac;
+
+	      errt=MAX(FABS(a[j][i]-a[j-1][i]),FABS(a[j][i]-a[j-1][i-1]));
+
+	      if (errt <= *err)
+		{
+		  *err=errt;
+		  ans=a[j][i];
+		}
+	    }
+
+	  if(FABS(a[i][i]-a[i-1][i-1]) >= 2.0*(*err)) break;
+	}
+    }
+  For(i,11) Free(a[i]);
+  Free(a);
+
+  return ans;
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+int Num_Derivative_Several_Param(t_tree *tree, phydbl *param, int n_param, phydbl stepsize, int logt,
+                                 phydbl (*func)(t_tree *tree), phydbl *derivatives)
 {
   int i;
   phydbl err,f0;
 
+  if(logt == YES)   For(i,n_param) param[i] = EXP(param[i]);
   f0 = (*func)(tree);
+  if(logt == YES)   For(i,n_param) param[i] = LOG(param[i]);
 
   For(i,n_param)
     {
       derivatives[i] = Num_Derivatives_One_Param(func,
 						 tree,
 						 f0,
-						 param+i,
+						 param,
+                                                 i,
+                                                 n_param,
 						 stepsize,
+                                                 logt,
 						 &err,
 						 0
 						 );
@@ -3120,24 +3241,31 @@ int Num_Derivative_Several_Param(t_tree *tree, phydbl *param, int n_param, phydb
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-int Num_Derivative_Several_Param_Nonaligned(t_tree *tree, phydbl **param, int n_param, phydbl stepsize,
+int Num_Derivative_Several_Param_Nonaligned(t_tree *tree, phydbl **param, int n_param, phydbl stepsize, int logt, 
                                             phydbl (*func)(t_tree *tree), phydbl *derivatives)
 {
   int i;
   phydbl err,f0;
 
+  if(logt == YES)   For(i,n_param) (*(param[i])) = EXP(*(param[i]));
   f0 = (*func)(tree);
+  if(logt == YES)   For(i,n_param) (*(param[i])) = LOG(*(param[i]));
+
 
   For(i,n_param)
     {
-      derivatives[i] = Num_Derivatives_One_Param(func,
-						 tree,
-						 f0,
-						 param[i],
-						 stepsize,
-						 &err,
-						 0
-						 );
+
+      derivatives[i] = Num_Derivatives_One_Param_Nonaligned(func,
+                                                            tree,
+                                                            f0,
+                                                            param,
+                                                            i,
+                                                            n_param,
+                                                            stepsize,
+                                                            logt,
+                                                            &err,
+                                                            0
+                                                            );
     }
   return 1;
 }
@@ -3147,7 +3275,8 @@ int Num_Derivative_Several_Param_Nonaligned(t_tree *tree, phydbl **param, int n_
 
 
 int Compare_Two_States(char *state1, char *state2, int state_size)
-{
+{                                                 
+
   /* 1 the two states are identical */
   /* 0 the two states are different */
   int i;
@@ -8726,7 +8855,7 @@ void Adjust_Variances(t_tree *tree)
 			       1.E-10,
 			       10000,
 			       NO,
-			       Wrap_Diff_Lk_Norm_At_Given_Edge,tree->a_edges[i],tree,NULL);
+			       Wrap_Diff_Lk_Norm_At_Given_Edge,tree->a_edges[i],tree,NULL,NO);
 	      
 	      /* 		      Generic_Brent_Lk(&(tree->rates->mean_l[0]), */
 	      /* 				       -100., */
@@ -8742,7 +8871,7 @@ void Adjust_Variances(t_tree *tree)
 			       1.E-10,
 			       10000,
 			       NO,
-			       Wrap_Diff_Lk_Norm_At_Given_Edge,tree->a_edges[i],tree,NULL);
+			       Wrap_Diff_Lk_Norm_At_Given_Edge,tree->a_edges[i],tree,NULL,NO);
 	      	  
 	      new_diff = Diff_Lk_Norm_At_Given_Edge(tree->a_edges[i],tree);
 	    }while(FABS(new_diff-curr_diff) > 1.E-3);

@@ -1036,10 +1036,11 @@ typedef struct __Optimiz { /*! parameters to be optimised (mostly used in 'optim
   int                wim_n_best;
   int            wim_inside_opt;
 
-  int       opt_rmat_weight;
-  int       opt_efrq_weight;
+  int           opt_rmat_weight;
+  int           opt_efrq_weight;
 
-  int     skip_tree_traversal;
+  int       skip_tree_traversal;
+  int         serial_free_rates;
 }t_opt;
 
 /*!********************************************************/
@@ -1560,9 +1561,14 @@ void Bootstrap(t_tree *tree);
 void Br_Len_Involving_Invar(t_tree *tree);
 void Br_Len_Not_Involving_Invar(t_tree *tree);
 void Getstring_Stdin(char *s);
-phydbl Num_Derivatives_One_Param(phydbl(*func)(t_tree *tree),t_tree *tree,phydbl f0,phydbl *param,phydbl stepsize,phydbl *err,int precise);
-int Num_Derivative_Several_Param(t_tree *tree,phydbl *param,int n_param,phydbl stepsize,phydbl(*func)(t_tree *tree),phydbl *derivatives);
-int Num_Derivative_Several_Param_Nonaligned(t_tree *tree, phydbl **param, int n_param, phydbl stepsize,
+phydbl Num_Derivatives_One_Param(phydbl (*func)(t_tree *tree), t_tree *tree,
+                                 phydbl f0, phydbl *param, int which, int n_param, phydbl stepsize, int logt,
+                                 phydbl *err, int precise);
+phydbl Num_Derivatives_One_Param_Nonaligned(phydbl (*func)(t_tree *tree), t_tree *tree,
+                                            phydbl f0, phydbl **param, int which, int n_param, phydbl stepsize, int logt,
+                                            phydbl *err, int precise);
+int Num_Derivative_Several_Param(t_tree *tree,phydbl *param,int n_param,phydbl stepsize,int logt,phydbl(*func)(t_tree *tree),phydbl *derivatives);
+int Num_Derivative_Several_Param_Nonaligned(t_tree *tree, phydbl **param, int n_param, phydbl stepsize, int logt,
                                             phydbl (*func)(t_tree *tree), phydbl *derivatives);
 int Compare_Two_States(char *state1,char *state2,int state_size);
 void Copy_One_State(char *from,char *to,int state_size);
