@@ -959,6 +959,7 @@ void BFGS(t_tree *tree,
   phydbl den,fac,fad,fae,fp,stpmax,sum=0.0,sumdg,sumxi,temp,test,fret;
   phydbl *dg,*g,*hdg,**hessin,*pnew,*xi;
   phydbl fp_old;
+  phydbl *init;
 
   hessin = (phydbl **)mCalloc(n,sizeof(phydbl *));
   For(i,n) hessin[i] = (phydbl *)mCalloc(n,sizeof(phydbl));
@@ -967,7 +968,10 @@ void BFGS(t_tree *tree,
   pnew = (phydbl *)mCalloc(n,sizeof(phydbl ));
   hdg  = (phydbl *)mCalloc(n,sizeof(phydbl ));
   xi   = (phydbl *)mCalloc(n,sizeof(phydbl ));
+  init = (phydbl *)mCalloc(n,sizeof(phydbl ));
   
+
+  For(i,n) init[i] = p[i];
 
   /* PhyML_Printf("\n. ENTER BFGS WITH: %f\n",Lk(NULL,tree)); */
 
@@ -989,14 +993,12 @@ void BFGS(t_tree *tree,
       sum += p[i]*p[i];
     }
 
-  /* stpmax=STPMX*MAX(SQRT(sum),(phydbl)n); */
-  stpmax=0.01*MAX(SQRT(sum),(phydbl)n);
+  stpmax=STPMX*MAX(SQRT(sum),(phydbl)n);
   for(its=1;its<=ITMAX;its++) 
     {
       lnsrch(tree,n,p,fp,g,xi,pnew,&fret,stpmax,&check,logt);
 
-      /* PhyML_Printf("BFGS -> %f\n",tree->c_lnL); */
-
+      fp_old = fp;
       fp = fret;
       
       for (i=0;i<n;i++) 
@@ -1014,9 +1016,17 @@ void BFGS(t_tree *tree,
 	}
       if (test < TOLX || (FABS(fp-fp_old) < difff && its > 1)) 
 	{
+	  if(fp > fp_old) 
+            {
+              For(i,n) p[i] = init[i];
+              *failed = YES;
+            }
+
+
           if(logt == YES) For(i,n) p[i] = EXP(p[i]);
 	  (*func)(tree);
           if(logt == YES) For(i,n) p[i] = LOG(p[i]);
+
 	  For(i,n) Free(hessin[i]);
 	  free(hessin);
 	  free(xi);
@@ -1024,12 +1034,8 @@ void BFGS(t_tree *tree,
 	  free(hdg);
 	  free(g);
 	  free(dg);   
+          free(init);
 
-	  if(its == 1) 
-	    {
-/* 	      PhyML_Printf("\n. WARNING : BFGS failed ! \n"); */
-	      *failed = 1;
-	    }
 	  return;
 	}
 
@@ -1140,6 +1146,7 @@ void BFGS_Nonaligned(t_tree *tree,
   phydbl den,fac,fad,fae,fp,stpmax,sum=0.0,sumdg,sumxi,temp,test,fret;
   phydbl *dg,*g,*hdg,**hessin,*pnew,*xi;
   phydbl fp_old;
+  phydbl *init;
 
   hessin = (phydbl **)mCalloc(n,sizeof(phydbl *));
   For(i,n) hessin[i] = (phydbl *)mCalloc(n,sizeof(phydbl));
@@ -1148,7 +1155,9 @@ void BFGS_Nonaligned(t_tree *tree,
   pnew = (phydbl *)mCalloc(n,sizeof(phydbl ));
   hdg  = (phydbl *)mCalloc(n,sizeof(phydbl ));
   xi   = (phydbl *)mCalloc(n,sizeof(phydbl ));
-  
+  init = (phydbl *)mCalloc(n,sizeof(phydbl ));
+
+  For(i,n) init[i] = (*(p[i]));
 
   if(logt == YES) For(i,n) (*(p[i])) = EXP(*(p[i]));
   fp=(*func)(tree);
@@ -1169,8 +1178,8 @@ void BFGS_Nonaligned(t_tree *tree,
     }
 
 
-  /* stpmax=STPMX*MAX(SQRT(sum),(phydbl)n); */
-  stpmax = 0.01*MAX(SQRT(sum),(phydbl)n);
+  stpmax=STPMX*MAX(SQRT(sum),(phydbl)n);
+  /* stpmax = 0.01*MAX(SQRT(sum),(phydbl)n); */
   for(its=1;its<=ITMAX;its++) 
     {
       lnsrch_nonaligned(tree,n,p,fp,g,xi,pnew,&fret,stpmax,&check,logt);
@@ -1196,9 +1205,18 @@ void BFGS_Nonaligned(t_tree *tree,
 
       if (test < TOLX || (FABS(fp_old-fp) < difff && its > 1)) 
 	{
+          
+	  if(fp > fp_old) 
+	    {
+              For(i,n) (*(p[i])) = init[i];
+	      *failed = 1;
+	    }
+
           if(logt == YES) For(i,n) (*(p[i])) = EXP(*(p[i]));
 	  (*func)(tree);
           if(logt == YES) For(i,n) (*(p[i])) = LOG(*(p[i]));
+
+
 	  For(i,n) Free(hessin[i]);
 	  free(hessin);
 	  free(xi);
@@ -1206,12 +1224,8 @@ void BFGS_Nonaligned(t_tree *tree,
 	  free(hdg);
 	  free(g);
 	  free(dg);   
+          free(init);
 
-	  if(its == 1) 
-	    {
-/* 	      PhyML_Printf("\n. WARNING : BFGS failed ! \n"); */
-	      *failed = 1;
-	    }
 	  return;
 	}
 
