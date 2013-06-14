@@ -888,7 +888,7 @@ void Optimiz_All_Free_Param(t_tree *tree, int verbose)
 	  if(tree->mod->whichmodel == GTR ||
 	     tree->mod->whichmodel == CUSTOM)
 	    {
-	      failed = 0;
+	      failed = NO;
 
 	      Switch_Eigen(YES,tree->mod);
 
@@ -1012,7 +1012,7 @@ void BFGS(t_tree *tree,
 	  /* printf("\n. x[i]=%f p[i]=%f",xi[i],p[i]); */
 	  if (temp > test) test=temp;
 	}
-      if (test < TOLX || FABS(fp-fp_old) < difff) 
+      if (test < TOLX || (FABS(fp-fp_old) < difff && its > 1)) 
 	{
           if(logt == YES) For(i,n) p[i] = EXP(p[i]);
 	  (*func)(tree);
@@ -1194,7 +1194,7 @@ void BFGS_Nonaligned(t_tree *tree,
 	  if (temp > test) test=temp;
 	}
 
-      if (test < TOLX || FABS(fp_old-fp) < difff) 
+      if (test < TOLX || (FABS(fp_old-fp) < difff && its > 1)) 
 	{
           if(logt == YES) For(i,n) (*(p[i])) = EXP(*(p[i]));
 	  (*func)(tree);
