@@ -2806,12 +2806,10 @@ void Optimize_Free_Rate(t_tree *mixt_tree, int verbose)
 
 void Optimize_Free_Rate_Rr(t_tree *tree, int fast, int verbose)
 {
-  /* failed = NO; */
-  /* BFGS(tree,tree->mod->ras->gamma_rr_unscaled->v,tree->mod->ras->n_catg,1.e-5,1.e-5, */
-  /* 	   &Return_Abs_Lk, */
-  /* 	   &Num_Derivative_Several_Param, */
-  /* 	   &Lnsrch,&failed); */
+  phydbl lk_before, lk_after;
   
+  lk_before = tree->c_lnL;
+
   if(tree->prev == NULL && tree->next == NULL)
     {
       int i;
@@ -2872,6 +2870,15 @@ void Optimize_Free_Rate_Rr(t_tree *tree, int fast, int verbose)
         }
     }
   
+  lk_after = tree->c_lnL;
+
+  if(lk_after < lk_before - tree->mod->s_opt->min_diff_lk_global)
+    {
+      PhyML_Printf("\n== lk_before: %f lk_after: %f diff: %G",lk_before,lk_after,lk_before-lk_after);
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+      Exit("");
+    }
+
   if(verbose) Print_Lk(tree,"[Rate class values  ]");
   
   /* For(i,tree->mod->ras->n_catg) */
@@ -2901,6 +2908,9 @@ void Optimize_Free_Rate_Weights(t_tree *tree, int fast, int verbose)
 {
   int i;
   phydbl wm;
+  phydbl lk_before, lk_after;
+
+  lk_before = tree->c_lnL;
 
   if(tree->mod->s_opt->first_opt_free_mixt_rates == YES)
     {
@@ -2937,7 +2947,8 @@ void Optimize_Free_Rate_Weights(t_tree *tree, int fast, int verbose)
       tree->mod->ras->free_rate_mr->v = 100.;
       For(i,2*tree->n_otu-1) tree->a_edges[i]->l->v /= (wm * tree->mod->ras->free_rate_mr->v);
     }
-  
+
+
   int failed = NO;
   BFGS(tree,tree->mod->ras->gamma_r_proba_unscaled->v,tree->mod->ras->n_catg,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,NO,
        &Return_Abs_Lk,
@@ -2969,6 +2980,15 @@ void Optimize_Free_Rate_Weights(t_tree *tree, int fast, int verbose)
 
     }
   
+  lk_after = tree->c_lnL;
+
+  if(lk_after < lk_before - tree->mod->s_opt->min_diff_lk_global)
+    {
+      PhyML_Printf("\n== lk_before: %f lk_after: %f diff: %G",lk_before,lk_after,lk_before-lk_after);
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+      Exit("");
+    }
+
   if(verbose) Print_Lk(tree,"[Rate class freqs.  ]");
 
 }

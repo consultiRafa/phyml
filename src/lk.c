@@ -2275,7 +2275,9 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
 
       if(b_fcus->has_zero_br_len == YES) 
         {
-          len = -1.0;
+          len  = -1.0;
+          mean = -1.0;
+          var  = -1.0;
         }
       else
         {
@@ -2284,19 +2286,20 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
           if(tree->mixt_tree)  len *= tree->mixt_tree->mod->ras->gamma_rr->v[tree->mod->ras->parent_class_number];
           if(len < l_min)      len = l_min;
           else if(len > l_max) len = l_max;
+
+          mean = len;
+          var  = b_fcus->l_var->v * POW(tree->mod->ras->gamma_rr->v[i]*tree->mod->br_len_multiplier->v,2);
+          if(tree->mixt_tree)  var *= POW(tree->mixt_tree->mod->ras->gamma_rr->v[tree->mod->ras->parent_class_number],2);
+
+          if(var > tree->mod->l_var_max) var = tree->mod->l_var_max;
+          if(var < tree->mod->l_var_min) var = tree->mod->l_var_min;
         }
       
       
       if(tree->mod->gamma_mgf_bl == NO)
         PMat(len,tree->mod,tree->mod->ns*tree->mod->ns*i,b_fcus->Pij_rr);
       else
-        {
-          mean = len;
-          var  = b_fcus->l_var->v;
-          
-          if(var > tree->mod->l_var_max) var = tree->mod->l_var_max;
-          if(var < tree->mod->l_var_min) var = tree->mod->l_var_min;
-
+        {          
           shape = mean*mean/var;
           scale = var/mean;
           
