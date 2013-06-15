@@ -2747,8 +2747,9 @@ void Optimize_Free_Rate(t_tree *mixt_tree, int verbose)
               Optimize_Free_Rate_Rr(tree,fast,verbose);
               lk_after = tree->c_lnL;
 
-              if(lk_before > lk_after)
+              if(lk_after < lk_before - tree->mod->s_opt->min_diff_lk_global)
                 {
+                  PhyML_Printf("\n== lk_before: %f lk_after: %f diff: %G",lk_before,lk_after,lk_before-lk_after);
                   PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
                   Exit("");
                 }
@@ -2783,8 +2784,9 @@ void Optimize_Free_Rate(t_tree *mixt_tree, int verbose)
               
               lk_after = tree->c_lnL;
 
-              if(lk_before > lk_after)
+              if(lk_after < lk_before - tree->mod->s_opt->min_diff_lk_global)
                 {
+                  PhyML_Printf("\n== lk_before: %f lk_after: %f diff: %G",lk_before,lk_after,lk_before-lk_after);
                   PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
                   Exit("");
                 }

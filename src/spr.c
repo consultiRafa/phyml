@@ -4687,7 +4687,7 @@ void SPR_Shuffle(t_tree *mixt_tree)
     }
   while(1);
 
-  if(mixt_tree->mod->s_opt->print) PhyML_Printf("\n\n. End of refining stage\n. The log-likelihood might now decrease and then increase again...\n");
+  if(mixt_tree->mod->s_opt->print) PhyML_Printf("\n\n. End of refining stage...\n. The log-likelihood might now decrease and then increase again...\n");
 
 
   /*! Go back to the original data structure, with potentially more
