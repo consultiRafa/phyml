@@ -892,35 +892,36 @@ void Optimiz_All_Free_Param(t_tree *tree, int verbose)
 
 	      Switch_Eigen(YES,tree->mod);
 
+
 	      BFGS(tree,tree->mod->m4mod->o_rr,5,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,NO,
 		   &Return_Abs_Lk,
 		   &Num_Derivative_Several_Param,
 		   &Lnsrch,&failed);
-	    }
-	  
-	  if(failed)
-	    {
-	      For(i,5) 
-		{
-		  /* 	      Optimize_Single_Param_Generic(tree,&(tree->mod->m4mod->o_rr[i]), */
-		  /* 					    1.E-20,1.E+10, */
-		  /* 					    tree->mod->s_opt->min_diff_lk_local, */
-		  /* 					    tree->mod->s_opt->brent_it_max, */
-		  /* 					    tree->mod->s_opt->quickdirty); */
-		  
-		  Generic_Brent_Lk(&(tree->mod->m4mod->o_rr[i]),
-				   1.E-20,1.E+10,
-				   tree->mod->s_opt->min_diff_lk_local,
-				   tree->mod->s_opt->brent_it_max,
-				   tree->mod->s_opt->quickdirty,
-				   Wrap_Lk,NULL,tree,NULL,NO);
-		  
-		}
-	    }
-	  if(verbose) Print_Lk(tree,"[GTR parameters     ]");
 
-	  Switch_Eigen(NO,tree->mod);
-	      
+	  
+              if(failed)
+                {
+                  For(i,5) 
+                    {
+                      /* 	      Optimize_Single_Param_Generic(tree,&(tree->mod->m4mod->o_rr[i]), */
+                      /* 					    1.E-20,1.E+10, */
+                      /* 					    tree->mod->s_opt->min_diff_lk_local, */
+                      /* 					    tree->mod->s_opt->brent_it_max, */
+                      /* 					    tree->mod->s_opt->quickdirty); */
+                      
+                      Generic_Brent_Lk(&(tree->mod->m4mod->o_rr[i]),
+                                       1.E-20,1.E+10,
+                                       tree->mod->s_opt->min_diff_lk_local,
+                                       tree->mod->s_opt->brent_it_max,
+                                       tree->mod->s_opt->quickdirty,
+                                       Wrap_Lk,NULL,tree,NULL,NO);
+                      
+                    }
+                }
+              if(verbose) Print_Lk(tree,"[GTR parameters     ]");
+
+              Switch_Eigen(NO,tree->mod);
+            }
 	}
     }
 
@@ -2511,10 +2512,12 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
       
 	      failed = NO;
       
+
 	      BFGS(mixt_tree,tree->mod->r_mat->rr_val->v,tree->mod->r_mat->n_diff_rr,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-3,NO,
 		   &Return_Abs_Lk,
 		   &Num_Derivative_Several_Param,
 		   &Lnsrch,&failed);
+
 
 	      if(failed == YES)
 		{
@@ -2530,6 +2533,7 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
 		      }
 		}
 	      
+
 	      if(verbose) Print_Lk(tree->mixt_tree?
 				   tree->mixt_tree:
 				   tree,"[GTR parameters     ]");
@@ -2729,6 +2733,8 @@ void Optimize_Free_Rate(t_tree *mixt_tree, int verbose)
   phydbl lk_before, lk_after;
   tree = mixt_tree;
 
+  lk_before = lk_after = UNLIKELY;
+
   do
     {
       if((tree->mod->s_opt->opt_free_mixt_rates) && (tree->mod->ras->free_mixt_rates == YES))
@@ -2740,23 +2746,30 @@ void Optimize_Free_Rate(t_tree *mixt_tree, int verbose)
               Optimize_Free_Rate_Weights(tree,fast,verbose);
               Optimize_Free_Rate_Rr(tree,fast,verbose);
               lk_after = tree->c_lnL;
-              /* if(FABS(lk_before - lk_after) < 0.01) tree->mod->s_opt->serial_free_rates = NO; */
+
+              if(lk_before > lk_after)
+                {
+                  PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+                  Exit("");
+                }
             }
           
-          /* else */
-          if(FABS(lk_before - lk_after) > 0.01)
+          if(FABS(lk_before - lk_after) > 0.001)
             {
               phydbl **x;
               x = (phydbl **)mCalloc(2*tree->n_otu-3 + 2*tree->mod->ras->n_catg,sizeof(phydbl *));
               pos = 0;
-              For(i,tree->mod->ras->n_catg) tree->mod->ras->gamma_rr_unscaled->v[i] /= 1000.;
+
+              lk_before = tree->c_lnL;
+
               /* For(i,2*tree->n_otu-3) x[pos++] = &(tree->a_edges[i]->l->v); */
               For(i,tree->mod->ras->n_catg) x[pos++] = tree->mod->ras->gamma_rr_unscaled->v+i;
               For(i,tree->mod->ras->n_catg) x[pos++] = tree->mod->ras->gamma_r_proba_unscaled->v+i;
               
               /* For(i,2*tree->n_otu-3 + 2*tree->mod->ras->n_catg) *(x[i]) = LOG(MAX(1.E-10,*(x[i]))); */
               For(i,2*tree->mod->ras->n_catg) *(x[i]) = LOG(MAX(1.E-10,*(x[i])));
-              /* For(i,2*tree->n_otu-3 + 2*tree->mod->ras->n_catg) printf("\n<> %12f",*(x[i]));               */
+              /* For(i,2*tree->n_otu-3 + 2*tree->mod->ras->n_catg) printf("\n<> %12f",*(x[i])); */
+              /* For(i,2*tree->mod->ras->n_catg) printf("\n<> %12f",*(x[i])); */
 
               failed = NO;
               /* BFGS_Nonaligned(tree,x,2*tree->n_otu-3 + 2*tree->mod->ras->n_catg,1.e-5,tree->mod->s_opt->min_diff_lk_global,1.e-5,YES, */
@@ -2768,7 +2781,13 @@ void Optimize_Free_Rate(t_tree *mixt_tree, int verbose)
               /* For(i,2*tree->n_otu-3 + 2*tree->mod->ras->n_catg) *(x[i]) = EXP(*(x[i])); */
               For(i,2*tree->mod->ras->n_catg) *(x[i]) = EXP(*(x[i]));
               
-              For(i,tree->mod->ras->n_catg) tree->mod->ras->gamma_rr_unscaled->v[i] *= 1000.;
+              lk_after = tree->c_lnL;
+
+              if(lk_before > lk_after)
+                {
+                  PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+                  Exit("");
+                }
 
               Free(x);
             }

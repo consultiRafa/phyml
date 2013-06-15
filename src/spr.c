@@ -4679,6 +4679,7 @@ void SPR_Shuffle(t_tree *mixt_tree)
       Spr(UNLIKELY,mixt_tree);
 
       Optimiz_All_Free_Param(mixt_tree,(mixt_tree->io->quiet)?(0):(mixt_tree->mod->s_opt->print));
+
       Optimize_Br_Len_Serie(mixt_tree);
       
       if(mixt_tree->n_improvements < 20 || mixt_tree->max_spr_depth  < 5 ||
@@ -4686,6 +4687,7 @@ void SPR_Shuffle(t_tree *mixt_tree)
     }
   while(1);
 
+  if(mixt_tree->mod->s_opt->print) PhyML_Printf("\n\n. End of refining stage\n. The log-likelihood might now decrease and then increase again...\n");
 
 
   /*! Go back to the original data structure, with potentially more
