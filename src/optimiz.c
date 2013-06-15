@@ -2768,6 +2768,7 @@ void Optimize_Free_Rate(t_tree *mixt_tree, int verbose)
               For(i,tree->mod->ras->n_catg) x[pos++] = tree->mod->ras->gamma_r_proba_unscaled->v+i;
               
               /* For(i,2*tree->n_otu-3 + 2*tree->mod->ras->n_catg) *(x[i]) = LOG(MAX(1.E-10,*(x[i]))); */
+              /* For(i,2*tree->mod->ras->n_catg) printf("\n:: %12f",*(x[i])); */
               For(i,2*tree->mod->ras->n_catg) *(x[i]) = LOG(MAX(1.E-10,*(x[i])));
               /* For(i,2*tree->n_otu-3 + 2*tree->mod->ras->n_catg) printf("\n<> %12f",*(x[i])); */
               /* For(i,2*tree->mod->ras->n_catg) printf("\n<> %12f",*(x[i])); */
@@ -2783,6 +2784,8 @@ void Optimize_Free_Rate(t_tree *mixt_tree, int verbose)
               For(i,2*tree->mod->ras->n_catg) *(x[i]) = EXP(*(x[i]));
               
               lk_after = tree->c_lnL;
+
+              /* For(i,2*tree->mod->ras->n_catg) printf("\n>< %12f",*(x[i])); */
 
               if(lk_after < lk_before - tree->mod->s_opt->min_diff_lk_global)
                 {
@@ -2949,11 +2952,12 @@ void Optimize_Free_Rate_Weights(t_tree *tree, int fast, int verbose)
     }
 
 
-  int failed = NO;
-  BFGS(tree,tree->mod->ras->gamma_r_proba_unscaled->v,tree->mod->ras->n_catg,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,NO,
-       &Return_Abs_Lk,
-       &Num_Derivative_Several_Param,
-       &Lnsrch,&failed);
+  /* BFGS returns negative values sometimes: need to log-transform?... to do... */
+  /* int failed = NO; */
+  /* BFGS(tree,tree->mod->ras->gamma_r_proba_unscaled->v,tree->mod->ras->n_catg,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,NO, */
+  /*      &Return_Abs_Lk, */
+  /*      &Num_Derivative_Several_Param, */
+  /*      &Lnsrch,&failed); */
   
 
   For(i,tree->mod->ras->n_catg-1)
