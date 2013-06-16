@@ -495,6 +495,10 @@ phydbl Br_Len_Brent(phydbl prop_min, phydbl prop_max, t_edge *b_fcus, t_tree *tr
       loc_b    = loc_b->prev;
     }      
 
+  prop_min = MAX(1.E-04,prop_min);
+  prop_max = MIN(1.E+04,prop_max);
+
+
   if(tree->is_mixt_tree)
     {
       MIXT_Br_Len_Brent(prop_min,prop_max,b_fcus,tree);
