@@ -10116,7 +10116,14 @@ void Set_Br_Len_Var(t_tree *tree)
   if(!tree->rates)
     {
       int i;
-      For(i,2*tree->n_otu-1) tree->a_edges[i]->l_var->v = POW(tree->a_edges[i]->l->v,2)*tree->mod->l_var_sigma; 
+      phydbl len;
+
+      For(i,2*tree->n_otu-1) 
+        {
+          len = MAX(tree->mod->l_min,tree->a_edges[i]->l->v);
+          len = MIN(tree->mod->l_max,len);
+          tree->a_edges[i]->l_var->v = POW(len,2)*tree->mod->l_var_sigma; 
+        }
     }    
 }
 
