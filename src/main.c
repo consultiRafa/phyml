@@ -30,13 +30,16 @@ the GNU public licence. See http://www.opensource.org for details.
 #include "mpi_boot.h"
 #endif
 
+#ifdef BEAGLE
+#include "beagle_utils.h"
+#endif
 
 
 
 #if (defined PHYML || EVOLVE)
 
 int main(int argc, char **argv)
-{  
+{
   calign *cdata;
   option *io;
   t_tree *tree;
@@ -48,7 +51,7 @@ int main(int argc, char **argv)
   int r_seed;
   char *most_likely_tree=NULL;
 
-  
+
 #ifdef MPI
   int rc;
   rc = MPI_Init(&argc,&argv);
@@ -72,9 +75,9 @@ int main(int argc, char **argv)
   if(!io) return(-1);
 
 
-  #ifdef EVOLVE
+#ifdef EVOLVE
   io->colalias = NO;
-  #endif
+#endif
 
   r_seed = (io->r_seed < 0)?(time(NULL)):(io->r_seed);
   srand(r_seed);
@@ -98,216 +101,220 @@ int main(int argc, char **argv)
   For(num_data_set,io->n_data_sets)
     {
       best_lnL = UNLIKELY;
-      Get_Seq(io);      
+      Get_Seq(io);
       Make_Model_Complete(io->mod);
       Set_Model_Name(io->mod);
       Print_Settings(io);
       mod = io->mod;
-        
+
 
       if(io->data)
-	{
-	  if(io->n_data_sets > 1) PhyML_Printf("\n. Data set [#%d]\n",num_data_set+1);
-	  cdata = Compact_Data(io->data,io);
+        {
+          if(io->n_data_sets > 1) PhyML_Printf("\n. Data set [#%d]\n",num_data_set+1);
+          cdata = Compact_Data(io->data,io);
 
-	  Free_Seq(io->data,cdata->n_otu);
-	  
-	  for(num_tree=(io->n_trees == 1)?(0):(num_data_set);num_tree < io->n_trees;num_tree++)
-	    {
-	      if(!io->mod->s_opt->random_input_tree) io->mod->s_opt->n_rand_starts = 1;
+          Free_Seq(io->data,cdata->n_otu);
 
-	      For(num_rand_tree,io->mod->s_opt->n_rand_starts)
-		{
-		  if((io->mod->s_opt->random_input_tree) && (io->mod->s_opt->topo_search != NNI_MOVE))
-		    if(!io->quiet) PhyML_Printf("\n. [Random start %3d/%3d]\n",num_rand_tree+1,io->mod->s_opt->n_rand_starts);
+          for(num_tree=(io->n_trees == 1)?(0):(num_data_set);num_tree < io->n_trees;num_tree++)
+            {
+              if(!io->mod->s_opt->random_input_tree) io->mod->s_opt->n_rand_starts = 1;
 
-		  Init_Model(cdata,mod,io);
+              For(num_rand_tree,io->mod->s_opt->n_rand_starts)
+                {
+                  if((io->mod->s_opt->random_input_tree) && (io->mod->s_opt->topo_search != NNI_MOVE))
+                    if(!io->quiet) PhyML_Printf("\n. [Random start %3d/%3d]\n",num_rand_tree+1,io->mod->s_opt->n_rand_starts);
 
-		  if(io->mod->use_m4mod) M4_Init_Model(mod->m4mod,cdata,mod);
+                  Init_Model(cdata,mod,io);
 
-		  switch(io->in_tree)
-		    {
-		    case 0 : case 1 : { tree = Dist_And_BioNJ(cdata,mod,io); break; }
-		    case 2 :          { tree = Read_User_Tree(cdata,mod,io); break; }
-		    }
+                  if(io->mod->use_m4mod) M4_Init_Model(mod->m4mod,cdata,mod);
 
- 		  if(io->fp_in_constraint_tree != NULL) 
-		    {
-		      char *s;
-		      io->cstr_tree = Read_Tree_File_Phylip(io->fp_in_constraint_tree);
-		      s = Add_Taxa_To_Constraint_Tree(io->fp_in_constraint_tree,cdata);
-		      fflush(NULL);
-		      Free_Tree(tree);
-		      tree = Read_Tree(&s);
-		      io->in_tree = 2;
-		      Free(s);
-		      Check_Constraint_Tree_Taxa_Names(io->cstr_tree,cdata);
-		      Alloc_Bip(io->cstr_tree);  
-		      Get_Bip(io->cstr_tree->a_nodes[0],
-			      io->cstr_tree->a_nodes[0]->v[0],
-			      io->cstr_tree);
-		      if(!tree->has_branch_lengths) Add_BioNJ_Branch_Lengths(tree,cdata,mod);
-		    }
-
-		  if(!tree) continue;
-
-		  time(&t_beg);
-		  time(&(tree->t_beg));
-		  
-		  tree->mod          = mod;
-		  tree->io           = io;
-		  tree->data         = cdata;
-		  tree->n_pattern    = tree->data->crunch_len;
-
-                  Set_Both_Sides(YES,tree);     
-                  
-		  if(mod->s_opt->random_input_tree) 
+                  //Make the initial tree
+                  switch(io->in_tree)
                     {
-                      PhyML_Printf("\n");
-                      Random_Tree(tree);
+                    case 0 : case 1 : { tree = Dist_And_BioNJ(cdata,mod,io); break; }
+                    case 2 :          { tree = Read_User_Tree(cdata,mod,io); break; }
                     }
 
-		  if((!num_data_set) && (!num_tree) && (!num_rand_tree)) Check_Memory_Amount(tree);
+                  if(io->fp_in_constraint_tree != NULL)
+                    {
+                      char *s;
+                      io->cstr_tree = Read_Tree_File_Phylip(io->fp_in_constraint_tree);
+                      s = Add_Taxa_To_Constraint_Tree(io->fp_in_constraint_tree,cdata);
+                      fflush(NULL);
+                      Free_Tree(tree);
+                      tree = Read_Tree(&s);
+                      io->in_tree = 2;
+                      Free(s);
+                      Check_Constraint_Tree_Taxa_Names(io->cstr_tree,cdata);
+                      Alloc_Bip(io->cstr_tree);
+                      Get_Bip(io->cstr_tree->a_nodes[0],
+                          io->cstr_tree->a_nodes[0]->v[0],
+                          io->cstr_tree);
+                      if(!tree->has_branch_lengths) Add_BioNJ_Branch_Lengths(tree,cdata,mod);
+                    }
 
-		  if(io->cstr_tree && !Check_Topo_Constraints(tree,io->cstr_tree))
-		    {
-		      PhyML_Printf("\n\n== The initial tree does not satisfy the topological constraint.");
-		      PhyML_Printf("\n== Please use the user input tree option with an adequate tree topology.");
-		      Exit("\n");
-		    }
+                  if(!tree) continue;
 
-		  Prepare_Tree_For_Lk(tree);
-		  Br_Len_Not_Involving_Invar(tree);
-		  Unscale_Br_Len_Multiplier_Tree(tree);
+                  time(&t_beg);
+                  time(&(tree->t_beg));
 
-		  
+                  tree->mod          = mod;
+                  tree->io           = io;
+                  tree->data         = cdata;
+                  tree->n_pattern    = tree->data->crunch_len;
+
+                          Set_Both_Sides(YES,tree);
+
+                  if(mod->s_opt->random_input_tree)
+                            {
+                              PhyML_Printf("\n");
+                              Random_Tree(tree);
+                            }
+
+                  if((!num_data_set) && (!num_tree) && (!num_rand_tree)) Check_Memory_Amount(tree);
+
+                  if(io->cstr_tree && !Check_Topo_Constraints(tree,io->cstr_tree))
+                    {
+                      PhyML_Printf("\n\n== The initial tree does not satisfy the topological constraint.");
+                      PhyML_Printf("\n== Please use the user input tree option with an adequate tree topology.");
+                      Exit("\n");
+                    }
+
+                  Prepare_Tree_For_Lk(tree);
+                  Br_Len_Not_Involving_Invar(tree);
+                  Unscale_Br_Len_Multiplier_Tree(tree);
+
 #ifdef PHYML
-		  /* ///////////////////////////////////////// */
-		  /* Make_Mixtmod(3,tree); */
-		  
-		  if(io->in_tree == 1) Spr_Pars(tree);
-		 
-		  if(io->do_alias_subpatt)
-		    {
-		      MIXT_Set_Alias_Subpatt(YES,tree);
-		      Lk(NULL,tree);
-		      MIXT_Set_Alias_Subpatt(NO,tree);
-		    }
+                  if(io->in_tree == 1) Spr_Pars(tree);
 
+                  if(io->do_alias_subpatt)
+                    {
+                      MIXT_Set_Alias_Subpatt(YES,tree);
+                      Lk(NULL,tree);
+                      MIXT_Set_Alias_Subpatt(NO,tree);
+                    }
 
-		  if(tree->mod->s_opt->opt_topo)
-		    {
-		      if(tree->mod->s_opt->topo_search      == NNI_MOVE) Simu_Loop(tree);
-		      else if(tree->mod->s_opt->topo_search == SPR_MOVE) Speed_Spr_Loop(tree);
-		      else                                               Best_Of_NNI_And_SPR(tree);
+#ifdef BEAGLE
+                  tree->b_inst = -1;//initalize
+                  tree->b_inst = create_beagle_instance(tree, io->quiet);
+#endif
 
-		      if(tree->n_root) Add_Root(tree->a_edges[0],tree);
-		    }
-		  else
-		    {
-		      if(tree->mod->s_opt->opt_subst_param || 
-			 tree->mod->s_opt->opt_bl)                       Round_Optimize(tree,tree->data,ROUND_MAX);
-		      else                                               Lk(NULL,tree);
-		    }
+                  if(tree->mod->s_opt->opt_topo)
+                    {
+                      if(tree->mod->s_opt->topo_search      == NNI_MOVE) Simu_Loop(tree);
+                      else if(tree->mod->s_opt->topo_search == SPR_MOVE) Speed_Spr_Loop(tree);
+                      else                                               Best_Of_NNI_And_SPR(tree);
+
+                      if(tree->n_root) Add_Root(tree->a_edges[0],tree);
+                    }
+                  else
+                    {
+                      if(tree->mod->s_opt->opt_subst_param || tree->mod->s_opt->opt_bl)
+                          Round_Optimize(tree,tree->data,ROUND_MAX);
+                      else Lk(NULL,tree);
+                    }
 
                   Set_Both_Sides(YES,tree);
-		  Lk(NULL,tree);
-		  Pars(NULL,tree);
-		  Get_Tree_Size(tree);
-		  PhyML_Printf("\n\n. Log likelihood of the current tree: %f.",tree->c_lnL);
+                  Lk(NULL,tree);
+                  Pars(NULL,tree);
+                  Get_Tree_Size(tree);
+                  PhyML_Printf("\n\n. Log likelihood of the current tree: %f.",tree->c_lnL);
 
-                  //
-                  /* ML_Ancestral_Sequences(tree); */
-                  //
+                          //
+                          /* ML_Ancestral_Sequences(tree); */
+                          //
 
-		  Br_Len_Involving_Invar(tree);
-		  Rescale_Br_Len_Multiplier_Tree(tree);
-                  
+                  Br_Len_Involving_Invar(tree);
+                  Rescale_Br_Len_Multiplier_Tree(tree);
+
 #elif defined EVOLVE
-                  Evolve(tree->data,tree->mod,tree);
-                  Exit("\n");
+                          Evolve(tree->data,tree->mod,tree);
+                          Exit("\n");
 #endif
 
 
-		  if(!tree->n_root) Get_Best_Root_Position(tree);
+                  if(!tree->n_root) Get_Best_Root_Position(tree);
 
-		  /* Print the tree estimated using the current random (or BioNJ) starting tree */
-		  if(io->mod->s_opt->n_rand_starts > 1)
-		    {
-		      Print_Tree(io->fp_out_trees,tree);
-		      fflush(NULL);
-		    }
+                  /* Print the tree estimated using the current random (or BioNJ) starting tree */
+                  if(io->mod->s_opt->n_rand_starts > 1)
+                    {
+                      Print_Tree(io->fp_out_trees,tree);
+                      fflush(NULL);
+                    }
 
-		  /* Record the most likely tree in a string of characters */
-		  if(tree->c_lnL > best_lnL)
-		    {
-		      best_lnL = tree->c_lnL;
-		      if(most_likely_tree) Free(most_likely_tree);
-		      most_likely_tree = Write_Tree(tree,NO);
-		    }
+                  /* Record the most likely tree in a string of characters */
+                  if(tree->c_lnL > best_lnL)
+                    {
+                      best_lnL = tree->c_lnL;
+                      if(most_likely_tree) Free(most_likely_tree);
+                      most_likely_tree = Write_Tree(tree,NO);
+                    }
 
-		  time(&t_end);
+                  time(&t_end);
 
-		  Print_Fp_Out(io->fp_out_stats,t_beg,t_end,tree,
-			       io,num_data_set+1,
-			       (tree->mod->s_opt->n_rand_starts > 1)?
-			       (num_rand_tree):(num_tree),
-                               (num_rand_tree == io->mod->s_opt->n_rand_starts-1)?(YES):(NO));
-		  
-		  if(tree->io->print_site_lnl) Print_Site_Lk(tree,io->fp_out_lk);
 
-		  /* Start from BioNJ tree */
-		  if((num_rand_tree == io->mod->s_opt->n_rand_starts-1) && (tree->mod->s_opt->random_input_tree))
-		    {
-		      /* Do one more iteration in the loop, but don't randomize the tree */
-		      num_rand_tree--;
-		      tree->mod->s_opt->random_input_tree = NO;
-		    }
-		  
- 		  if(io->fp_in_constraint_tree != NULL) Free_Tree(io->cstr_tree);
-		  Free_Spr_List(tree);
-		  Free_Triplet(tree->triplet_struct);
-		  Free_Tree_Pars(tree);
-		  Free_Tree_Lk(tree);
-		  Free_Tree(tree);
-		}
-	      
-	      /* Launch bootstrap analysis */
-	      if(mod->bootstrap) 
-		{
-		  if(!io->quiet) PhyML_Printf("\n\n. Launch bootstrap analysis on the most likely tree...");
+                  Print_Fp_Out(io->fp_out_stats,t_beg,t_end,tree,
+                           io,num_data_set+1,
+                           (tree->mod->s_opt->n_rand_starts > 1)?
+                           (num_rand_tree):(num_tree),
+                                       (num_rand_tree == io->mod->s_opt->n_rand_starts-1)?(YES):(NO));
 
-                  #ifdef MPI
-		  MPI_Bcast (most_likely_tree, strlen(most_likely_tree)+1, MPI_CHAR, 0, MPI_COMM_WORLD);
-		  if(!io->quiet)  PhyML_Printf("\n\n. The bootstrap analysis will use %d CPUs.",Global_numTask);
-		  #endif
+                  if(tree->io->print_site_lnl) Print_Site_Lk(tree,io->fp_out_lk);
 
-		  most_likely_tree = Bootstrap_From_String(most_likely_tree,cdata,mod,io);
-		}
-	      else if(io->ratio_test) 
-		{
-		  /* Launch aLRT */
-		  most_likely_tree = aLRT_From_String(most_likely_tree,cdata,mod,io);
-		}
+                  /* Start from BioNJ tree */
+                  if((num_rand_tree == io->mod->s_opt->n_rand_starts-1) && (tree->mod->s_opt->random_input_tree))
+                    {
+                      /* Do one more iteration in the loop, but don't randomize the tree */
+                      num_rand_tree--;
+                      tree->mod->s_opt->random_input_tree = NO;
+                    }
+#ifdef BEAGLE
+                  finalize_beagle_instance(tree);
+#endif
+                  if(io->fp_in_constraint_tree != NULL) Free_Tree(io->cstr_tree);
+                  Free_Spr_List(tree);
+                  Free_Triplet(tree->triplet_struct);
+                  Free_Tree_Pars(tree);
+                  Free_Tree_Lk(tree);
+                  Free_Tree(tree);
+                } //Tree done
 
-	      /* Print the most likely tree in the output file */
-	      if(!io->quiet) PhyML_Printf("\n\n. Printing the most likely tree in file '%s'.", Basename(io->out_tree_file));
-	      if(io->n_data_sets == 1) rewind(io->fp_out_tree);
-	      PhyML_Fprintf(io->fp_out_tree,"%s\n",most_likely_tree);
-	      
-	      if(io->n_trees > 1 && io->n_data_sets > 1) break;
-	    }
-	  Free_Cseq(cdata);
-	}
-      else
-	{
-	  PhyML_Printf("\n== No data was found.\n");
-	  PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
-	  Warn_And_Exit("");
-	}
-      Free_Model_Complete(mod);
+              /* Launch bootstrap analysis */
+              if(mod->bootstrap)
+                {
+                  if(!io->quiet) PhyML_Printf("\n\n. Launch bootstrap analysis on the most likely tree...");
+
+#ifdef MPI
+                  MPI_Bcast (most_likely_tree, strlen(most_likely_tree)+1, MPI_CHAR, 0, MPI_COMM_WORLD);
+                  if(!io->quiet)  PhyML_Printf("\n\n. The bootstrap analysis will use %d CPUs.",Global_numTask);
+#endif
+
+                  most_likely_tree = Bootstrap_From_String(most_likely_tree,cdata,mod,io);
+                }
+              else if(io->ratio_test)
+                    {
+                      /* Launch aLRT */
+                      most_likely_tree = aLRT_From_String(most_likely_tree,cdata,mod,io);
+                    }
+
+              /* Print the most likely tree in the output file */
+              if(!io->quiet) PhyML_Printf("\n\n. Printing the most likely tree in file '%s'.", Basename(io->out_tree_file));
+              if(io->n_data_sets == 1) rewind(io->fp_out_tree);
+              PhyML_Fprintf(io->fp_out_tree,"%s\n",most_likely_tree);
+
+              if(io->n_trees > 1 && io->n_data_sets > 1) break;
+            }
+            Free_Cseq(cdata);
+        }
+    else
+        {
+          PhyML_Printf("\n== No data was found.\n");
+          PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+          Warn_And_Exit("");
+        }
+    Free_Model_Complete(mod);
     }
-  
+
   if(most_likely_tree) Free(most_likely_tree);
 
   if(mod->s_opt->n_rand_starts > 1) PhyML_Printf("\n. Best log likelihood: %f\n",best_lnL);
@@ -315,7 +322,7 @@ int main(int argc, char **argv)
   Free_Optimiz(mod->s_opt);
   M4_Free_M4_Model(mod->m4mod);
   Free_Model_Basic(mod);
-  
+
   if(io->fp_in_constraint_tree) fclose(io->fp_in_constraint_tree);
   if(io->fp_in_align)           fclose(io->fp_in_align);
   if(io->fp_in_tree)            fclose(io->fp_in_tree);
@@ -415,11 +422,11 @@ int main(int argc, char **argv)
 
 /*   Get_Bip(tree1->noeud[0],tree1->noeud[0]->v[0],tree1); */
 /*   Get_Bip(tree2->noeud[0],tree2->noeud[0]->v[0],tree2); */
-  
+
 /* /\*   PhyML_Printf("\n. rf=%f\n",Compare_Bip_On_Existing_Edges(thresh,tree1,tree2)); *\/ */
 /*   For(i,2*tree1->n_otu-3) tree1->a_edges[i]->bip_score = 0; */
 /*   For(i,2*tree2->n_otu-3) tree2->a_edges[i]->bip_score = 0; */
-  
+
 /*   rf = 0; */
 /*   n_edges = 0; */
 
@@ -429,7 +436,7 @@ int main(int argc, char **argv)
 /*       /\* Consider the branch only if the corresponding bipartition has size > 1 *\/ */
 /*       b = tree1->a_edges[i]; */
 /*       bip_size = MIN(b->left->bip_size[b->l_r],b->rght->bip_size[b->r_l]); */
-	  
+
 /*       if(bip_size > 1) */
 /* 	{ */
 /* 	  /\* with non-zero length *\/ */

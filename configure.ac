@@ -38,7 +38,12 @@ fi
 
 AM_CONDITIONAL([HAVE_PDFLATEX], test -n "$PDFLATEX")
 
-
+#Check for BEAGLE (TODO: Failure should not cause an exit, but instead remove the --enable-beagle switch)
+PKG_CHECK_MODULES(BEAGLE, hmsbeagle-1)
+#if test "x$BEAGLE" = x/bin/false; then
+# enable_beagle=no
+#AC_MSG_WARN([Beagle not found!])
+#fi
 
 # Checks for library functions.
 AC_FUNC_MALLOC
@@ -61,7 +66,7 @@ dnl CFLAGS="-O3 -Wfloat-equal -fomit-frame-pointer -funroll-loops"
 dnl CFLAGS="-O3 -Wfloat-equal"
 dnl CFLAGS="-g"
 
-LDFLAGS="${ARGC_flag}"
+LDFLAGS="${ARGC_flag} -march=native"
 
 dnl LT_INIT
 dnl AC_PROG_LIBTOOL
@@ -88,11 +93,18 @@ AS_IF([test "x$enable_mpi" = "xyes"],[CC="mpicc"])
 AS_IF([test "x$enable_mpi" = "xyes"],AC_DEFINE([MPI],[1],[MPI tag on]))
 AM_CONDITIONAL([WANT_MPI], [test "x$enable_mpi" = "xyes"]) 
 
-
 AC_ARG_ENABLE([win],
               [AS_HELP_STRING([--enable-win],
                               [Compile with mingw instead of gcc.])])
 AS_IF([test "x$enable_win" = "xyes"],[CC="i586-mingw32msvc-cc"])
+
+AC_ARG_ENABLE([beagle], [AS_HELP_STRING([--enable-beagle], [Compute likelihoods using Beagle library.])], [beagle=yes],[beagle=no])
+AS_IF([test "x$enable_beagle" = "xyes"],
+      [CFLAGS="-ansi -pedantic -Wall -std=c99 -O0 -g ${BEAGLE_CFLAGS} ${BEAGLE_LIBS}"],
+      [CFLAGS="-Wall -O2 -msse -fomit-frame-pointer -funroll-loops ${ARCH_flag}"])
+AS_IF([test "x$enable_beagle" = "xyes"], AC_DEFINE([BEAGLE],[1],[BEAGLE tag on]))
+AM_CONDITIONAL([WANT_BEAGLE], [test "$enable_beagle" = yes]) 
+
 
 AC_ARG_ENABLE([phytime],[AS_HELP_STRING([--enable-phytime],[Compile PhyTime])],[phytime=yes],[phytime=no])
 AM_CONDITIONAL([WANT_PHYTIME], [test "$phytime" = yes]) 

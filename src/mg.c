@@ -1526,10 +1526,7 @@ void PART_Speed_Spr(supert_tree *st)
       /* Optimise branch lengths */
       For(gt,st->n_part)
 	{
-	  Optimize_Br_Len_Serie(st->treelist->tree[gt]->a_nodes[0],
-				st->treelist->tree[gt]->a_nodes[0]->v[0],
-				st->treelist->tree[gt]->a_nodes[0]->b[0],
-				st->treelist->tree[gt]);
+	  Optimize_Br_Len_Serie(st->treelist->tree[gt]);
 	}
 
 
@@ -2684,8 +2681,8 @@ void PART_Optimize_Br_Len_Serie(t_node *st_a, t_node *st_d, t_edge *st_b, supert
 
   if(st->tree->c_lnL < lk_init - st->tree->mod->s_opt->min_diff_lk_local)
     { 
-      PhyML_Printf("\n. %f -- %f",lk_init,st->tree->c_lnL);
-      PhyML_Printf("\n. Err in file %s at line %d\n\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== %f -- %f",lk_init,st->tree->c_lnL);
+      PhyML_Printf("\n== Err. in file %s at line %d\n\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
     
