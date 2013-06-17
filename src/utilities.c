@@ -1405,7 +1405,7 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
 
   if(tree->prev)
     {
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Exit("\n");
     }
 
@@ -1427,12 +1427,12 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
 
   if(v1->num < v2->num)
     {
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Exit("\n");
     }
   if(v3->num < v4->num)
     {
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Exit("\n");
     }
 
@@ -5356,6 +5356,7 @@ phydbl Triple_Dist(t_node *a, t_tree *tree, int approx)
   if(a->tax) return UNLIKELY;
   else
     {
+
       Update_PMat_At_Given_Edge(a->b[1],tree);
       Update_PMat_At_Given_Edge(a->b[2],tree);
 

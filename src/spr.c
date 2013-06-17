@@ -3157,7 +3157,7 @@ void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
 
   if((link != b->left) && (link != b->rght))
     {
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Exit("\n");
     }
   else
@@ -3222,7 +3222,7 @@ void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
 		  if(tree->best_pars != best_pars_move->pars)
 		    {
 		      PhyML_Printf("\n== best_pars = %d move_pars = %d",tree->best_pars,best_pars_move->pars);
-		      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+		      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
 		      Exit("\n");			  
 		    }
 		  tree->n_improvements++;
@@ -3741,7 +3741,6 @@ void Speed_Spr(t_tree *tree, int max_cycles)
 	{
           /* Optimise branch lengths */
           Optimize_Br_Len_Serie(tree);
-
 	  /* Update partial likelihoods */
 	  Set_Both_Sides(YES,tree);
 	  Lk(NULL,tree);
@@ -3814,7 +3813,7 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
 
   if(tree->mixt_tree != NULL)
     {
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Exit("\n");
     }
 
@@ -3827,7 +3826,7 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
   if(!list_size && !tree->io->fp_in_constraint_tree) 
     {
       PhyML_Printf("\n== List size is 0 !");
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Exit("\n");
     }
 
@@ -3839,7 +3838,7 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
       if(!move)
 	{
 	  PhyML_Printf("\n== move is NULL\n");
-	  PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+	  PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
 	  Exit("\n");
 	}
 
@@ -3987,21 +3986,18 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
 	  move = orig_move;
 	  tree = orig_tree;
 
-	  /* Update_PMat_At_Given_Edge(move->b_target,tree); */
-	  /* Update_PMat_At_Given_Edge(b_residual,tree); */
-	  /* MIXT_Set_Alias_Subpatt(YES,tree); */
-	  /* Update_P_Lk(tree,move->b_opp_to_link,move->n_link); */
-	  /* MIXT_Set_Alias_Subpatt(NO,tree); */
-	  /* move->lnL = Lk(move->b_opp_to_link,tree); */
-
+	  Update_PMat_At_Given_Edge(move->b_target,tree);
+	  Update_PMat_At_Given_Edge(b_residual,tree);
 	  MIXT_Set_Alias_Subpatt(YES,tree);
+	  Update_P_Lk(tree,move->b_opp_to_link,move->n_link);
+	  MIXT_Set_Alias_Subpatt(NO,tree);
 	  move->lnL = Triple_Dist(move->n_link,tree,YES);
 	  MIXT_Set_Alias_Subpatt(NO,tree);
 
 	  if((move->lnL < best_lnL) && (move->lnL > best_lnL - tree->mod->s_opt->max_delta_lnL_spr))
 	    {
 	      /* Estimate the three t_edge lengths at the regraft site */
-	      move->lnL = Triple_Dist(move->n_link,tree,0);
+	      move->lnL = Triple_Dist(move->n_link,tree,NO);
 	    }
 	  
 	  /* Record updated branch lengths for this move */
@@ -4012,7 +4008,6 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
 	      move->l0 = move->n_link->b[dir_v0]->l->v;
               move->v0 = move->n_link->b[dir_v0]->l_var->v;
 	      
-
 	      if(move->n_link->v[dir_v1]->num > move->n_link->v[dir_v2]->num)
 		{
 		  move->l1 = move->n_link->b[dir_v2]->l->v;
@@ -4654,6 +4649,7 @@ void SPR_Shuffle(t_tree *mixt_tree)
   Set_Both_Sides(YES,mixt_tree);
   Lk(NULL,mixt_tree);
 
+
   /* mixt_tree->mod->s_opt->print             = YES; */
   mixt_tree->best_pars                     = 1E+8;
   mixt_tree->mod->s_opt->spr_pars          = NO;
@@ -4687,7 +4683,8 @@ void SPR_Shuffle(t_tree *mixt_tree)
     }
   while(1);
 
-  if(mixt_tree->mod->s_opt->print) PhyML_Printf("\n\n. End of refining stage...\n. The log-likelihood might now decrease and then increase again...\n");
+  if(mixt_tree->mod->s_opt->print && (!mixt_tree->io->quiet)) 
+    PhyML_Printf("\n\n. End of refining stage...\n. The log-likelihood might now decrease and then increase again...\n");
 
 
   /*! Go back to the original data structure, with potentially more

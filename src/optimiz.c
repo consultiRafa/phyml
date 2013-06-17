@@ -484,20 +484,20 @@ phydbl Br_Len_Brent(phydbl prop_min, phydbl prop_max, t_edge *b_fcus, t_tree *tr
 {
   t_tree *loc_tree;
   t_edge *loc_b;
+  phydbl lk_begin, lk_end;
 
+  lk_begin = UNLIKELY;
+  lk_end   = UNLIKELY;
   loc_tree = tree;
   loc_b    = b_fcus; 
   
+
   /*! Rewind back to the first mixt_tree */
   while(loc_tree->prev)
     { 
       loc_tree = loc_tree->prev; 
       loc_b    = loc_b->prev;
     }      
-
-  prop_min = MAX(1.E-04,prop_min);
-  prop_max = MIN(1.E+04,prop_max);
-
 
   if(tree->is_mixt_tree)
     {
@@ -507,9 +507,11 @@ phydbl Br_Len_Brent(phydbl prop_min, phydbl prop_max, t_edge *b_fcus, t_tree *tr
 
   if(b_fcus->l->onoff == OFF) return loc_tree->c_lnL;
 
+  lk_begin = Lk(b_fcus,tree); /*! We can't assume that the log-lk value is up-to-date */
+
   Generic_Brent_Lk(&(b_fcus->l->v),
-                   b_fcus->l->v*prop_min,
-                   b_fcus->l->v*prop_max,
+                   MAX(tree->mod->l_min,MIN(tree->mod->l_max,b_fcus->l->v))*MAX(1.E-04,prop_min),
+                   MAX(tree->mod->l_min,MIN(tree->mod->l_max,b_fcus->l->v))*MIN(1.E+04,prop_max),
                    tree->mod->s_opt->min_diff_lk_local,
                    tree->mod->s_opt->brent_it_max,
                    tree->mod->s_opt->quickdirty,
@@ -530,8 +532,17 @@ phydbl Br_Len_Brent(phydbl prop_min, phydbl prop_max, t_edge *b_fcus, t_tree *tr
   /*       } */
   /*   } */
 
-  
+  lk_end = tree->c_lnL;
 
+  if(lk_end < lk_begin - tree->mod->s_opt->min_diff_lk_local)
+    {
+      PhyML_Printf("\n== prop_min: %f prop_max: %f l: %f var:%f",prop_min,prop_max,b_fcus->l->v,b_fcus->l_var->v);
+      PhyML_Printf("\n== lk_beg = %f lk_end = %f",lk_begin, lk_end);
+      PhyML_Printf("\n== Err. in file %s at line %d",__FILE__,__LINE__);
+      Exit("\n");
+    }
+  
+  
   return loc_tree->c_lnL;
 }
 
