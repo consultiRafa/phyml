@@ -3986,11 +3986,7 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
 	  move = orig_move;
 	  tree = orig_tree;
 
-	  Update_PMat_At_Given_Edge(move->b_target,tree);
-	  Update_PMat_At_Given_Edge(b_residual,tree);
 	  MIXT_Set_Alias_Subpatt(YES,tree);
-	  Update_P_Lk(tree,move->b_opp_to_link,move->n_link);
-	  MIXT_Set_Alias_Subpatt(NO,tree);
 	  move->lnL = Triple_Dist(move->n_link,tree,YES);
 	  MIXT_Set_Alias_Subpatt(NO,tree);
 
