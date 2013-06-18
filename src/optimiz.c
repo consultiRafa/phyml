@@ -1001,7 +1001,7 @@ void BFGS(t_tree *tree,
   /* PhyML_Printf("\n. ENTER BFGS WITH: %f\n",Lk(NULL,tree)); */
 
   /*! p is log transformed */
-  if(logt == YES) For(i,n) p[i] = EXP(p[i]);
+  if(logt == YES) For(i,n) p[i] = EXP(MIN(1.E+2,p[i]));
   fp=(*func)(tree);
   if(logt == YES) For(i,n) p[i] = LOG(p[i]);
 
@@ -1046,7 +1046,7 @@ void BFGS(t_tree *tree,
               *failed = YES;
             }
 
-          if(logt == YES) For(i,n) p[i] = EXP(p[i]);
+          if(logt == YES) For(i,n) p[i] = EXP(MIN(1.E+2,p[i]));
           For(i,n) sign[i] = p[i] > .0 ? 1. : -1.;
           if(is_positive == YES) For(i,n) p[i] = FABS(p[i]);
 	  (*func)(tree);
@@ -1081,7 +1081,7 @@ void BFGS(t_tree *tree,
 	}
       if (test < gtol) 
 	{
-          if(logt == YES) For(i,n) p[i] = EXP(p[i]);
+          if(logt == YES) For(i,n) p[i] = EXP(MIN(1.E+2,p[i]));
           For(i,n) sign[i] = p[i] > .0 ? 1. : -1.;
           if(is_positive == YES) For(i,n) p[i] = FABS(p[i]);
 	  (*func)(tree);
@@ -1198,7 +1198,7 @@ void BFGS_Nonaligned(t_tree *tree,
 
   For(i,n) init[i] = (*(p[i]));
 
-  if(logt == YES) For(i,n) (*(p[i])) = EXP(*(p[i]));
+  if(logt == YES) For(i,n) (*(p[i])) = EXP(MIN(1.E+2,*(p[i])));
   fp=(*func)(tree);
   if(logt == YES) For(i,n) (*(p[i])) = LOG(*(p[i]));
 
@@ -1251,7 +1251,7 @@ void BFGS_Nonaligned(t_tree *tree,
 	      *failed = 1;
 	    }
 
-          if(logt == YES) For(i,n) (*(p[i])) = EXP(*(p[i]));
+          if(logt == YES) For(i,n) (*(p[i])) = EXP(MIN(1.E+2,*(p[i])));
           For(i,n) sign[i] = *(p[i]) > .0 ? 1. : -1.;
           if(is_positive == YES) For(i,n) *(p[i]) = FABS(*(p[i]));
 	  (*func)(tree);
@@ -1286,7 +1286,7 @@ void BFGS_Nonaligned(t_tree *tree,
 
       if (test < gtol) 
 	{
-          if(logt == YES) For(i,n) (*(p[i])) = EXP(*(p[i]));
+          if(logt == YES) For(i,n) (*(p[i])) = EXP(MIN(1.E+2,*(p[i])));
           For(i,n) sign[i] = *(p[i]) > .0 ? 1. : -1.;
           if(is_positive == YES) For(i,n) *(p[i]) = FABS(*(p[i]));
 	  (*func)(tree);
@@ -1406,7 +1406,7 @@ int Lnsrch(t_tree *tree, int n, phydbl *xold, phydbl fold,
 
       if(i==n) 
 	{
-          if(logt == YES) For(i,n) xold[i] = EXP(xold[i]);
+          if(logt == YES) For(i,n) xold[i] = EXP(MIN(1.E+2,xold[i]));
           For(i,n) sign[i] = xold[i] < .0 ? -1. : 1.;
           if(is_positive == YES) For(i,n) xold[i] = FABS(xold[i]);
           *f=Return_Abs_Lk(tree);
@@ -1514,7 +1514,7 @@ int Lnsrch_Nonaligned(t_tree *tree, int n, phydbl **xold, phydbl fold,
 
       if(i==n) 
 	{
-          if(logt == YES) For(i,n) *(xold[i]) = EXP(*(xold[i]));
+          if(logt == YES) For(i,n) *(xold[i]) = EXP(MIN(1.E+2,*(xold[i])));
           For(i,n) sign[i]    = *(xold[i]) < .0 ? -1. : 1.;
           if(is_positive == YES) For(i,n) *(xold[i]) = FABS(*(xold[i]));
 	  *f=Return_Abs_Lk(tree);
@@ -1535,7 +1535,7 @@ int Lnsrch_Nonaligned(t_tree *tree, int n, phydbl **xold, phydbl fold,
       else if (*f <= fold+ALF*alam*slope) 
 	{
 	  For(i,n) *(xold[i]) = local_xold[i];
-          if(is_positive == YES) For(i,n) *(xold[i]) = FABS(*(xold[i]));
+          if(is_positive) For(i,n) *(xold[i]) = FABS(*(xold[i]));
 	  Free(local_xold); 
           Free(sign);
 	  return 0;
@@ -2320,7 +2320,7 @@ phydbl Generic_Brent_Lk(phydbl *param, phydbl ax, phydbl cx, phydbl tol,
   x=w=v=bx;
   old_lnL = UNLIKELY;
   (*param) = bx;
-  if(logt == YES) (*param) = EXP(*param);
+  if(logt == YES) (*param) = EXP(MIN(1.E+2,*param));
   fw=fv=fx=fu=-(*obj_func)(branch,tree,stree);
   if(logt == YES) (*param) = LOG(*param);
   init_lnL = -fw;
@@ -2335,7 +2335,7 @@ phydbl Generic_Brent_Lk(phydbl *param, phydbl ax, phydbl cx, phydbl tol,
       if((fu > init_lnL + tol) && (quickdirty))
 	{
 	  (*param) = x;
-          if(logt == YES) (*param) = EXP(*param);
+          if(logt == YES) (*param) = EXP(MIN(1.E+2,*param));
 	  fu = (*obj_func)(branch,tree,stree);
           if(logt == YES) (*param) = LOG(*param);
 /* 	  Exit("\n"); */
@@ -2346,7 +2346,7 @@ phydbl Generic_Brent_Lk(phydbl *param, phydbl ax, phydbl cx, phydbl tol,
       if((FABS(fu-old_lnL) < tol) || (iter > n_iter_max - 1))
 	{
 	  (*param) = x;
-          if(logt == YES) (*param) = EXP(*param);
+          if(logt == YES) (*param) = EXP(MIN(1.E+2,*param));
 	  fu = (*obj_func)(branch,tree,stree);
           if(logt == YES) (*param) = LOG(*param);
 /* 	  Exit("\n"); */
@@ -2385,7 +2385,7 @@ phydbl Generic_Brent_Lk(phydbl *param, phydbl ax, phydbl cx, phydbl tol,
       u=(FABS(d) >= tol1 ? x+d : x+SIGN(tol1,d));
       (*param) = u;
       old_lnL = fu;
-      if(logt == YES) (*param) = EXP(*param);
+      if(logt == YES) (*param) = EXP(MIN(1.E+2,*param));
       fu = -(*obj_func)(branch,tree,stree);
       if(logt == YES) (*param) = LOG(*param);
       
@@ -2843,10 +2843,10 @@ void Optimize_Free_Rate(t_tree *mixt_tree, int verbose)
               For(i,tree->mod->ras->n_catg) x[pos++] = tree->mod->ras->gamma_r_proba_unscaled->v+i;
               
               /* For(i,2*tree->n_otu-3 + 2*tree->mod->ras->n_catg) *(x[i]) = LOG(MAX(1.E-10,*(x[i]))); */
-              /* For(i,2*tree->mod->ras->n_catg) printf("\n:: %12f",*(x[i])); fflush(NULL); */
+              For(i,2*tree->mod->ras->n_catg) printf("\n:: %12f",*(x[i])); fflush(NULL);
               For(i,2*tree->mod->ras->n_catg) *(x[i]) = LOG(MAX(1.E-10,*(x[i])));
               /* For(i,2*tree->n_otu-3 + 2*tree->mod->ras->n_catg) printf("\n<> %12f",*(x[i])); */
-              /* For(i,2*tree->mod->ras->n_catg) printf("\n<> %12f",*(x[i])); fflush(NULL); */
+              For(i,2*tree->mod->ras->n_catg) printf("\n<> %12f",*(x[i])); fflush(NULL);
 
               failed = NO;
               /* BFGS_Nonaligned(tree,x,2*tree->n_otu-3 + 2*tree->mod->ras->n_catg,1.e-5,tree->mod->s_opt->min_diff_lk_global,1.e-5,YES, */
@@ -2856,13 +2856,13 @@ void Optimize_Free_Rate(t_tree *mixt_tree, int verbose)
                               &Lnsrch_Nonaligned,&failed);
               
               /* For(i,2*tree->n_otu-3 + 2*tree->mod->ras->n_catg) *(x[i]) = EXP(*(x[i])); */
-              For(i,2*tree->mod->ras->n_catg) *(x[i]) = EXP(*(x[i]));
+              For(i,2*tree->mod->ras->n_catg) *(x[i]) = EXP(MIN(1.E+2,*(x[i])));
 
 
               
               lk_after = tree->c_lnL;
 
-              /* For(i,2*tree->mod->ras->n_catg) printf("\n>< %12f",*(x[i])); fflush(NULL); */
+              For(i,2*tree->mod->ras->n_catg) printf("\n>< %12f",*(x[i])); fflush(NULL);
 
               if(lk_after < lk_before - tree->mod->s_opt->min_diff_lk_global)
                 {
