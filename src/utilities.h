@@ -1563,13 +1563,13 @@ void Br_Len_Not_Involving_Invar(t_tree *tree);
 void Getstring_Stdin(char *s);
 phydbl Num_Derivatives_One_Param(phydbl (*func)(t_tree *tree), t_tree *tree,
                                  phydbl f0, phydbl *param, int which, int n_param, phydbl stepsize, int logt,
-                                 phydbl *err, int precise);
+                                 phydbl *err, int precise, int is_positive);
 phydbl Num_Derivatives_One_Param_Nonaligned(phydbl (*func)(t_tree *tree), t_tree *tree,
                                             phydbl f0, phydbl **param, int which, int n_param, phydbl stepsize, int logt,
-                                            phydbl *err, int precise);
-int Num_Derivative_Several_Param(t_tree *tree,phydbl *param,int n_param,phydbl stepsize,int logt,phydbl(*func)(t_tree *tree),phydbl *derivatives);
+                                            phydbl *err, int precise, int is_positive);
+int Num_Derivative_Several_Param(t_tree *tree,phydbl *param,int n_param,phydbl stepsize,int logt,phydbl(*func)(t_tree *tree),phydbl *derivatives, int is_positive);
 int Num_Derivative_Several_Param_Nonaligned(t_tree *tree, phydbl **param, int n_param, phydbl stepsize, int logt,
-                                            phydbl (*func)(t_tree *tree), phydbl *derivatives);
+                                            phydbl (*func)(t_tree *tree), phydbl *derivatives, int is_positive);
 int Compare_Two_States(char *state1,char *state2,int state_size);
 void Copy_One_State(char *from,char *to,int state_size);
 void Copy_Dist(phydbl **cpy,phydbl **orig,int n);

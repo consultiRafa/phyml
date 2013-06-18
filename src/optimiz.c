@@ -915,7 +915,7 @@ void Optimiz_All_Free_Param(t_tree *tree, int verbose)
 
 	      Switch_Eigen(YES,tree->mod);
 
-	      BFGS(tree,tree->mod->m4mod->o_rr,5,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,NO,
+	      BFGS(tree,tree->mod->m4mod->o_rr,5,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,NO,YES,
 		   &Return_Abs_Lk,
 		   &Num_Derivative_Several_Param,
 		   &Lnsrch,&failed);
@@ -972,9 +972,10 @@ void BFGS(t_tree *tree,
           phydbl difff,
 	  phydbl step_size,
           int logt,
+          int is_positive,
 	  phydbl(*func)(t_tree *tree), 
-	  int(*dfunc)(t_tree *tree,phydbl *param,int n_param,phydbl stepsize,int logt, phydbl(*func)(t_tree *tree),phydbl *derivatives), 
-	  int(*lnsrch)(t_tree *tree, int n, phydbl *xold, phydbl fold, phydbl *g, phydbl *p, phydbl *x,phydbl *f, phydbl stpmax, int *check, int logt),
+	  int(*dfunc)(t_tree *tree,phydbl *param,int n_param,phydbl stepsize,int logt, phydbl(*func)(t_tree *tree),phydbl *derivatives, int is_positive), 
+	  int(*lnsrch)(t_tree *tree, int n, phydbl *xold, phydbl fold, phydbl *g, phydbl *p, phydbl *x,phydbl *f, phydbl stpmax, int *check, int logt, int is_positive),
 	  int *failed)
 {
 
@@ -1006,8 +1007,7 @@ void BFGS(t_tree *tree,
 
   fp_old = fp;
 
-  (*dfunc)(tree,p,n,step_size,logt,func,g);
-
+  (*dfunc)(tree,p,n,step_size,logt,func,g,is_positive);
 
   for (i=0;i<n;i++) 
     {
@@ -1020,7 +1020,7 @@ void BFGS(t_tree *tree,
   stpmax=STPMX*MAX(SQRT(sum),(phydbl)n);
   for(its=1;its<=ITMAX;its++) 
     {
-      lnsrch(tree,n,p,fp,g,xi,pnew,&fret,stpmax,&check,logt);
+      lnsrch(tree,n,p,fp,g,xi,pnew,&fret,stpmax,&check,logt,is_positive);
 
       fp_old = fp;
       fp = fret;
@@ -1048,9 +1048,9 @@ void BFGS(t_tree *tree,
 
           if(logt == YES) For(i,n) p[i] = EXP(p[i]);
           For(i,n) sign[i] = p[i] > .0 ? 1. : -1.;
-          For(i,n) p[i] = FABS(p[i]);
+          if(is_positive == YES) For(i,n) p[i] = FABS(p[i]);
 	  (*func)(tree);
-          For(i,n) p[i] *= sign[i];
+          if(is_positive == YES) For(i,n) p[i] *= sign[i];
           if(logt == YES) For(i,n) p[i] = LOG(p[i]);
 
           For(i,n) p[i] = FABS(p[i]);
@@ -1070,7 +1070,7 @@ void BFGS(t_tree *tree,
 
       for (i=0;i<n;i++) dg[i]=g[i];
 
-      (*dfunc)(tree,p,n,step_size,logt,func,g);
+      (*dfunc)(tree,p,n,step_size,logt,func,g, is_positive);
 
       test=0.0;
       den=MAX(fret,1.0);
@@ -1083,12 +1083,12 @@ void BFGS(t_tree *tree,
 	{
           if(logt == YES) For(i,n) p[i] = EXP(p[i]);
           For(i,n) sign[i] = p[i] > .0 ? 1. : -1.;
-          For(i,n) p[i] = FABS(p[i]);
+          if(is_positive == YES) For(i,n) p[i] = FABS(p[i]);
 	  (*func)(tree);
-          For(i,n) p[i] *= sign[i];
+          if(is_positive == YES) For(i,n) p[i] *= sign[i];
           if(logt == YES) For(i,n) p[i] = LOG(p[i]);
 
-          For(i,n) p[i] = FABS(p[i]);
+          if(is_positive == YES) For(i,n) p[i] = FABS(p[i]);
 
 	  For(i,n) Free(hessin[i]);
 	  free(hessin);
@@ -1173,9 +1173,10 @@ void BFGS_Nonaligned(t_tree *tree,
                      phydbl difff,
                      phydbl step_size,
                      int logt,
+                     int is_positive,
                      phydbl(*func)(t_tree *tree), 
-                     int(*dfunc_nonaligned)(t_tree *tree,phydbl **param,int n_param,phydbl stepsize,int logt,phydbl(*func)(t_tree *tree),phydbl *derivatives), 
-                     int(*lnsrch_nonaligned)(t_tree *tree, int n, phydbl **xold, phydbl fold,phydbl *g, phydbl *p, phydbl *x,phydbl *f, phydbl stpmax, int *check, int logt),
+                     int(*dfunc_nonaligned)(t_tree *tree,phydbl **param,int n_param,phydbl stepsize,int logt,phydbl(*func)(t_tree *tree),phydbl *derivatives, int is_positive), 
+                     int(*lnsrch_nonaligned)(t_tree *tree, int n, phydbl **xold, phydbl fold,phydbl *g, phydbl *p, phydbl *x,phydbl *f, phydbl stpmax, int *check, int logt, int is_positive),
                      int *failed)
 {
   
@@ -1205,7 +1206,7 @@ void BFGS_Nonaligned(t_tree *tree,
 
   /* PhyML_Printf("\n- ENTER BFGS WITH: %f\n",fp); */
 
-  (*dfunc_nonaligned)(tree,p,n,step_size,logt,func,g);
+  (*dfunc_nonaligned)(tree,p,n,step_size,logt,func,g,is_positive);
 
   for (i=0;i<n;i++) 
     {
@@ -1220,7 +1221,7 @@ void BFGS_Nonaligned(t_tree *tree,
   /* stpmax = 0.01*MAX(SQRT(sum),(phydbl)n); */
   for(its=1;its<=ITMAX;its++) 
     {
-      lnsrch_nonaligned(tree,n,p,fp,g,xi,pnew,&fret,stpmax,&check,logt);
+      lnsrch_nonaligned(tree,n,p,fp,g,xi,pnew,&fret,stpmax,&check,logt,is_positive);
 
       /* PhyML_Printf("\n. BFGS -> %f\n",tree->c_lnL); */
 
@@ -1252,12 +1253,12 @@ void BFGS_Nonaligned(t_tree *tree,
 
           if(logt == YES) For(i,n) (*(p[i])) = EXP(*(p[i]));
           For(i,n) sign[i] = *(p[i]) > .0 ? 1. : -1.;
-          For(i,n) *(p[i]) = FABS(*(p[i]));
+          if(is_positive == YES) For(i,n) *(p[i]) = FABS(*(p[i]));
 	  (*func)(tree);
-          For(i,n) *(p[i]) *= sign[i];
+          if(is_positive == YES) For(i,n) *(p[i]) *= sign[i];
           if(logt == YES) For(i,n) (*(p[i])) = LOG(*(p[i]));
 
-          For(i,n) *(p[i]) = FABS(*(p[i]));
+          if(is_positive == YES) For(i,n) *(p[i]) = FABS(*(p[i]));
 
 	  For(i,n) Free(hessin[i]);
 	  free(hessin);
@@ -1273,7 +1274,7 @@ void BFGS_Nonaligned(t_tree *tree,
 
       for (i=0;i<n;i++) dg[i]=g[i];
 
-      (*dfunc_nonaligned)(tree,p,n,step_size,logt,func,g);
+      (*dfunc_nonaligned)(tree,p,n,step_size,logt,func,g,is_positive);
 
       test=0.0;
       den=MAX(fret,1.0);
@@ -1287,12 +1288,12 @@ void BFGS_Nonaligned(t_tree *tree,
 	{
           if(logt == YES) For(i,n) (*(p[i])) = EXP(*(p[i]));
           For(i,n) sign[i] = *(p[i]) > .0 ? 1. : -1.;
-          For(i,n) *(p[i]) = FABS(*(p[i]));
+          if(is_positive == YES) For(i,n) *(p[i]) = FABS(*(p[i]));
 	  (*func)(tree);
-          For(i,n) *(p[i]) *= sign[i];
+          if(is_positive == YES) For(i,n) *(p[i]) *= sign[i];
           if(logt == YES) For(i,n) (*(p[i])) = LOG(*(p[i]));
 
-          For(i,n) *(p[i]) = FABS(*(p[i]));
+          if(is_positive == YES) For(i,n) *(p[i]) = FABS(*(p[i]));
 
 	  For(i,n) Free(hessin[i]);
 	  free(hessin);
@@ -1343,7 +1344,7 @@ void BFGS_Nonaligned(t_tree *tree,
       }
     }
   PhyML_Printf("\n. Too many iterations in BFGS...\n");
-  *failed = 1;
+  *failed = YES;
   For(i,n) Free(hessin[i]);
   free(hessin);
   free(xi);
@@ -1367,7 +1368,7 @@ void BFGS_Nonaligned(t_tree *tree,
 
 int Lnsrch(t_tree *tree, int n, phydbl *xold, phydbl fold, 
 	   phydbl *g, phydbl *p, phydbl *x,
-	   phydbl *f, phydbl stpmax, int *check, int logt)
+	   phydbl *f, phydbl stpmax, int *check, int logt, int is_positive)
 {
   int i;
   phydbl a,alam,alam2,alamin,b,disc,f2,fold2,rhs1,rhs2,slope,sum,temp,test,tmplam;
@@ -1407,9 +1408,9 @@ int Lnsrch(t_tree *tree, int n, phydbl *xold, phydbl fold,
 	{
           if(logt == YES) For(i,n) xold[i] = EXP(xold[i]);
           For(i,n) sign[i] = xold[i] < .0 ? -1. : 1.;
-          For(i,n) xold[i] = FABS(xold[i]);
+          if(is_positive == YES) For(i,n) xold[i] = FABS(xold[i]);
           *f=Return_Abs_Lk(tree);
-          For(i,n) xold[i] *= sign[i];
+          if(is_positive == YES) For(i,n) xold[i] *= sign[i];
           if(logt == YES) For(i,n) xold[i] = LOG(xold[i]);
 	}
       else *f=1.+fold+ALF*alam*slope;
@@ -1417,7 +1418,7 @@ int Lnsrch(t_tree *tree, int n, phydbl *xold, phydbl fold,
 	{
 	  *check=1;
 	  For(i,n) xold[i] = local_xold[i];
-          For(i,n) xold[i] = FABS(xold[i]);
+          if(is_positive == YES) For(i,n) xold[i] = FABS(xold[i]);
 	  Free(local_xold);
 	  Free(sign);
 	  return 0;
@@ -1425,7 +1426,7 @@ int Lnsrch(t_tree *tree, int n, phydbl *xold, phydbl fold,
       else if (*f <= fold+ALF*alam*slope) 
 	{
 	  For(i,n) xold[i] = local_xold[i];
-          For(i,n) xold[i] = FABS(xold[i]);
+          if(is_positive == YES) For(i,n) xold[i] = FABS(xold[i]);
 	  Free(local_xold); 
           Free(sign);
 	  return 0;
@@ -1474,7 +1475,7 @@ int Lnsrch(t_tree *tree, int n, phydbl *xold, phydbl fold,
 
 int Lnsrch_Nonaligned(t_tree *tree, int n, phydbl **xold, phydbl fold, 
                       phydbl *g, phydbl *p, phydbl *x,
-                      phydbl *f, phydbl stpmax, int *check, int logt)
+                      phydbl *f, phydbl stpmax, int *check, int logt, int is_positive)
 {
   int i;
   phydbl a,alam,alam2,alamin,b,disc,f2,fold2,rhs1,rhs2,slope,sum,temp,test,tmplam;
@@ -1515,9 +1516,9 @@ int Lnsrch_Nonaligned(t_tree *tree, int n, phydbl **xold, phydbl fold,
 	{
           if(logt == YES) For(i,n) *(xold[i]) = EXP(*(xold[i]));
           For(i,n) sign[i]    = *(xold[i]) < .0 ? -1. : 1.;
-          For(i,n) *(xold[i]) = FABS(*(xold[i]));
+          if(is_positive == YES) For(i,n) *(xold[i]) = FABS(*(xold[i]));
 	  *f=Return_Abs_Lk(tree);
-          For(i,n) *(xold[i]) *= sign[i];
+          if(is_positive == YES) For(i,n) *(xold[i]) *= sign[i];
           if(logt == YES) For(i,n) *(xold[i]) = LOG(*(xold[i]));
 	}
       else *f=1.+fold+ALF*alam*slope;
@@ -1526,7 +1527,7 @@ int Lnsrch_Nonaligned(t_tree *tree, int n, phydbl **xold, phydbl fold,
 	{
 	  *check=1;
 	  For(i,n) *(xold[i]) = local_xold[i];
-          For(i,n) *(xold[i]) = FABS(*(xold[i]));
+          if(is_positive == YES) For(i,n) *(xold[i]) = FABS(*(xold[i]));
 	  Free(local_xold);
           Free(sign);
 	  return 0;
@@ -1534,7 +1535,7 @@ int Lnsrch_Nonaligned(t_tree *tree, int n, phydbl **xold, phydbl fold,
       else if (*f <= fold+ALF*alam*slope) 
 	{
 	  For(i,n) *(xold[i]) = local_xold[i];
-          For(i,n) *(xold[i]) = FABS(*(xold[i]));
+          if(is_positive == YES) For(i,n) *(xold[i]) = FABS(*(xold[i]));
 	  Free(local_xold); 
           Free(sign);
 	  return 0;
@@ -2583,7 +2584,7 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
 	      failed = NO;
       
 
-	      BFGS(mixt_tree,tree->mod->r_mat->rr_val->v,tree->mod->r_mat->n_diff_rr,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,NO,
+	      BFGS(mixt_tree,tree->mod->r_mat->rr_val->v,tree->mod->r_mat->n_diff_rr,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,NO,YES,
 		   &Return_Abs_Lk,
 		   &Num_Derivative_Several_Param,
 		   &Lnsrch,&failed);
@@ -2842,24 +2843,26 @@ void Optimize_Free_Rate(t_tree *mixt_tree, int verbose)
               For(i,tree->mod->ras->n_catg) x[pos++] = tree->mod->ras->gamma_r_proba_unscaled->v+i;
               
               /* For(i,2*tree->n_otu-3 + 2*tree->mod->ras->n_catg) *(x[i]) = LOG(MAX(1.E-10,*(x[i]))); */
-              /* For(i,2*tree->mod->ras->n_catg) printf("\n:: %12f",*(x[i])); */
+              /* For(i,2*tree->mod->ras->n_catg) printf("\n:: %12f",*(x[i])); fflush(NULL); */
               For(i,2*tree->mod->ras->n_catg) *(x[i]) = LOG(MAX(1.E-10,*(x[i])));
               /* For(i,2*tree->n_otu-3 + 2*tree->mod->ras->n_catg) printf("\n<> %12f",*(x[i])); */
-              /* For(i,2*tree->mod->ras->n_catg) printf("\n<> %12f",*(x[i])); */
+              /* For(i,2*tree->mod->ras->n_catg) printf("\n<> %12f",*(x[i])); fflush(NULL); */
 
               failed = NO;
               /* BFGS_Nonaligned(tree,x,2*tree->n_otu-3 + 2*tree->mod->ras->n_catg,1.e-5,tree->mod->s_opt->min_diff_lk_global,1.e-5,YES, */
-              BFGS_Nonaligned(tree,x,2*tree->mod->ras->n_catg,1.e-5,tree->mod->s_opt->min_diff_lk_global,1.e-5,YES,
+              BFGS_Nonaligned(tree,x,2*tree->mod->ras->n_catg,1.e-5,tree->mod->s_opt->min_diff_lk_global,1.e-5,YES,NO,
                               &Return_Abs_Lk,
                               &Num_Derivative_Several_Param_Nonaligned,
                               &Lnsrch_Nonaligned,&failed);
               
               /* For(i,2*tree->n_otu-3 + 2*tree->mod->ras->n_catg) *(x[i]) = EXP(*(x[i])); */
               For(i,2*tree->mod->ras->n_catg) *(x[i]) = EXP(*(x[i]));
+
+
               
               lk_after = tree->c_lnL;
 
-              /* For(i,2*tree->mod->ras->n_catg) printf("\n>< %12f",*(x[i])); */
+              /* For(i,2*tree->mod->ras->n_catg) printf("\n>< %12f",*(x[i])); fflush(NULL); */
 
               if(lk_after < lk_before - tree->mod->s_opt->min_diff_lk_global)
                 {
@@ -3105,7 +3108,7 @@ void Optimize_State_Freqs(t_tree *mixt_tree, int verbose)
 	    {
 	      failed = NO;
             
-	      BFGS(mixt_tree,tree->mod->e_frq->pi_unscaled->v,tree->mod->ns,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,NO,
+	      BFGS(mixt_tree,tree->mod->e_frq->pi_unscaled->v,tree->mod->ns,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,NO,YES,
 		   &Return_Abs_Lk,
 		   &Num_Derivative_Several_Param,
 		   &Lnsrch,&failed);
