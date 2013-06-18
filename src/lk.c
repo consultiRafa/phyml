@@ -2295,7 +2295,7 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
   len = -1.0;
   
   if(tree->mod->log_l == YES) b_fcus->l->v = EXP(b_fcus->l->v);
-  
+
   For(i,tree->mod->ras->n_catg)
     {
 

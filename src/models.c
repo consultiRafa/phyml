@@ -614,7 +614,14 @@ void Update_Qmat_GTR(phydbl *rr, phydbl *rr_val, int *rr_num, phydbl *pi, phydbl
   phydbl mr;
   
   For(i,6) rr[i] = rr_val[rr_num[i]];
-  For(i,6) if(rr[i] < 0.001) rr[i] = 0.001;
+  For(i,6) 
+    if(rr[i] < 0.0) 
+      {
+        PhyML_Printf("\n. rr%d: %f",i,rr[i]);
+        PhyML_Printf("\n. Err. in file %s at line %d\n\n",__FILE__,__LINE__);
+        Exit("");
+      }
+
   For(i,6) rr[i] /= rr[5];
 
   qmat[0*4+1] = (rr[0]*pi[1]);

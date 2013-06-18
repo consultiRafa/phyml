@@ -2912,6 +2912,7 @@ void Bootstrap(t_tree *tree)
 
       Compare_Bip(tree,boot_tree,NO);
 
+      Check_Br_Lens(boot_tree);
       Br_Len_Involving_Invar(boot_tree);
 
       if(tree->io->print_boot_trees)
@@ -3006,8 +3007,10 @@ phydbl Num_Derivatives_One_Param(phydbl (*func)(t_tree *tree), t_tree *tree,
 				 phydbl *err, int precise)
 {
   int i,j;
-  phydbl errt,fac,hh,**a,ans;
+  phydbl errt,fac,hh,**a,ans,*sign;
   int n_iter;
+
+  sign = (phydbl *)mCalloc(n_param,sizeof(phydbl));
 
   a = (phydbl **)mCalloc(11,sizeof(phydbl *));
   For(i,11) a[i] = (phydbl *)mCalloc(11,sizeof(phydbl));
@@ -3025,7 +3028,10 @@ phydbl Num_Derivatives_One_Param(phydbl (*func)(t_tree *tree), t_tree *tree,
       param[which]   = param[which]+hh;
 
       if(logt == YES) For(i,n_param) param[i] = EXP(param[i]);
+      For(i,n_param) sign[i] = param[i] > .0 ? 1. : -1.;
+      For(i,n_param) param[i] = FABS(param[i]);
       a[0][0]  = (*func)(tree);
+      For(i,n_param) param[i] *= sign[i];
       if(logt == YES) For(i,n_param) param[i] = LOG(param[i]);
 
       /* printf("\n. f0=%f f1=%f hh=%G %f",f0,a[0][0],hh,param[which]); */
@@ -3041,7 +3047,10 @@ phydbl Num_Derivatives_One_Param(phydbl (*func)(t_tree *tree), t_tree *tree,
       param[which]   = param[which]+hh;
 
       if(logt == YES) For(i,n_param) param[i] = EXP(param[i]);
+      For(i,n_param) sign[i] = param[i] > .0 ? 1. : -1.;
+      For(i,n_param) param[i] = FABS(param[i]);
       a[0][0]  = (*func)(tree);
+      For(i,n_param) param[i] *= sign[i];
       if(logt == YES) For(i,n_param) param[i] = LOG(param[i]);
 
       /*   param[which]   = param[which]-2*hh; */
@@ -3067,7 +3076,10 @@ phydbl Num_Derivatives_One_Param(phydbl (*func)(t_tree *tree), t_tree *tree,
 	  param[which]   = param[which]+hh;
 
           if(logt == YES) For(j,n_param) param[j] = EXP(param[j]);
+          For(i,n_param) sign[i] = param[i] > .0 ? 1. : -1.;
+          For(i,n_param) param[i] = FABS(param[i]);
 	  a[0][i]  = (*func)(tree);
+          For(i,n_param) param[i] *= sign[i];
           if(logt == YES) For(j,n_param) param[j] = LOG(param[j]);
 
 	  /*   param[which]   = param[which]-2*hh; */
@@ -3099,6 +3111,7 @@ phydbl Num_Derivatives_One_Param(phydbl (*func)(t_tree *tree), t_tree *tree,
     }
   For(i,11) Free(a[i]);
   Free(a);
+  Free(sign);
 
   return ans;
 }
@@ -3111,8 +3124,10 @@ phydbl Num_Derivatives_One_Param_Nonaligned(phydbl (*func)(t_tree *tree), t_tree
                                             phydbl *err, int precise)
 {
   int i,j;
-  phydbl errt,fac,hh,**a,ans;
+  phydbl errt,fac,hh,**a,ans,*sign;
   int n_iter;
+
+  sign = (phydbl *)mCalloc(n_param,sizeof(phydbl));
 
   a = (phydbl **)mCalloc(11,sizeof(phydbl *));
   For(i,11) a[i] = (phydbl *)mCalloc(11,sizeof(phydbl));
@@ -3130,14 +3145,17 @@ phydbl Num_Derivatives_One_Param_Nonaligned(phydbl (*func)(t_tree *tree), t_tree
       *(param[which])   = *(param[which])+hh;
 
       if(logt == YES) For(i,n_param) *(param[i]) = EXP(*(param[i]));
+      For(i,n_param) sign[i] = (*(param[i])) > .0 ? 1. : -1.;
+      For(i,n_param) (*(param[i])) = FABS(*(param[i]));
       a[0][0]  = (*func)(tree);
+      For(i,n_param) (*(param[i])) *= sign[i];
       if(logt == YES) For(i,n_param) *(param[i]) = LOG(*(param[i]));
 
       /* printf("\n. f0=%f f1=%f hh=%G %f",f0,a[0][0],hh,*(param[which])); */
 
       a[0][0]  -= f0;
       a[0][0]  /= hh;
-      *(param[which])   = *(param[which])-hh;
+      *(param[which]) = *(param[which])-hh;
 
       ans =  a[0][0];
     }
@@ -3146,7 +3164,10 @@ phydbl Num_Derivatives_One_Param_Nonaligned(phydbl (*func)(t_tree *tree), t_tree
       *(param[which])   = *(param[which])+hh;
 
       if(logt == YES) For(i,n_param) *(param[i]) = EXP(*(param[i]));
+      For(i,n_param) sign[i] = (*(param[i])) > .0 ? 1. : -1.;
+      For(i,n_param) (*(param[i])) = FABS(*(param[i]));
       a[0][0]  = (*func)(tree);
+      For(i,n_param) (*(param[i])) *= sign[i];
       if(logt == YES) For(i,n_param) *(param[i]) = LOG(*(param[i]));
 
       /*   *(param[which]   = *(param[which]-2*hh; */
@@ -3172,7 +3193,10 @@ phydbl Num_Derivatives_One_Param_Nonaligned(phydbl (*func)(t_tree *tree), t_tree
 	  *(param[which])   = *(param[which])+hh;
 
           if(logt == YES) For(j,n_param) *(param[j]) = EXP(*(param[j]));
+          For(i,n_param) sign[i] = (*(param[i])) > .0 ? 1. : -1.;
+          For(i,n_param) (*(param[i])) = FABS(*(param[i]));
 	  a[0][i]  = (*func)(tree);
+          For(i,n_param) (*(param[i])) *= sign[i];
           if(logt == YES) For(j,n_param) *(param[j]) = LOG(*(param[j]));
 
 	  /*   *(param[which]   = *(param[which]-2*hh; */
@@ -3204,7 +3228,7 @@ phydbl Num_Derivatives_One_Param_Nonaligned(phydbl (*func)(t_tree *tree), t_tree
     }
   For(i,11) Free(a[i]);
   Free(a);
-
+  Free(sign);
   return ans;
 }
 
@@ -3215,10 +3239,15 @@ int Num_Derivative_Several_Param(t_tree *tree, phydbl *param, int n_param, phydb
                                  phydbl (*func)(t_tree *tree), phydbl *derivatives)
 {
   int i;
-  phydbl err,f0;
+  phydbl err,f0,*sign;
+
+  sign = (phydbl *)mCalloc(n_param,sizeof(phydbl));
 
   if(logt == YES)   For(i,n_param) param[i] = EXP(param[i]);
+  For(i,n_param) sign[i] = (param[i]) > .0 ? 1. : -1.;
+  For(i,n_param) param[i] = FABS(param[i]);
   f0 = (*func)(tree);
+  For(i,n_param) param[i] *= sign[i];
   if(logt == YES)   For(i,n_param) param[i] = LOG(param[i]);
 
   For(i,n_param)
@@ -3235,6 +3264,9 @@ int Num_Derivative_Several_Param(t_tree *tree, phydbl *param, int n_param, phydb
 						 0
 						 );
     }
+  
+  Free(sign);
+
   return 1;
 }
 
@@ -3245,10 +3277,15 @@ int Num_Derivative_Several_Param_Nonaligned(t_tree *tree, phydbl **param, int n_
                                             phydbl (*func)(t_tree *tree), phydbl *derivatives)
 {
   int i;
-  phydbl err,f0;
+  phydbl err,f0,*sign;
+
+  sign = (phydbl *)mCalloc(n_param,sizeof(phydbl));
 
   if(logt == YES)   For(i,n_param) (*(param[i])) = EXP(*(param[i]));
+  For(i,n_param) sign[i] = (*(param[i])) > .0 ? 1. : -1.;
+  For(i,n_param) *(param[i]) = FABS(*(param[i]));
   f0 = (*func)(tree);
+  For(i,n_param) *(param[i]) *= sign[i];
   if(logt == YES)   For(i,n_param) (*(param[i])) = LOG(*(param[i]));
 
 
@@ -3267,6 +3304,9 @@ int Num_Derivative_Several_Param_Nonaligned(t_tree *tree, phydbl **param, int n_
                                                             0
                                                             );
     }
+
+  Free(sign);
+
   return 1;
 }
 
@@ -10136,8 +10176,9 @@ void Check_Br_Lens(t_tree *tree)
       l = tree->a_edges[i]->l;
       do
         {
-          if(l->v < tree->mod->l_min) l->v = tree->mod->l_min;
-          if(l->v > tree->mod->l_max) l->v = tree->mod->l_max;
+          /* if(l->v < tree->mod->l_min) l->v = tree->mod->l_min; */
+          /* if(l->v > tree->mod->l_max) l->v = tree->mod->l_max; */
+          if(l->v < 0.0) l->v = 0.0;
           l = l->next;
         }
       while(l);

@@ -176,7 +176,6 @@ int main(int argc, char **argv)
 		      Exit("\n");
 		    }
 
-                  Check_Br_Lens(tree);
 		  Prepare_Tree_For_Lk(tree);
 		  Br_Len_Not_Involving_Invar(tree);
 		  Unscale_Br_Len_Multiplier_Tree(tree);
@@ -221,6 +220,7 @@ int main(int argc, char **argv)
                   /* ML_Ancestral_Sequences(tree); */
                   //
 
+                  Check_Br_Lens(tree);
 		  Br_Len_Involving_Invar(tree);
 		  Rescale_Br_Len_Multiplier_Tree(tree);
                   
