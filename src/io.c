@@ -2030,18 +2030,18 @@ t_tree *Read_Tree_File_Phylip(FILE *fp_input_tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Print_Site(calign *cdata, int num, int n_otu, char *sep, int stepsize)
+void Print_Site(calign *cdata, int num, int n_otu, char *sep, int stepsize, FILE *fp)
 {
   int i,j;
-  PhyML_Printf("\n");
+  PhyML_Fprintf(fp,"\n");
   For(i,n_otu)
     {
-      PhyML_Printf("%20s ",cdata->c_seq[i]->name);
+      PhyML_Fprintf(fp,"%20s ",cdata->c_seq[i]->name);
       For(j,stepsize)
-	PhyML_Printf("%c",cdata->c_seq[i]->state[num+j]);
-      PhyML_Printf("%s",sep);
+	PhyML_Fprintf(fp,"%c",cdata->c_seq[i]->state[num+j]);
+      PhyML_Fprintf(fp,"%s",sep);
     }
-  PhyML_Fprintf(stderr,"%s",sep);
+  PhyML_Fprintf(fp,"%s",sep);
 }
 
 //////////////////////////////////////////////////////////////
@@ -2056,8 +2056,8 @@ void Print_Site_Lk(t_tree *tree, FILE *fp)
 
   if(!tree->io->print_site_lnl)
     {
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
-      Warn_And_Exit("");
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+      Exit("");
     }
 
   if(!tree->io->print_trace)
@@ -2071,6 +2071,9 @@ void Print_Site_Lk(t_tree *tree, FILE *fp)
       
       sprintf(s,"Site");
       PhyML_Fprintf(fp, "%-7s",s);
+
+      sprintf(s,"Pattern");
+      PhyML_Fprintf(fp, "%-9s",s);
       
       sprintf(s,"P(D|M)");
       PhyML_Fprintf(fp,"%-16s",s);
@@ -2097,7 +2100,11 @@ void Print_Site_Lk(t_tree *tree, FILE *fp)
       
       For(site,tree->data->init_len)
 	{
+          
+
 	  PhyML_Fprintf(fp,"%-7d",site+1);
+	  PhyML_Fprintf(fp,"%-9d",tree->data->sitepatt[site]);
+
 	  PhyML_Fprintf(fp,"%-16g",tree->cur_site_lk[tree->data->sitepatt[site]]);      
 	  if(tree->mod->ras->n_catg > 1)
 	    {
@@ -2121,6 +2128,9 @@ void Print_Site_Lk(t_tree *tree, FILE *fp)
 	      else
 		PhyML_Fprintf(fp,"%-16g",0.0);
 	    }
+
+          
+
 	  PhyML_Fprintf(fp,"\n");
 	}
       Free(s);
@@ -2607,18 +2617,18 @@ void Print_Fp_Out(FILE *fp_out, time_t t_beg, time_t t_end, t_tree *tree, option
 
   PhyML_Fprintf(fp_out,"\n. Parsimony: \t\t\t\t%d",tree->c_pars);
 
-  PhyML_Fprintf(fp_out,"\n. Tree size: \t\t\t\t%.5f",tree->size);
+  PhyML_Fprintf(fp_out,"\n. Tree size: \t\t\t\t%.5f",Get_Tree_Size(tree));
 
   if(tree->mod->ras->n_catg > 1 && tree->mod->ras->free_mixt_rates == NO)
     {
       PhyML_Fprintf(fp_out,"\n. Discrete gamma model: \t\t%s","Yes");
-      PhyML_Fprintf(fp_out,"\n  - Number of categories: \t\t%d",tree->mod->ras->n_catg);
+      PhyML_Fprintf(fp_out,"\n  - Number of classes: \t\t\t%d",tree->mod->ras->n_catg);
       PhyML_Fprintf(fp_out,"\n  - Gamma shape parameter: \t\t%.3f",tree->mod->ras->alpha->v);
     }
   else if(tree->mod->ras->free_mixt_rates == YES)
     {
-      PhyML_Fprintf(fp_out,"\n. Discrete gamma model: \t\t%s","No");
-      PhyML_Fprintf(fp_out,"\n  - Number of categories: \t\t%d",tree->mod->ras->n_catg);
+      PhyML_Fprintf(fp_out,"\n. FreeRate model: \t\t\t%s","Yes");
+      PhyML_Fprintf(fp_out,"\n  - Number of classes: \t\t\t%d",tree->mod->ras->n_catg);
       For(i,tree->mod->ras->n_catg)
 	{
 	  PhyML_Fprintf(fp_out,"\n  - Relative rate in class %d: \t\t%.5f [prop=%4f] \t\t",i+1,tree->mod->ras->gamma_rr->v[i],tree->mod->ras->gamma_r_proba->v[i]);
@@ -5280,6 +5290,8 @@ void PhyML_XML(char *xml_filename)
         }
       while(tree);
 
+      /*! Check that all edge lengths are non-negative */
+      Check_Br_Lens(mixt_tree);
 
       /* TO DO
          

@@ -683,10 +683,38 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
 
   log_site_lk = LOG(site_lk) - (phydbl)LOG2 * fact_sum_scale;
 
-  if(fact_sum_scale > 0)
-    tree->cur_site_lk[site] = site_lk * (1./(double)((unsigned long long)(1) << (int)fact_sum_scale));
-  else
-    tree->cur_site_lk[site] = site_lk * ((double)((unsigned long long)(1) << (int)fact_sum_scale));
+  int piecewise_exponent;
+  phydbl multiplier;
+  if(fact_sum_scale >= 0)
+    {
+      tree->cur_site_lk[site] = site_lk;
+      exponent = -fact_sum_scale;
+      do
+        {
+          piecewise_exponent = MAX(exponent,-63);
+          multiplier = 1. / (phydbl)((unsigned long long)(1) << -piecewise_exponent);
+          tree->cur_site_lk[site] *= multiplier;
+          exponent -= piecewise_exponent;
+        }
+      while(exponent != 0);
+    }
+ else
+   {
+     tree->cur_site_lk[site] = site_lk;
+     exponent = fact_sum_scale;
+     do
+       {
+         piecewise_exponent = MIN(exponent,63);
+         multiplier = (phydbl)((unsigned long long)(1) << piecewise_exponent);
+         tree->cur_site_lk[site] *= multiplier;
+         exponent -= piecewise_exponent;
+       }
+     while(exponent != 0);
+   }
+     
+ /* tree->cur_site_lk[site] = EXP(log_site_lk); */
+
+
 
   For(catg,tree->mod->ras->n_catg) tree->log_site_lk_cat[catg][site] = LOG(tree->site_lk_cat[catg]) - (phydbl)LOG2 * fact_sum_scale;
   

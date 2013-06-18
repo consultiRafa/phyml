@@ -507,6 +507,14 @@ phydbl Br_Len_Brent(phydbl prop_min, phydbl prop_max, t_edge *b_fcus, t_tree *tr
 
   if(b_fcus->l->onoff == OFF) return loc_tree->c_lnL;
 
+  if(isinf(prop_min) || isinf(prop_max))
+    {
+      PhyML_Printf("\n== prop_min: %f prop_max: %f l: %f",prop_min,prop_max,b_fcus->l->v);
+      PhyML_Printf("\n== Err. in file %s at line %d",__FILE__,__LINE__);
+      Exit("\n");
+    }
+
+
   lk_begin = Lk(b_fcus,tree); /*! We can't assume that the log-lk value is up-to-date */
 
   Generic_Brent_Lk(&(b_fcus->l->v),

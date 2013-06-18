@@ -1743,6 +1743,7 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
 
 void Optimum_Root_Position_IL_Model(t_tree *tree);
 void Set_Br_Len_Var(t_tree *tree);
+void Check_Br_Lens(t_tree *tree);
 
 #include "xml.h"
 #include "free.h"

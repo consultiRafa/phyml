@@ -1145,7 +1145,6 @@ char *Add_Taxa_To_Constraint_Tree(FILE *fp, calign *cdata)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Check_Constraint_Tree_Taxa_Names(t_tree *tree, calign *cdata)
 {
   int i,j,n_otu_tree,n_otu_cdata;
@@ -2858,6 +2857,7 @@ void Bootstrap(t_tree *tree)
 
       Connect_CSeqs_To_Nodes(boot_data,boot_tree);
 
+      Check_Br_Lens(boot_tree);
       Share_Lk_Struct(tree,boot_tree);
       Share_Spr_Struct(tree,boot_tree);
       Share_Pars_Struct(tree,boot_tree);
@@ -5340,7 +5340,7 @@ void Joint_Proba_States_Left_Right(phydbl *Pij, phydbl *p_lk_left, phydbl *p_lk_
                          POW(2.,-(scale_left + scale_rght)));
           
           PhyML_Printf("\n== sum = %G",sum);
-          Print_Site(tree->data,site,tree->n_otu,"\n",1);
+          Print_Site(tree->data,site,tree->n_otu,"\n",1,stderr);
           PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
           Exit("\n");
         }
@@ -7602,8 +7602,6 @@ phydbl Get_Tree_Size(t_tree *tree)
       tree_size += tree->n_root->b[2]->l->v;
     }
 
-/*   tree_size = 0.0; */
-/*   For(i,2*tree->n_otu-3) tree_size += tree->rates->u_cur_l[i]; */
 
 /*   For(i,2*tree->n_otu-3)  */
 /*     tree_size +=  */
@@ -9439,7 +9437,7 @@ void Get_Mutmap_Coord(int idx, int *edge, int *site, int *mut, t_tree *tree)
 void Copy_Edge_Lengths(t_tree *to, t_tree *from)
 {
   int i;
-  For(i,2*from->n_otu-3) to->a_edges[i]->l->v = from->a_edges[i]->l->v;
+  For(i,2*from->n_otu-1) to->a_edges[i]->l->v = from->a_edges[i]->l->v;
 }
 
 //////////////////////////////////////////////////////////////
@@ -9457,10 +9455,7 @@ char *To_Lower_String(char *in)
 
   out = (char *)mCalloc(len+1,sizeof(char));
   
-  For(i,len)
-    {
-      out[i] = (char)tolower(in[i]);
-    }
+  For(i,len) out[i] = (char)tolower(in[i]);
 
   out[len] = '\0';
   return(out);
@@ -10130,6 +10125,24 @@ void Set_Br_Len_Var(t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void Check_Br_Lens(t_tree *tree)
+{
+  int i;
+  scalar_dbl *l;
+
+  For(i,2*tree->n_otu-1)
+    {
+      l = tree->a_edges[i]->l;
+      do
+        {
+          if(l->v < tree->mod->l_min) l->v = tree->mod->l_min;
+          if(l->v > tree->mod->l_max) l->v = tree->mod->l_max;
+          l = l->next;
+        }
+      while(l);
+    }
+}
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
