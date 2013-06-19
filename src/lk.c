@@ -404,6 +404,8 @@ phydbl Lk(t_edge *b, t_tree *tree)
   
   Set_Br_Len_Var(tree);
       
+  Check_Br_Lens(tree);
+
   if(tree->mod->s_opt->skip_tree_traversal == NO)
     {
       if(!b)
