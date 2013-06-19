@@ -10178,9 +10178,9 @@ void Check_Br_Lens(t_tree *tree)
       l = tree->a_edges[i]->l;
       do
         {
-          /* if(l->v < tree->mod->l_min) l->v = tree->mod->l_min; */
-          /* if(l->v > tree->mod->l_max) l->v = tree->mod->l_max; */
-          if(l->v < 0.0) l->v = 0.0;
+          if(l->v < tree->mod->l_min) l->v = tree->mod->l_min;
+          if(l->v > tree->mod->l_max) l->v = tree->mod->l_max;
+          /* if(l->v < 0.0) l->v = 0.0; */
           l = l->next;
         }
       while(l);

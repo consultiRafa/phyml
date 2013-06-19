@@ -2840,10 +2840,10 @@ void Optimize_Free_Rate(t_tree *mixt_tree, int verbose)
               For(i,tree->mod->ras->n_catg) x[pos++] = tree->mod->ras->gamma_r_proba_unscaled->v+i;
               
               /* For(i,2*tree->n_otu-3 + 2*tree->mod->ras->n_catg) *(x[i]) = LOG(MAX(1.E-10,*(x[i]))); */
-              For(i,2*tree->mod->ras->n_catg) printf("\n:: %12f",*(x[i])); fflush(NULL);
+              /* For(i,2*tree->mod->ras->n_catg) printf("\n:: %12f",*(x[i])); fflush(NULL); */
               For(i,2*tree->mod->ras->n_catg) *(x[i]) = LOG(MAX(1.E-10,*(x[i])));
               /* For(i,2*tree->n_otu-3 + 2*tree->mod->ras->n_catg) printf("\n<> %12f",*(x[i])); */
-              For(i,2*tree->mod->ras->n_catg) printf("\n<> %12f",*(x[i])); fflush(NULL);
+              /* For(i,2*tree->mod->ras->n_catg) printf("\n<> %12f",*(x[i])); fflush(NULL); */
 
               failed = NO;
               /* BFGS_Nonaligned(tree,x,2*tree->n_otu-3 + 2*tree->mod->ras->n_catg,1.e-5,tree->mod->s_opt->min_diff_lk_global,1.e-5,YES, */
@@ -2854,12 +2854,10 @@ void Optimize_Free_Rate(t_tree *mixt_tree, int verbose)
               
               /* For(i,2*tree->n_otu-3 + 2*tree->mod->ras->n_catg) *(x[i]) = EXP(*(x[i])); */
               For(i,2*tree->mod->ras->n_catg) *(x[i]) = EXP(MIN(1.E+2,*(x[i])));
-
-
               
               lk_after = tree->c_lnL;
 
-              For(i,2*tree->mod->ras->n_catg) printf("\n>< %12f",*(x[i])); fflush(NULL);
+              /* For(i,2*tree->mod->ras->n_catg) printf("\n>< %12f",*(x[i])); fflush(NULL); */
 
               if(lk_after < lk_before - tree->mod->s_opt->min_diff_lk_global)
                 {
