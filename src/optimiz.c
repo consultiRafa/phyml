@@ -912,10 +912,15 @@ void Optimiz_All_Free_Param(t_tree *tree, int verbose)
 
 	      Switch_Eigen(YES,tree->mod);
 
-	      BFGS(tree,tree->mod->m4mod->o_rr,5,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,NO,YES,
+              For(i,5) tree->mod->m4mod->o_rr[i] = LOG(tree->mod->m4mod->o_rr[i]);
+
+	      /* BFGS(tree,tree->mod->m4mod->o_rr,5,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,NO,YES, */
+	      BFGS(tree,tree->mod->m4mod->o_rr,5,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,YES,NO,
 		   &Return_Abs_Lk,
 		   &Num_Derivative_Several_Param,
 		   &Lnsrch,&failed);
+
+              For(i,5) tree->mod->m4mod->o_rr[i] = EXP(tree->mod->m4mod->o_rr[i]);
 
               For(i,5) 
                 {
@@ -2573,29 +2578,31 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
 	    {
 	      int failed,i;
       
-              /* For(i,tree->mod->r_mat->n_diff_rr) tree->mod->r_mat->rr_val->v[i] = LOG(tree->mod->r_mat->rr_val->v[i]); */
+              For(i,tree->mod->r_mat->n_diff_rr) tree->mod->r_mat->rr_val->v[i] = LOG(tree->mod->r_mat->rr_val->v[i]);
 
 	      failed = NO;
       
-
-	      BFGS(mixt_tree,tree->mod->r_mat->rr_val->v,tree->mod->r_mat->n_diff_rr,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,NO,YES,
+	      /* BFGS(mixt_tree,tree->mod->r_mat->rr_val->v,tree->mod->r_mat->n_diff_rr,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,NO,YES, */
+	      BFGS(mixt_tree,tree->mod->r_mat->rr_val->v,tree->mod->r_mat->n_diff_rr,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,YES,NO,
 		   &Return_Abs_Lk,
 		   &Num_Derivative_Several_Param,
 		   &Lnsrch,&failed);
 
+              For(i,tree->mod->r_mat->n_diff_rr) tree->mod->r_mat->rr_val->v[i] = EXP(tree->mod->r_mat->rr_val->v[i]);
 
-              /* For(i,tree->mod->r_mat->n_diff_rr) tree->mod->r_mat->rr_val->v[i] = EXP(tree->mod->r_mat->rr_val->v[i]); */
-
-              For(i,tree->mod->r_mat->n_diff_rr)
-                if(i != 5)
-                  {
-                    Generic_Brent_Lk(&(tree->mod->r_mat->rr_val->v[i]),
-                                     1.E-2,1.E+2,
-                                     tree->mod->s_opt->min_diff_lk_local,
-                                     tree->mod->s_opt->brent_it_max,
-                                     tree->mod->s_opt->quickdirty,
-                                     Wrap_Lk,NULL,mixt_tree,NULL,NO);
-                  }
+              if(failed == YES)
+                {
+                  For(i,tree->mod->r_mat->n_diff_rr)
+                    if(i != 5)
+                      {
+                        Generic_Brent_Lk(&(tree->mod->r_mat->rr_val->v[i]),
+                                         1.E-2,1.E+2,
+                                         tree->mod->s_opt->min_diff_lk_local,
+                                         tree->mod->s_opt->brent_it_max,
+                                         tree->mod->s_opt->quickdirty,
+                                         Wrap_Lk,NULL,mixt_tree,NULL,NO);
+                      }
+                }
 
 	      if(verbose) Print_Lk(tree->mixt_tree?
 				   tree->mixt_tree:
