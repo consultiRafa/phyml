@@ -12,6 +12,11 @@ the GNU public licence. See http://www.opensource.org for details.
 
 #include "lk.h"
 
+#ifdef BEAGLE
+#include "beagle_utils.h"
+#endif
+
+
 int n_sec2 = 0;
 /* int    LIM_SCALE; */
 /* phydbl LIM_SCALE_VAL; */
@@ -409,8 +414,9 @@ phydbl Lk(t_edge *b, t_tree *tree)
 
   n_patterns = tree->n_pattern;
 
-  if(!b)
+  if(!b){
     Set_Model_Parameters(tree->mod);
+  }
 
   if(!b)
     {
@@ -920,16 +926,19 @@ void Update_P_Lk(t_tree *tree, t_edge *b, t_node *d)
 
   if(d->tax) return;
 
+#ifdef BEAGLE
+  update_beagle_partials(tree, b, d);
+#else
   if(tree->mod->use_m4mod == NO)
     {
       if(tree->io->datatype == NT)
-    {
-      Update_P_Lk_Nucl(tree,b,d);
-    }
+        {
+          Update_P_Lk_Nucl(tree,b,d);
+        }
       else if(tree->io->datatype == AA)
-    {
-      Update_P_Lk_AA(tree,b,d);
-    }
+        {
+          Update_P_Lk_AA(tree,b,d);
+        }
       else
         {
       Update_P_Lk_Generic(tree,b,d);
@@ -939,6 +948,7 @@ void Update_P_Lk(t_tree *tree, t_edge *b, t_node *d)
     {
       Update_P_Lk_Generic(tree,b,d);
     }
+#endif
 }
 
 //////////////////////////////////////////////////////////////
@@ -1262,14 +1272,14 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
       if(!tree->mod->s_opt->greedy)
         {
           /* n_v1 and n_v2 are tip nodes */
-      if(n_v1 && n_v1->tax)
+            if(n_v1 && n_v1->tax)
             {
               /* Is the state at this tip ambiguous? */
               ambiguity_check_v1 = n_v1->c_seq->is_ambigu[site];
                   if(ambiguity_check_v1 == NO) state_v1 = n_v1->c_seq->d_state[site];
             }
 
-      if(n_v2 && n_v2->tax)
+            if(n_v2 && n_v2->tax)
             {
               /* Is the state at this tip ambiguous? */
               ambiguity_check_v2 = n_v2->c_seq->is_ambigu[site];
@@ -1497,14 +1507,6 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
                 {
                   curr_scaler_pow = (int)(LOG(p_lk_lim_inf)-LOG(smallest_p_lk))/LOG2;
                   curr_scaler     = (phydbl)((unsigned long long)(1) << curr_scaler_pow);
-
-          /* 	      if(fabs(curr_scaler_pow) > 63 || fabs(curr_scaler_pow) > 63) */
-          /* 		{ */
-          /* 		  PhyML_Printf("\n. p_lk_lim_inf = %G smallest_p_lk = %G",p_lk_lim_inf,smallest_p_lk); */
-          /* 		  PhyML_Printf("\n. curr_scaler_pow = %d",curr_scaler_pow); */
-          /* 		  PhyML_Printf("\n. Err in file %s at line %d.",__FILE__,__LINE__); */
-          /* 		  Warn_And_Exit("\n"); */
-          /* 		} */
 
                   sum_scale[catg*n_patterns+site] += curr_scaler_pow;
 
@@ -2273,35 +2275,44 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
 
   For(i,tree->mod->ras->n_catg)
     {
+      //Update the branch length
       if(b_fcus->has_zero_br_len == YES)
         {
           len = -1.0;
         }
       else
         {
-          len = b_fcus->l->v*tree->mod->ras->gamma_rr->v[i];
+          len = b_fcus->l->v*tree->mod->ras->gamma_rr->v[i]; //branch length * rate
           len *= tree->mod->br_len_multiplier->v;
           if(tree->mixt_tree)  len *= tree->mixt_tree->mod->ras->gamma_rr->v[tree->mod->ras->parent_class_number];
           if(len < l_min)      len = l_min;
           else if(len > l_max) len = l_max;
         }
 
+      //Update the transition prob. matrix
       if(tree->mod->gamma_mgf_bl == NO)
-        PMat(len,tree->mod,tree->mod->ns*tree->mod->ns*i,b_fcus->Pij_rr);
+          {
+            PMat(len,tree->mod,tree->mod->ns*tree->mod->ns*i,b_fcus->Pij_rr);
+          }
       else
-        {
-          mean = len;
-          var  = b_fcus->l_var;
+          {
+            mean = len;
+            var  = b_fcus->l_var;
 
-          shape = mean*mean/var;
-          scale = var/mean;
+            shape = mean*mean/var;
+            scale = var/mean;
 
-          PMat_MGF_Gamma(b_fcus->Pij_rr+tree->mod->ns*tree->mod->ns*i,
-                         shape,scale,1.0,tree->mod);
-
-        }
+            PMat_MGF_Gamma(b_fcus->Pij_rr+tree->mod->ns*tree->mod->ns*i, shape,scale,1.0,tree->mod);
+          }
     }
   if(tree->mod->log_l == YES) b_fcus->l->v = LOG(b_fcus->l->v);
+#ifdef BEAGLE
+      int ret = beagleSetTransitionMatrix(tree->b_inst, b_fcus->num, b_fcus->Pij_rr, 1);
+      if(ret<0){
+          fprintf(stderr, "beagleSetTransitionMatrix() on instance %i failed:%i\n\n",tree->b_inst,ret);
+          Exit("");
+      }
+#endif
 }
 
 //////////////////////////////////////////////////////////////

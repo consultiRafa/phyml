@@ -108,7 +108,7 @@ void Init_Tree(t_tree *tree, int n_otu)
   tree->mixt_tree                 = NULL;
   tree->geo                       = NULL;
 
-  tree->is_mixt_tree              = NO;  
+  tree->is_mixt_tree              = NO;
   tree->tree_num                  = 0;
   tree->depth_curr_path           = 0;
   tree->has_bip                   = NO;
@@ -352,7 +352,7 @@ void Init_Nexus_Format(nexcom **com)
   com[3]->nparm = 0;
   com[3]->nxt_token_t = -1;
   com[3]->cur_token_t = -1;
- 
+
  /*****************************/
 
   strcpy(com[4]->name,"charstatelabels");
@@ -379,15 +379,15 @@ void Init_Nexus_Format(nexcom **com)
   strcpy(com[7]->name,"matrix");
   com[7]->nparm = 1;
   com[7]->nxt_token_t = NEXUS_COM;
-  com[7]->cur_token_t = NEXUS_VALUE; /* This will allow us to skip directly 
-					to the matrix reading function */
+  com[7]->cur_token_t = NEXUS_VALUE; /* This will allow us to skip directly
+                    to the matrix reading function */
 
   com[7]->parm[0] = Make_Nexus_Parm();
   strcpy(com[7]->parm[0]->name,"matrix");
   com[7]->parm[0]->fp = Read_Nexus_Matrix;
   com[7]->parm[0]->com = com[7];
   com[7]->parm[0]->nxt_token_t = NEXUS_COM;
-  com[7]->parm[0]->cur_token_t = -1; 
+  com[7]->parm[0]->cur_token_t = -1;
 
   /*****************************/
 
@@ -418,7 +418,7 @@ void Init_Nexus_Format(nexcom **com)
   com[8]->parm[2]->fp = Read_Nexus_Taxa;
   com[8]->parm[2]->com = com[8];
   com[8]->parm[2]->nxt_token_t = NEXUS_COM;
-  com[8]->parm[2]->cur_token_t = NEXUS_VALUE; 
+  com[8]->parm[2]->cur_token_t = NEXUS_VALUE;
 
 
   /*****************************/
@@ -427,7 +427,7 @@ void Init_Nexus_Format(nexcom **com)
   com[9]->nparm = 0;
   com[9]->nxt_token_t = -1;
   com[9]->cur_token_t = -1;
- 
+
   /*****************************/
 
   strcpy(com[10]->name,"translate");
@@ -440,7 +440,7 @@ void Init_Nexus_Format(nexcom **com)
   com[10]->parm[0]->fp = Read_Nexus_Translate;
   com[10]->parm[0]->com = com[10];
   com[10]->parm[0]->nxt_token_t = NEXUS_COM;
-  com[10]->parm[0]->cur_token_t = -1; 
+  com[10]->parm[0]->cur_token_t = -1;
 
   /*****************************/
 
@@ -454,7 +454,7 @@ void Init_Nexus_Format(nexcom **com)
   com[11]->parm[0]->fp = Read_Nexus_Tree;
   com[11]->parm[0]->com = com[11];
   com[11]->parm[0]->nxt_token_t = -1;
-  com[11]->parm[0]->cur_token_t = -1; 
+  com[11]->parm[0]->cur_token_t = -1;
 
 
   /*****************************/
@@ -586,7 +586,7 @@ void Set_Defaults_Model(t_mod *mod)
   mod->use_m4mod               = NO;
   mod->ras->gamma_median       = NO;
   mod->m4mod                   = NULL;
-  
+
   /* mod->r_mat->n_diff_rr        = 0; */
   /* mod->r_mat->rr               = NULL; */
   /* mod->r_mat->rr_val           = NULL; */
@@ -598,7 +598,7 @@ void Set_Defaults_Model(t_mod *mod)
   mod->gamma_mgf_bl             = NO;
   mod->br_len_multiplier->v     = 1.0;
 
-  
+
   mod->ras->parent_class_number = 0;
   mod->ras->init_r_proba        = YES;
   mod->ras->init_rr             = YES;
@@ -695,9 +695,9 @@ void XML_Init_Node(xml_node *parent, xml_node *new_node, char *name)
   new_node->child    = NULL;
   new_node->ds->obj  = NULL;
   new_node->ds->next = NULL;
-  
+
   if(parent)
-    { 
+    {
       if(!parent->child)
         {
           parent->child = new_node;
@@ -710,7 +710,7 @@ void XML_Init_Node(xml_node *parent, xml_node *new_node, char *name)
           new_node->prev = node;
         }
     }
-  
+
   new_node->attr = NULL;
 }
 
@@ -823,53 +823,53 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
   if(n_otu > 0)
     {
       For(i,(2*n_otu-2)*(2*n_otu-2)) rates->cov_l[i] = 0.0;
-      
-      For(i,2*n_otu-2) 
-	{
-	  rates->n_jps[i]  =  -1;
-	  rates->t_jps[i]  =  -1;
-	  rates->mean_r[i] = 1.0;      
-	  rates->mean_l[i] = 0.0;      
-	}
-      
-      For(i,2*n_otu-1) 
-	{
-	  if(rates->model_log_rates == YES)
-	    {
-	      rates->nd_r[i]   = 0.0;
-	      rates->br_r[i]   = 0.0;
-	    }
-	  else
-	    {
-	      rates->nd_r[i]   = 1.0;
-	      rates->br_r[i]   = 1.0;
-	    }
 
-	  rates->mean_t[i] = 0.0;
-	  rates->nd_t[i]   = 0.0;
-	  rates->true_t[i] = 0.0;
-	  if(i < n_otu)
-	    {
-	      rates->t_has_prior[i] = YES;
-	      rates->t_prior_max[i] = 0.0;
-	      rates->t_prior_min[i] = 0.0;
-	    }
-	  else
-	    {
-	      rates->t_has_prior[i] = NO;
-	      rates->t_prior_max[i] =  BIG;
-	      rates->t_prior_min[i] = -BIG;
-	    }
+      For(i,2*n_otu-2)
+    {
+      rates->n_jps[i]  =  -1;
+      rates->t_jps[i]  =  -1;
+      rates->mean_r[i] = 1.0;
+      rates->mean_l[i] = 0.0;
+    }
 
-	  rates->br_do_updt[i] = YES;
-	  rates->has_survived[i] = NO;
-	  
-	  rates->t_ranked[i] = i;
-	}
+      For(i,2*n_otu-1)
+    {
+      if(rates->model_log_rates == YES)
+        {
+          rates->nd_r[i]   = 0.0;
+          rates->br_r[i]   = 0.0;
+        }
+      else
+        {
+          rates->nd_r[i]   = 1.0;
+          rates->br_r[i]   = 1.0;
+        }
+
+      rates->mean_t[i] = 0.0;
+      rates->nd_t[i]   = 0.0;
+      rates->true_t[i] = 0.0;
+      if(i < n_otu)
+        {
+          rates->t_has_prior[i] = YES;
+          rates->t_prior_max[i] = 0.0;
+          rates->t_prior_min[i] = 0.0;
+        }
+      else
+        {
+          rates->t_has_prior[i] = NO;
+          rates->t_prior_max[i] =  BIG;
+          rates->t_prior_min[i] = -BIG;
+        }
+
+      rates->br_do_updt[i] = YES;
+      rates->has_survived[i] = NO;
+
+      rates->t_ranked[i] = i;
+    }
     }
 
   rates->calib = NULL;
-  
+
 }
 
 //////////////////////////////////////////////////////////////
@@ -919,7 +919,7 @@ void Init_Model(calign *data, t_mod *mod, option *io)
   dr      = (phydbl *)mCalloc(  mod->ns,sizeof(phydbl));
   di      = (phydbl *)mCalloc(  mod->ns,sizeof(phydbl));
   space   = (phydbl *)mCalloc(2*mod->ns,sizeof(phydbl));
-  
+
   if(mod->log_l == YES)
     {
       mod->l_min = LOG(mod->l_min);
@@ -936,7 +936,7 @@ void Init_Model(calign *data, t_mod *mod, option *io)
     {
       mod->ras->gamma_r_proba_unscaled->v[0] = mod->ras->gamma_r_proba->v[0];
       for(i=1;i<mod->ras->n_catg;i++)
-        mod->ras->gamma_r_proba_unscaled->v[i] = 
+        mod->ras->gamma_r_proba_unscaled->v[i] =
           mod->ras->gamma_r_proba_unscaled->v[i-1] +
           mod->ras->gamma_r_proba->v[i];
     }
@@ -949,134 +949,134 @@ void Init_Model(calign *data, t_mod *mod, option *io)
 
   mod->br_len_multiplier->v = 1.0;
 
-  For(i,mod->ns) 
+  For(i,mod->ns)
     {
-      mod->e_frq->pi->v[i] = data->b_frq[i];      
+      mod->e_frq->pi->v[i] = data->b_frq[i];
       mod->e_frq->pi_unscaled->v[i] = mod->e_frq->pi->v[i] * 100.;
     }
-  
+
   if(io->datatype == NT)
     {
       /* Set the substitution parameters to their default values
-	 if they are not fixed by the user */
-      if(mod->s_opt->opt_kappa == YES) 
-	{
-	  mod->kappa->v  = 4.0;
-	  mod->lambda->v = 1.0;
-	}
+     if they are not fixed by the user */
+      if(mod->s_opt->opt_kappa == YES)
+    {
+      mod->kappa->v  = 4.0;
+      mod->lambda->v = 1.0;
+    }
 
       if(mod->s_opt->opt_rr)
-	{
-	  int i;
+    {
+      int i;
 
-	  For(i,6) 
-	    {
-	      mod->r_mat->rr->v[i]     = 1.0;
-	      mod->r_mat->rr_val->v[i] = 1.0;
-	    }
-	}
+      For(i,6)
+        {
+          mod->r_mat->rr->v[i]     = 1.0;
+          mod->r_mat->rr_val->v[i] = 1.0;
+        }
+    }
     }
 
   if(mod->s_opt->opt_alpha)  mod->ras->alpha->v  = 1.0;
   if(mod->s_opt->opt_pinvar) mod->ras->pinvar->v = 0.2;
-  
+
 
   if(io->datatype == NT) /* Nucleotides */
-    { 
+    {
       /* init for nucleotides */
       mod->lambda->v    = 1.;
       /* mod->update_eigen = YES; */
-      
+
       if(mod->whichmodel == JC69)
-	{
-	  mod->e_frq->pi->v[0] = mod->e_frq->pi->v[1] = mod->e_frq->pi->v[2] = mod->e_frq->pi->v[3] = .25;
-	  mod->kappa->v = 1.;
-	  mod->s_opt->opt_state_freq = NO;
-	  mod->s_opt->opt_kappa      = NO;
-	  mod->s_opt->opt_lambda     = NO;
-	  mod->update_eigen          = NO;
-	}
-      
+    {
+      mod->e_frq->pi->v[0] = mod->e_frq->pi->v[1] = mod->e_frq->pi->v[2] = mod->e_frq->pi->v[3] = .25;
+      mod->kappa->v = 1.;
+      mod->s_opt->opt_state_freq = NO;
+      mod->s_opt->opt_kappa      = NO;
+      mod->s_opt->opt_lambda     = NO;
+      mod->update_eigen          = NO;
+    }
+
       if(mod->whichmodel == K80)
-	{
-	  mod->e_frq->pi->v[0] = mod->e_frq->pi->v[1] = mod->e_frq->pi->v[2] = mod->e_frq->pi->v[3] = .25;
-	  mod->s_opt->opt_state_freq = NO;
-	  mod->s_opt->opt_lambda     = NO;
-	  mod->update_eigen          = NO;
-	}
-            
+    {
+      mod->e_frq->pi->v[0] = mod->e_frq->pi->v[1] = mod->e_frq->pi->v[2] = mod->e_frq->pi->v[3] = .25;
+      mod->s_opt->opt_state_freq = NO;
+      mod->s_opt->opt_lambda     = NO;
+      mod->update_eigen          = NO;
+    }
+
       if(mod->whichmodel == F81)
-	{
-	  mod->kappa->v = 1.;
-	  mod->update_eigen          = NO;
-	}
+    {
+      mod->kappa->v = 1.;
+      mod->update_eigen          = NO;
+    }
 
       if(mod->whichmodel == F84)
-	{
-	  aux = ((mod->e_frq->pi->v[0]+mod->e_frq->pi->v[2])-(mod->e_frq->pi->v[1]+mod->e_frq->pi->v[3]))/(2.*mod->kappa->v);
-	  mod->lambda->v = ((mod->e_frq->pi->v[1]+mod->e_frq->pi->v[3]) + aux)/((mod->e_frq->pi->v[0]+mod->e_frq->pi->v[2]) - aux); 
-	  mod->update_eigen          = NO;
-	}
+    {
+      aux = ((mod->e_frq->pi->v[0]+mod->e_frq->pi->v[2])-(mod->e_frq->pi->v[1]+mod->e_frq->pi->v[3]))/(2.*mod->kappa->v);
+      mod->lambda->v = ((mod->e_frq->pi->v[1]+mod->e_frq->pi->v[3]) + aux)/((mod->e_frq->pi->v[0]+mod->e_frq->pi->v[2]) - aux);
+      mod->update_eigen          = NO;
+    }
 
       if(mod->whichmodel == TN93)
-	{
-	  mod->update_eigen          = NO;
-	  if(io->mod->s_opt->opt_kappa) io->mod->s_opt->opt_lambda = 1;
-	}
+    {
+      mod->update_eigen          = NO;
+      if(io->mod->s_opt->opt_kappa) io->mod->s_opt->opt_lambda = 1;
+    }
 
       if(mod->whichmodel == GTR)
-	{
-	  mod->kappa->v = 1.;
-	  mod->update_eigen      = YES;
-	  io->mod->s_opt->opt_rr = YES;
-	}
+    {
+      mod->kappa->v = 1.;
+      mod->update_eigen      = YES;
+      io->mod->s_opt->opt_rr = YES;
+    }
 
       if(mod->whichmodel == CUSTOM)
-	{
-	  mod->kappa->v = 1.;
-	  mod->update_eigen = YES;
-	  /* 	  io->mod->s_opt->opt_rr     = YES; */ /* What if the user decided not to optimise the rates? */
-	}
-             
+    {
+      mod->kappa->v = 1.;
+      mod->update_eigen = YES;
+      /* 	  io->mod->s_opt->opt_rr     = YES; */ /* What if the user decided not to optimise the rates? */
+    }
+
       if(mod->whichmodel == GTR)
-	{		  
-	  mod->custom_mod_string->s[0] = '0';
-	  mod->custom_mod_string->s[1] = '1';
-	  mod->custom_mod_string->s[2] = '2';
-	  mod->custom_mod_string->s[3] = '3';
-	  mod->custom_mod_string->s[4] = '4';
-	  mod->custom_mod_string->s[5] = '5';
-	  Translate_Custom_Mod_String(mod);
-	}
-      
-      if(mod->s_opt->user_state_freq == YES) 
-	{
-          For(i,4) 
+    {
+      mod->custom_mod_string->s[0] = '0';
+      mod->custom_mod_string->s[1] = '1';
+      mod->custom_mod_string->s[2] = '2';
+      mod->custom_mod_string->s[3] = '3';
+      mod->custom_mod_string->s[4] = '4';
+      mod->custom_mod_string->s[5] = '5';
+      Translate_Custom_Mod_String(mod);
+    }
+
+      if(mod->s_opt->user_state_freq == YES)
+        {
+          For(i,4)
             {
               mod->e_frq->pi->v[i] = mod->user_b_freq->v[i];
-            }          
+            }
         }
 
-      if(((mod->whichmodel == GTR)    || 
-          (mod->whichmodel == CUSTOM) || 
+      if(((mod->whichmodel == GTR)    ||
+          (mod->whichmodel == CUSTOM) ||
           (mod->whichmodel == HKY85)) &&
          (mod->use_m4mod == NO))
-	{
-	  mod->update_eigen = YES;
-	  Update_Eigen(mod);
-	  mod->update_eigen = NO;
-	}
+        {
+          mod->update_eigen = YES;
+          Update_Eigen(mod);
+          mod->update_eigen = NO;
+        }
       /* if((mod->whichmodel != GTR)    &&  */
       /* 	 (mod->whichmodel != CUSTOM) &&  */
       /* 	 (mod->whichmodel != HKY85)) mod->update_eigen = NO; */
     }
   else if(mod->io->datatype == AA)
-    { 
+    {
 
       /* init for amino-acids */
       /* see comments of PMat_Empirical for details */
       /* read pi and Q from file */
-            
+
       /* These initialisations are needed when analysing multiple
        * data sets
        */
@@ -1084,133 +1084,133 @@ void Init_Model(calign *data, t_mod *mod, option *io)
       For(i,mod->ns        ) mod->e_frq->pi->v[i]   = .0;
 
       switch(mod->whichmodel)
-	{
-	case DAYHOFF : 
-	  {
-	    Init_Qmat_Dayhoff(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-	    if(mod->s_opt->opt_state_freq)
-	      For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
-	    break;
-	  }
-	case JTT : 
-	  {
-	    Init_Qmat_JTT(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-	    if(mod->s_opt->opt_state_freq)
-	      For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
-	    break;
-	  }
-	case MTREV : 
-	  {
-	    Init_Qmat_MtREV(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-	    if(mod->s_opt->opt_state_freq)
-	      For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
-	    break;
-	  }
-	case LG : 
-	  {
-	    Init_Qmat_LG(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-	    if(mod->s_opt->opt_state_freq)
-	      For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];	    
-	    break;
-	  }
-	case WAG : 
-	  {
-	    Init_Qmat_WAG(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-	    if(mod->s_opt->opt_state_freq)
-	      For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
-	    break;
-	  }
-	case DCMUT : 
-	  {
-	    Init_Qmat_DCMut(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-	    if(mod->s_opt->opt_state_freq)
-	      For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
-	    break;
-	  }
-	case RTREV : 
-	  {
-	    Init_Qmat_RtREV(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-	    if(mod->s_opt->opt_state_freq)
-	      For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
-	    break;
-	  }
-	case CPREV : 
-	  {
-	    Init_Qmat_CpREV(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-	    if(mod->s_opt->opt_state_freq)
-	      For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
-	    break;
-	  }
-	case VT : 
-	  {
-	    Init_Qmat_VT(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-	    if(mod->s_opt->opt_state_freq)
-	      For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
-	    break;
-	  }
-	case BLOSUM62 : 
-	  {
-	    Init_Qmat_Blosum62(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-	    if(mod->s_opt->opt_state_freq)
-	      For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
-	    break;
-	  }
-	case MTMAM : 
-	  {
-	    Init_Qmat_MtMam(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-	    if(mod->s_opt->opt_state_freq)
-	      For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
-	    break;
-	  }
-	case MTART : 
-	  {
-	    Init_Qmat_MtArt(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-	    if(mod->s_opt->opt_state_freq)
-	      For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
-	    break;
-	  }
-	case HIVW : 
-	  {
-	    Init_Qmat_HIVw(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-	    if(mod->s_opt->opt_state_freq)
-	      For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
-	    break;
-	  }
-	case HIVB : 
-	  {
-	    Init_Qmat_HIVb(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-	    if(mod->s_opt->opt_state_freq)
-	      For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
-	    break;
-	  }
-	case CUSTOMAA :
-	  {
-	    Read_Qmat(mod->r_mat->qmat->v,mod->e_frq->pi->v,mod->fp_aa_rate_mat);
+    {
+    case DAYHOFF :
+      {
+        Init_Qmat_Dayhoff(mod->r_mat->qmat->v,mod->e_frq->pi->v);
+        if(mod->s_opt->opt_state_freq)
+          For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
+        break;
+      }
+    case JTT :
+      {
+        Init_Qmat_JTT(mod->r_mat->qmat->v,mod->e_frq->pi->v);
+        if(mod->s_opt->opt_state_freq)
+          For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
+        break;
+      }
+    case MTREV :
+      {
+        Init_Qmat_MtREV(mod->r_mat->qmat->v,mod->e_frq->pi->v);
+        if(mod->s_opt->opt_state_freq)
+          For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
+        break;
+      }
+    case LG :
+      {
+        Init_Qmat_LG(mod->r_mat->qmat->v,mod->e_frq->pi->v);
+        if(mod->s_opt->opt_state_freq)
+          For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
+        break;
+      }
+    case WAG :
+      {
+        Init_Qmat_WAG(mod->r_mat->qmat->v,mod->e_frq->pi->v);
+        if(mod->s_opt->opt_state_freq)
+          For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
+        break;
+      }
+    case DCMUT :
+      {
+        Init_Qmat_DCMut(mod->r_mat->qmat->v,mod->e_frq->pi->v);
+        if(mod->s_opt->opt_state_freq)
+          For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
+        break;
+      }
+    case RTREV :
+      {
+        Init_Qmat_RtREV(mod->r_mat->qmat->v,mod->e_frq->pi->v);
+        if(mod->s_opt->opt_state_freq)
+          For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
+        break;
+      }
+    case CPREV :
+      {
+        Init_Qmat_CpREV(mod->r_mat->qmat->v,mod->e_frq->pi->v);
+        if(mod->s_opt->opt_state_freq)
+          For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
+        break;
+      }
+    case VT :
+      {
+        Init_Qmat_VT(mod->r_mat->qmat->v,mod->e_frq->pi->v);
+        if(mod->s_opt->opt_state_freq)
+          For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
+        break;
+      }
+    case BLOSUM62 :
+      {
+        Init_Qmat_Blosum62(mod->r_mat->qmat->v,mod->e_frq->pi->v);
+        if(mod->s_opt->opt_state_freq)
+          For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
+        break;
+      }
+    case MTMAM :
+      {
+        Init_Qmat_MtMam(mod->r_mat->qmat->v,mod->e_frq->pi->v);
+        if(mod->s_opt->opt_state_freq)
+          For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
+        break;
+      }
+    case MTART :
+      {
+        Init_Qmat_MtArt(mod->r_mat->qmat->v,mod->e_frq->pi->v);
+        if(mod->s_opt->opt_state_freq)
+          For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
+        break;
+      }
+    case HIVW :
+      {
+        Init_Qmat_HIVw(mod->r_mat->qmat->v,mod->e_frq->pi->v);
+        if(mod->s_opt->opt_state_freq)
+          For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
+        break;
+      }
+    case HIVB :
+      {
+        Init_Qmat_HIVb(mod->r_mat->qmat->v,mod->e_frq->pi->v);
+        if(mod->s_opt->opt_state_freq)
+          For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
+        break;
+      }
+    case CUSTOMAA :
+      {
+        Read_Qmat(mod->r_mat->qmat->v,mod->e_frq->pi->v,mod->fp_aa_rate_mat);
 /* 	    Print_Qmat_AA(mod->r_mat->qmat->v,mod->e_frq->pi->v); */
-	    if(mod->s_opt->opt_state_freq) For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];	    
-	    break;
-	  }
-	default : 
+        if(mod->s_opt->opt_state_freq) For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
+        break;
+      }
+    default :
           {
-	    Init_Qmat_LG(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-	    if(mod->s_opt->opt_state_freq)
-	      For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];	    
-	    break;
+        Init_Qmat_LG(mod->r_mat->qmat->v,mod->e_frq->pi->v);
+        if(mod->s_opt->opt_state_freq)
+          For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
+        break;
           }
-	}
-  
+    }
+
 /*       /\* multiply the nth col of Q by the nth term of pi/100 just as in PAML *\/ */
       For(i,mod->ns) For(j,mod->ns) mod->r_mat->qmat->v[i*mod->ns+j] *= mod->e_frq->pi->v[j] / 100.0;
-      
+
       /* compute diagonal terms of Q and mean rate mr = l/t */
       mod->mr->v= .0;
       For (i,mod->ns)
-	{
-	  sum=.0;
-	  For(j, mod->ns) sum += mod->r_mat->qmat->v[i*mod->ns+j];
-	  mod->r_mat->qmat->v[i*mod->ns+i] = -sum;
-	  mod->mr->v += mod->e_frq->pi->v[i] * sum;
-	}
+    {
+      sum=.0;
+      For(j, mod->ns) sum += mod->r_mat->qmat->v[i*mod->ns+j];
+      mod->r_mat->qmat->v[i*mod->ns+i] = -sum;
+      mod->mr->v += mod->e_frq->pi->v[i] * sum;
+    }
 
       /* scale imod->nstantaneous rate matrix so that mu=1 */
       For (i,mod->ns*mod->ns) mod->r_mat->qmat->v[i] /= mod->mr->v;
@@ -1221,25 +1221,25 @@ void Init_Model(calign *data, t_mod *mod, option *io)
       For(i,mod->ns*mod->ns) mod->r_mat->qmat_buff->v[i] = mod->r_mat->qmat->v[i];
 
       if(!Eigen(1,mod->r_mat->qmat_buff->v,mod->eigen->size,mod->eigen->e_val,
-		mod->eigen->e_val_im,mod->eigen->r_e_vect,
-		mod->eigen->r_e_vect_im,mod->eigen->space))
-	{
-	  /* compute inverse(Vr) into Vi */
-	  For (i,mod->ns*mod->ns) mod->eigen->l_e_vect[i] = mod->eigen->r_e_vect[i];
-	  if(!Matinv(mod->eigen->l_e_vect,mod->eigen->size,mod->eigen->size,YES))
-	    {
-	      PhyML_Printf("\n== Err in file %s at line %d.",__FILE__,__LINE__);
-	      Exit("\n");      
-	    }
-	  
-	  /* compute the diagonal terms of EXP(D) */
-	  For(i,mod->ns) mod->eigen->e_val[i] = (phydbl)EXP(mod->eigen->e_val[i]);
-	}
+        mod->eigen->e_val_im,mod->eigen->r_e_vect,
+        mod->eigen->r_e_vect_im,mod->eigen->space))
+    {
+      /* compute inverse(Vr) into Vi */
+      For (i,mod->ns*mod->ns) mod->eigen->l_e_vect[i] = mod->eigen->r_e_vect[i];
+      if(!Matinv(mod->eigen->l_e_vect,mod->eigen->size,mod->eigen->size,YES))
+        {
+          PhyML_Printf("\n== Err in file %s at line %d.",__FILE__,__LINE__);
+          Exit("\n");
+        }
+
+      /* compute the diagonal terms of EXP(D) */
+      For(i,mod->ns) mod->eigen->e_val[i] = (phydbl)EXP(mod->eigen->e_val[i]);
+    }
       else
-	{
-	  if (result==-1) PhyML_Printf("\n== Eigenvalues/vectors computation does not converge : computation cancelled");
-	  else if (result==1) PhyML_Printf("\n== Complex eigenvalues/vectors : computation cancelled");
-	}
+    {
+      if (result==-1) PhyML_Printf("\n== Eigenvalues/vectors computation does not converge : computation cancelled");
+      else if (result==1) PhyML_Printf("\n== Complex eigenvalues/vectors : computation cancelled");
+    }
     }
   else if(mod->io->datatype == GENERIC)
     {
@@ -1257,10 +1257,10 @@ void Init_Model(calign *data, t_mod *mod, option *io)
       PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
-  if(!mod->use_m4mod) Set_Model_Parameters(mod);      
-		  
+  if(!mod->use_m4mod) Set_Model_Parameters(mod);
+
   Init_Eigen_Struct(mod->eigen);
-  
+
   free(dr);free(di);free(space);
 }
 
@@ -1280,7 +1280,7 @@ int Init_Qmat_Dayhoff(phydbl *daa, phydbl *pi)
   naa = 20;
 
 /*   PhyML_Printf("\n\n. REMINDER : THIS IS NOT DAYHOFF !!!\n\n"); */
-  
+
 /*   daa[1*20 + 0] = 0.538903;  */
 /*   daa[2*20 + 0] = 0.412504;  */
 /*   daa[2*20 + 1] = 0.736081;  */
@@ -1471,12 +1471,12 @@ int Init_Qmat_Dayhoff(phydbl *daa, phydbl *pi)
 /*   daa[19*20 + 16] = 1.789097;  */
 /*   daa[19*20 + 17] = 0.147951;  */
 /*   daa[19*20 + 18] = 0.200571; */
-  
-  
-   
+
+
+
 /*   for (i=0; i<naa; i++)  for (j=0; j<i; j++)  daa[j*naa+i] = daa[i*naa+j]; */
-  
-  
+
+
 /*   pi[0] = 0.093862;  */
 /*   pi[1] = 0.05757;  */
 /*   pi[2] = 0.037017;  */
@@ -1497,8 +1497,8 @@ int Init_Qmat_Dayhoff(phydbl *daa, phydbl *pi)
 /*   pi[17] = 0.00928;  */
 /*   pi[18] = 0.030025;  */
 /*   pi[19] = 0.073369; */
-  
-  
+
+
   daa[ 1*20+ 0] =   27.00; daa[ 2*20+ 0] =   98.00; daa[ 2*20+ 1] =   32.00; daa[ 3*20+ 0] =  120.00;
   daa[ 3*20+ 1] =    0.00; daa[ 3*20+ 2] =  905.00; daa[ 4*20+ 0] =   36.00; daa[ 4*20+ 1] =   23.00;
   daa[ 4*20+ 2] =    0.00; daa[ 4*20+ 3] =    0.00; daa[ 5*20+ 0] =   89.00; daa[ 5*20+ 1] =  246.00;
@@ -1547,17 +1547,17 @@ int Init_Qmat_Dayhoff(phydbl *daa, phydbl *pi)
   daa[19*20+ 9] =  889.00; daa[19*20+10] =  175.00; daa[19*20+11] =   10.00; daa[19*20+12] =  258.00;
   daa[19*20+13] =   12.00; daa[19*20+14] =   48.00; daa[19*20+15] =   30.00; daa[19*20+16] =  157.00;
   daa[19*20+17] =    0.00; daa[19*20+18] =   28.00;
-  
+
   for (i=0; i<naa; i++)  for (j=0; j<i; j++)  daa[j*naa+i] = daa[i*naa+j];
-  
+
   pi[ 0] = 0.087127; pi[ 1] = 0.040904; pi[ 2] = 0.040432; pi[ 3] = 0.046872;
   pi[ 4] = 0.033474; pi[ 5] = 0.038255; pi[ 6] = 0.049530; pi[ 7] = 0.088612;
   pi[ 8] = 0.033618; pi[ 9] = 0.036886; pi[10] = 0.085357; pi[11] = 0.080482;
   pi[12] = 0.014753; pi[13] = 0.039772; pi[14] = 0.050680; pi[15] = 0.069577;
   pi[16] = 0.058542; pi[17] = 0.010494; pi[18] = 0.029916; pi[19] = 0.064718;
- 
-  
-    
+
+
+
   return 1;
 }
 
@@ -1567,7 +1567,7 @@ int Init_Qmat_Dayhoff(phydbl *daa, phydbl *pi)
 
 int Init_Qmat_DCMut(phydbl *daa, phydbl *pi)
 {
-  /* 
+  /*
      DCMut : new implementation based on Dayhoff et al.'s raw data and amino acid mutabilities
      C. Kosiol and N. Goldman. (2005),
      ``Different versions of the Dayhoff rate matrix'',
@@ -1578,62 +1578,62 @@ int Init_Qmat_DCMut(phydbl *daa, phydbl *pi)
 
   naa = 20;
 
-  daa[ 1*20+ 0] =   26.78280; daa[ 2*20+ 0] =   98.44740; daa[ 2*20+ 1] =   32.70590; daa[ 3*20+ 0] =  119.98050; 
-  daa[ 3*20+ 1] =    0.00000; daa[ 3*20+ 2] =  893.15150; daa[ 4*20+ 0] =   36.00160; daa[ 4*20+ 1] =   23.23740; 
-  daa[ 4*20+ 2] =    0.00000; daa[ 4*20+ 3] =    0.00000; daa[ 5*20+ 0] =   88.77530; daa[ 5*20+ 1] =  243.99390; 
-  daa[ 5*20+ 2] =  102.85090; daa[ 5*20+ 3] =  134.85510; daa[ 5*20+ 4] =    0.00000; daa[ 6*20+ 0] =  196.11670; 
-  daa[ 6*20+ 1] =    0.00000; daa[ 6*20+ 2] =  149.34090; daa[ 6*20+ 3] = 1138.86590; daa[ 6*20+ 4] =    0.00000; 
-  daa[ 6*20+ 5] =  708.60220; daa[ 7*20+ 0] =  238.61110; daa[ 7*20+ 1] =    8.77910; daa[ 7*20+ 2] =  138.53520; 
-  daa[ 7*20+ 3] =  124.09810; daa[ 7*20+ 4] =   10.72780; daa[ 7*20+ 5] =   28.15810; daa[ 7*20+ 6] =   81.19070; 
-  daa[ 8*20+ 0] =   22.81160; daa[ 8*20+ 1] =  238.31480; daa[ 8*20+ 2] =  529.00240; daa[ 8*20+ 3] =   86.82410; 
-  daa[ 8*20+ 4] =   28.27290; daa[ 8*20+ 5] =  601.16130; daa[ 8*20+ 6] =   43.94690; daa[ 8*20+ 7] =   10.68020; 
-  daa[ 9*20+ 0] =   65.34160; daa[ 9*20+ 1] =   63.26290; daa[ 9*20+ 2] =   76.80240; daa[ 9*20+ 3] =   23.92480; 
-  daa[ 9*20+ 4] =   43.80740; daa[ 9*20+ 5] =   18.03930; daa[ 9*20+ 6] =   60.95260; daa[ 9*20+ 7] =    0.00000; 
-  daa[ 9*20+ 8] =    7.69810; daa[10*20+ 0] =   40.64310; daa[10*20+ 1] =   15.49240; daa[10*20+ 2] =   34.11130; 
-  daa[10*20+ 3] =    0.00000; daa[10*20+ 4] =    0.00000; daa[10*20+ 5] =   73.07720; daa[10*20+ 6] =   11.28800; 
-  daa[10*20+ 7] =    7.15140; daa[10*20+ 8] =   44.35040; daa[10*20+ 9] =  255.66850; daa[11*20+ 0] =   25.86350; 
-  daa[11*20+ 1] =  461.01240; daa[11*20+ 2] =  314.83710; daa[11*20+ 3] =   71.69130; daa[11*20+ 4] =    0.00000; 
-  daa[11*20+ 5] =  151.90780; daa[11*20+ 6] =   83.00780; daa[11*20+ 7] =   26.76830; daa[11*20+ 8] =   27.04750; 
-  daa[11*20+ 9] =   46.08570; daa[11*20+10] =   18.06290; daa[12*20+ 0] =   71.78400; daa[12*20+ 1] =   89.63210; 
-  daa[12*20+ 2] =    0.00000; daa[12*20+ 3] =    0.00000; daa[12*20+ 4] =    0.00000; daa[12*20+ 5] =  112.74990; 
-  daa[12*20+ 6] =   30.48030; daa[12*20+ 7] =   17.03720; daa[12*20+ 8] =    0.00000; daa[12*20+ 9] =  333.27320; 
-  daa[12*20+10] =  523.01150; daa[12*20+11] =  241.17390; daa[13*20+ 0] =   18.36410; daa[13*20+ 1] =   13.69060; 
-  daa[13*20+ 2] =   13.85030; daa[13*20+ 3] =    0.00000; daa[13*20+ 4] =    0.00000; daa[13*20+ 5] =    0.00000; 
-  daa[13*20+ 6] =    0.00000; daa[13*20+ 7] =   15.34780; daa[13*20+ 8] =   47.59270; daa[13*20+ 9] =  195.19510; 
-  daa[13*20+10] =  156.51600; daa[13*20+11] =    0.00000; daa[13*20+12] =   92.18600; daa[14*20+ 0] =  248.59200; 
-  daa[14*20+ 1] =  102.83130; daa[14*20+ 2] =   41.92440; daa[14*20+ 3] =   13.39400; daa[14*20+ 4] =   18.75500; 
-  daa[14*20+ 5] =  152.61880; daa[14*20+ 6] =   50.70030; daa[14*20+ 7] =   34.71530; daa[14*20+ 8] =   93.37090; 
-  daa[14*20+ 9] =   11.91520; daa[14*20+10] =   31.62580; daa[14*20+11] =   33.54190; daa[14*20+12] =   17.02050; 
-  daa[14*20+13] =   11.05060; daa[15*20+ 0] =  405.18700; daa[15*20+ 1] =  153.15900; daa[15*20+ 2] =  488.58920; 
-  daa[15*20+ 3] =   95.60970; daa[15*20+ 4] =  159.83560; daa[15*20+ 5] =   56.18280; daa[15*20+ 6] =   79.39990; 
-  daa[15*20+ 7] =  232.22430; daa[15*20+ 8] =   35.36430; daa[15*20+ 9] =   24.79550; daa[15*20+10] =   17.14320; 
-  daa[15*20+11] =   95.45570; daa[15*20+12] =   61.99510; daa[15*20+13] =   45.99010; daa[15*20+14] =  242.72020; 
-  daa[16*20+ 0] =  368.03650; daa[16*20+ 1] =   26.57450; daa[16*20+ 2] =  227.16970; daa[16*20+ 3] =   66.09300; 
-  daa[16*20+ 4] =   16.23660; daa[16*20+ 5] =   52.56510; daa[16*20+ 6] =   34.01560; daa[16*20+ 7] =   30.66620; 
-  daa[16*20+ 8] =   22.63330; daa[16*20+ 9] =  190.07390; daa[16*20+10] =   33.10900; daa[16*20+11] =  135.05990; 
-  daa[16*20+12] =  103.15340; daa[16*20+13] =   13.66550; daa[16*20+14] =   78.28570; daa[16*20+15] =  543.66740; 
-  daa[17*20+ 0] =    0.00000; daa[17*20+ 1] =  200.13750; daa[17*20+ 2] =   22.49680; daa[17*20+ 3] =    0.00000; 
-  daa[17*20+ 4] =    0.00000; daa[17*20+ 5] =    0.00000; daa[17*20+ 6] =    0.00000; daa[17*20+ 7] =    0.00000; 
-  daa[17*20+ 8] =   27.05640; daa[17*20+ 9] =    0.00000; daa[17*20+10] =   46.17760; daa[17*20+11] =    0.00000; 
-  daa[17*20+12] =    0.00000; daa[17*20+13] =   76.23540; daa[17*20+14] =    0.00000; daa[17*20+15] =   74.08190; 
-  daa[17*20+16] =    0.00000; daa[18*20+ 0] =   24.41390; daa[18*20+ 1] =    7.80120; daa[18*20+ 2] =   94.69400; 
-  daa[18*20+ 3] =    0.00000; daa[18*20+ 4] =   95.31640; daa[18*20+ 5] =    0.00000; daa[18*20+ 6] =   21.47170; 
-  daa[18*20+ 7] =    0.00000; daa[18*20+ 8] =  126.54000; daa[18*20+ 9] =   37.48340; daa[18*20+10] =   28.65720; 
-  daa[18*20+11] =   13.21420; daa[18*20+12] =    0.00000; daa[18*20+13] =  695.26290; daa[18*20+14] =    0.00000; 
-  daa[18*20+15] =   33.62890; daa[18*20+16] =   41.78390; daa[18*20+17] =   60.80700; daa[19*20+ 0] =  205.95640; 
-  daa[19*20+ 1] =   24.03680; daa[19*20+ 2] =   15.80670; daa[19*20+ 3] =   17.83160; daa[19*20+ 4] =   48.46780; 
-  daa[19*20+ 5] =   34.69830; daa[19*20+ 6] =   36.72500; daa[19*20+ 7] =   53.81650; daa[19*20+ 8] =   43.87150; 
-  daa[19*20+ 9] =  881.00380; daa[19*20+10] =  174.51560; daa[19*20+11] =   10.38500; daa[19*20+12] =  256.59550; 
-  daa[19*20+13] =   12.36060; daa[19*20+14] =   48.50260; daa[19*20+15] =   30.38360; daa[19*20+16] =  156.19970; 
-  daa[19*20+17] =    0.00000; daa[19*20+18] =   27.93790; 
-  
+  daa[ 1*20+ 0] =   26.78280; daa[ 2*20+ 0] =   98.44740; daa[ 2*20+ 1] =   32.70590; daa[ 3*20+ 0] =  119.98050;
+  daa[ 3*20+ 1] =    0.00000; daa[ 3*20+ 2] =  893.15150; daa[ 4*20+ 0] =   36.00160; daa[ 4*20+ 1] =   23.23740;
+  daa[ 4*20+ 2] =    0.00000; daa[ 4*20+ 3] =    0.00000; daa[ 5*20+ 0] =   88.77530; daa[ 5*20+ 1] =  243.99390;
+  daa[ 5*20+ 2] =  102.85090; daa[ 5*20+ 3] =  134.85510; daa[ 5*20+ 4] =    0.00000; daa[ 6*20+ 0] =  196.11670;
+  daa[ 6*20+ 1] =    0.00000; daa[ 6*20+ 2] =  149.34090; daa[ 6*20+ 3] = 1138.86590; daa[ 6*20+ 4] =    0.00000;
+  daa[ 6*20+ 5] =  708.60220; daa[ 7*20+ 0] =  238.61110; daa[ 7*20+ 1] =    8.77910; daa[ 7*20+ 2] =  138.53520;
+  daa[ 7*20+ 3] =  124.09810; daa[ 7*20+ 4] =   10.72780; daa[ 7*20+ 5] =   28.15810; daa[ 7*20+ 6] =   81.19070;
+  daa[ 8*20+ 0] =   22.81160; daa[ 8*20+ 1] =  238.31480; daa[ 8*20+ 2] =  529.00240; daa[ 8*20+ 3] =   86.82410;
+  daa[ 8*20+ 4] =   28.27290; daa[ 8*20+ 5] =  601.16130; daa[ 8*20+ 6] =   43.94690; daa[ 8*20+ 7] =   10.68020;
+  daa[ 9*20+ 0] =   65.34160; daa[ 9*20+ 1] =   63.26290; daa[ 9*20+ 2] =   76.80240; daa[ 9*20+ 3] =   23.92480;
+  daa[ 9*20+ 4] =   43.80740; daa[ 9*20+ 5] =   18.03930; daa[ 9*20+ 6] =   60.95260; daa[ 9*20+ 7] =    0.00000;
+  daa[ 9*20+ 8] =    7.69810; daa[10*20+ 0] =   40.64310; daa[10*20+ 1] =   15.49240; daa[10*20+ 2] =   34.11130;
+  daa[10*20+ 3] =    0.00000; daa[10*20+ 4] =    0.00000; daa[10*20+ 5] =   73.07720; daa[10*20+ 6] =   11.28800;
+  daa[10*20+ 7] =    7.15140; daa[10*20+ 8] =   44.35040; daa[10*20+ 9] =  255.66850; daa[11*20+ 0] =   25.86350;
+  daa[11*20+ 1] =  461.01240; daa[11*20+ 2] =  314.83710; daa[11*20+ 3] =   71.69130; daa[11*20+ 4] =    0.00000;
+  daa[11*20+ 5] =  151.90780; daa[11*20+ 6] =   83.00780; daa[11*20+ 7] =   26.76830; daa[11*20+ 8] =   27.04750;
+  daa[11*20+ 9] =   46.08570; daa[11*20+10] =   18.06290; daa[12*20+ 0] =   71.78400; daa[12*20+ 1] =   89.63210;
+  daa[12*20+ 2] =    0.00000; daa[12*20+ 3] =    0.00000; daa[12*20+ 4] =    0.00000; daa[12*20+ 5] =  112.74990;
+  daa[12*20+ 6] =   30.48030; daa[12*20+ 7] =   17.03720; daa[12*20+ 8] =    0.00000; daa[12*20+ 9] =  333.27320;
+  daa[12*20+10] =  523.01150; daa[12*20+11] =  241.17390; daa[13*20+ 0] =   18.36410; daa[13*20+ 1] =   13.69060;
+  daa[13*20+ 2] =   13.85030; daa[13*20+ 3] =    0.00000; daa[13*20+ 4] =    0.00000; daa[13*20+ 5] =    0.00000;
+  daa[13*20+ 6] =    0.00000; daa[13*20+ 7] =   15.34780; daa[13*20+ 8] =   47.59270; daa[13*20+ 9] =  195.19510;
+  daa[13*20+10] =  156.51600; daa[13*20+11] =    0.00000; daa[13*20+12] =   92.18600; daa[14*20+ 0] =  248.59200;
+  daa[14*20+ 1] =  102.83130; daa[14*20+ 2] =   41.92440; daa[14*20+ 3] =   13.39400; daa[14*20+ 4] =   18.75500;
+  daa[14*20+ 5] =  152.61880; daa[14*20+ 6] =   50.70030; daa[14*20+ 7] =   34.71530; daa[14*20+ 8] =   93.37090;
+  daa[14*20+ 9] =   11.91520; daa[14*20+10] =   31.62580; daa[14*20+11] =   33.54190; daa[14*20+12] =   17.02050;
+  daa[14*20+13] =   11.05060; daa[15*20+ 0] =  405.18700; daa[15*20+ 1] =  153.15900; daa[15*20+ 2] =  488.58920;
+  daa[15*20+ 3] =   95.60970; daa[15*20+ 4] =  159.83560; daa[15*20+ 5] =   56.18280; daa[15*20+ 6] =   79.39990;
+  daa[15*20+ 7] =  232.22430; daa[15*20+ 8] =   35.36430; daa[15*20+ 9] =   24.79550; daa[15*20+10] =   17.14320;
+  daa[15*20+11] =   95.45570; daa[15*20+12] =   61.99510; daa[15*20+13] =   45.99010; daa[15*20+14] =  242.72020;
+  daa[16*20+ 0] =  368.03650; daa[16*20+ 1] =   26.57450; daa[16*20+ 2] =  227.16970; daa[16*20+ 3] =   66.09300;
+  daa[16*20+ 4] =   16.23660; daa[16*20+ 5] =   52.56510; daa[16*20+ 6] =   34.01560; daa[16*20+ 7] =   30.66620;
+  daa[16*20+ 8] =   22.63330; daa[16*20+ 9] =  190.07390; daa[16*20+10] =   33.10900; daa[16*20+11] =  135.05990;
+  daa[16*20+12] =  103.15340; daa[16*20+13] =   13.66550; daa[16*20+14] =   78.28570; daa[16*20+15] =  543.66740;
+  daa[17*20+ 0] =    0.00000; daa[17*20+ 1] =  200.13750; daa[17*20+ 2] =   22.49680; daa[17*20+ 3] =    0.00000;
+  daa[17*20+ 4] =    0.00000; daa[17*20+ 5] =    0.00000; daa[17*20+ 6] =    0.00000; daa[17*20+ 7] =    0.00000;
+  daa[17*20+ 8] =   27.05640; daa[17*20+ 9] =    0.00000; daa[17*20+10] =   46.17760; daa[17*20+11] =    0.00000;
+  daa[17*20+12] =    0.00000; daa[17*20+13] =   76.23540; daa[17*20+14] =    0.00000; daa[17*20+15] =   74.08190;
+  daa[17*20+16] =    0.00000; daa[18*20+ 0] =   24.41390; daa[18*20+ 1] =    7.80120; daa[18*20+ 2] =   94.69400;
+  daa[18*20+ 3] =    0.00000; daa[18*20+ 4] =   95.31640; daa[18*20+ 5] =    0.00000; daa[18*20+ 6] =   21.47170;
+  daa[18*20+ 7] =    0.00000; daa[18*20+ 8] =  126.54000; daa[18*20+ 9] =   37.48340; daa[18*20+10] =   28.65720;
+  daa[18*20+11] =   13.21420; daa[18*20+12] =    0.00000; daa[18*20+13] =  695.26290; daa[18*20+14] =    0.00000;
+  daa[18*20+15] =   33.62890; daa[18*20+16] =   41.78390; daa[18*20+17] =   60.80700; daa[19*20+ 0] =  205.95640;
+  daa[19*20+ 1] =   24.03680; daa[19*20+ 2] =   15.80670; daa[19*20+ 3] =   17.83160; daa[19*20+ 4] =   48.46780;
+  daa[19*20+ 5] =   34.69830; daa[19*20+ 6] =   36.72500; daa[19*20+ 7] =   53.81650; daa[19*20+ 8] =   43.87150;
+  daa[19*20+ 9] =  881.00380; daa[19*20+10] =  174.51560; daa[19*20+11] =   10.38500; daa[19*20+12] =  256.59550;
+  daa[19*20+13] =   12.36060; daa[19*20+14] =   48.50260; daa[19*20+15] =   30.38360; daa[19*20+16] =  156.19970;
+  daa[19*20+17] =    0.00000; daa[19*20+18] =   27.93790;
+
   for (i=0; i<naa; i++)  for (j=0; j<i; j++)  daa[j*naa+i] = daa[i*naa+j];
 
-  pi[ 0] = 0.087127; pi[ 1] = 0.040904; pi[ 2] = 0.040432; pi[ 3] = 0.046872; 
+  pi[ 0] = 0.087127; pi[ 1] = 0.040904; pi[ 2] = 0.040432; pi[ 3] = 0.046872;
   pi[ 4] = 0.033474; pi[ 5] = 0.038255; pi[ 6] = 0.049530; pi[ 7] = 0.088612;
   pi[ 8] = 0.033619; pi[ 9] = 0.036886; pi[10] = 0.085357; pi[11] = 0.080481;
   pi[12] = 0.014753; pi[13] = 0.039772; pi[14] = 0.050680; pi[15] = 0.069577;
-  pi[16] = 0.058542; pi[17] = 0.010494; pi[18] = 0.029916; pi[19] = 0.064718; 
+  pi[16] = 0.058542; pi[17] = 0.010494; pi[18] = 0.029916; pi[19] = 0.064718;
 
   return 1;
 }
@@ -1644,13 +1644,13 @@ int Init_Qmat_DCMut(phydbl *daa, phydbl *pi)
 
 int Init_Qmat_MtArt(phydbl *daa, phydbl *pi) // Added by Federico Abascal
 {
-    /* 
+    /*
        Federico Abascal, April 2005 (c).
-       
+
        This model has been derived from 36 artropoda mitochondrial genomes.
 
-       Each gene of the given species was aligned individually. Then, alignments of the whole set 
-       of 13 genes where concatenated and passed through GBlocks (Castresana, 2000, in JME) with 
+       Each gene of the given species was aligned individually. Then, alignments of the whole set
+       of 13 genes where concatenated and passed through GBlocks (Castresana, 2000, in JME) with
        parameters and output:
 
             Minimum Number Of Sequences For A Conserved Position: 20
@@ -1661,54 +1661,54 @@ int Init_Qmat_MtArt(phydbl *daa, phydbl *pi) // Added by Federico Abascal
             Use Similarity Matrices: Yes
 
             Flank positions of the 40 selected block(s)
-            Flanks: [6  22]  [26  44]  [61  70]  [77  143]  [145  185]  [208  236]  [309  640]  
-            [644  802]  [831  941]  [956  966]  [973  1062]  [1085  1339]  [1343  1702]  
-            [1754  1831]  [1840  1911]  [1916  1987]  [2011  2038]  [2097  2118]  [2125  2143]  
-            [2179  2215]  [2243  2268]  [2277  2288]  [2333  2347]  [2476  2518]  [2539  2558]  
-            [2600  2613]  [2637  2672]  [2738  2759]  [2784  2839]  [2882  2924]  [2948  3097]  
-            [3113  3123]  [3210  3235]  [3239  3322]  [3348  3392]  [3406  3526]  [3588  3617]  
-            [3660  3692]  [3803  3830]  [3909  3928]  
+            Flanks: [6  22]  [26  44]  [61  70]  [77  143]  [145  185]  [208  236]  [309  640]
+            [644  802]  [831  941]  [956  966]  [973  1062]  [1085  1339]  [1343  1702]
+            [1754  1831]  [1840  1911]  [1916  1987]  [2011  2038]  [2097  2118]  [2125  2143]
+            [2179  2215]  [2243  2268]  [2277  2288]  [2333  2347]  [2476  2518]  [2539  2558]
+            [2600  2613]  [2637  2672]  [2738  2759]  [2784  2839]  [2882  2924]  [2948  3097]
+            [3113  3123]  [3210  3235]  [3239  3322]  [3348  3392]  [3406  3526]  [3588  3617]
+            [3660  3692]  [3803  3830]  [3909  3928]
 
             New number of positions in MtArt-strict.phy.fasta-gb: <b> 2664 </b> (67% of the original 3933 positions)
-       
+
        The species included in the analysis were:
-            Harpiosquilla harpax          [NCBI_TaxID 287944]    
-            Ixodes uriae                  [NCBI_TaxID 59655]     
-            Heptathela hangzhouensis      [NCBI_TaxID 216259]    
-            Triops longicaudatus          [NCBI_TaxID 58777]     
-            Gryllotalpa orientalis        [NCBI_TaxID 213494]    
-            lepidopsocid RS-2001          [NCBI_TaxID 159971]    
-            Locusta migratoria            [NCBI_TaxID 7004]      
-            Drosophila yakuba             [NCBI_TaxID 7245]      
-            Ostrinia furnacalis           [NCBI_TaxID 93504]     
-            Megabalanus volcano           [NCBI_TaxID 266495]    
-            Periplaneta fuliginosa        [NCBI_TaxID 36977]     
-            Thermobia domestica           [NCBI_TaxID 89055]     
-            Aleurochiton aceris           [NCBI_TaxID 266942]    
-            Schizaphis graminum           [NCBI_TaxID 13262]     
-            Pteronarcys princeps          [NCBI_TaxID 285953]    
-            Aleurodicus dugesii           [NCBI_TaxID 30099]     
-            Pollicipes polymerus          [NCBI_TaxID 36137]     
-            Gomphiocephalus hodgsoni      [NCBI_TaxID 221270]    
-            Habronattus oregonensis       [NCBI_TaxID 130930]    
-            Speleonectes tulumensis       [NCBI_TaxID 84346]     
-            Hutchinsoniella macracantha   [NCBI_TaxID 84335]     
-            Haemaphysalis flava           [NCBI_TaxID 181088]    
-            Scutigera coleoptrata         [NCBI_TaxID 29022]     
-            Vargula hilgendorfii          [NCBI_TaxID 6674]      
-            Tricholepidion gertschi       [NCBI_TaxID 89825]     
-            Varroa destructor             [NCBI_TaxID 109461]    
-            Bombyx mandarina              [NCBI_TaxID 7092]      
-            Thyropygus sp.                [NCBI_TaxID 174155]    
-            Tribolium castaneum           [NCBI_TaxID 7070]      
-            Pagurus longicarpus           [NCBI_TaxID 111067]    
-            Limulus polyphemus            [NCBI_TaxID 6850]      
-            Tetrodontophora bielanensis   [NCBI_TaxID 48717]     
-            Penaeus monodon               [NCBI_TaxID 6687]      
-            Daphnia pulex                 [NCBI_TaxID 6669]      
-            Apis mellifera                [NCBI_TaxID 7469]      
-            Anopheles gambiae             [NCBI_TaxID 7165]      
-              
+            Harpiosquilla harpax          [NCBI_TaxID 287944]
+            Ixodes uriae                  [NCBI_TaxID 59655]
+            Heptathela hangzhouensis      [NCBI_TaxID 216259]
+            Triops longicaudatus          [NCBI_TaxID 58777]
+            Gryllotalpa orientalis        [NCBI_TaxID 213494]
+            lepidopsocid RS-2001          [NCBI_TaxID 159971]
+            Locusta migratoria            [NCBI_TaxID 7004]
+            Drosophila yakuba             [NCBI_TaxID 7245]
+            Ostrinia furnacalis           [NCBI_TaxID 93504]
+            Megabalanus volcano           [NCBI_TaxID 266495]
+            Periplaneta fuliginosa        [NCBI_TaxID 36977]
+            Thermobia domestica           [NCBI_TaxID 89055]
+            Aleurochiton aceris           [NCBI_TaxID 266942]
+            Schizaphis graminum           [NCBI_TaxID 13262]
+            Pteronarcys princeps          [NCBI_TaxID 285953]
+            Aleurodicus dugesii           [NCBI_TaxID 30099]
+            Pollicipes polymerus          [NCBI_TaxID 36137]
+            Gomphiocephalus hodgsoni      [NCBI_TaxID 221270]
+            Habronattus oregonensis       [NCBI_TaxID 130930]
+            Speleonectes tulumensis       [NCBI_TaxID 84346]
+            Hutchinsoniella macracantha   [NCBI_TaxID 84335]
+            Haemaphysalis flava           [NCBI_TaxID 181088]
+            Scutigera coleoptrata         [NCBI_TaxID 29022]
+            Vargula hilgendorfii          [NCBI_TaxID 6674]
+            Tricholepidion gertschi       [NCBI_TaxID 89825]
+            Varroa destructor             [NCBI_TaxID 109461]
+            Bombyx mandarina              [NCBI_TaxID 7092]
+            Thyropygus sp.                [NCBI_TaxID 174155]
+            Tribolium castaneum           [NCBI_TaxID 7070]
+            Pagurus longicarpus           [NCBI_TaxID 111067]
+            Limulus polyphemus            [NCBI_TaxID 6850]
+            Tetrodontophora bielanensis   [NCBI_TaxID 48717]
+            Penaeus monodon               [NCBI_TaxID 6687]
+            Daphnia pulex                 [NCBI_TaxID 6669]
+            Apis mellifera                [NCBI_TaxID 7469]
+            Anopheles gambiae             [NCBI_TaxID 7165]
+
        The topology used for inferring the model was:
             (((Daph_pulex,Trio_longi),((((((Aleu_aceri,Aleu_duges),Schi_grami),lepi_RS_20),
             ((((Ostr_furna,Bomb_manda),(Dros_yakub,Anop_gambi)),Apis_melli),Trib_casta)),
@@ -1716,15 +1716,15 @@ int Init_Qmat_MtArt(phydbl *daa, phydbl *pi) // Added by Federico Abascal
             (Scut_coleo,Thyr_sp),Varg_hilge,Hutc_macra,((((Ixod_uriae,Haem_flava),Varr_destr),
             (Habr_orego,Hept_hangz)),Limu_polyp),(Poll_polym,Mega_volca),(Gomp_hodgs,Tetr_biela),
             ((Pagu_longi,Pena_monod),Harp_harpa),Spel_tulum));
-            
-            Note this is not the ML topoLOGy but the consensus one (based on morphoLOGical data, 
+
+            Note this is not the ML topoLOGy but the consensus one (based on morphoLOGical data,
             phyLOGenetic reconstruction using nuclear genes, etc). Where relationships are
             not clear, a polytomy was introduced (it contains quite a lot of polytomies!).
-       
+
        The model was estimated using (the great and helpful) Ziheng Yang's Paml software package.
        A four-categorized gamma distribution was used to account for heterogeneity (alpha
        was estimated to be 0.47821). Sites with ambiguity data were taken into account.
-       
+
        If you would like the data related to this matrix, please contact fabascal@uvigo.es.
        Federico Abascal (c)2005.
     */
@@ -1779,7 +1779,7 @@ int Init_Qmat_MtArt(phydbl *daa, phydbl *pi) // Added by Federico Abascal
     daa[19*20+ 9] = 1854.5; daa[19*20+ 10] = 84.7;  daa[19*20+ 11] = 26.1;  daa[19*20+ 12] = 281.3;
     daa[19*20+ 13] = 51.9;  daa[19*20+ 14] = 31.7;  daa[19*20+ 15] = 60.6;  daa[19*20+ 16] = 544.1;
     daa[19*20+ 17] = 0.2;   daa[19*20+ 18] = 1.6;
-        
+
 /*  MtArt.old: esta es la MtArt que hice con 26 secuencias (2 outgroups) con una topoLOGia incorrecta
     daa[1*20+ 0] = 0.2;     daa[2*20+ 0] = 0.2;     daa[2*20+ 1] = 8.0;     daa[3*20+ 0] = 0.2;
     daa[3*20+ 1] = 0.2;     daa[3*20+ 2] = 441.7;   daa[4*20+ 0] = 287.9;   daa[4*20+ 1] = 48.4;
@@ -1829,7 +1829,7 @@ int Init_Qmat_MtArt(phydbl *daa, phydbl *pi) // Added by Federico Abascal
     daa[19*20+ 9] = 1687.9; daa[19*20+ 10] = 49.4;  daa[19*20+ 11] = 23.4;  daa[19*20+ 12] = 329.9;
     daa[19*20+ 13] = 86.3;  daa[19*20+ 14] = 27.3;  daa[19*20+ 15] = 95.0;  daa[19*20+ 16] = 443.0;
     daa[19*20+ 17] = 2.4;   daa[19*20+ 18] = 0.2;
-3*/    
+3*/
     for (i=0; i<naa; i++) for (j=0; j<i; j++) daa[j*naa+i] = daa[i*naa+j];
 
     pi[0] = 0.054116;       pi[1] = 0.018227;       pi[2] = 0.039903;       pi[3] = 0.020160;       pi[4] = 0.009709;
@@ -1840,7 +1840,7 @@ int Init_Qmat_MtArt(phydbl *daa, phydbl *pi) // Added by Federico Abascal
     pi[5] = 0.018732;       pi[6] = 0.021591;       pi[7] = 0.068414;       pi[8] = 0.023638;    pi[9] = 0.092558;
     pi[10] = 0.154697;      pi[11] = 0.020168;      pi[12] = 0.062033;      pi[13] = 0.089433;   pi[14] = 0.040642;
     pi[15] = 0.090298;      pi[16] = 0.050134;      pi[17] = 0.027693;      pi[18] = 0.038448;   pi[19] = 0.061687;
-*/    
+*/
     return 1;
 }
 
@@ -1855,69 +1855,69 @@ int Init_Qmat_HIVb(phydbl *daa, phydbl *pi) //added by FEDE
       HIV-Specific Probabilistic Models of Protein Evolution.
       PLoS ONE. 2007 Jun 6;2:e503.
 
-	  [thanks to Sergei L. Kosakovsky]
-	  
-	  Translated from HYPHY to Phyml format by Federico Abascal.
+      [thanks to Sergei L. Kosakovsky]
+
+      Translated from HYPHY to Phyml format by Federico Abascal.
     */
 
     int i,j,naa;
     naa = 20;
 
-    daa[1*20+0]= 0.307507;        daa[2*20+0]= 0.005;           daa[2*20+1]= 0.295543;        daa[3*20+0]= 1.45504;         
-    daa[3*20+1]= 0.005;           daa[3*20+2]= 17.6612;         daa[4*20+0]= 0.123758;        daa[4*20+1]= 0.351721;        
-    daa[4*20+2]= 0.0860642;       daa[4*20+3]= 0.005;           daa[5*20+0]= 0.0551128;       daa[5*20+1]= 3.4215;          
-    daa[5*20+2]= 0.672052;        daa[5*20+3]= 0.005;           daa[5*20+4]= 0.005;           daa[6*20+0]= 1.48135;         
-    daa[6*20+1]= 0.0749218;       daa[6*20+2]= 0.0792633;       daa[6*20+3]= 10.5872;         daa[6*20+4]= 0.005;           
-    daa[6*20+5]= 2.5602;          daa[7*20+0]= 2.13536;         daa[7*20+1]= 3.65345;         daa[7*20+2]= 0.323401;        
-    daa[7*20+3]= 2.83806;         daa[7*20+4]= 0.897871;        daa[7*20+5]= 0.0619137;       daa[7*20+6]= 3.92775;         
-    daa[8*20+0]= 0.0847613;       daa[8*20+1]= 9.04044;         daa[8*20+2]= 7.64585;         daa[8*20+3]= 1.9169;          
-    daa[8*20+4]= 0.240073;        daa[8*20+5]= 7.05545;         daa[8*20+6]= 0.11974;         daa[8*20+7]= 0.005;           
-    daa[9*20+0]= 0.005;           daa[9*20+1]= 0.677289;        daa[9*20+2]= 0.680565;        daa[9*20+3]= 0.0176792;       
-    daa[9*20+4]= 0.005;           daa[9*20+5]= 0.005;           daa[9*20+6]= 0.00609079;      daa[9*20+7]= 0.005;           
-    daa[9*20+8]= 0.103111;        daa[10*20+0]= 0.215256;       daa[10*20+1]= 0.701427;       daa[10*20+2]= 0.005;          
-    daa[10*20+3]= 0.00876048;     daa[10*20+4]= 0.129777;       daa[10*20+5]= 1.49456;        daa[10*20+6]= 0.005;          
-    daa[10*20+7]= 0.005;          daa[10*20+8]= 1.74171;        daa[10*20+9]= 5.95879;        daa[11*20+0]= 0.005;          
-    daa[11*20+1]= 20.45;          daa[11*20+2]= 7.90443;        daa[11*20+3]= 0.005;          daa[11*20+4]= 0.005;          
-    daa[11*20+5]= 6.54737;        daa[11*20+6]= 4.61482;        daa[11*20+7]= 0.521705;       daa[11*20+8]= 0.005;          
-    daa[11*20+9]= 0.322319;       daa[11*20+10]= 0.0814995;     daa[12*20+0]= 0.0186643;      daa[12*20+1]= 2.51394;        
-    daa[12*20+2]= 0.005;          daa[12*20+3]= 0.005;          daa[12*20+4]= 0.005;          daa[12*20+5]= 0.303676;       
-    daa[12*20+6]= 0.175789;       daa[12*20+7]= 0.005;          daa[12*20+8]= 0.005;          daa[12*20+9]= 11.2065;        
-    daa[12*20+10]= 5.31961;       daa[12*20+11]= 1.28246;       daa[13*20+0]= 0.0141269;      daa[13*20+1]= 0.005;          
-    daa[13*20+2]= 0.005;          daa[13*20+3]= 0.005;          daa[13*20+4]= 9.29815;        daa[13*20+5]= 0.005;          
-    daa[13*20+6]= 0.005;          daa[13*20+7]= 0.291561;       daa[13*20+8]= 0.145558;       daa[13*20+9]= 3.39836;        
-    daa[13*20+10]= 8.52484;       daa[13*20+11]= 0.0342658;     daa[13*20+12]= 0.188025;      daa[14*20+0]= 2.12217;        
-    daa[14*20+1]= 1.28355;        daa[14*20+2]= 0.00739578;     daa[14*20+3]= 0.0342658;      daa[14*20+4]= 0.005;          
-    daa[14*20+5]= 4.47211;        daa[14*20+6]= 0.0120226;      daa[14*20+7]= 0.005;          daa[14*20+8]= 2.45318;        
-    daa[14*20+9]= 0.0410593;      daa[14*20+10]= 2.07757;       daa[14*20+11]= 0.0313862;     daa[14*20+12]= 0.005;         
-    daa[14*20+13]= 0.005;         daa[15*20+0]= 2.46633;        daa[15*20+1]= 3.4791;         daa[15*20+2]= 13.1447;        
-    daa[15*20+3]= 0.52823;        daa[15*20+4]= 4.69314;        daa[15*20+5]= 0.116311;       daa[15*20+6]= 0.005;          
-    daa[15*20+7]= 4.38041;        daa[15*20+8]= 0.382747;       daa[15*20+9]= 1.21803;        daa[15*20+10]= 0.927656;      
-    daa[15*20+11]= 0.504111;      daa[15*20+12]= 0.005;         daa[15*20+13]= 0.956472;      daa[15*20+14]= 5.37762;       
-    daa[16*20+0]= 15.9183;        daa[16*20+1]= 2.86868;        daa[16*20+2]= 6.88667;        daa[16*20+3]= 0.274724;       
-    daa[16*20+4]= 0.739969;       daa[16*20+5]= 0.243589;       daa[16*20+6]= 0.289774;       daa[16*20+7]= 0.369615;       
-    daa[16*20+8]= 0.711594;       daa[16*20+9]= 8.61217;        daa[16*20+10]= 0.0437673;     daa[16*20+11]= 4.67142;       
-    daa[16*20+12]= 4.94026;       daa[16*20+13]= 0.0141269;     daa[16*20+14]= 2.01417;       daa[16*20+15]= 8.93107;       
-    daa[17*20+0]= 0.005;          daa[17*20+1]= 0.991338;       daa[17*20+2]= 0.005;          daa[17*20+3]= 0.005;          
-    daa[17*20+4]= 2.63277;        daa[17*20+5]= 0.026656;       daa[17*20+6]= 0.005;          daa[17*20+7]= 1.21674;        
-    daa[17*20+8]= 0.0695179;      daa[17*20+9]= 0.005;          daa[17*20+10]= 0.748843;      daa[17*20+11]= 0.005;         
-    daa[17*20+12]= 0.089078;      daa[17*20+13]= 0.829343;      daa[17*20+14]= 0.0444506;     daa[17*20+15]= 0.0248728;     
-    daa[17*20+16]= 0.005;         daa[18*20+0]= 0.005;          daa[18*20+1]= 0.00991826;     daa[18*20+2]= 1.76417;        
-    daa[18*20+3]= 0.674653;       daa[18*20+4]= 7.57932;        daa[18*20+5]= 0.113033;       daa[18*20+6]= 0.0792633;      
-    daa[18*20+7]= 0.005;          daa[18*20+8]= 18.6943;        daa[18*20+9]= 0.148168;       daa[18*20+10]= 0.111986;      
-    daa[18*20+11]= 0.005;         daa[18*20+12]= 0.005;         daa[18*20+13]= 15.34;         daa[18*20+14]= 0.0304381;     
-    daa[18*20+15]= 0.648024;      daa[18*20+16]= 0.105652;      daa[18*20+17]= 1.28022;       daa[19*20+0]= 7.61428;        
-    daa[19*20+1]= 0.0812454;      daa[19*20+2]= 0.026656;       daa[19*20+3]= 1.04793;        daa[19*20+4]= 0.420027;       
-    daa[19*20+5]= 0.0209153;      daa[19*20+6]= 1.02847;        daa[19*20+7]= 0.953155;       daa[19*20+8]= 0.005;          
-    daa[19*20+9]= 17.7389;        daa[19*20+10]= 1.41036;       daa[19*20+11]= 0.265829;      daa[19*20+12]= 6.8532;        
-    daa[19*20+13]= 0.723274;      daa[19*20+14]= 0.005;         daa[19*20+15]= 0.0749218;     daa[19*20+16]= 0.709226;      
-    daa[19*20+17]= 0.005;         daa[19*20+18]= 0.0410593;     
+    daa[1*20+0]= 0.307507;        daa[2*20+0]= 0.005;           daa[2*20+1]= 0.295543;        daa[3*20+0]= 1.45504;
+    daa[3*20+1]= 0.005;           daa[3*20+2]= 17.6612;         daa[4*20+0]= 0.123758;        daa[4*20+1]= 0.351721;
+    daa[4*20+2]= 0.0860642;       daa[4*20+3]= 0.005;           daa[5*20+0]= 0.0551128;       daa[5*20+1]= 3.4215;
+    daa[5*20+2]= 0.672052;        daa[5*20+3]= 0.005;           daa[5*20+4]= 0.005;           daa[6*20+0]= 1.48135;
+    daa[6*20+1]= 0.0749218;       daa[6*20+2]= 0.0792633;       daa[6*20+3]= 10.5872;         daa[6*20+4]= 0.005;
+    daa[6*20+5]= 2.5602;          daa[7*20+0]= 2.13536;         daa[7*20+1]= 3.65345;         daa[7*20+2]= 0.323401;
+    daa[7*20+3]= 2.83806;         daa[7*20+4]= 0.897871;        daa[7*20+5]= 0.0619137;       daa[7*20+6]= 3.92775;
+    daa[8*20+0]= 0.0847613;       daa[8*20+1]= 9.04044;         daa[8*20+2]= 7.64585;         daa[8*20+3]= 1.9169;
+    daa[8*20+4]= 0.240073;        daa[8*20+5]= 7.05545;         daa[8*20+6]= 0.11974;         daa[8*20+7]= 0.005;
+    daa[9*20+0]= 0.005;           daa[9*20+1]= 0.677289;        daa[9*20+2]= 0.680565;        daa[9*20+3]= 0.0176792;
+    daa[9*20+4]= 0.005;           daa[9*20+5]= 0.005;           daa[9*20+6]= 0.00609079;      daa[9*20+7]= 0.005;
+    daa[9*20+8]= 0.103111;        daa[10*20+0]= 0.215256;       daa[10*20+1]= 0.701427;       daa[10*20+2]= 0.005;
+    daa[10*20+3]= 0.00876048;     daa[10*20+4]= 0.129777;       daa[10*20+5]= 1.49456;        daa[10*20+6]= 0.005;
+    daa[10*20+7]= 0.005;          daa[10*20+8]= 1.74171;        daa[10*20+9]= 5.95879;        daa[11*20+0]= 0.005;
+    daa[11*20+1]= 20.45;          daa[11*20+2]= 7.90443;        daa[11*20+3]= 0.005;          daa[11*20+4]= 0.005;
+    daa[11*20+5]= 6.54737;        daa[11*20+6]= 4.61482;        daa[11*20+7]= 0.521705;       daa[11*20+8]= 0.005;
+    daa[11*20+9]= 0.322319;       daa[11*20+10]= 0.0814995;     daa[12*20+0]= 0.0186643;      daa[12*20+1]= 2.51394;
+    daa[12*20+2]= 0.005;          daa[12*20+3]= 0.005;          daa[12*20+4]= 0.005;          daa[12*20+5]= 0.303676;
+    daa[12*20+6]= 0.175789;       daa[12*20+7]= 0.005;          daa[12*20+8]= 0.005;          daa[12*20+9]= 11.2065;
+    daa[12*20+10]= 5.31961;       daa[12*20+11]= 1.28246;       daa[13*20+0]= 0.0141269;      daa[13*20+1]= 0.005;
+    daa[13*20+2]= 0.005;          daa[13*20+3]= 0.005;          daa[13*20+4]= 9.29815;        daa[13*20+5]= 0.005;
+    daa[13*20+6]= 0.005;          daa[13*20+7]= 0.291561;       daa[13*20+8]= 0.145558;       daa[13*20+9]= 3.39836;
+    daa[13*20+10]= 8.52484;       daa[13*20+11]= 0.0342658;     daa[13*20+12]= 0.188025;      daa[14*20+0]= 2.12217;
+    daa[14*20+1]= 1.28355;        daa[14*20+2]= 0.00739578;     daa[14*20+3]= 0.0342658;      daa[14*20+4]= 0.005;
+    daa[14*20+5]= 4.47211;        daa[14*20+6]= 0.0120226;      daa[14*20+7]= 0.005;          daa[14*20+8]= 2.45318;
+    daa[14*20+9]= 0.0410593;      daa[14*20+10]= 2.07757;       daa[14*20+11]= 0.0313862;     daa[14*20+12]= 0.005;
+    daa[14*20+13]= 0.005;         daa[15*20+0]= 2.46633;        daa[15*20+1]= 3.4791;         daa[15*20+2]= 13.1447;
+    daa[15*20+3]= 0.52823;        daa[15*20+4]= 4.69314;        daa[15*20+5]= 0.116311;       daa[15*20+6]= 0.005;
+    daa[15*20+7]= 4.38041;        daa[15*20+8]= 0.382747;       daa[15*20+9]= 1.21803;        daa[15*20+10]= 0.927656;
+    daa[15*20+11]= 0.504111;      daa[15*20+12]= 0.005;         daa[15*20+13]= 0.956472;      daa[15*20+14]= 5.37762;
+    daa[16*20+0]= 15.9183;        daa[16*20+1]= 2.86868;        daa[16*20+2]= 6.88667;        daa[16*20+3]= 0.274724;
+    daa[16*20+4]= 0.739969;       daa[16*20+5]= 0.243589;       daa[16*20+6]= 0.289774;       daa[16*20+7]= 0.369615;
+    daa[16*20+8]= 0.711594;       daa[16*20+9]= 8.61217;        daa[16*20+10]= 0.0437673;     daa[16*20+11]= 4.67142;
+    daa[16*20+12]= 4.94026;       daa[16*20+13]= 0.0141269;     daa[16*20+14]= 2.01417;       daa[16*20+15]= 8.93107;
+    daa[17*20+0]= 0.005;          daa[17*20+1]= 0.991338;       daa[17*20+2]= 0.005;          daa[17*20+3]= 0.005;
+    daa[17*20+4]= 2.63277;        daa[17*20+5]= 0.026656;       daa[17*20+6]= 0.005;          daa[17*20+7]= 1.21674;
+    daa[17*20+8]= 0.0695179;      daa[17*20+9]= 0.005;          daa[17*20+10]= 0.748843;      daa[17*20+11]= 0.005;
+    daa[17*20+12]= 0.089078;      daa[17*20+13]= 0.829343;      daa[17*20+14]= 0.0444506;     daa[17*20+15]= 0.0248728;
+    daa[17*20+16]= 0.005;         daa[18*20+0]= 0.005;          daa[18*20+1]= 0.00991826;     daa[18*20+2]= 1.76417;
+    daa[18*20+3]= 0.674653;       daa[18*20+4]= 7.57932;        daa[18*20+5]= 0.113033;       daa[18*20+6]= 0.0792633;
+    daa[18*20+7]= 0.005;          daa[18*20+8]= 18.6943;        daa[18*20+9]= 0.148168;       daa[18*20+10]= 0.111986;
+    daa[18*20+11]= 0.005;         daa[18*20+12]= 0.005;         daa[18*20+13]= 15.34;         daa[18*20+14]= 0.0304381;
+    daa[18*20+15]= 0.648024;      daa[18*20+16]= 0.105652;      daa[18*20+17]= 1.28022;       daa[19*20+0]= 7.61428;
+    daa[19*20+1]= 0.0812454;      daa[19*20+2]= 0.026656;       daa[19*20+3]= 1.04793;        daa[19*20+4]= 0.420027;
+    daa[19*20+5]= 0.0209153;      daa[19*20+6]= 1.02847;        daa[19*20+7]= 0.953155;       daa[19*20+8]= 0.005;
+    daa[19*20+9]= 17.7389;        daa[19*20+10]= 1.41036;       daa[19*20+11]= 0.265829;      daa[19*20+12]= 6.8532;
+    daa[19*20+13]= 0.723274;      daa[19*20+14]= 0.005;         daa[19*20+15]= 0.0749218;     daa[19*20+16]= 0.709226;
+    daa[19*20+17]= 0.005;         daa[19*20+18]= 0.0410593;
     for (i=0; i<naa; i++)  for (j=0; j<i; j++)  daa[j*naa+i] = daa[i*naa+j];
 
-    pi[0]= 0.060490222;           pi[1]= 0.066039665;           pi[2]= 0.044127815;           pi[3]= 0.042109048;           
-    pi[4]= 0.020075899;           pi[5]= 0.053606488;           pi[6]= 0.071567447;           pi[7]= 0.072308239;           
-    pi[8]= 0.022293943;           pi[9]= 0.069730629;           pi[10]= 0.098851122;          pi[11]= 0.056968211;          
-    pi[12]= 0.019768318;          pi[13]= 0.028809447;          pi[14]= 0.046025282;          pi[15]= 0.05060433;           
-    pi[16]= 0.053636813;          pi[17]= 0.033011601;          pi[18]= 0.028350243;          pi[19]= 0.061625237;          
+    pi[0]= 0.060490222;           pi[1]= 0.066039665;           pi[2]= 0.044127815;           pi[3]= 0.042109048;
+    pi[4]= 0.020075899;           pi[5]= 0.053606488;           pi[6]= 0.071567447;           pi[7]= 0.072308239;
+    pi[8]= 0.022293943;           pi[9]= 0.069730629;           pi[10]= 0.098851122;          pi[11]= 0.056968211;
+    pi[12]= 0.019768318;          pi[13]= 0.028809447;          pi[14]= 0.046025282;          pi[15]= 0.05060433;
+    pi[16]= 0.053636813;          pi[17]= 0.033011601;          pi[18]= 0.028350243;          pi[19]= 0.061625237;
     return 1;
 }
 
@@ -1927,73 +1927,73 @@ int Init_Qmat_HIVb(phydbl *daa, phydbl *pi) //added by FEDE
 int Init_Qmat_HIVw(phydbl *daa, phydbl *pi)
 {
     /*
-	  Nickle DC, Heath L, Jensen MA, Gilbert PB, Mullins JI, Kosakovsky Pond SL.
+      Nickle DC, Heath L, Jensen MA, Gilbert PB, Mullins JI, Kosakovsky Pond SL.
       HIV-Specific Probabilistic Models of Protein Evolution.
       PLoS ONE. 2007 Jun 6;2:e503.
 
-	  [thanks to Sergei L. Kosakovsky]
-	  
-	  Translated from HYPHY to Phyml format by Federico Abascal.
+      [thanks to Sergei L. Kosakovsky]
+
+      Translated from HYPHY to Phyml format by Federico Abascal.
     */
 
     int i,j,naa;
     naa = 20;
 
-    daa[1*20+0]= 0.0744808;       daa[2*20+0]= 0.617509;        daa[2*20+1]= 0.16024;         daa[3*20+0]= 4.43521;         
-    daa[3*20+1]= 0.0674539;       daa[3*20+2]= 29.4087;         daa[4*20+0]= 0.167653;        daa[4*20+1]= 2.86364;         
-    daa[4*20+2]= 0.0604932;       daa[4*20+3]= 0.005;           daa[5*20+0]= 0.005;           daa[5*20+1]= 10.6746;         
-    daa[5*20+2]= 0.342068;        daa[5*20+3]= 0.005;           daa[5*20+4]= 0.005;           daa[6*20+0]= 5.56325;         
-    daa[6*20+1]= 0.0251632;       daa[6*20+2]= 0.201526;        daa[6*20+3]= 12.1233;         daa[6*20+4]= 0.005;           
-    daa[6*20+5]= 3.20656;         daa[7*20+0]= 1.8685;          daa[7*20+1]= 13.4379;         daa[7*20+2]= 0.0604932;       
-    daa[7*20+3]= 10.3969;         daa[7*20+4]= 0.0489798;       daa[7*20+5]= 0.0604932;       daa[7*20+6]= 14.7801;         
-    daa[8*20+0]= 0.005;           daa[8*20+1]= 6.84405;         daa[8*20+2]= 8.59876;         daa[8*20+3]= 2.31779;         
-    daa[8*20+4]= 0.005;           daa[8*20+5]= 18.5465;         daa[8*20+6]= 0.005;           daa[8*20+7]= 0.005;           
-    daa[9*20+0]= 0.005;           daa[9*20+1]= 1.34069;         daa[9*20+2]= 0.987028;        daa[9*20+3]= 0.145124;        
-    daa[9*20+4]= 0.005;           daa[9*20+5]= 0.0342252;       daa[9*20+6]= 0.0390512;       daa[9*20+7]= 0.005;           
-    daa[9*20+8]= 0.005;           daa[10*20+0]= 0.16024;        daa[10*20+1]= 0.586757;       daa[10*20+2]= 0.005;          
-    daa[10*20+3]= 0.005;          daa[10*20+4]= 0.005;          daa[10*20+5]= 2.89048;        daa[10*20+6]= 0.129839;       
-    daa[10*20+7]= 0.0489798;      daa[10*20+8]= 1.76382;        daa[10*20+9]= 9.10246;        daa[11*20+0]= 0.592784;       
-    daa[11*20+1]= 39.8897;        daa[11*20+2]= 10.6655;        daa[11*20+3]= 0.894313;       daa[11*20+4]= 0.005;          
-    daa[11*20+5]= 13.0705;        daa[11*20+6]= 23.9626;        daa[11*20+7]= 0.279425;       daa[11*20+8]= 0.22406;        
-    daa[11*20+9]= 0.817481;       daa[11*20+10]= 0.005;         daa[12*20+0]= 0.005;          daa[12*20+1]= 3.28652;        
-    daa[12*20+2]= 0.201526;       daa[12*20+3]= 0.005;          daa[12*20+4]= 0.005;          daa[12*20+5]= 0.005;          
-    daa[12*20+6]= 0.005;          daa[12*20+7]= 0.0489798;      daa[12*20+8]= 0.005;          daa[12*20+9]= 17.3064;        
-    daa[12*20+10]= 11.3839;       daa[12*20+11]= 4.09564;       daa[13*20+0]= 0.597923;       daa[13*20+1]= 0.005;          
-    daa[13*20+2]= 0.005;          daa[13*20+3]= 0.005;          daa[13*20+4]= 0.362959;       daa[13*20+5]= 0.005;          
-    daa[13*20+6]= 0.005;          daa[13*20+7]= 0.005;          daa[13*20+8]= 0.005;          daa[13*20+9]= 1.48288;        
-    daa[13*20+10]= 7.48781;       daa[13*20+11]= 0.005;         daa[13*20+12]= 0.005;         daa[14*20+0]= 1.00981;        
-    daa[14*20+1]= 0.404723;       daa[14*20+2]= 0.344848;       daa[14*20+3]= 0.005;          daa[14*20+4]= 0.005;          
-    daa[14*20+5]= 3.04502;        daa[14*20+6]= 0.005;          daa[14*20+7]= 0.005;          daa[14*20+8]= 13.9444;        
-    daa[14*20+9]= 0.005;          daa[14*20+10]= 9.83095;       daa[14*20+11]= 0.111928;      daa[14*20+12]= 0.005;         
-    daa[14*20+13]= 0.0342252;     daa[15*20+0]= 8.5942;         daa[15*20+1]= 8.35024;        daa[15*20+2]= 14.5699;        
-    daa[15*20+3]= 0.427881;       daa[15*20+4]= 1.12195;        daa[15*20+5]= 0.16024;        daa[15*20+6]= 0.005;          
-    daa[15*20+7]= 6.27966;        daa[15*20+8]= 0.725157;       daa[15*20+9]= 0.740091;       daa[15*20+10]= 6.14396;       
-    daa[15*20+11]= 0.005;         daa[15*20+12]= 0.392575;      daa[15*20+13]= 4.27939;       daa[15*20+14]= 14.249;        
-    daa[16*20+0]= 24.1422;        daa[16*20+1]= 0.928203;       daa[16*20+2]= 4.54206;        daa[16*20+3]= 0.630395;       
-    daa[16*20+4]= 0.005;          daa[16*20+5]= 0.203091;       daa[16*20+6]= 0.458743;       daa[16*20+7]= 0.0489798;      
-    daa[16*20+8]= 0.95956;        daa[16*20+9]= 9.36345;        daa[16*20+10]= 0.005;         daa[16*20+11]= 4.04802;       
-    daa[16*20+12]= 7.41313;       daa[16*20+13]= 0.114512;      daa[16*20+14]= 4.33701;       daa[16*20+15]= 6.34079;       
-    daa[17*20+0]= 0.005;          daa[17*20+1]= 5.96564;        daa[17*20+2]= 0.005;          daa[17*20+3]= 0.005;          
-    daa[17*20+4]= 5.49894;        daa[17*20+5]= 0.0443298;      daa[17*20+6]= 0.005;          daa[17*20+7]= 2.8258;         
-    daa[17*20+8]= 0.005;          daa[17*20+9]= 0.005;          daa[17*20+10]= 1.37031;       daa[17*20+11]= 0.005;         
-    daa[17*20+12]= 0.005;         daa[17*20+13]= 0.005;         daa[17*20+14]= 0.005;         daa[17*20+15]= 1.10156;       
-    daa[17*20+16]= 0.005;         daa[18*20+0]= 0.005;          daa[18*20+1]= 0.005;          daa[18*20+2]= 5.06475;        
-    daa[18*20+3]= 2.28154;        daa[18*20+4]= 8.34835;        daa[18*20+5]= 0.005;          daa[18*20+6]= 0.005;          
-    daa[18*20+7]= 0.005;          daa[18*20+8]= 47.4889;        daa[18*20+9]= 0.114512;       daa[18*20+10]= 0.005;         
-    daa[18*20+11]= 0.005;         daa[18*20+12]= 0.579198;      daa[18*20+13]= 4.12728;       daa[18*20+14]= 0.005;         
-    daa[18*20+15]= 0.933142;      daa[18*20+16]= 0.490608;      daa[18*20+17]= 0.005;         daa[19*20+0]= 24.8094;        
-    daa[19*20+1]= 0.279425;       daa[19*20+2]= 0.0744808;      daa[19*20+3]= 2.91786;        daa[19*20+4]= 0.005;          
-    daa[19*20+5]= 0.005;          daa[19*20+6]= 2.19952;        daa[19*20+7]= 2.79622;        daa[19*20+8]= 0.827479;       
-    daa[19*20+9]= 24.8231;        daa[19*20+10]= 2.95344;       daa[19*20+11]= 0.128065;      daa[19*20+12]= 14.7683;       
-    daa[19*20+13]= 2.28;          daa[19*20+14]= 0.005;         daa[19*20+15]= 0.862637;      daa[19*20+16]= 0.005;         
-    daa[19*20+17]= 0.005;         daa[19*20+18]= 1.35482;       
+    daa[1*20+0]= 0.0744808;       daa[2*20+0]= 0.617509;        daa[2*20+1]= 0.16024;         daa[3*20+0]= 4.43521;
+    daa[3*20+1]= 0.0674539;       daa[3*20+2]= 29.4087;         daa[4*20+0]= 0.167653;        daa[4*20+1]= 2.86364;
+    daa[4*20+2]= 0.0604932;       daa[4*20+3]= 0.005;           daa[5*20+0]= 0.005;           daa[5*20+1]= 10.6746;
+    daa[5*20+2]= 0.342068;        daa[5*20+3]= 0.005;           daa[5*20+4]= 0.005;           daa[6*20+0]= 5.56325;
+    daa[6*20+1]= 0.0251632;       daa[6*20+2]= 0.201526;        daa[6*20+3]= 12.1233;         daa[6*20+4]= 0.005;
+    daa[6*20+5]= 3.20656;         daa[7*20+0]= 1.8685;          daa[7*20+1]= 13.4379;         daa[7*20+2]= 0.0604932;
+    daa[7*20+3]= 10.3969;         daa[7*20+4]= 0.0489798;       daa[7*20+5]= 0.0604932;       daa[7*20+6]= 14.7801;
+    daa[8*20+0]= 0.005;           daa[8*20+1]= 6.84405;         daa[8*20+2]= 8.59876;         daa[8*20+3]= 2.31779;
+    daa[8*20+4]= 0.005;           daa[8*20+5]= 18.5465;         daa[8*20+6]= 0.005;           daa[8*20+7]= 0.005;
+    daa[9*20+0]= 0.005;           daa[9*20+1]= 1.34069;         daa[9*20+2]= 0.987028;        daa[9*20+3]= 0.145124;
+    daa[9*20+4]= 0.005;           daa[9*20+5]= 0.0342252;       daa[9*20+6]= 0.0390512;       daa[9*20+7]= 0.005;
+    daa[9*20+8]= 0.005;           daa[10*20+0]= 0.16024;        daa[10*20+1]= 0.586757;       daa[10*20+2]= 0.005;
+    daa[10*20+3]= 0.005;          daa[10*20+4]= 0.005;          daa[10*20+5]= 2.89048;        daa[10*20+6]= 0.129839;
+    daa[10*20+7]= 0.0489798;      daa[10*20+8]= 1.76382;        daa[10*20+9]= 9.10246;        daa[11*20+0]= 0.592784;
+    daa[11*20+1]= 39.8897;        daa[11*20+2]= 10.6655;        daa[11*20+3]= 0.894313;       daa[11*20+4]= 0.005;
+    daa[11*20+5]= 13.0705;        daa[11*20+6]= 23.9626;        daa[11*20+7]= 0.279425;       daa[11*20+8]= 0.22406;
+    daa[11*20+9]= 0.817481;       daa[11*20+10]= 0.005;         daa[12*20+0]= 0.005;          daa[12*20+1]= 3.28652;
+    daa[12*20+2]= 0.201526;       daa[12*20+3]= 0.005;          daa[12*20+4]= 0.005;          daa[12*20+5]= 0.005;
+    daa[12*20+6]= 0.005;          daa[12*20+7]= 0.0489798;      daa[12*20+8]= 0.005;          daa[12*20+9]= 17.3064;
+    daa[12*20+10]= 11.3839;       daa[12*20+11]= 4.09564;       daa[13*20+0]= 0.597923;       daa[13*20+1]= 0.005;
+    daa[13*20+2]= 0.005;          daa[13*20+3]= 0.005;          daa[13*20+4]= 0.362959;       daa[13*20+5]= 0.005;
+    daa[13*20+6]= 0.005;          daa[13*20+7]= 0.005;          daa[13*20+8]= 0.005;          daa[13*20+9]= 1.48288;
+    daa[13*20+10]= 7.48781;       daa[13*20+11]= 0.005;         daa[13*20+12]= 0.005;         daa[14*20+0]= 1.00981;
+    daa[14*20+1]= 0.404723;       daa[14*20+2]= 0.344848;       daa[14*20+3]= 0.005;          daa[14*20+4]= 0.005;
+    daa[14*20+5]= 3.04502;        daa[14*20+6]= 0.005;          daa[14*20+7]= 0.005;          daa[14*20+8]= 13.9444;
+    daa[14*20+9]= 0.005;          daa[14*20+10]= 9.83095;       daa[14*20+11]= 0.111928;      daa[14*20+12]= 0.005;
+    daa[14*20+13]= 0.0342252;     daa[15*20+0]= 8.5942;         daa[15*20+1]= 8.35024;        daa[15*20+2]= 14.5699;
+    daa[15*20+3]= 0.427881;       daa[15*20+4]= 1.12195;        daa[15*20+5]= 0.16024;        daa[15*20+6]= 0.005;
+    daa[15*20+7]= 6.27966;        daa[15*20+8]= 0.725157;       daa[15*20+9]= 0.740091;       daa[15*20+10]= 6.14396;
+    daa[15*20+11]= 0.005;         daa[15*20+12]= 0.392575;      daa[15*20+13]= 4.27939;       daa[15*20+14]= 14.249;
+    daa[16*20+0]= 24.1422;        daa[16*20+1]= 0.928203;       daa[16*20+2]= 4.54206;        daa[16*20+3]= 0.630395;
+    daa[16*20+4]= 0.005;          daa[16*20+5]= 0.203091;       daa[16*20+6]= 0.458743;       daa[16*20+7]= 0.0489798;
+    daa[16*20+8]= 0.95956;        daa[16*20+9]= 9.36345;        daa[16*20+10]= 0.005;         daa[16*20+11]= 4.04802;
+    daa[16*20+12]= 7.41313;       daa[16*20+13]= 0.114512;      daa[16*20+14]= 4.33701;       daa[16*20+15]= 6.34079;
+    daa[17*20+0]= 0.005;          daa[17*20+1]= 5.96564;        daa[17*20+2]= 0.005;          daa[17*20+3]= 0.005;
+    daa[17*20+4]= 5.49894;        daa[17*20+5]= 0.0443298;      daa[17*20+6]= 0.005;          daa[17*20+7]= 2.8258;
+    daa[17*20+8]= 0.005;          daa[17*20+9]= 0.005;          daa[17*20+10]= 1.37031;       daa[17*20+11]= 0.005;
+    daa[17*20+12]= 0.005;         daa[17*20+13]= 0.005;         daa[17*20+14]= 0.005;         daa[17*20+15]= 1.10156;
+    daa[17*20+16]= 0.005;         daa[18*20+0]= 0.005;          daa[18*20+1]= 0.005;          daa[18*20+2]= 5.06475;
+    daa[18*20+3]= 2.28154;        daa[18*20+4]= 8.34835;        daa[18*20+5]= 0.005;          daa[18*20+6]= 0.005;
+    daa[18*20+7]= 0.005;          daa[18*20+8]= 47.4889;        daa[18*20+9]= 0.114512;       daa[18*20+10]= 0.005;
+    daa[18*20+11]= 0.005;         daa[18*20+12]= 0.579198;      daa[18*20+13]= 4.12728;       daa[18*20+14]= 0.005;
+    daa[18*20+15]= 0.933142;      daa[18*20+16]= 0.490608;      daa[18*20+17]= 0.005;         daa[19*20+0]= 24.8094;
+    daa[19*20+1]= 0.279425;       daa[19*20+2]= 0.0744808;      daa[19*20+3]= 2.91786;        daa[19*20+4]= 0.005;
+    daa[19*20+5]= 0.005;          daa[19*20+6]= 2.19952;        daa[19*20+7]= 2.79622;        daa[19*20+8]= 0.827479;
+    daa[19*20+9]= 24.8231;        daa[19*20+10]= 2.95344;       daa[19*20+11]= 0.128065;      daa[19*20+12]= 14.7683;
+    daa[19*20+13]= 2.28;          daa[19*20+14]= 0.005;         daa[19*20+15]= 0.862637;      daa[19*20+16]= 0.005;
+    daa[19*20+17]= 0.005;         daa[19*20+18]= 1.35482;
     for (i=0; i<naa; i++)  for (j=0; j<i; j++)  daa[j*naa+i] = daa[i*naa+j];
 
-    pi[0]= 0.0377494;             pi[1]= 0.057321;              pi[2]= 0.0891129;             pi[3]= 0.0342034;             
-    pi[4]= 0.0240105;             pi[5]= 0.0437824;             pi[6]= 0.0618606;             pi[7]= 0.0838496;             
-    pi[8]= 0.0156076;             pi[9]= 0.0983641;             pi[10]= 0.0577867;            pi[11]= 0.0641682;            
-    pi[12]= 0.0158419;            pi[13]= 0.0422741;            pi[14]= 0.0458601;            pi[15]= 0.0550846;            
-    pi[16]= 0.0813774;            pi[17]= 0.019597;             pi[18]= 0.0205847;            pi[19]= 0.0515639;            
+    pi[0]= 0.0377494;             pi[1]= 0.057321;              pi[2]= 0.0891129;             pi[3]= 0.0342034;
+    pi[4]= 0.0240105;             pi[5]= 0.0437824;             pi[6]= 0.0618606;             pi[7]= 0.0838496;
+    pi[8]= 0.0156076;             pi[9]= 0.0983641;             pi[10]= 0.0577867;            pi[11]= 0.0641682;
+    pi[12]= 0.0158419;            pi[13]= 0.0422741;            pi[14]= 0.0458601;            pi[15]= 0.0550846;
+    pi[16]= 0.0813774;            pi[17]= 0.019597;             pi[18]= 0.0205847;            pi[19]= 0.0515639;
     return 1;
 }
 
@@ -2205,7 +2205,7 @@ int Init_Qmat_JTT(phydbl *daa, phydbl *pi)
 /*   daa[19*20 + 16] = 1.963379491;  */
 /*   daa[19*20 + 17] = 0.16552242;  */
 /*   daa[19*20 + 18] = 0.222040517; */
-    
+
 /*   for (i=0; i<naa; i++)  for (j=0; j<i; j++)  daa[j*naa+i] = daa[i*naa+j]; */
 
 /*   pi[0] = 0.093862;  */
@@ -2228,7 +2228,7 @@ int Init_Qmat_JTT(phydbl *daa, phydbl *pi)
 /*   pi[17] = 0.00928;  */
 /*   pi[18] = 0.030025;  */
 /*   pi[19] = 0.073369; */
-  
+
   daa[ 1*20+ 0] =   58.00; daa[ 2*20+ 0] =   54.00; daa[ 2*20+ 1] =   45.00; daa[ 3*20+ 0] =   81.00;
   daa[ 3*20+ 1] =   16.00; daa[ 3*20+ 2] =  528.00; daa[ 4*20+ 0] =   56.00; daa[ 4*20+ 1] =  113.00;
   daa[ 4*20+ 2] =   34.00; daa[ 4*20+ 3] =   10.00; daa[ 5*20+ 0] =   57.00; daa[ 5*20+ 1] =  310.00;
@@ -2277,7 +2277,7 @@ int Init_Qmat_JTT(phydbl *daa, phydbl *pi)
   daa[19*20+ 9] =  961.00; daa[19*20+10] =  180.00; daa[19*20+11] =   14.00; daa[19*20+12] =  323.00;
   daa[19*20+13] =   62.00; daa[19*20+14] =   23.00; daa[19*20+15] =   38.00; daa[19*20+16] =  112.00;
   daa[19*20+17] =   25.00; daa[19*20+18] =   16.00;
-  
+
   for (i=0; i<naa; i++)  for (j=0; j<i; j++)  daa[j*naa+i] = daa[i*naa+j];
 
   pi[ 0] = 0.076748; pi[ 1] = 0.051691; pi[ 2] = 0.042645; pi[ 3] = 0.051544;
@@ -2285,7 +2285,7 @@ int Init_Qmat_JTT(phydbl *daa, phydbl *pi)
   pi[ 8] = 0.022944; pi[ 9] = 0.053761; pi[10] = 0.091904; pi[11] = 0.058676;
   pi[12] = 0.023826; pi[13] = 0.040126; pi[14] = 0.050901; pi[15] = 0.068765;
   pi[16] = 0.058565; pi[17] = 0.014261; pi[18] = 0.032102; pi[19] = 0.066005;
- 
+
  return 1;
 }
 
@@ -2351,7 +2351,7 @@ int Init_Qmat_MtREV(phydbl *daa, phydbl *pi)
   daa[19*20+ 9] = 1222.94; daa[19*20+10] =   91.67; daa[19*20+11] =    1.90; daa[19*20+12] =  387.54;
   daa[19*20+13] =    6.35; daa[19*20+14] =    8.23; daa[19*20+15] =    1.90; daa[19*20+16] =  204.54;
   daa[19*20+17] =    5.37; daa[19*20+18] =    1.90;
-  
+
   for (i=0; i<naa; i++)  for (j=0; j<i; j++)  daa[j*naa+i] = daa[i*naa+j];
 
   pi[ 0] = 0.072000; pi[ 1] = 0.019000; pi[ 2] = 0.039000; pi[ 3] = 0.019000;
@@ -2372,71 +2372,71 @@ int Init_Qmat_LG(phydbl *daa, phydbl *pi)
 {
   int i,j,naa;
 
-  /* LG model 
+  /* LG model
    * Si Quang Le & Olivier Gascuel
-   * 'An improved general amino-acid replacement matrix' 
+   * 'An improved general amino-acid replacement matrix'
    */
 
   naa = 20;
 
-  daa[ 1*20+ 0] =   0.425093;  daa[ 2*20+ 0] =   0.276818;  daa[ 2*20+ 1] =   0.751878;  daa[ 3*20+ 0] =   0.395144;  
-  daa[ 3*20+ 1] =   0.123954;  daa[ 3*20+ 2] =   5.076149;  daa[ 4*20+ 0] =   2.489084;  daa[ 4*20+ 1] =   0.534551;  
-  daa[ 4*20+ 2] =   0.528768;  daa[ 4*20+ 3] =   0.062556;  daa[ 5*20+ 0] =   0.969894;  daa[ 5*20+ 1] =   2.807908;  
-  daa[ 5*20+ 2] =   1.695752;  daa[ 5*20+ 3] =   0.523386;  daa[ 5*20+ 4] =   0.084808;  daa[ 6*20+ 0] =   1.038545;  
-  daa[ 6*20+ 1] =   0.363970;  daa[ 6*20+ 2] =   0.541712;  daa[ 6*20+ 3] =   5.243870;  daa[ 6*20+ 4] =   0.003499;  
-  daa[ 6*20+ 5] =   4.128591;  daa[ 7*20+ 0] =   2.066040;  daa[ 7*20+ 1] =   0.390192;  daa[ 7*20+ 2] =   1.437645;  
-  daa[ 7*20+ 3] =   0.844926;  daa[ 7*20+ 4] =   0.569265;  daa[ 7*20+ 5] =   0.267959;  daa[ 7*20+ 6] =   0.348847;  
-  daa[ 8*20+ 0] =   0.358858;  daa[ 8*20+ 1] =   2.426601;  daa[ 8*20+ 2] =   4.509238;  daa[ 8*20+ 3] =   0.927114;  
-  daa[ 8*20+ 4] =   0.640543;  daa[ 8*20+ 5] =   4.813505;  daa[ 8*20+ 6] =   0.423881;  daa[ 8*20+ 7] =   0.311484;  
-  daa[ 9*20+ 0] =   0.149830;  daa[ 9*20+ 1] =   0.126991;  daa[ 9*20+ 2] =   0.191503;  daa[ 9*20+ 3] =   0.010690;  
-  daa[ 9*20+ 4] =   0.320627;  daa[ 9*20+ 5] =   0.072854;  daa[ 9*20+ 6] =   0.044265;  daa[ 9*20+ 7] =   0.008705;  
-  daa[ 9*20+ 8] =   0.108882;  daa[10*20+ 0] =   0.395337;  daa[10*20+ 1] =   0.301848;  daa[10*20+ 2] =   0.068427;  
-  daa[10*20+ 3] =   0.015076;  daa[10*20+ 4] =   0.594007;  daa[10*20+ 5] =   0.582457;  daa[10*20+ 6] =   0.069673;  
-  daa[10*20+ 7] =   0.044261;  daa[10*20+ 8] =   0.366317;  daa[10*20+ 9] =   4.145067;  daa[11*20+ 0] =   0.536518;  
-  daa[11*20+ 1] =   6.326067;  daa[11*20+ 2] =   2.145078;  daa[11*20+ 3] =   0.282959;  daa[11*20+ 4] =   0.013266;  
-  daa[11*20+ 5] =   3.234294;  daa[11*20+ 6] =   1.807177;  daa[11*20+ 7] =   0.296636;  daa[11*20+ 8] =   0.697264;  
-  daa[11*20+ 9] =   0.159069;  daa[11*20+10] =   0.137500;  daa[12*20+ 0] =   1.124035;  daa[12*20+ 1] =   0.484133;  
-  daa[12*20+ 2] =   0.371004;  daa[12*20+ 3] =   0.025548;  daa[12*20+ 4] =   0.893680;  daa[12*20+ 5] =   1.672569;  
-  daa[12*20+ 6] =   0.173735;  daa[12*20+ 7] =   0.139538;  daa[12*20+ 8] =   0.442472;  daa[12*20+ 9] =   4.273607;  
-  daa[12*20+10] =   6.312358;  daa[12*20+11] =   0.656604;  daa[13*20+ 0] =   0.253701;  daa[13*20+ 1] =   0.052722;  
-  daa[13*20+ 2] =   0.089525;  daa[13*20+ 3] =   0.017416;  daa[13*20+ 4] =   1.105251;  daa[13*20+ 5] =   0.035855;  
-  daa[13*20+ 6] =   0.018811;  daa[13*20+ 7] =   0.089586;  daa[13*20+ 8] =   0.682139;  daa[13*20+ 9] =   1.112727;  
-  daa[13*20+10] =   2.592692;  daa[13*20+11] =   0.023918;  daa[13*20+12] =   1.798853;  daa[14*20+ 0] =   1.177651;  
-  daa[14*20+ 1] =   0.332533;  daa[14*20+ 2] =   0.161787;  daa[14*20+ 3] =   0.394456;  daa[14*20+ 4] =   0.075382;  
-  daa[14*20+ 5] =   0.624294;  daa[14*20+ 6] =   0.419409;  daa[14*20+ 7] =   0.196961;  daa[14*20+ 8] =   0.508851;  
-  daa[14*20+ 9] =   0.078281;  daa[14*20+10] =   0.249060;  daa[14*20+11] =   0.390322;  daa[14*20+12] =   0.099849;  
-  daa[14*20+13] =   0.094464;  daa[15*20+ 0] =   4.727182;  daa[15*20+ 1] =   0.858151;  daa[15*20+ 2] =   4.008358;  
-  daa[15*20+ 3] =   1.240275;  daa[15*20+ 4] =   2.784478;  daa[15*20+ 5] =   1.223828;  daa[15*20+ 6] =   0.611973;  
-  daa[15*20+ 7] =   1.739990;  daa[15*20+ 8] =   0.990012;  daa[15*20+ 9] =   0.064105;  daa[15*20+10] =   0.182287;  
-  daa[15*20+11] =   0.748683;  daa[15*20+12] =   0.346960;  daa[15*20+13] =   0.361819;  daa[15*20+14] =   1.338132;  
-  daa[16*20+ 0] =   2.139501;  daa[16*20+ 1] =   0.578987;  daa[16*20+ 2] =   2.000679;  daa[16*20+ 3] =   0.425860;  
-  daa[16*20+ 4] =   1.143480;  daa[16*20+ 5] =   1.080136;  daa[16*20+ 6] =   0.604545;  daa[16*20+ 7] =   0.129836;  
-  daa[16*20+ 8] =   0.584262;  daa[16*20+ 9] =   1.033739;  daa[16*20+10] =   0.302936;  daa[16*20+11] =   1.136863;  
-  daa[16*20+12] =   2.020366;  daa[16*20+13] =   0.165001;  daa[16*20+14] =   0.571468;  daa[16*20+15] =   6.472279;  
-  daa[17*20+ 0] =   0.180717;  daa[17*20+ 1] =   0.593607;  daa[17*20+ 2] =   0.045376;  daa[17*20+ 3] =   0.029890;  
-  daa[17*20+ 4] =   0.670128;  daa[17*20+ 5] =   0.236199;  daa[17*20+ 6] =   0.077852;  daa[17*20+ 7] =   0.268491;  
-  daa[17*20+ 8] =   0.597054;  daa[17*20+ 9] =   0.111660;  daa[17*20+10] =   0.619632;  daa[17*20+11] =   0.049906;  
-  daa[17*20+12] =   0.696175;  daa[17*20+13] =   2.457121;  daa[17*20+14] =   0.095131;  daa[17*20+15] =   0.248862;  
-  daa[17*20+16] =   0.140825;  daa[18*20+ 0] =   0.218959;  daa[18*20+ 1] =   0.314440;  daa[18*20+ 2] =   0.612025;  
-  daa[18*20+ 3] =   0.135107;  daa[18*20+ 4] =   1.165532;  daa[18*20+ 5] =   0.257336;  daa[18*20+ 6] =   0.120037;  
-  daa[18*20+ 7] =   0.054679;  daa[18*20+ 8] =   5.306834;  daa[18*20+ 9] =   0.232523;  daa[18*20+10] =   0.299648;  
-  daa[18*20+11] =   0.131932;  daa[18*20+12] =   0.481306;  daa[18*20+13] =   7.803902;  daa[18*20+14] =   0.089613;  
-  daa[18*20+15] =   0.400547;  daa[18*20+16] =   0.245841;  daa[18*20+17] =   3.151815;  daa[19*20+ 0] =   2.547870;  
-  daa[19*20+ 1] =   0.170887;  daa[19*20+ 2] =   0.083688;  daa[19*20+ 3] =   0.037967;  daa[19*20+ 4] =   1.959291;  
-  daa[19*20+ 5] =   0.210332;  daa[19*20+ 6] =   0.245034;  daa[19*20+ 7] =   0.076701;  daa[19*20+ 8] =   0.119013;  
-  daa[19*20+ 9] =  10.649107;  daa[19*20+10] =   1.702745;  daa[19*20+11] =   0.185202;  daa[19*20+12] =   1.898718;  
-  daa[19*20+13] =   0.654683;  daa[19*20+14] =   0.296501;  daa[19*20+15] =   0.098369;  daa[19*20+16] =   2.188158;  
-  daa[19*20+17] =   0.189510;  daa[19*20+18] =   0.249313;  
-  
-  
+  daa[ 1*20+ 0] =   0.425093;  daa[ 2*20+ 0] =   0.276818;  daa[ 2*20+ 1] =   0.751878;  daa[ 3*20+ 0] =   0.395144;
+  daa[ 3*20+ 1] =   0.123954;  daa[ 3*20+ 2] =   5.076149;  daa[ 4*20+ 0] =   2.489084;  daa[ 4*20+ 1] =   0.534551;
+  daa[ 4*20+ 2] =   0.528768;  daa[ 4*20+ 3] =   0.062556;  daa[ 5*20+ 0] =   0.969894;  daa[ 5*20+ 1] =   2.807908;
+  daa[ 5*20+ 2] =   1.695752;  daa[ 5*20+ 3] =   0.523386;  daa[ 5*20+ 4] =   0.084808;  daa[ 6*20+ 0] =   1.038545;
+  daa[ 6*20+ 1] =   0.363970;  daa[ 6*20+ 2] =   0.541712;  daa[ 6*20+ 3] =   5.243870;  daa[ 6*20+ 4] =   0.003499;
+  daa[ 6*20+ 5] =   4.128591;  daa[ 7*20+ 0] =   2.066040;  daa[ 7*20+ 1] =   0.390192;  daa[ 7*20+ 2] =   1.437645;
+  daa[ 7*20+ 3] =   0.844926;  daa[ 7*20+ 4] =   0.569265;  daa[ 7*20+ 5] =   0.267959;  daa[ 7*20+ 6] =   0.348847;
+  daa[ 8*20+ 0] =   0.358858;  daa[ 8*20+ 1] =   2.426601;  daa[ 8*20+ 2] =   4.509238;  daa[ 8*20+ 3] =   0.927114;
+  daa[ 8*20+ 4] =   0.640543;  daa[ 8*20+ 5] =   4.813505;  daa[ 8*20+ 6] =   0.423881;  daa[ 8*20+ 7] =   0.311484;
+  daa[ 9*20+ 0] =   0.149830;  daa[ 9*20+ 1] =   0.126991;  daa[ 9*20+ 2] =   0.191503;  daa[ 9*20+ 3] =   0.010690;
+  daa[ 9*20+ 4] =   0.320627;  daa[ 9*20+ 5] =   0.072854;  daa[ 9*20+ 6] =   0.044265;  daa[ 9*20+ 7] =   0.008705;
+  daa[ 9*20+ 8] =   0.108882;  daa[10*20+ 0] =   0.395337;  daa[10*20+ 1] =   0.301848;  daa[10*20+ 2] =   0.068427;
+  daa[10*20+ 3] =   0.015076;  daa[10*20+ 4] =   0.594007;  daa[10*20+ 5] =   0.582457;  daa[10*20+ 6] =   0.069673;
+  daa[10*20+ 7] =   0.044261;  daa[10*20+ 8] =   0.366317;  daa[10*20+ 9] =   4.145067;  daa[11*20+ 0] =   0.536518;
+  daa[11*20+ 1] =   6.326067;  daa[11*20+ 2] =   2.145078;  daa[11*20+ 3] =   0.282959;  daa[11*20+ 4] =   0.013266;
+  daa[11*20+ 5] =   3.234294;  daa[11*20+ 6] =   1.807177;  daa[11*20+ 7] =   0.296636;  daa[11*20+ 8] =   0.697264;
+  daa[11*20+ 9] =   0.159069;  daa[11*20+10] =   0.137500;  daa[12*20+ 0] =   1.124035;  daa[12*20+ 1] =   0.484133;
+  daa[12*20+ 2] =   0.371004;  daa[12*20+ 3] =   0.025548;  daa[12*20+ 4] =   0.893680;  daa[12*20+ 5] =   1.672569;
+  daa[12*20+ 6] =   0.173735;  daa[12*20+ 7] =   0.139538;  daa[12*20+ 8] =   0.442472;  daa[12*20+ 9] =   4.273607;
+  daa[12*20+10] =   6.312358;  daa[12*20+11] =   0.656604;  daa[13*20+ 0] =   0.253701;  daa[13*20+ 1] =   0.052722;
+  daa[13*20+ 2] =   0.089525;  daa[13*20+ 3] =   0.017416;  daa[13*20+ 4] =   1.105251;  daa[13*20+ 5] =   0.035855;
+  daa[13*20+ 6] =   0.018811;  daa[13*20+ 7] =   0.089586;  daa[13*20+ 8] =   0.682139;  daa[13*20+ 9] =   1.112727;
+  daa[13*20+10] =   2.592692;  daa[13*20+11] =   0.023918;  daa[13*20+12] =   1.798853;  daa[14*20+ 0] =   1.177651;
+  daa[14*20+ 1] =   0.332533;  daa[14*20+ 2] =   0.161787;  daa[14*20+ 3] =   0.394456;  daa[14*20+ 4] =   0.075382;
+  daa[14*20+ 5] =   0.624294;  daa[14*20+ 6] =   0.419409;  daa[14*20+ 7] =   0.196961;  daa[14*20+ 8] =   0.508851;
+  daa[14*20+ 9] =   0.078281;  daa[14*20+10] =   0.249060;  daa[14*20+11] =   0.390322;  daa[14*20+12] =   0.099849;
+  daa[14*20+13] =   0.094464;  daa[15*20+ 0] =   4.727182;  daa[15*20+ 1] =   0.858151;  daa[15*20+ 2] =   4.008358;
+  daa[15*20+ 3] =   1.240275;  daa[15*20+ 4] =   2.784478;  daa[15*20+ 5] =   1.223828;  daa[15*20+ 6] =   0.611973;
+  daa[15*20+ 7] =   1.739990;  daa[15*20+ 8] =   0.990012;  daa[15*20+ 9] =   0.064105;  daa[15*20+10] =   0.182287;
+  daa[15*20+11] =   0.748683;  daa[15*20+12] =   0.346960;  daa[15*20+13] =   0.361819;  daa[15*20+14] =   1.338132;
+  daa[16*20+ 0] =   2.139501;  daa[16*20+ 1] =   0.578987;  daa[16*20+ 2] =   2.000679;  daa[16*20+ 3] =   0.425860;
+  daa[16*20+ 4] =   1.143480;  daa[16*20+ 5] =   1.080136;  daa[16*20+ 6] =   0.604545;  daa[16*20+ 7] =   0.129836;
+  daa[16*20+ 8] =   0.584262;  daa[16*20+ 9] =   1.033739;  daa[16*20+10] =   0.302936;  daa[16*20+11] =   1.136863;
+  daa[16*20+12] =   2.020366;  daa[16*20+13] =   0.165001;  daa[16*20+14] =   0.571468;  daa[16*20+15] =   6.472279;
+  daa[17*20+ 0] =   0.180717;  daa[17*20+ 1] =   0.593607;  daa[17*20+ 2] =   0.045376;  daa[17*20+ 3] =   0.029890;
+  daa[17*20+ 4] =   0.670128;  daa[17*20+ 5] =   0.236199;  daa[17*20+ 6] =   0.077852;  daa[17*20+ 7] =   0.268491;
+  daa[17*20+ 8] =   0.597054;  daa[17*20+ 9] =   0.111660;  daa[17*20+10] =   0.619632;  daa[17*20+11] =   0.049906;
+  daa[17*20+12] =   0.696175;  daa[17*20+13] =   2.457121;  daa[17*20+14] =   0.095131;  daa[17*20+15] =   0.248862;
+  daa[17*20+16] =   0.140825;  daa[18*20+ 0] =   0.218959;  daa[18*20+ 1] =   0.314440;  daa[18*20+ 2] =   0.612025;
+  daa[18*20+ 3] =   0.135107;  daa[18*20+ 4] =   1.165532;  daa[18*20+ 5] =   0.257336;  daa[18*20+ 6] =   0.120037;
+  daa[18*20+ 7] =   0.054679;  daa[18*20+ 8] =   5.306834;  daa[18*20+ 9] =   0.232523;  daa[18*20+10] =   0.299648;
+  daa[18*20+11] =   0.131932;  daa[18*20+12] =   0.481306;  daa[18*20+13] =   7.803902;  daa[18*20+14] =   0.089613;
+  daa[18*20+15] =   0.400547;  daa[18*20+16] =   0.245841;  daa[18*20+17] =   3.151815;  daa[19*20+ 0] =   2.547870;
+  daa[19*20+ 1] =   0.170887;  daa[19*20+ 2] =   0.083688;  daa[19*20+ 3] =   0.037967;  daa[19*20+ 4] =   1.959291;
+  daa[19*20+ 5] =   0.210332;  daa[19*20+ 6] =   0.245034;  daa[19*20+ 7] =   0.076701;  daa[19*20+ 8] =   0.119013;
+  daa[19*20+ 9] =  10.649107;  daa[19*20+10] =   1.702745;  daa[19*20+11] =   0.185202;  daa[19*20+12] =   1.898718;
+  daa[19*20+13] =   0.654683;  daa[19*20+14] =   0.296501;  daa[19*20+15] =   0.098369;  daa[19*20+16] =   2.188158;
+  daa[19*20+17] =   0.189510;  daa[19*20+18] =   0.249313;
+
+
   for (i=0; i<naa; i++)  for (j=0; j<i; j++)  daa[j*naa+i] = daa[i*naa+j];
-  
-  pi[0] = 0.079066; pi[1] = 0.055941; pi[2] = 0.041977; pi[3] = 0.053052; 
-  pi[4] = 0.012937; pi[5] = 0.040767; pi[6] = 0.071586; pi[7] = 0.057337; 
-  pi[8] = 0.022355; pi[9] = 0.062157; pi[10] = 0.099081; pi[11] = 0.064600; 
-  pi[12] = 0.022951; pi[13] = 0.042302; pi[14] = 0.044040; pi[15] = 0.061197; 
-  pi[16] = 0.053287; pi[17] = 0.012066; pi[18] = 0.034155; pi[19] = 0.069147; 
-  
+
+  pi[0] = 0.079066; pi[1] = 0.055941; pi[2] = 0.041977; pi[3] = 0.053052;
+  pi[4] = 0.012937; pi[5] = 0.040767; pi[6] = 0.071586; pi[7] = 0.057337;
+  pi[8] = 0.022355; pi[9] = 0.062157; pi[10] = 0.099081; pi[11] = 0.064600;
+  pi[12] = 0.022951; pi[13] = 0.042302; pi[14] = 0.044040; pi[15] = 0.061197;
+  pi[16] = 0.053287; pi[17] = 0.012066; pi[18] = 0.034155; pi[19] = 0.069147;
+
   return 1;
 }
 
@@ -2451,80 +2451,80 @@ int Init_Qmat_WAG(phydbl *daa, phydbl *pi)
   /* WAG's model data
    * Simon Whelan and Nick Goldman
    * 'A general empirical model of protein evolution derived from multiple
-   *  protein families using a maximum-likelihood approach' 
+   *  protein families using a maximum-likelihood approach'
    * MBE (2001) 18:691-699
    */
 
 
   naa = 20;
 
-  daa[ 1*20+ 0] =  55.15710; daa[ 2*20+ 0] =  50.98480; daa[ 2*20+ 1] =  63.53460; 
-  daa[ 3*20+ 0] =  73.89980; daa[ 3*20+ 1] =  14.73040; daa[ 3*20+ 2] = 542.94200; 
-  daa[ 4*20+ 0] = 102.70400; daa[ 4*20+ 1] =  52.81910; daa[ 4*20+ 2] =  26.52560; 
-  daa[ 4*20+ 3] =   3.02949; daa[ 5*20+ 0] =  90.85980; daa[ 5*20+ 1] = 303.55000; 
-  daa[ 5*20+ 2] = 154.36400; daa[ 5*20+ 3] =  61.67830; daa[ 5*20+ 4] =   9.88179; 
-  daa[ 6*20+ 0] = 158.28500; daa[ 6*20+ 1] =  43.91570; daa[ 6*20+ 2] =  94.71980; 
-  daa[ 6*20+ 3] = 617.41600; daa[ 6*20+ 4] =   2.13520; daa[ 6*20+ 5] = 546.94700; 
-  daa[ 7*20+ 0] = 141.67200; daa[ 7*20+ 1] =  58.46650; daa[ 7*20+ 2] = 112.55600; 
-  daa[ 7*20+ 3] =  86.55840; daa[ 7*20+ 4] =  30.66740; daa[ 7*20+ 5] =  33.00520; 
-  daa[ 7*20+ 6] =  56.77170; daa[ 8*20+ 0] =  31.69540; daa[ 8*20+ 1] = 213.71500; 
-  daa[ 8*20+ 2] = 395.62900; daa[ 8*20+ 3] =  93.06760; daa[ 8*20+ 4] =  24.89720; 
-  daa[ 8*20+ 5] = 429.41100; daa[ 8*20+ 6] =  57.00250; daa[ 8*20+ 7] =  24.94100; 
-  daa[ 9*20+ 0] =  19.33350; daa[ 9*20+ 1] =  18.69790; daa[ 9*20+ 2] =  55.42360; 
-  daa[ 9*20+ 3] =   3.94370; daa[ 9*20+ 4] =  17.01350; daa[ 9*20+ 5] =  11.39170; 
-  daa[ 9*20+ 6] =  12.73950; daa[ 9*20+ 7] =   3.04501; daa[ 9*20+ 8] =  13.81900; 
-  daa[10*20+ 0] =  39.79150; daa[10*20+ 1] =  49.76710; daa[10*20+ 2] =  13.15280; 
-  daa[10*20+ 3] =   8.48047; daa[10*20+ 4] =  38.42870; daa[10*20+ 5] =  86.94890; 
-  daa[10*20+ 6] =  15.42630; daa[10*20+ 7] =   6.13037; daa[10*20+ 8] =  49.94620; 
-  daa[10*20+ 9] = 317.09700; daa[11*20+ 0] =  90.62650; daa[11*20+ 1] = 535.14200; 
-  daa[11*20+ 2] = 301.20100; daa[11*20+ 3] =  47.98550; daa[11*20+ 4] =   7.40339; 
-  daa[11*20+ 5] = 389.49000; daa[11*20+ 6] = 258.44300; daa[11*20+ 7] =  37.35580; 
-  daa[11*20+ 8] =  89.04320; daa[11*20+ 9] =  32.38320; daa[11*20+10] =  25.75550; 
-  daa[12*20+ 0] =  89.34960; daa[12*20+ 1] =  68.31620; daa[12*20+ 2] =  19.82210; 
-  daa[12*20+ 3] =  10.37540; daa[12*20+ 4] =  39.04820; daa[12*20+ 5] = 154.52600; 
-  daa[12*20+ 6] =  31.51240; daa[12*20+ 7] =  17.41000; daa[12*20+ 8] =  40.41410; 
-  daa[12*20+ 9] = 425.74600; daa[12*20+10] = 485.40200; daa[12*20+11] =  93.42760; 
-  daa[13*20+ 0] =  21.04940; daa[13*20+ 1] =  10.27110; daa[13*20+ 2] =   9.61621; 
-  daa[13*20+ 3] =   4.67304; daa[13*20+ 4] =  39.80200; daa[13*20+ 5] =   9.99208; 
-  daa[13*20+ 6] =   8.11339; daa[13*20+ 7] =   4.99310; daa[13*20+ 8] =  67.93710; 
-  daa[13*20+ 9] = 105.94700; daa[13*20+10] = 211.51700; daa[13*20+11] =   8.88360; 
-  daa[13*20+12] = 119.06300; daa[14*20+ 0] = 143.85500; daa[14*20+ 1] =  67.94890; 
-  daa[14*20+ 2] =  19.50810; daa[14*20+ 3] =  42.39840; daa[14*20+ 4] =  10.94040; 
-  daa[14*20+ 5] =  93.33720; daa[14*20+ 6] =  68.23550; daa[14*20+ 7] =  24.35700; 
-  daa[14*20+ 8] =  69.61980; daa[14*20+ 9] =   9.99288; daa[14*20+10] =  41.58440; 
-  daa[14*20+11] =  55.68960; daa[14*20+12] =  17.13290; daa[14*20+13] =  16.14440; 
-  daa[15*20+ 0] = 337.07900; daa[15*20+ 1] = 122.41900; daa[15*20+ 2] = 397.42300; 
-  daa[15*20+ 3] = 107.17600; daa[15*20+ 4] = 140.76600; daa[15*20+ 5] = 102.88700; 
-  daa[15*20+ 6] =  70.49390; daa[15*20+ 7] = 134.18200; daa[15*20+ 8] =  74.01690; 
-  daa[15*20+ 9] =  31.94400; daa[15*20+10] =  34.47390; daa[15*20+11] =  96.71300; 
-  daa[15*20+12] =  49.39050; daa[15*20+13] =  54.59310; daa[15*20+14] = 161.32800; 
-  daa[16*20+ 0] = 212.11100; daa[16*20+ 1] =  55.44130; daa[16*20+ 2] = 203.00600; 
-  daa[16*20+ 3] =  37.48660; daa[16*20+ 4] =  51.29840; daa[16*20+ 5] =  85.79280; 
-  daa[16*20+ 6] =  82.27650; daa[16*20+ 7] =  22.58330; daa[16*20+ 8] =  47.33070; 
-  daa[16*20+ 9] = 145.81600; daa[16*20+10] =  32.66220; daa[16*20+11] = 138.69800; 
-  daa[16*20+12] = 151.61200; daa[16*20+13] =  17.19030; daa[16*20+14] =  79.53840; 
-  daa[16*20+15] = 437.80200; daa[17*20+ 0] =  11.31330; daa[17*20+ 1] = 116.39200; 
-  daa[17*20+ 2] =   7.19167; daa[17*20+ 3] =  12.97670; daa[17*20+ 4] =  71.70700; 
-  daa[17*20+ 5] =  21.57370; daa[17*20+ 6] =  15.65570; daa[17*20+ 7] =  33.69830; 
-  daa[17*20+ 8] =  26.25690; daa[17*20+ 9] =  21.24830; daa[17*20+10] =  66.53090; 
-  daa[17*20+11] =  13.75050; daa[17*20+12] =  51.57060; daa[17*20+13] = 152.96400; 
-  daa[17*20+14] =  13.94050; daa[17*20+15] =  52.37420; daa[17*20+16] =  11.08640; 
-  daa[18*20+ 0] =  24.07350; daa[18*20+ 1] =  38.15330; daa[18*20+ 2] = 108.60000; 
-  daa[18*20+ 3] =  32.57110; daa[18*20+ 4] =  54.38330; daa[18*20+ 5] =  22.77100; 
-  daa[18*20+ 6] =  19.63030; daa[18*20+ 7] =  10.36040; daa[18*20+ 8] = 387.34400; 
-  daa[18*20+ 9] =  42.01700; daa[18*20+10] =  39.86180; daa[18*20+11] =  13.32640; 
-  daa[18*20+12] =  42.84370; daa[18*20+13] = 645.42800; daa[18*20+14] =  21.60460; 
-  daa[18*20+15] =  78.69930; daa[18*20+16] =  29.11480; daa[18*20+17] = 248.53900; 
-  daa[19*20+ 0] = 200.60100; daa[19*20+ 1] =  25.18490; daa[19*20+ 2] =  19.62460; 
-  daa[19*20+ 3] =  15.23350; daa[19*20+ 4] = 100.21400; daa[19*20+ 5] =  30.12810; 
-  daa[19*20+ 6] =  58.87310; daa[19*20+ 7] =  18.72470; daa[19*20+ 8] =  11.83580; 
-  daa[19*20+ 9] = 782.13000; daa[19*20+10] = 180.03400; daa[19*20+11] =  30.54340; 
-  daa[19*20+12] = 205.84500; daa[19*20+13] =  64.98920; daa[19*20+14] =  31.48870; 
-  daa[19*20+15] =  23.27390; daa[19*20+16] = 138.82300; daa[19*20+17] =  36.53690; 
-  daa[19*20+18] =  31.47300; 
+  daa[ 1*20+ 0] =  55.15710; daa[ 2*20+ 0] =  50.98480; daa[ 2*20+ 1] =  63.53460;
+  daa[ 3*20+ 0] =  73.89980; daa[ 3*20+ 1] =  14.73040; daa[ 3*20+ 2] = 542.94200;
+  daa[ 4*20+ 0] = 102.70400; daa[ 4*20+ 1] =  52.81910; daa[ 4*20+ 2] =  26.52560;
+  daa[ 4*20+ 3] =   3.02949; daa[ 5*20+ 0] =  90.85980; daa[ 5*20+ 1] = 303.55000;
+  daa[ 5*20+ 2] = 154.36400; daa[ 5*20+ 3] =  61.67830; daa[ 5*20+ 4] =   9.88179;
+  daa[ 6*20+ 0] = 158.28500; daa[ 6*20+ 1] =  43.91570; daa[ 6*20+ 2] =  94.71980;
+  daa[ 6*20+ 3] = 617.41600; daa[ 6*20+ 4] =   2.13520; daa[ 6*20+ 5] = 546.94700;
+  daa[ 7*20+ 0] = 141.67200; daa[ 7*20+ 1] =  58.46650; daa[ 7*20+ 2] = 112.55600;
+  daa[ 7*20+ 3] =  86.55840; daa[ 7*20+ 4] =  30.66740; daa[ 7*20+ 5] =  33.00520;
+  daa[ 7*20+ 6] =  56.77170; daa[ 8*20+ 0] =  31.69540; daa[ 8*20+ 1] = 213.71500;
+  daa[ 8*20+ 2] = 395.62900; daa[ 8*20+ 3] =  93.06760; daa[ 8*20+ 4] =  24.89720;
+  daa[ 8*20+ 5] = 429.41100; daa[ 8*20+ 6] =  57.00250; daa[ 8*20+ 7] =  24.94100;
+  daa[ 9*20+ 0] =  19.33350; daa[ 9*20+ 1] =  18.69790; daa[ 9*20+ 2] =  55.42360;
+  daa[ 9*20+ 3] =   3.94370; daa[ 9*20+ 4] =  17.01350; daa[ 9*20+ 5] =  11.39170;
+  daa[ 9*20+ 6] =  12.73950; daa[ 9*20+ 7] =   3.04501; daa[ 9*20+ 8] =  13.81900;
+  daa[10*20+ 0] =  39.79150; daa[10*20+ 1] =  49.76710; daa[10*20+ 2] =  13.15280;
+  daa[10*20+ 3] =   8.48047; daa[10*20+ 4] =  38.42870; daa[10*20+ 5] =  86.94890;
+  daa[10*20+ 6] =  15.42630; daa[10*20+ 7] =   6.13037; daa[10*20+ 8] =  49.94620;
+  daa[10*20+ 9] = 317.09700; daa[11*20+ 0] =  90.62650; daa[11*20+ 1] = 535.14200;
+  daa[11*20+ 2] = 301.20100; daa[11*20+ 3] =  47.98550; daa[11*20+ 4] =   7.40339;
+  daa[11*20+ 5] = 389.49000; daa[11*20+ 6] = 258.44300; daa[11*20+ 7] =  37.35580;
+  daa[11*20+ 8] =  89.04320; daa[11*20+ 9] =  32.38320; daa[11*20+10] =  25.75550;
+  daa[12*20+ 0] =  89.34960; daa[12*20+ 1] =  68.31620; daa[12*20+ 2] =  19.82210;
+  daa[12*20+ 3] =  10.37540; daa[12*20+ 4] =  39.04820; daa[12*20+ 5] = 154.52600;
+  daa[12*20+ 6] =  31.51240; daa[12*20+ 7] =  17.41000; daa[12*20+ 8] =  40.41410;
+  daa[12*20+ 9] = 425.74600; daa[12*20+10] = 485.40200; daa[12*20+11] =  93.42760;
+  daa[13*20+ 0] =  21.04940; daa[13*20+ 1] =  10.27110; daa[13*20+ 2] =   9.61621;
+  daa[13*20+ 3] =   4.67304; daa[13*20+ 4] =  39.80200; daa[13*20+ 5] =   9.99208;
+  daa[13*20+ 6] =   8.11339; daa[13*20+ 7] =   4.99310; daa[13*20+ 8] =  67.93710;
+  daa[13*20+ 9] = 105.94700; daa[13*20+10] = 211.51700; daa[13*20+11] =   8.88360;
+  daa[13*20+12] = 119.06300; daa[14*20+ 0] = 143.85500; daa[14*20+ 1] =  67.94890;
+  daa[14*20+ 2] =  19.50810; daa[14*20+ 3] =  42.39840; daa[14*20+ 4] =  10.94040;
+  daa[14*20+ 5] =  93.33720; daa[14*20+ 6] =  68.23550; daa[14*20+ 7] =  24.35700;
+  daa[14*20+ 8] =  69.61980; daa[14*20+ 9] =   9.99288; daa[14*20+10] =  41.58440;
+  daa[14*20+11] =  55.68960; daa[14*20+12] =  17.13290; daa[14*20+13] =  16.14440;
+  daa[15*20+ 0] = 337.07900; daa[15*20+ 1] = 122.41900; daa[15*20+ 2] = 397.42300;
+  daa[15*20+ 3] = 107.17600; daa[15*20+ 4] = 140.76600; daa[15*20+ 5] = 102.88700;
+  daa[15*20+ 6] =  70.49390; daa[15*20+ 7] = 134.18200; daa[15*20+ 8] =  74.01690;
+  daa[15*20+ 9] =  31.94400; daa[15*20+10] =  34.47390; daa[15*20+11] =  96.71300;
+  daa[15*20+12] =  49.39050; daa[15*20+13] =  54.59310; daa[15*20+14] = 161.32800;
+  daa[16*20+ 0] = 212.11100; daa[16*20+ 1] =  55.44130; daa[16*20+ 2] = 203.00600;
+  daa[16*20+ 3] =  37.48660; daa[16*20+ 4] =  51.29840; daa[16*20+ 5] =  85.79280;
+  daa[16*20+ 6] =  82.27650; daa[16*20+ 7] =  22.58330; daa[16*20+ 8] =  47.33070;
+  daa[16*20+ 9] = 145.81600; daa[16*20+10] =  32.66220; daa[16*20+11] = 138.69800;
+  daa[16*20+12] = 151.61200; daa[16*20+13] =  17.19030; daa[16*20+14] =  79.53840;
+  daa[16*20+15] = 437.80200; daa[17*20+ 0] =  11.31330; daa[17*20+ 1] = 116.39200;
+  daa[17*20+ 2] =   7.19167; daa[17*20+ 3] =  12.97670; daa[17*20+ 4] =  71.70700;
+  daa[17*20+ 5] =  21.57370; daa[17*20+ 6] =  15.65570; daa[17*20+ 7] =  33.69830;
+  daa[17*20+ 8] =  26.25690; daa[17*20+ 9] =  21.24830; daa[17*20+10] =  66.53090;
+  daa[17*20+11] =  13.75050; daa[17*20+12] =  51.57060; daa[17*20+13] = 152.96400;
+  daa[17*20+14] =  13.94050; daa[17*20+15] =  52.37420; daa[17*20+16] =  11.08640;
+  daa[18*20+ 0] =  24.07350; daa[18*20+ 1] =  38.15330; daa[18*20+ 2] = 108.60000;
+  daa[18*20+ 3] =  32.57110; daa[18*20+ 4] =  54.38330; daa[18*20+ 5] =  22.77100;
+  daa[18*20+ 6] =  19.63030; daa[18*20+ 7] =  10.36040; daa[18*20+ 8] = 387.34400;
+  daa[18*20+ 9] =  42.01700; daa[18*20+10] =  39.86180; daa[18*20+11] =  13.32640;
+  daa[18*20+12] =  42.84370; daa[18*20+13] = 645.42800; daa[18*20+14] =  21.60460;
+  daa[18*20+15] =  78.69930; daa[18*20+16] =  29.11480; daa[18*20+17] = 248.53900;
+  daa[19*20+ 0] = 200.60100; daa[19*20+ 1] =  25.18490; daa[19*20+ 2] =  19.62460;
+  daa[19*20+ 3] =  15.23350; daa[19*20+ 4] = 100.21400; daa[19*20+ 5] =  30.12810;
+  daa[19*20+ 6] =  58.87310; daa[19*20+ 7] =  18.72470; daa[19*20+ 8] =  11.83580;
+  daa[19*20+ 9] = 782.13000; daa[19*20+10] = 180.03400; daa[19*20+11] =  30.54340;
+  daa[19*20+12] = 205.84500; daa[19*20+13] =  64.98920; daa[19*20+14] =  31.48870;
+  daa[19*20+15] =  23.27390; daa[19*20+16] = 138.82300; daa[19*20+17] =  36.53690;
+  daa[19*20+18] =  31.47300;
 
   for (i=0; i<naa; i++)  for (j=0; j<i; j++)  daa[j*naa+i] = daa[i*naa+j];
-  
+
   pi[0] = 0.0866279; pi[1] =  0.043972; pi[2] =  0.0390894; pi[3] =  0.0570451;
   pi[4] =  0.0193078; pi[5] =  0.0367281; pi[6] =  0.0580589; pi[7] =  0.0832518;
   pi[8] =  0.0244313; pi[9] =  0.048466; pi[10] =  0.086209; pi[11] = 0.0620286;
@@ -2541,12 +2541,12 @@ int Init_Qmat_WAG(phydbl *daa, phydbl *pi)
 
 int Init_Qmat_RtREV(phydbl *daa, phydbl *pi)
 {
-    /* 
+    /*
        This model has been 'translated' from John Huelsenbeck and Fredrik Ronquist
-       MrBayes program into PHYML format by Federico Abascal. Many thanks to them. 
+       MrBayes program into PHYML format by Federico Abascal. Many thanks to them.
     */
-    
-    /* 
+
+    /*
     Dimmic M.W., J.S. Rest, D.P. Mindell, and D. Goldstein. 2002. RArtREV:
     An amino acid substitution matrix for inference of retrovirus and
     reverse transcriptase phyLOGeny. Journal of Molecular Evolution
@@ -2556,62 +2556,62 @@ int Init_Qmat_RtREV(phydbl *daa, phydbl *pi)
     int i,j,naa;
     naa = 20;
 
-    daa[1*20+0]= 34;         daa[2*20+0]= 51;         daa[2*20+1]= 35;         daa[3*20+0]= 10;         
-    daa[3*20+1]= 30;         daa[3*20+2]= 384;        daa[4*20+0]= 439;        daa[4*20+1]= 92;         
-    daa[4*20+2]= 128;        daa[4*20+3]= 1;          daa[5*20+0]= 32;         daa[5*20+1]= 221;        
-    daa[5*20+2]= 236;        daa[5*20+3]= 78;         daa[5*20+4]= 70;         daa[6*20+0]= 81;         
-    daa[6*20+1]= 10;         daa[6*20+2]= 79;         daa[6*20+3]= 542;        daa[6*20+4]= 1;          
-    daa[6*20+5]= 372;        daa[7*20+0]= 135;        daa[7*20+1]= 41;         daa[7*20+2]= 94;         
-    daa[7*20+3]= 61;         daa[7*20+4]= 48;         daa[7*20+5]= 18;         daa[7*20+6]= 70;         
-    daa[8*20+0]= 30;         daa[8*20+1]= 90;         daa[8*20+2]= 320;        daa[8*20+3]= 91;         
-    daa[8*20+4]= 124;        daa[8*20+5]= 387;        daa[8*20+6]= 34;         daa[8*20+7]= 68;         
-    daa[9*20+0]= 1;          daa[9*20+1]= 24;         daa[9*20+2]= 35;         daa[9*20+3]= 1;          
-    daa[9*20+4]= 104;        daa[9*20+5]= 33;         daa[9*20+6]= 1;          daa[9*20+7]= 1;          
-    daa[9*20+8]= 34;         daa[10*20+0]= 45;        daa[10*20+1]= 18;        daa[10*20+2]= 15;        
-    daa[10*20+3]= 5;         daa[10*20+4]= 110;       daa[10*20+5]= 54;        daa[10*20+6]= 21;        
-    daa[10*20+7]= 3;         daa[10*20+8]= 51;        daa[10*20+9]= 385;       daa[11*20+0]= 38;        
-    daa[11*20+1]= 593;       daa[11*20+2]= 123;       daa[11*20+3]= 20;        daa[11*20+4]= 16;        
-    daa[11*20+5]= 309;       daa[11*20+6]= 141;       daa[11*20+7]= 30;        daa[11*20+8]= 76;        
-    daa[11*20+9]= 34;        daa[11*20+10]= 23;       daa[12*20+0]= 235;       daa[12*20+1]= 57;        
-    daa[12*20+2]= 1;         daa[12*20+3]= 1;         daa[12*20+4]= 156;       daa[12*20+5]= 158;       
-    daa[12*20+6]= 1;         daa[12*20+7]= 37;        daa[12*20+8]= 116;       daa[12*20+9]= 375;       
-    daa[12*20+10]= 581;      daa[12*20+11]= 134;      daa[13*20+0]= 1;         daa[13*20+1]= 7;         
-    daa[13*20+2]= 49;        daa[13*20+3]= 1;         daa[13*20+4]= 70;        daa[13*20+5]= 1;         
-    daa[13*20+6]= 1;         daa[13*20+7]= 7;         daa[13*20+8]= 141;       daa[13*20+9]= 64;        
-    daa[13*20+10]= 179;      daa[13*20+11]= 14;       daa[13*20+12]= 247;      daa[14*20+0]= 97;        
-    daa[14*20+1]= 24;        daa[14*20+2]= 33;        daa[14*20+3]= 55;        daa[14*20+4]= 1;         
-    daa[14*20+5]= 68;        daa[14*20+6]= 52;        daa[14*20+7]= 17;        daa[14*20+8]= 44;        
-    daa[14*20+9]= 10;        daa[14*20+10]= 22;       daa[14*20+11]= 43;       daa[14*20+12]= 1;        
-    daa[14*20+13]= 11;       daa[15*20+0]= 460;       daa[15*20+1]= 102;       daa[15*20+2]= 294;       
-    daa[15*20+3]= 136;       daa[15*20+4]= 75;        daa[15*20+5]= 225;       daa[15*20+6]= 95;        
-    daa[15*20+7]= 152;       daa[15*20+8]= 183;       daa[15*20+9]= 4;         daa[15*20+10]= 24;       
-    daa[15*20+11]= 77;       daa[15*20+12]= 1;        daa[15*20+13]= 20;       daa[15*20+14]= 134;      
-    daa[16*20+0]= 258;       daa[16*20+1]= 64;        daa[16*20+2]= 148;       daa[16*20+3]= 55;        
-    daa[16*20+4]= 117;       daa[16*20+5]= 146;       daa[16*20+6]= 82;        daa[16*20+7]= 7;         
-    daa[16*20+8]= 49;        daa[16*20+9]= 72;        daa[16*20+10]= 25;       daa[16*20+11]= 110;      
-    daa[16*20+12]= 131;      daa[16*20+13]= 69;       daa[16*20+14]= 62;       daa[16*20+15]= 671;      
-    daa[17*20+0]= 5;         daa[17*20+1]= 13;        daa[17*20+2]= 16;        daa[17*20+3]= 1;         
-    daa[17*20+4]= 55;        daa[17*20+5]= 10;        daa[17*20+6]= 17;        daa[17*20+7]= 23;        
-    daa[17*20+8]= 48;        daa[17*20+9]= 39;        daa[17*20+10]= 47;       daa[17*20+11]= 6;        
-    daa[17*20+12]= 111;      daa[17*20+13]= 182;      daa[17*20+14]= 9;        daa[17*20+15]= 14;       
-    daa[17*20+16]= 1;        daa[18*20+0]= 55;        daa[18*20+1]= 47;        daa[18*20+2]= 28;        
-    daa[18*20+3]= 1;         daa[18*20+4]= 131;       daa[18*20+5]= 45;        daa[18*20+6]= 1;         
-    daa[18*20+7]= 21;        daa[18*20+8]= 307;       daa[18*20+9]= 26;        daa[18*20+10]= 64;       
-    daa[18*20+11]= 1;        daa[18*20+12]= 74;       daa[18*20+13]= 1017;     daa[18*20+14]= 14;       
-    daa[18*20+15]= 31;       daa[18*20+16]= 34;       daa[18*20+17]= 176;      daa[19*20+0]= 197;       
-    daa[19*20+1]= 29;        daa[19*20+2]= 21;        daa[19*20+3]= 6;         daa[19*20+4]= 295;       
-    daa[19*20+5]= 36;        daa[19*20+6]= 35;        daa[19*20+7]= 3;         daa[19*20+8]= 1;         
-    daa[19*20+9]= 1048;      daa[19*20+10]= 112;      daa[19*20+11]= 19;       daa[19*20+12]= 236;      
-    daa[19*20+13]= 92;       daa[19*20+14]= 25;       daa[19*20+15]= 39;       daa[19*20+16]= 196;      
-    daa[19*20+17]= 26;       daa[19*20+18]= 59;       
+    daa[1*20+0]= 34;         daa[2*20+0]= 51;         daa[2*20+1]= 35;         daa[3*20+0]= 10;
+    daa[3*20+1]= 30;         daa[3*20+2]= 384;        daa[4*20+0]= 439;        daa[4*20+1]= 92;
+    daa[4*20+2]= 128;        daa[4*20+3]= 1;          daa[5*20+0]= 32;         daa[5*20+1]= 221;
+    daa[5*20+2]= 236;        daa[5*20+3]= 78;         daa[5*20+4]= 70;         daa[6*20+0]= 81;
+    daa[6*20+1]= 10;         daa[6*20+2]= 79;         daa[6*20+3]= 542;        daa[6*20+4]= 1;
+    daa[6*20+5]= 372;        daa[7*20+0]= 135;        daa[7*20+1]= 41;         daa[7*20+2]= 94;
+    daa[7*20+3]= 61;         daa[7*20+4]= 48;         daa[7*20+5]= 18;         daa[7*20+6]= 70;
+    daa[8*20+0]= 30;         daa[8*20+1]= 90;         daa[8*20+2]= 320;        daa[8*20+3]= 91;
+    daa[8*20+4]= 124;        daa[8*20+5]= 387;        daa[8*20+6]= 34;         daa[8*20+7]= 68;
+    daa[9*20+0]= 1;          daa[9*20+1]= 24;         daa[9*20+2]= 35;         daa[9*20+3]= 1;
+    daa[9*20+4]= 104;        daa[9*20+5]= 33;         daa[9*20+6]= 1;          daa[9*20+7]= 1;
+    daa[9*20+8]= 34;         daa[10*20+0]= 45;        daa[10*20+1]= 18;        daa[10*20+2]= 15;
+    daa[10*20+3]= 5;         daa[10*20+4]= 110;       daa[10*20+5]= 54;        daa[10*20+6]= 21;
+    daa[10*20+7]= 3;         daa[10*20+8]= 51;        daa[10*20+9]= 385;       daa[11*20+0]= 38;
+    daa[11*20+1]= 593;       daa[11*20+2]= 123;       daa[11*20+3]= 20;        daa[11*20+4]= 16;
+    daa[11*20+5]= 309;       daa[11*20+6]= 141;       daa[11*20+7]= 30;        daa[11*20+8]= 76;
+    daa[11*20+9]= 34;        daa[11*20+10]= 23;       daa[12*20+0]= 235;       daa[12*20+1]= 57;
+    daa[12*20+2]= 1;         daa[12*20+3]= 1;         daa[12*20+4]= 156;       daa[12*20+5]= 158;
+    daa[12*20+6]= 1;         daa[12*20+7]= 37;        daa[12*20+8]= 116;       daa[12*20+9]= 375;
+    daa[12*20+10]= 581;      daa[12*20+11]= 134;      daa[13*20+0]= 1;         daa[13*20+1]= 7;
+    daa[13*20+2]= 49;        daa[13*20+3]= 1;         daa[13*20+4]= 70;        daa[13*20+5]= 1;
+    daa[13*20+6]= 1;         daa[13*20+7]= 7;         daa[13*20+8]= 141;       daa[13*20+9]= 64;
+    daa[13*20+10]= 179;      daa[13*20+11]= 14;       daa[13*20+12]= 247;      daa[14*20+0]= 97;
+    daa[14*20+1]= 24;        daa[14*20+2]= 33;        daa[14*20+3]= 55;        daa[14*20+4]= 1;
+    daa[14*20+5]= 68;        daa[14*20+6]= 52;        daa[14*20+7]= 17;        daa[14*20+8]= 44;
+    daa[14*20+9]= 10;        daa[14*20+10]= 22;       daa[14*20+11]= 43;       daa[14*20+12]= 1;
+    daa[14*20+13]= 11;       daa[15*20+0]= 460;       daa[15*20+1]= 102;       daa[15*20+2]= 294;
+    daa[15*20+3]= 136;       daa[15*20+4]= 75;        daa[15*20+5]= 225;       daa[15*20+6]= 95;
+    daa[15*20+7]= 152;       daa[15*20+8]= 183;       daa[15*20+9]= 4;         daa[15*20+10]= 24;
+    daa[15*20+11]= 77;       daa[15*20+12]= 1;        daa[15*20+13]= 20;       daa[15*20+14]= 134;
+    daa[16*20+0]= 258;       daa[16*20+1]= 64;        daa[16*20+2]= 148;       daa[16*20+3]= 55;
+    daa[16*20+4]= 117;       daa[16*20+5]= 146;       daa[16*20+6]= 82;        daa[16*20+7]= 7;
+    daa[16*20+8]= 49;        daa[16*20+9]= 72;        daa[16*20+10]= 25;       daa[16*20+11]= 110;
+    daa[16*20+12]= 131;      daa[16*20+13]= 69;       daa[16*20+14]= 62;       daa[16*20+15]= 671;
+    daa[17*20+0]= 5;         daa[17*20+1]= 13;        daa[17*20+2]= 16;        daa[17*20+3]= 1;
+    daa[17*20+4]= 55;        daa[17*20+5]= 10;        daa[17*20+6]= 17;        daa[17*20+7]= 23;
+    daa[17*20+8]= 48;        daa[17*20+9]= 39;        daa[17*20+10]= 47;       daa[17*20+11]= 6;
+    daa[17*20+12]= 111;      daa[17*20+13]= 182;      daa[17*20+14]= 9;        daa[17*20+15]= 14;
+    daa[17*20+16]= 1;        daa[18*20+0]= 55;        daa[18*20+1]= 47;        daa[18*20+2]= 28;
+    daa[18*20+3]= 1;         daa[18*20+4]= 131;       daa[18*20+5]= 45;        daa[18*20+6]= 1;
+    daa[18*20+7]= 21;        daa[18*20+8]= 307;       daa[18*20+9]= 26;        daa[18*20+10]= 64;
+    daa[18*20+11]= 1;        daa[18*20+12]= 74;       daa[18*20+13]= 1017;     daa[18*20+14]= 14;
+    daa[18*20+15]= 31;       daa[18*20+16]= 34;       daa[18*20+17]= 176;      daa[19*20+0]= 197;
+    daa[19*20+1]= 29;        daa[19*20+2]= 21;        daa[19*20+3]= 6;         daa[19*20+4]= 295;
+    daa[19*20+5]= 36;        daa[19*20+6]= 35;        daa[19*20+7]= 3;         daa[19*20+8]= 1;
+    daa[19*20+9]= 1048;      daa[19*20+10]= 112;      daa[19*20+11]= 19;       daa[19*20+12]= 236;
+    daa[19*20+13]= 92;       daa[19*20+14]= 25;       daa[19*20+15]= 39;       daa[19*20+16]= 196;
+    daa[19*20+17]= 26;       daa[19*20+18]= 59;
 
     for (i=0; i<naa; i++)  for (j=0; j<i; j++)  daa[j*naa+i] = daa[i*naa+j];
 
-    pi[0]= 0.0646;           pi[1]= 0.0453;           pi[2]= 0.0376;           pi[3]= 0.0422;           
-    pi[4]= 0.0114;           pi[5]= 0.0606;           pi[6]= 0.0607;           pi[7]= 0.0639;           
-    pi[8]= 0.0273;           pi[9]= 0.0679;           pi[10]= 0.1018;          pi[11]= 0.0751;          
-    pi[12]= 0.015;           pi[13]= 0.0287;          pi[14]= 0.0681;          pi[15]= 0.0488;          
-    pi[16]= 0.0622;          pi[17]= 0.0251;          pi[18]= 0.0318;          pi[19]= 0.0619;          
+    pi[0]= 0.0646;           pi[1]= 0.0453;           pi[2]= 0.0376;           pi[3]= 0.0422;
+    pi[4]= 0.0114;           pi[5]= 0.0606;           pi[6]= 0.0607;           pi[7]= 0.0639;
+    pi[8]= 0.0273;           pi[9]= 0.0679;           pi[10]= 0.1018;          pi[11]= 0.0751;
+    pi[12]= 0.015;           pi[13]= 0.0287;          pi[14]= 0.0681;          pi[15]= 0.0488;
+    pi[16]= 0.0622;          pi[17]= 0.0251;          pi[18]= 0.0318;          pi[19]= 0.0619;
     return 1;
 }
 
@@ -2621,77 +2621,77 @@ int Init_Qmat_RtREV(phydbl *daa, phydbl *pi)
 
 int Init_Qmat_CpREV(phydbl *daa, phydbl *pi)
 {
-    /* 
+    /*
        This model has been 'translated' from John Huelsenbeck and Fredrik Ronquist
-       MrBayes program into PHYML format by Federico Abascal. Many thanks to them. 
+       MrBayes program into PHYML format by Federico Abascal. Many thanks to them.
     */
 
     /*
-      Adachi, J., P. Waddell, W. Martin, and M. Hasegawa. 2000. Plastid          
-      genome phyLOGeny and a model of amino acid substitution for proteins    
-      encoded by chloroplast DNA. Journal of Molecular Evolution              
+      Adachi, J., P. Waddell, W. Martin, and M. Hasegawa. 2000. Plastid
+      genome phyLOGeny and a model of amino acid substitution for proteins
+      encoded by chloroplast DNA. Journal of Molecular Evolution
       50:348-358.
     */
 
     int i,j,naa;
     naa = 20;
 
-    daa[1*20+0]= 105;        daa[2*20+0]= 227;        daa[2*20+1]= 357;        daa[3*20+0]= 175;        
-    daa[3*20+1]= 43;         daa[3*20+2]= 4435;       daa[4*20+0]= 669;        daa[4*20+1]= 823;        
-    daa[4*20+2]= 538;        daa[4*20+3]= 10;         daa[5*20+0]= 157;        daa[5*20+1]= 1745;       
-    daa[5*20+2]= 768;        daa[5*20+3]= 400;        daa[5*20+4]= 10;         daa[6*20+0]= 499;        
-    daa[6*20+1]= 152;        daa[6*20+2]= 1055;       daa[6*20+3]= 3691;       daa[6*20+4]= 10;         
-    daa[6*20+5]= 3122;       daa[7*20+0]= 665;        daa[7*20+1]= 243;        daa[7*20+2]= 653;        
-    daa[7*20+3]= 431;        daa[7*20+4]= 303;        daa[7*20+5]= 133;        daa[7*20+6]= 379;        
-    daa[8*20+0]= 66;         daa[8*20+1]= 715;        daa[8*20+2]= 1405;       daa[8*20+3]= 331;        
-    daa[8*20+4]= 441;        daa[8*20+5]= 1269;       daa[8*20+6]= 162;        daa[8*20+7]= 19;         
-    daa[9*20+0]= 145;        daa[9*20+1]= 136;        daa[9*20+2]= 168;        daa[9*20+3]= 10;         
-    daa[9*20+4]= 280;        daa[9*20+5]= 92;         daa[9*20+6]= 148;        daa[9*20+7]= 40;         
-    daa[9*20+8]= 29;         daa[10*20+0]= 197;       daa[10*20+1]= 203;       daa[10*20+2]= 113;       
-    daa[10*20+3]= 10;        daa[10*20+4]= 396;       daa[10*20+5]= 286;       daa[10*20+6]= 82;        
-    daa[10*20+7]= 20;        daa[10*20+8]= 66;        daa[10*20+9]= 1745;      daa[11*20+0]= 236;       
-    daa[11*20+1]= 4482;      daa[11*20+2]= 2430;      daa[11*20+3]= 412;       daa[11*20+4]= 48;        
-    daa[11*20+5]= 3313;      daa[11*20+6]= 2629;      daa[11*20+7]= 263;       daa[11*20+8]= 305;       
-    daa[11*20+9]= 345;       daa[11*20+10]= 218;      daa[12*20+0]= 185;       daa[12*20+1]= 125;       
-    daa[12*20+2]= 61;        daa[12*20+3]= 47;        daa[12*20+4]= 159;       daa[12*20+5]= 202;       
-    daa[12*20+6]= 113;       daa[12*20+7]= 21;        daa[12*20+8]= 10;        daa[12*20+9]= 1772;      
-    daa[12*20+10]= 1351;     daa[12*20+11]= 193;      daa[13*20+0]= 68;        daa[13*20+1]= 53;        
-    daa[13*20+2]= 97;        daa[13*20+3]= 22;        daa[13*20+4]= 726;       daa[13*20+5]= 10;        
-    daa[13*20+6]= 145;       daa[13*20+7]= 25;        daa[13*20+8]= 127;       daa[13*20+9]= 454;       
-    daa[13*20+10]= 1268;     daa[13*20+11]= 72;       daa[13*20+12]= 327;      daa[14*20+0]= 490;       
-    daa[14*20+1]= 87;        daa[14*20+2]= 173;       daa[14*20+3]= 170;       daa[14*20+4]= 285;       
-    daa[14*20+5]= 323;       daa[14*20+6]= 185;       daa[14*20+7]= 28;        daa[14*20+8]= 152;       
-    daa[14*20+9]= 117;       daa[14*20+10]= 219;      daa[14*20+11]= 302;      daa[14*20+12]= 100;      
-    daa[14*20+13]= 43;       daa[15*20+0]= 2440;      daa[15*20+1]= 385;       daa[15*20+2]= 2085;      
-    daa[15*20+3]= 590;       daa[15*20+4]= 2331;      daa[15*20+5]= 396;       daa[15*20+6]= 568;       
-    daa[15*20+7]= 691;       daa[15*20+8]= 303;       daa[15*20+9]= 216;       daa[15*20+10]= 516;      
-    daa[15*20+11]= 868;      daa[15*20+12]= 93;       daa[15*20+13]= 487;      daa[15*20+14]= 1202;     
-    daa[16*20+0]= 1340;      daa[16*20+1]= 314;       daa[16*20+2]= 1393;      daa[16*20+3]= 266;       
-    daa[16*20+4]= 576;       daa[16*20+5]= 241;       daa[16*20+6]= 369;       daa[16*20+7]= 92;        
-    daa[16*20+8]= 32;        daa[16*20+9]= 1040;      daa[16*20+10]= 156;      daa[16*20+11]= 918;      
-    daa[16*20+12]= 645;      daa[16*20+13]= 148;      daa[16*20+14]= 260;      daa[16*20+15]= 2151;     
-    daa[17*20+0]= 14;        daa[17*20+1]= 230;       daa[17*20+2]= 40;        daa[17*20+3]= 18;        
-    daa[17*20+4]= 435;       daa[17*20+5]= 53;        daa[17*20+6]= 63;        daa[17*20+7]= 82;        
-    daa[17*20+8]= 69;        daa[17*20+9]= 42;        daa[17*20+10]= 159;      daa[17*20+11]= 10;       
-    daa[17*20+12]= 86;       daa[17*20+13]= 468;      daa[17*20+14]= 49;       daa[17*20+15]= 73;       
-    daa[17*20+16]= 29;       daa[18*20+0]= 56;        daa[18*20+1]= 323;       daa[18*20+2]= 754;       
-    daa[18*20+3]= 281;       daa[18*20+4]= 1466;      daa[18*20+5]= 391;       daa[18*20+6]= 142;       
-    daa[18*20+7]= 10;        daa[18*20+8]= 1971;      daa[18*20+9]= 89;        daa[18*20+10]= 189;      
-    daa[18*20+11]= 247;      daa[18*20+12]= 215;      daa[18*20+13]= 2370;     daa[18*20+14]= 97;       
-    daa[18*20+15]= 522;      daa[18*20+16]= 71;       daa[18*20+17]= 346;      daa[19*20+0]= 968;       
-    daa[19*20+1]= 92;        daa[19*20+2]= 83;        daa[19*20+3]= 75;        daa[19*20+4]= 592;       
-    daa[19*20+5]= 54;        daa[19*20+6]= 200;       daa[19*20+7]= 91;        daa[19*20+8]= 25;        
-    daa[19*20+9]= 4797;      daa[19*20+10]= 865;      daa[19*20+11]= 249;      daa[19*20+12]= 475;      
-    daa[19*20+13]= 317;      daa[19*20+14]= 122;      daa[19*20+15]= 167;      daa[19*20+16]= 760;      
-    daa[19*20+17]= 10;       daa[19*20+18]= 119;      
+    daa[1*20+0]= 105;        daa[2*20+0]= 227;        daa[2*20+1]= 357;        daa[3*20+0]= 175;
+    daa[3*20+1]= 43;         daa[3*20+2]= 4435;       daa[4*20+0]= 669;        daa[4*20+1]= 823;
+    daa[4*20+2]= 538;        daa[4*20+3]= 10;         daa[5*20+0]= 157;        daa[5*20+1]= 1745;
+    daa[5*20+2]= 768;        daa[5*20+3]= 400;        daa[5*20+4]= 10;         daa[6*20+0]= 499;
+    daa[6*20+1]= 152;        daa[6*20+2]= 1055;       daa[6*20+3]= 3691;       daa[6*20+4]= 10;
+    daa[6*20+5]= 3122;       daa[7*20+0]= 665;        daa[7*20+1]= 243;        daa[7*20+2]= 653;
+    daa[7*20+3]= 431;        daa[7*20+4]= 303;        daa[7*20+5]= 133;        daa[7*20+6]= 379;
+    daa[8*20+0]= 66;         daa[8*20+1]= 715;        daa[8*20+2]= 1405;       daa[8*20+3]= 331;
+    daa[8*20+4]= 441;        daa[8*20+5]= 1269;       daa[8*20+6]= 162;        daa[8*20+7]= 19;
+    daa[9*20+0]= 145;        daa[9*20+1]= 136;        daa[9*20+2]= 168;        daa[9*20+3]= 10;
+    daa[9*20+4]= 280;        daa[9*20+5]= 92;         daa[9*20+6]= 148;        daa[9*20+7]= 40;
+    daa[9*20+8]= 29;         daa[10*20+0]= 197;       daa[10*20+1]= 203;       daa[10*20+2]= 113;
+    daa[10*20+3]= 10;        daa[10*20+4]= 396;       daa[10*20+5]= 286;       daa[10*20+6]= 82;
+    daa[10*20+7]= 20;        daa[10*20+8]= 66;        daa[10*20+9]= 1745;      daa[11*20+0]= 236;
+    daa[11*20+1]= 4482;      daa[11*20+2]= 2430;      daa[11*20+3]= 412;       daa[11*20+4]= 48;
+    daa[11*20+5]= 3313;      daa[11*20+6]= 2629;      daa[11*20+7]= 263;       daa[11*20+8]= 305;
+    daa[11*20+9]= 345;       daa[11*20+10]= 218;      daa[12*20+0]= 185;       daa[12*20+1]= 125;
+    daa[12*20+2]= 61;        daa[12*20+3]= 47;        daa[12*20+4]= 159;       daa[12*20+5]= 202;
+    daa[12*20+6]= 113;       daa[12*20+7]= 21;        daa[12*20+8]= 10;        daa[12*20+9]= 1772;
+    daa[12*20+10]= 1351;     daa[12*20+11]= 193;      daa[13*20+0]= 68;        daa[13*20+1]= 53;
+    daa[13*20+2]= 97;        daa[13*20+3]= 22;        daa[13*20+4]= 726;       daa[13*20+5]= 10;
+    daa[13*20+6]= 145;       daa[13*20+7]= 25;        daa[13*20+8]= 127;       daa[13*20+9]= 454;
+    daa[13*20+10]= 1268;     daa[13*20+11]= 72;       daa[13*20+12]= 327;      daa[14*20+0]= 490;
+    daa[14*20+1]= 87;        daa[14*20+2]= 173;       daa[14*20+3]= 170;       daa[14*20+4]= 285;
+    daa[14*20+5]= 323;       daa[14*20+6]= 185;       daa[14*20+7]= 28;        daa[14*20+8]= 152;
+    daa[14*20+9]= 117;       daa[14*20+10]= 219;      daa[14*20+11]= 302;      daa[14*20+12]= 100;
+    daa[14*20+13]= 43;       daa[15*20+0]= 2440;      daa[15*20+1]= 385;       daa[15*20+2]= 2085;
+    daa[15*20+3]= 590;       daa[15*20+4]= 2331;      daa[15*20+5]= 396;       daa[15*20+6]= 568;
+    daa[15*20+7]= 691;       daa[15*20+8]= 303;       daa[15*20+9]= 216;       daa[15*20+10]= 516;
+    daa[15*20+11]= 868;      daa[15*20+12]= 93;       daa[15*20+13]= 487;      daa[15*20+14]= 1202;
+    daa[16*20+0]= 1340;      daa[16*20+1]= 314;       daa[16*20+2]= 1393;      daa[16*20+3]= 266;
+    daa[16*20+4]= 576;       daa[16*20+5]= 241;       daa[16*20+6]= 369;       daa[16*20+7]= 92;
+    daa[16*20+8]= 32;        daa[16*20+9]= 1040;      daa[16*20+10]= 156;      daa[16*20+11]= 918;
+    daa[16*20+12]= 645;      daa[16*20+13]= 148;      daa[16*20+14]= 260;      daa[16*20+15]= 2151;
+    daa[17*20+0]= 14;        daa[17*20+1]= 230;       daa[17*20+2]= 40;        daa[17*20+3]= 18;
+    daa[17*20+4]= 435;       daa[17*20+5]= 53;        daa[17*20+6]= 63;        daa[17*20+7]= 82;
+    daa[17*20+8]= 69;        daa[17*20+9]= 42;        daa[17*20+10]= 159;      daa[17*20+11]= 10;
+    daa[17*20+12]= 86;       daa[17*20+13]= 468;      daa[17*20+14]= 49;       daa[17*20+15]= 73;
+    daa[17*20+16]= 29;       daa[18*20+0]= 56;        daa[18*20+1]= 323;       daa[18*20+2]= 754;
+    daa[18*20+3]= 281;       daa[18*20+4]= 1466;      daa[18*20+5]= 391;       daa[18*20+6]= 142;
+    daa[18*20+7]= 10;        daa[18*20+8]= 1971;      daa[18*20+9]= 89;        daa[18*20+10]= 189;
+    daa[18*20+11]= 247;      daa[18*20+12]= 215;      daa[18*20+13]= 2370;     daa[18*20+14]= 97;
+    daa[18*20+15]= 522;      daa[18*20+16]= 71;       daa[18*20+17]= 346;      daa[19*20+0]= 968;
+    daa[19*20+1]= 92;        daa[19*20+2]= 83;        daa[19*20+3]= 75;        daa[19*20+4]= 592;
+    daa[19*20+5]= 54;        daa[19*20+6]= 200;       daa[19*20+7]= 91;        daa[19*20+8]= 25;
+    daa[19*20+9]= 4797;      daa[19*20+10]= 865;      daa[19*20+11]= 249;      daa[19*20+12]= 475;
+    daa[19*20+13]= 317;      daa[19*20+14]= 122;      daa[19*20+15]= 167;      daa[19*20+16]= 760;
+    daa[19*20+17]= 10;       daa[19*20+18]= 119;
 
     for (i=0; i<naa; i++)  for (j=0; j<i; j++)  daa[j*naa+i] = daa[i*naa+j];
 
-    pi[0]= 0.076;            pi[1]= 0.062;            pi[2]= 0.041;            pi[3]= 0.037;            
-    pi[4]= 0.009;            pi[5]= 0.038;            pi[6]= 0.049;            pi[7]= 0.084;            
-    pi[8]= 0.025;            pi[9]= 0.081;            pi[10]= 0.101;           pi[11]= 0.05;            
-    pi[12]= 0.022;           pi[13]= 0.051;           pi[14]= 0.043;           pi[15]= 0.062;           
-    pi[16]= 0.054;           pi[17]= 0.018;           pi[18]= 0.031;           pi[19]= 0.066;           
+    pi[0]= 0.076;            pi[1]= 0.062;            pi[2]= 0.041;            pi[3]= 0.037;
+    pi[4]= 0.009;            pi[5]= 0.038;            pi[6]= 0.049;            pi[7]= 0.084;
+    pi[8]= 0.025;            pi[9]= 0.081;            pi[10]= 0.101;           pi[11]= 0.05;
+    pi[12]= 0.022;           pi[13]= 0.051;           pi[14]= 0.043;           pi[15]= 0.062;
+    pi[16]= 0.054;           pi[17]= 0.018;           pi[18]= 0.031;           pi[19]= 0.066;
     return 1;
 }
 
@@ -2701,14 +2701,14 @@ int Init_Qmat_CpREV(phydbl *daa, phydbl *pi)
 
 int Init_Qmat_VT(phydbl *daa, phydbl *pi)
 {
-    /* 
+    /*
        This model has been 'translated' from John Huelsenbeck and Fredrik Ronquist
-       MrBayes program into PHYML format by Federico Abascal. Many thanks to them. 
+       MrBayes program into PHYML format by Federico Abascal. Many thanks to them.
     */
 
     /*
-      Muller, T., and M. Vingron. 2000. Modeling amino acid replacement.         
-      Journal of Computational Biology 7:761-776.                             
+      Muller, T., and M. Vingron. 2000. Modeling amino acid replacement.
+      Journal of Computational Biology 7:761-776.
     */
 
     int i,j,naa;
@@ -2772,14 +2772,14 @@ int Init_Qmat_VT(phydbl *daa, phydbl *pi)
     /* pi[16]= 0.055897;        pi[17]= 0.013272;        pi[18]= 0.034399;        pi[19]= 0.073101;         */
     /* return 1; */
 
-    /* 
-       This model has been 'translated' from TREE-PUZZLE. Many thanks to  Heiko A. Schmidt, 
-       Korbinian Strimmer, and Arndt von Haeseler. 
+    /*
+       This model has been 'translated' from TREE-PUZZLE. Many thanks to  Heiko A. Schmidt,
+       Korbinian Strimmer, and Arndt von Haeseler.
     */
 
     /*
-      Muller, T., and M. Vingron. 2000. Modeling amino acid replacement.         
-      Journal of Computational Biology 7:761-776.                             
+      Muller, T., and M. Vingron. 2000. Modeling amino acid replacement.
+      Journal of Computational Biology 7:761-776.
     */
 
     daa[ 0*20+ 1] = 1.2412691067876198;  daa[ 0*20+ 2] = 1.2184237953498958;
@@ -2792,7 +2792,7 @@ int Init_Qmat_VT(phydbl *daa, phydbl *pi)
     daa[ 0*20+15] = 6.4208961859142883;  daa[ 0*20+16] = 5.2892514169776437;
     daa[ 0*20+17] = 0.5488578478106930;  daa[ 0*20+18] = 0.5411769916657778;
     daa[ 0*20+19] = 4.6501894691803214;
-    
+
     daa[ 1*20+ 2] = 1.5720770753326880;  daa[ 1*20+ 3] = 0.7550654439001206;
     daa[ 1*20+ 4] = 1.4414262567428417;  daa[ 1*20+ 5] = 5.5120819705248678;
     daa[ 1*20+ 6] = 1.3542404860613146;  daa[ 1*20+ 7] = 1.3121700301622004;
@@ -2802,7 +2802,7 @@ int Init_Qmat_VT(phydbl *daa, phydbl *pi)
     daa[ 1*20+14] = 1.3091837782420783;  daa[ 1*20+15] = 1.9202994262316166;
     daa[ 1*20+16] = 1.3363401740560601;  daa[ 1*20+17] = 1.5170142153962840;
     daa[ 1*20+18] = 0.8912614404565405;  daa[ 1*20+19] = 0.7807017855806767;
-    
+
     daa[ 2*20+ 3] = 7.8584219153689405;  daa[ 2*20+ 4] = 0.9784679122774127;
     daa[ 2*20+ 5] = 3.0143201670924822;  daa[ 2*20+ 6] = 2.0093434778398112;
     daa[ 2*20+ 7] = 2.4117632898861809;  daa[ 2*20+ 8] = 6.1974384977884114;
@@ -2812,7 +2812,7 @@ int Init_Qmat_VT(phydbl *daa, phydbl *pi)
     daa[ 2*20+15] = 6.1234512396801764;  daa[ 2*20+16] = 3.8852506105922231;
     daa[ 2*20+17] = 0.1808525752605976;  daa[ 2*20+18] = 1.0894926581511342;
     daa[ 2*20+19] = 0.4586061981719967;
-    
+
     daa[ 3*20+ 4] = 0.2272488448121475;  daa[ 3*20+ 5] = 1.6562495638176040;
     daa[ 3*20+ 6] = 9.6883451875685065;  daa[ 3*20+ 7] = 1.9142079025990228;
     daa[ 3*20+ 8] = 2.1459640610133781;  daa[ 3*20+ 9] = 0.2161660372725585;
@@ -2821,7 +2821,7 @@ int Init_Qmat_VT(phydbl *daa, phydbl *pi)
     daa[ 3*20+14] = 1.0714605979577547;  daa[ 3*20+15] = 2.2161944596741829;
     daa[ 3*20+16] = 1.5066839872944762;  daa[ 3*20+17] = 0.2496584188151770;
     daa[ 3*20+18] = 0.7447620891784513;  daa[ 3*20+19] = 0.4594535241660911;
-    
+
     daa[ 4*20+ 5] = 0.4587469126746136;  daa[ 4*20+ 6] = 0.4519167943192672;
     daa[ 4*20+ 7] = 1.1034605684472507;  daa[ 4*20+ 8] = 1.5196756759380692;
     daa[ 4*20+ 9] = 0.9126668032539315;  daa[ 4*20+10] = 1.4081315998413697;
@@ -2830,7 +2830,7 @@ int Init_Qmat_VT(phydbl *daa, phydbl *pi)
     daa[ 4*20+15] = 3.6366815408744255;  daa[ 4*20+16] = 1.7557065205837685;
     daa[ 4*20+17] = 1.6275179891253113;  daa[ 4*20+18] = 2.1579775140421025;
     daa[ 4*20+19] = 2.2627456996290891;
-    
+
     daa[ 5*20+ 6] = 6.8124601839937675;  daa[ 5*20+ 7] = 0.8776110594765502;
     daa[ 5*20+ 8] = 7.9943228564946525;  daa[ 5*20+ 9] = 0.4882733432879921;
     daa[ 5*20+10] = 1.3318097154194044;  daa[ 5*20+11] = 6.0519085243118811;
@@ -2838,7 +2838,7 @@ int Init_Qmat_VT(phydbl *daa, phydbl *pi)
     daa[ 5*20+14] = 2.3019177728300728;  daa[ 5*20+15] = 2.3193703643237220;
     daa[ 5*20+16] = 2.1576510103471440;  daa[ 5*20+17] = 0.8959082681546182;
     daa[ 5*20+18] = 0.9183596801412757;  daa[ 5*20+19] = 0.6366932501396869;
-    
+
     daa[ 6*20+ 7] = 1.3860121390169038;  daa[ 6*20+ 8] = 1.6360079688522375;
     daa[ 6*20+ 9] = 0.4035497929633328;  daa[ 6*20+10] = 0.5610717242294755;
     daa[ 6*20+11] = 4.3290086529582830;  daa[ 6*20+12] = 0.7471936218068498;
@@ -2846,57 +2846,57 @@ int Init_Qmat_VT(phydbl *daa, phydbl *pi)
     daa[ 6*20+15] = 1.8273535587773553;  daa[ 6*20+16] = 1.5839981708584689;
     daa[ 6*20+17] = 0.4198391148111098;  daa[ 6*20+18] = 0.5818111331782764;
     daa[ 6*20+19] = 0.8940572875547330;
-    
+
     daa[ 7*20+ 8] = 0.8561248973045037;  daa[ 7*20+ 9] = 0.2888075033037488;
     daa[ 7*20+10] = 0.3578662395745526;  daa[ 7*20+11] = 0.8945563662345198;
     daa[ 7*20+12] = 0.5954812791740037;  daa[ 7*20+13] = 0.3693722640980460;
     daa[ 7*20+14] = 0.7744933618134962;  daa[ 7*20+15] = 3.0637776193717610;
     daa[ 7*20+16] = 0.7147489676267383;  daa[ 7*20+17] = 0.9349753595598769;
     daa[ 7*20+18] = 0.3374467649724478;  daa[ 7*20+19] = 0.6193321034173915;
-    
+
     daa[ 8*20+ 9] = 0.5787937115407940;  daa[ 8*20+10] = 1.0765007949562073;
     daa[ 8*20+11] = 1.8085136096039203;  daa[ 8*20+12] = 1.3808291710019667;
     daa[ 8*20+13] = 1.3629765501081097;  daa[ 8*20+14] = 1.8370555852070649;
     daa[ 8*20+15] = 1.9699895187387506;  daa[ 8*20+16] = 1.6136654573285647;
     daa[ 8*20+17] = 0.6301954684360302;  daa[ 8*20+18] = 7.7587442309146040;
     daa[ 8*20+19] = 0.5333220944030346;
-    
+
     daa[ 9*20+10] = 6.0019110258426362;  daa[ 9*20+11] = 0.6244297525127139;
     daa[ 9*20+12] = 6.7597899772045418;  daa[ 9*20+13] = 2.2864286949316077;
     daa[ 9*20+14] = 0.4811402387911145;  daa[ 9*20+15] = 0.6047491507504744;
     daa[ 9*20+16] = 2.6344778384442731;  daa[ 9*20+17] = 0.5604648274060783;
     daa[ 9*20+18] = 0.8626796044156272;  daa[ 9*20+19] = 14.8729334615190609;
-    
+
     daa[10*20+11] = 0.5642322882556321;  daa[10*20+12] = 8.0327792947421148;
     daa[10*20+13] = 4.3611548063555778;  daa[10*20+14] = 1.0084320519837335;
     daa[10*20+15] = 0.8953754669269811;  daa[10*20+16] = 1.0192004372506540;
     daa[10*20+17] = 1.5183114434679339;  daa[10*20+18] = 1.2452243224541324;
     daa[10*20+19] = 3.5458093276667237;
-    
+
     daa[11*20+12] = 1.7129670976916258;  daa[11*20+13] = 0.3910559903834828;
     daa[11*20+14] = 1.3918935593582853;  daa[11*20+15] = 1.9776630140912268;
     daa[11*20+16] = 2.5513781312660280;  daa[11*20+17] = 0.5851920879490173;
     daa[11*20+18] = 0.7835447533710449;  daa[11*20+19] = 0.7801080335991272;
-    
+
     daa[12*20+13] = 2.3201373546296349;  daa[12*20+14] = 0.4953193808676289;
     daa[12*20+15] = 1.0657482318076852;  daa[12*20+16] = 3.3628488360462363;
     daa[12*20+17] = 1.4680478689711018;  daa[12*20+18] = 1.0899165770956820;
     daa[12*20+19] = 4.0584577156753401;
-    
+
     daa[13*20+14] = 0.3746821107962129;  daa[13*20+15] = 1.1079144700606407;
     daa[13*20+16] = 0.6882725908872254;  daa[13*20+17] = 3.3448437239772266;
     daa[13*20+18] = 10.3848523331334590;  daa[13*20+19] = 1.7039730522675411;
-    
+
     daa[14*20+15] = 3.5465914843628927;  daa[14*20+16] = 1.9485376673137556;
     daa[14*20+17] = 0.4326058001438786;  daa[14*20+18] = 0.4819109019647465;
     daa[14*20+19] = 0.5985498912985666;
-    
+
     daa[15*20+16] = 8.8479984061248178;  daa[15*20+17] = 0.6791126595939816;
     daa[15*20+18] = 0.9547229305958682;  daa[15*20+19] = 0.9305232113028208;
-    
+
     daa[16*20+17] = 0.4514203099376473;  daa[16*20+18] = 0.8564314184691215;
     daa[16*20+19] = 3.4242218450865543;
-    
+
     daa[17*20+18] = 4.5377235790405388;  daa[17*20+19] = 0.5658969249032649;
 
     daa[18*20+19] = 1.0000000000000000;
@@ -2924,76 +2924,76 @@ int Init_Qmat_VT(phydbl *daa, phydbl *pi)
 int Init_Qmat_Blosum62(phydbl *daa, phydbl *pi)
 {
 
-    /* 
+    /*
        This model has been 'translated' from John Huelsenbeck and Fredrik Ronquist
-       MrBayes program into PHYML format by Federico Abascal. Many thanks to them. 
+       MrBayes program into PHYML format by Federico Abascal. Many thanks to them.
     */
 
     /*
-      Henikoff, S., and J. G. Henikoff. 1992. Amino acid substitution            
-      matrices from protein blocks. Proc. Natl. Acad. Sci., U.S.A.            
-      89:10915-10919.                                                         
+      Henikoff, S., and J. G. Henikoff. 1992. Amino acid substitution
+      matrices from protein blocks. Proc. Natl. Acad. Sci., U.S.A.
+      89:10915-10919.
     */
 
     int i,j,naa;
     naa = 20;
 
-    daa[1*20+0]= 0.735790389698;  daa[2*20+0]= 0.485391055466;  daa[2*20+1]= 1.297446705134;  daa[3*20+0]= 0.543161820899;  
-    daa[3*20+1]= 0.500964408555;  daa[3*20+2]= 3.180100048216;  daa[4*20+0]= 1.45999531047;   daa[4*20+1]= 0.227826574209;  
-    daa[4*20+2]= 0.397358949897;  daa[4*20+3]= 0.240836614802;  daa[5*20+0]= 1.199705704602;  daa[5*20+1]= 3.020833610064;  
-    daa[5*20+2]= 1.839216146992;  daa[5*20+3]= 1.190945703396;  daa[5*20+4]= 0.32980150463;   daa[6*20+0]= 1.1709490428;    
-    daa[6*20+1]= 1.36057419042;   daa[6*20+2]= 1.24048850864;   daa[6*20+3]= 3.761625208368;  daa[6*20+4]= 0.140748891814;  
-    daa[6*20+5]= 5.528919177928;  daa[7*20+0]= 1.95588357496;   daa[7*20+1]= 0.418763308518;  daa[7*20+2]= 1.355872344485;  
-    daa[7*20+3]= 0.798473248968;  daa[7*20+4]= 0.418203192284;  daa[7*20+5]= 0.609846305383;  daa[7*20+6]= 0.423579992176;  
-    daa[8*20+0]= 0.716241444998;  daa[8*20+1]= 1.456141166336;  daa[8*20+2]= 2.414501434208;  daa[8*20+3]= 0.778142664022;  
-    daa[8*20+4]= 0.354058109831;  daa[8*20+5]= 2.43534113114;   daa[8*20+6]= 1.626891056982;  daa[8*20+7]= 0.539859124954;  
-    daa[9*20+0]= 0.605899003687;  daa[9*20+1]= 0.232036445142;  daa[9*20+2]= 0.283017326278;  daa[9*20+3]= 0.418555732462;  
-    daa[9*20+4]= 0.774894022794;  daa[9*20+5]= 0.236202451204;  daa[9*20+6]= 0.186848046932;  daa[9*20+7]= 0.189296292376;  
-    daa[9*20+8]= 0.252718447885;  daa[10*20+0]= 0.800016530518; daa[10*20+1]= 0.622711669692; daa[10*20+2]= 0.211888159615; 
-    daa[10*20+3]= 0.218131577594; daa[10*20+4]= 0.831842640142; daa[10*20+5]= 0.580737093181; daa[10*20+6]= 0.372625175087; 
-    daa[10*20+7]= 0.217721159236; daa[10*20+8]= 0.348072209797; daa[10*20+9]= 3.890963773304; daa[11*20+0]= 1.295201266783; 
-    daa[11*20+1]= 5.411115141489; daa[11*20+2]= 1.593137043457; daa[11*20+3]= 1.032447924952; daa[11*20+4]= 0.285078800906; 
-    daa[11*20+5]= 3.945277674515; daa[11*20+6]= 2.802427151679; daa[11*20+7]= 0.752042440303; daa[11*20+8]= 1.022507035889; 
-    daa[11*20+9]= 0.406193586642; daa[11*20+10]= 0.445570274261;daa[12*20+0]= 1.253758266664; daa[12*20+1]= 0.983692987457; 
-    daa[12*20+2]= 0.648441278787; daa[12*20+3]= 0.222621897958; daa[12*20+4]= 0.76768882348;  daa[12*20+5]= 2.494896077113; 
-    daa[12*20+6]= 0.55541539747;  daa[12*20+7]= 0.459436173579; daa[12*20+8]= 0.984311525359; daa[12*20+9]= 3.364797763104; 
-    daa[12*20+10]= 6.030559379572;daa[12*20+11]= 1.073061184332;daa[13*20+0]= 0.492964679748; daa[13*20+1]= 0.371644693209; 
-    daa[13*20+2]= 0.354861249223; daa[13*20+3]= 0.281730694207; daa[13*20+4]= 0.441337471187; daa[13*20+5]= 0.14435695975;  
-    daa[13*20+6]= 0.291409084165; daa[13*20+7]= 0.368166464453; daa[13*20+8]= 0.714533703928; daa[13*20+9]= 1.517359325954; 
-    daa[13*20+10]= 2.064839703237;daa[13*20+11]= 0.266924750511;daa[13*20+12]= 1.77385516883; daa[14*20+0]= 1.173275900924; 
-    daa[14*20+1]= 0.448133661718; daa[14*20+2]= 0.494887043702; daa[14*20+3]= 0.730628272998; daa[14*20+4]= 0.356008498769; 
-    daa[14*20+5]= 0.858570575674; daa[14*20+6]= 0.926563934846; daa[14*20+7]= 0.504086599527; daa[14*20+8]= 0.527007339151; 
+    daa[1*20+0]= 0.735790389698;  daa[2*20+0]= 0.485391055466;  daa[2*20+1]= 1.297446705134;  daa[3*20+0]= 0.543161820899;
+    daa[3*20+1]= 0.500964408555;  daa[3*20+2]= 3.180100048216;  daa[4*20+0]= 1.45999531047;   daa[4*20+1]= 0.227826574209;
+    daa[4*20+2]= 0.397358949897;  daa[4*20+3]= 0.240836614802;  daa[5*20+0]= 1.199705704602;  daa[5*20+1]= 3.020833610064;
+    daa[5*20+2]= 1.839216146992;  daa[5*20+3]= 1.190945703396;  daa[5*20+4]= 0.32980150463;   daa[6*20+0]= 1.1709490428;
+    daa[6*20+1]= 1.36057419042;   daa[6*20+2]= 1.24048850864;   daa[6*20+3]= 3.761625208368;  daa[6*20+4]= 0.140748891814;
+    daa[6*20+5]= 5.528919177928;  daa[7*20+0]= 1.95588357496;   daa[7*20+1]= 0.418763308518;  daa[7*20+2]= 1.355872344485;
+    daa[7*20+3]= 0.798473248968;  daa[7*20+4]= 0.418203192284;  daa[7*20+5]= 0.609846305383;  daa[7*20+6]= 0.423579992176;
+    daa[8*20+0]= 0.716241444998;  daa[8*20+1]= 1.456141166336;  daa[8*20+2]= 2.414501434208;  daa[8*20+3]= 0.778142664022;
+    daa[8*20+4]= 0.354058109831;  daa[8*20+5]= 2.43534113114;   daa[8*20+6]= 1.626891056982;  daa[8*20+7]= 0.539859124954;
+    daa[9*20+0]= 0.605899003687;  daa[9*20+1]= 0.232036445142;  daa[9*20+2]= 0.283017326278;  daa[9*20+3]= 0.418555732462;
+    daa[9*20+4]= 0.774894022794;  daa[9*20+5]= 0.236202451204;  daa[9*20+6]= 0.186848046932;  daa[9*20+7]= 0.189296292376;
+    daa[9*20+8]= 0.252718447885;  daa[10*20+0]= 0.800016530518; daa[10*20+1]= 0.622711669692; daa[10*20+2]= 0.211888159615;
+    daa[10*20+3]= 0.218131577594; daa[10*20+4]= 0.831842640142; daa[10*20+5]= 0.580737093181; daa[10*20+6]= 0.372625175087;
+    daa[10*20+7]= 0.217721159236; daa[10*20+8]= 0.348072209797; daa[10*20+9]= 3.890963773304; daa[11*20+0]= 1.295201266783;
+    daa[11*20+1]= 5.411115141489; daa[11*20+2]= 1.593137043457; daa[11*20+3]= 1.032447924952; daa[11*20+4]= 0.285078800906;
+    daa[11*20+5]= 3.945277674515; daa[11*20+6]= 2.802427151679; daa[11*20+7]= 0.752042440303; daa[11*20+8]= 1.022507035889;
+    daa[11*20+9]= 0.406193586642; daa[11*20+10]= 0.445570274261;daa[12*20+0]= 1.253758266664; daa[12*20+1]= 0.983692987457;
+    daa[12*20+2]= 0.648441278787; daa[12*20+3]= 0.222621897958; daa[12*20+4]= 0.76768882348;  daa[12*20+5]= 2.494896077113;
+    daa[12*20+6]= 0.55541539747;  daa[12*20+7]= 0.459436173579; daa[12*20+8]= 0.984311525359; daa[12*20+9]= 3.364797763104;
+    daa[12*20+10]= 6.030559379572;daa[12*20+11]= 1.073061184332;daa[13*20+0]= 0.492964679748; daa[13*20+1]= 0.371644693209;
+    daa[13*20+2]= 0.354861249223; daa[13*20+3]= 0.281730694207; daa[13*20+4]= 0.441337471187; daa[13*20+5]= 0.14435695975;
+    daa[13*20+6]= 0.291409084165; daa[13*20+7]= 0.368166464453; daa[13*20+8]= 0.714533703928; daa[13*20+9]= 1.517359325954;
+    daa[13*20+10]= 2.064839703237;daa[13*20+11]= 0.266924750511;daa[13*20+12]= 1.77385516883; daa[14*20+0]= 1.173275900924;
+    daa[14*20+1]= 0.448133661718; daa[14*20+2]= 0.494887043702; daa[14*20+3]= 0.730628272998; daa[14*20+4]= 0.356008498769;
+    daa[14*20+5]= 0.858570575674; daa[14*20+6]= 0.926563934846; daa[14*20+7]= 0.504086599527; daa[14*20+8]= 0.527007339151;
     daa[14*20+9]= 0.388355409206; daa[14*20+10]= 0.374555687471;daa[14*20+11]= 1.047383450722;daa[14*20+12]= 0.454123625103;
-    daa[14*20+13]= 0.233597909629;daa[15*20+0]= 4.325092687057; daa[15*20+1]= 1.12278310421;  daa[15*20+2]= 2.904101656456; 
-    daa[15*20+3]= 1.582754142065; daa[15*20+4]= 1.197188415094; daa[15*20+5]= 1.934870924596; daa[15*20+6]= 1.769893238937; 
+    daa[14*20+13]= 0.233597909629;daa[15*20+0]= 4.325092687057; daa[15*20+1]= 1.12278310421;  daa[15*20+2]= 2.904101656456;
+    daa[15*20+3]= 1.582754142065; daa[15*20+4]= 1.197188415094; daa[15*20+5]= 1.934870924596; daa[15*20+6]= 1.769893238937;
     daa[15*20+7]= 1.509326253224; daa[15*20+8]= 1.11702976291;  daa[15*20+9]= 0.35754441246;  daa[15*20+10]= 0.352969184527;
     daa[15*20+11]= 1.752165917819;daa[15*20+12]= 0.918723415746;daa[15*20+13]= 0.540027644824;daa[15*20+14]= 1.169129577716;
-    daa[16*20+0]= 1.729178019485; daa[16*20+1]= 0.914665954563; daa[16*20+2]= 1.898173634533; daa[16*20+3]= 0.934187509431; 
-    daa[16*20+4]= 1.119831358516; daa[16*20+5]= 1.277480294596; daa[16*20+6]= 1.071097236007; daa[16*20+7]= 0.641436011405; 
+    daa[16*20+0]= 1.729178019485; daa[16*20+1]= 0.914665954563; daa[16*20+2]= 1.898173634533; daa[16*20+3]= 0.934187509431;
+    daa[16*20+4]= 1.119831358516; daa[16*20+5]= 1.277480294596; daa[16*20+6]= 1.071097236007; daa[16*20+7]= 0.641436011405;
     daa[16*20+8]= 0.585407090225; daa[16*20+9]= 1.17909119726;  daa[16*20+10]= 0.915259857694;daa[16*20+11]= 1.303875200799;
-    daa[16*20+12]= 1.488548053722;daa[16*20+13]= 0.488206118793;daa[16*20+14]= 1.005451683149;daa[16*20+15]= 5.15155629227; 
-    daa[17*20+0]= 0.465839367725; daa[17*20+1]= 0.426382310122; daa[17*20+2]= 0.191482046247; daa[17*20+3]= 0.145345046279; 
-    daa[17*20+4]= 0.527664418872; daa[17*20+5]= 0.758653808642; daa[17*20+6]= 0.407635648938; daa[17*20+7]= 0.508358924638; 
+    daa[16*20+12]= 1.488548053722;daa[16*20+13]= 0.488206118793;daa[16*20+14]= 1.005451683149;daa[16*20+15]= 5.15155629227;
+    daa[17*20+0]= 0.465839367725; daa[17*20+1]= 0.426382310122; daa[17*20+2]= 0.191482046247; daa[17*20+3]= 0.145345046279;
+    daa[17*20+4]= 0.527664418872; daa[17*20+5]= 0.758653808642; daa[17*20+6]= 0.407635648938; daa[17*20+7]= 0.508358924638;
     daa[17*20+8]= 0.30124860078;  daa[17*20+9]= 0.34198578754;  daa[17*20+10]= 0.6914746346;  daa[17*20+11]= 0.332243040634;
     daa[17*20+12]= 0.888101098152;daa[17*20+13]= 2.074324893497;daa[17*20+14]= 0.252214830027;daa[17*20+15]= 0.387925622098;
-    daa[17*20+16]= 0.513128126891;daa[18*20+0]= 0.718206697586; daa[18*20+1]= 0.720517441216; daa[18*20+2]= 0.538222519037; 
-    daa[18*20+3]= 0.261422208965; daa[18*20+4]= 0.470237733696; daa[18*20+5]= 0.95898974285;  daa[18*20+6]= 0.596719300346; 
+    daa[17*20+16]= 0.513128126891;daa[18*20+0]= 0.718206697586; daa[18*20+1]= 0.720517441216; daa[18*20+2]= 0.538222519037;
+    daa[18*20+3]= 0.261422208965; daa[18*20+4]= 0.470237733696; daa[18*20+5]= 0.95898974285;  daa[18*20+6]= 0.596719300346;
     daa[18*20+7]= 0.308055737035; daa[18*20+8]= 4.218953969389; daa[18*20+9]= 0.674617093228; daa[18*20+10]= 0.811245856323;
     daa[18*20+11]= 0.7179934869;  daa[18*20+12]= 0.951682162246;daa[18*20+13]= 6.747260430801;daa[18*20+14]= 0.369405319355;
-    daa[18*20+15]= 0.796751520761;daa[18*20+16]= 0.801010243199;daa[18*20+17]= 4.054419006558;daa[19*20+0]= 2.187774522005; 
-    daa[19*20+1]= 0.438388343772; daa[19*20+2]= 0.312858797993; daa[19*20+3]= 0.258129289418; daa[19*20+4]= 1.116352478606; 
-    daa[19*20+5]= 0.530785790125; daa[19*20+6]= 0.524253846338; daa[19*20+7]= 0.25334079019;  daa[19*20+8]= 0.20155597175;  
+    daa[18*20+15]= 0.796751520761;daa[18*20+16]= 0.801010243199;daa[18*20+17]= 4.054419006558;daa[19*20+0]= 2.187774522005;
+    daa[19*20+1]= 0.438388343772; daa[19*20+2]= 0.312858797993; daa[19*20+3]= 0.258129289418; daa[19*20+4]= 1.116352478606;
+    daa[19*20+5]= 0.530785790125; daa[19*20+6]= 0.524253846338; daa[19*20+7]= 0.25334079019;  daa[19*20+8]= 0.20155597175;
     daa[19*20+9]= 8.311839405458; daa[19*20+10]= 2.231405688913;daa[19*20+11]= 0.498138475304;daa[19*20+12]= 2.575850755315;
     daa[19*20+13]= 0.838119610178;daa[19*20+14]= 0.496908410676;daa[19*20+15]= 0.561925457442;daa[19*20+16]= 2.253074051176;
-    daa[19*20+17]= 0.266508731426;daa[19*20+18]= 1;             
+    daa[19*20+17]= 0.266508731426;daa[19*20+18]= 1;
 
     for (i=0; i<naa; i++)  for (j=0; j<i; j++)  daa[j*naa+i] = daa[i*naa+j];
 
-    pi[0]= 0.074;                 pi[1]= 0.052;                 pi[2]= 0.045;                 pi[3]= 0.054;                 
-    pi[4]= 0.025;                 pi[5]= 0.034;                 pi[6]= 0.054;                 pi[7]= 0.074;                 
-    pi[8]= 0.026;                 pi[9]= 0.068;                 pi[10]= 0.099;                pi[11]= 0.058;                
-    pi[12]= 0.025;                pi[13]= 0.047;                pi[14]= 0.039;                pi[15]= 0.057;                
-    pi[16]= 0.051;                pi[17]= 0.013;                pi[18]= 0.032;                pi[19]= 0.073;                
+    pi[0]= 0.074;                 pi[1]= 0.052;                 pi[2]= 0.045;                 pi[3]= 0.054;
+    pi[4]= 0.025;                 pi[5]= 0.034;                 pi[6]= 0.054;                 pi[7]= 0.074;
+    pi[8]= 0.026;                 pi[9]= 0.068;                 pi[10]= 0.099;                pi[11]= 0.058;
+    pi[12]= 0.025;                pi[13]= 0.047;                pi[14]= 0.039;                pi[15]= 0.057;
+    pi[16]= 0.051;                pi[17]= 0.013;                pi[18]= 0.032;                pi[19]= 0.073;
 
     return 1;
   }
@@ -3004,20 +3004,20 @@ int Init_Qmat_Blosum62(phydbl *daa, phydbl *pi)
 
 int Init_Qmat_MtMam(phydbl *daa, phydbl *pi)
 {
-    /* 
-       This model has been 'translated' from Ziheng Yang's PAML program 
-       into PHYML format by Federico Abascal. Many thanks to them. 
+    /*
+       This model has been 'translated' from Ziheng Yang's PAML program
+       into PHYML format by Federico Abascal. Many thanks to them.
     */
 
     /*
-      Cao, Y. et al. 1998 Conflict amongst individual mitochondrial 
-      proteins in resolving the phyLOGeny of eutherian orders. Journal 
+      Cao, Y. et al. 1998 Conflict amongst individual mitochondrial
+      proteins in resolving the phyLOGeny of eutherian orders. Journal
       of Molecular Evolution 15:1600-1611.
     */
 
     int i,j,naa;
     naa = 20;
-    
+
     daa[1*20+0]= 32;              daa[2*20+0]= 2;    daa[2*20+1]= 4;               daa[3*20+0]= 11;
     daa[3*20+1]= 0;               daa[3*20+2]= 864;  daa[4*20+0]= 0;               daa[4*20+1]= 186;
     daa[4*20+2]= 0;               daa[4*20+3]= 0;    daa[5*20+0]= 0;               daa[5*20+1]= 246;
@@ -3066,18 +3066,18 @@ int Init_Qmat_MtMam(phydbl *daa, phydbl *pi)
     daa[19*20+9]= 2220;           daa[19*20+10]= 100;daa[19*20+11]= 0;             daa[19*20+12]= 832;
     daa[19*20+13]= 6;             daa[19*20+14]= 0;  daa[19*20+15]= 0;             daa[19*20+16]= 237;
     daa[19*20+17]= 0;             daa[19*20+18]= 0;
-    
+
     for (i=0; i<naa; i++) for (j=0; j<i; j++) daa[j*naa+i] = daa[i*naa+j];
-    
+
     pi[0]= 0.0692;  pi[1]=  0.0184;  pi[2]= 0.04;    pi[3]= 0.0186;
     pi[4]= 0.0065;  pi[5]=  0.0238;  pi[6]= 0.0236;  pi[7]= 0.0557;
     pi[8]= 0.0277;  pi[9]=  0.0905;  pi[10]=0.1675;  pi[11]= 0.0221;
     pi[12]=0.0561;  pi[13]= 0.0611;  pi[14]=0.0536;  pi[15]= 0.0725;
     pi[16]=0.087;   pi[17]= 0.0293;  pi[18]=0.034;   pi[19]= 0.0428;
-    
+
     return 1;
 }
-                         
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
@@ -3089,7 +3089,7 @@ void M4_Init_Model(m4 *m4mod, calign *data, t_mod *mod)
 
   if(mod->io->datatype == NT)      m4mod->n_o = 4;
   else if(mod->io->datatype == AA) m4mod->n_o = 20;
-  else 
+  else
     {
       PhyML_Printf("\n== Not implemented yet.");
       PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
@@ -3099,24 +3099,24 @@ void M4_Init_Model(m4 *m4mod, calign *data, t_mod *mod)
   mod->ns = m4mod->n_o * m4mod->n_h;
 
   For(i,m4mod->n_o) m4mod->o_fq[i] = mod->e_frq->pi->v[i]; /*! At that stage, the mod->pi vector as been initialized
-							     under a standard non covarion type of model. Use these
-							     frequencies as they have been set according to the 
-							     nucleotide substitution model chosen (e.g., 1/4 for JC69). !*/
+                                 under a standard non covarion type of model. Use these
+                                 frequencies as they have been set according to the
+                                 nucleotide substitution model chosen (e.g., 1/4 for JC69). !*/
   For(i,(int)(m4mod->n_h)) m4mod->multipl[i] = 1.;
 
   ct = 0;
   For(i,m4mod->n_o-1)
     {
       for(j=i+1;j<m4mod->n_o;j++)
-	{
-	  m4mod->o_rr[ct] = MAX(mod->r_mat->qmat->v[i*m4mod->n_o+j],1.E-5); 	  
-	  ct++;
-	}
+    {
+      m4mod->o_rr[ct] = MAX(mod->r_mat->qmat->v[i*m4mod->n_o+j],1.E-5);
+      ct++;
     }
-  
+    }
+
   For(i,(int)(m4mod->n_h*(m4mod->n_h-1)/2)) m4mod->h_rr[i] = 1.;
   fq = (phydbl)(1./m4mod->n_h);
-  
+
 
   if(mod->s_opt->opt_cov_delta) m4mod->delta = 1.0;
   if(mod->s_opt->opt_cov_alpha) m4mod->alpha = 1.0;
