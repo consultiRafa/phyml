@@ -686,7 +686,7 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
                   mean_len = fils->b[0]->l->v;
                 }
               else mean_len = MIXT_Get_Mean_Edge_Len(fils->b[0],tree);
-	      sprintf(*s_tree+(int)strlen(*s_tree),format,mean_len);
+	      sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,mean_len));
 	    }
 	  else
 	    {
@@ -698,7 +698,7 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
                       mean_len = tree->e_root->l->v;
                     }
                   else mean_len = MIXT_Get_Mean_Edge_Len(tree->e_root,tree);                  
-		  sprintf(*s_tree+(int)strlen(*s_tree),format,mean_len * root_pos);
+		  sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,mean_len) * root_pos);
 		}
 	      else
 		{
@@ -708,17 +708,17 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
                     }
 
                   else mean_len = MIXT_Get_Mean_Edge_Len(fils->b[0],tree);
-                  sprintf(*s_tree+(int)strlen(*s_tree),format,mean_len);
+                  sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,mean_len));
 		}
 	    }
 #else
 	  if(!tree->n_root)
 	    {
-	      sprintf(*s_tree+(int)strlen(*s_tree),format,fils->b[0]->l->v);
+	      sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,fils->b[0]->l->v));
 	    }
 	  else
 	    {
-	      sprintf(*s_tree+(int)strlen(*s_tree),format,tree->rates->cur_l[fils->num]);
+	      sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,tree->rates->cur_l[fils->num]));
 	    }
 #endif
 	}
@@ -833,7 +833,7 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
                   mean_len = fils->b[p]->l->v;
                 }
               else mean_len = MIXT_Get_Mean_Edge_Len(fils->b[p],tree);
-	      sprintf(*s_tree+(int)strlen(*s_tree),format,mean_len);
+	      sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,mean_len));
 	    }
 	  else
 	    {
@@ -846,7 +846,7 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
                       mean_len = tree->e_root->l->v;
                     }
                   else mean_len = MIXT_Get_Mean_Edge_Len(tree->e_root,tree);                  
-		  sprintf(*s_tree+(int)strlen(*s_tree),format,mean_len * root_pos);
+		  sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,mean_len) * root_pos);
 		}
 	      else
 		{
@@ -855,17 +855,17 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
                       mean_len = fils->b[p]->l->v;
                     }
                   else mean_len = MIXT_Get_Mean_Edge_Len(fils->b[p],tree);
-                  sprintf(*s_tree+(int)strlen(*s_tree),format,mean_len);
+                  sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,mean_len));
 		}
 	    }
 #else
 	  if(!tree->n_root)
 	    {
-	      sprintf(*s_tree+(int)strlen(*s_tree),format,fils->b[p]->l->v);
+	      sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,fils->b[p]->l->v));
 	    }
 	  else
 	    {
-	      sprintf(*s_tree+(int)strlen(*s_tree),format,tree->rates->cur_l[fils->num]);
+	      sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,tree->rates->cur_l[fils->num]));
 	    }
 #endif	  
 	}
@@ -2646,9 +2646,9 @@ void Print_Fp_Out(FILE *fp_out, time_t t_beg, time_t t_end, t_tree *tree, option
     PhyML_Fprintf(fp_out,"\n. Transition/transversion ratio: \t%.3f",tree->mod->kappa->v);
   else if(tree->mod->whichmodel == TN93)
     {
-      PhyML_Fprintf(fp_out,"\n. Transition/transversion ratio for purines: \t\t\t%.3f",
+      PhyML_Fprintf(fp_out,"\n. Transition/transversion ratio for purines: \t\t%.3f",
 		    tree->mod->kappa->v*2.*tree->mod->lambda->v/(1.+tree->mod->lambda->v));
-      PhyML_Fprintf(fp_out,"\n. Transition/transversion ratio for pyrimidines: \t\t\t%.3f",
+      PhyML_Fprintf(fp_out,"\n. Transition/transversion ratio for pyrimidines: \t%.3f",
 	      tree->mod->kappa->v*2./(1.+tree->mod->lambda->v));
     }
 

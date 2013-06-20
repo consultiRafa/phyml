@@ -578,8 +578,6 @@ void Set_Defaults_Model(t_mod *mod)
   mod->lambda->v               = 1.0;
   mod->ras->pinvar->v          = 0.0;
   mod->l_var_sigma             = 1.E-2;
-  mod->l_var_min               = 1.E-3;
-  mod->l_var_max               = 1.E+2;
   mod->e_frq_weight->v         = 1.0;
   mod->r_mat_weight->v         = 1.0;
 
@@ -614,6 +612,11 @@ void Set_Defaults_Model(t_mod *mod)
   mod->l_min = 1.E-8;
   mod->l_max = 2.0;
 #endif
+
+  mod->l_var_min  = mod->l_min;
+  mod->l_var_max  = mod->l_max;
+
+
 }
 
 //////////////////////////////////////////////////////////////

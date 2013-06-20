@@ -151,9 +151,9 @@ int Check_NNI_Five_Branches(t_tree *tree)
 
 	  if(tree->c_lnL < init_lnL)
 	    {
-	      PhyML_Printf("\n\n. tree->c_lnL = %f init_lnL = %f.",tree->c_lnL,init_lnL);
-	      PhyML_Printf("\n. Err in file %s at line %d\n\n.\n",__FILE__,__LINE__);
-	      Warn_And_Exit("\n");
+	      PhyML_Printf("\n\n== tree->c_lnL = %f init_lnL = %f.",tree->c_lnL,init_lnL);
+	      PhyML_Printf("\n== Err. in file %s at line %d\n\n.\n",__FILE__,__LINE__);
+	      Exit("\n");
 	    }
 
 	  if((tree->mod->s_opt->print) && (!tree->io->quiet)) Print_Lk(tree,"[Topology           ]");
@@ -343,6 +343,12 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   int result,counter,wei;
   void *buff;
 
+  if(tree->n_root || tree->e_root)
+    {
+      PhyML_Printf("\n== Err. in file %s at line %d\n\n",__FILE__,__LINE__);
+      Exit("");
+    }
+
   result = 0;
 
   /*! Initialization */
@@ -363,13 +369,13 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
 
   if(v1->num < v2->num)
     {
-      PhyML_Printf("\n== Err in file %s at line %d\n\n",__FILE__,__LINE__);
-      Warn_And_Exit("");
+      PhyML_Printf("\n== Err. in file %s at line %d\n\n",__FILE__,__LINE__);
+      Exit("");
     }
   if(v3->num < v4->num)
     {
-      PhyML_Printf("\n== Err in file %s at line %d\n\n",__FILE__,__LINE__);
-      Warn_And_Exit("");
+      PhyML_Printf("\n== Err. in file %s at line %d\n\n",__FILE__,__LINE__);
+      Exit("");
     }
 
   /*! edges */
@@ -383,6 +389,18 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   len_e2 = MIXT_Get_Lengths_Of_This_Edge(e2,tree);
   len_e3 = MIXT_Get_Lengths_Of_This_Edge(e3,tree);
   len_e4 = MIXT_Get_Lengths_Of_This_Edge(e4,tree);
+
+  printf("\n. Edge %d lk_init: %f",b_fcus->num,Lk(b_fcus,tree));
+  For(i,3)
+    if(b_fcus->left->v[i] != b_fcus->rght)
+      {
+        printf("\n. Left Edge %d lk_init: %f",b_fcus->left->b[i]->num,Lk(b_fcus->left->b[i],tree));
+      }
+  For(i,3)
+    if(b_fcus->rght->v[i] != b_fcus->left)
+      {
+        printf("\n. Rght Edge %d lk_init: %f",b_fcus->rght->b[i]->num,Lk(b_fcus->rght->b[i],tree));
+      }
 
   /*! Optimize branch lengths and update likelihoods for
     the original configuration.
@@ -398,6 +416,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
 
 	    l_infa  = 10.;
 	    l_infb  = MAX(0.0,tree->mod->l_min/b_fcus->left->b[i]->l->v);
+
 	    lk_temp = Br_Len_Brent(l_infb,l_infa,b_fcus->left->b[i],tree);
 	  }
 
@@ -415,6 +434,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
 
 	    l_infa  = 10.;
 	    l_infb  = MAX(0.0,tree->mod->l_min/b_fcus->rght->b[i]->l->v);
+
 	    lk_temp = Br_Len_Brent(l_infb,l_infa,b_fcus->rght->b[i],tree);
 	  }
 
@@ -422,13 +442,12 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
 
       if(lk_temp < lk0 - tree->mod->s_opt->min_diff_lk_local)
 	{
-	  PhyML_Printf("\n. lk_temp = %f lk0 = %f\n",lk_temp,lk0);
-	  PhyML_Printf("\n. Err in file %s at line %d\n\n",__FILE__,__LINE__);
-	  Warn_And_Exit("");
+	  PhyML_Printf("\n== lk_temp = %f lk0 = %f\n",lk_temp,lk0);
+	  PhyML_Printf("\n== Err. in file %s at line %d\n\n",__FILE__,__LINE__);
+	  Exit("\n");
 	}
     }
   while(FABS(lk_temp-lk0) > tree->mod->s_opt->min_diff_lk_global);
-
 
   lk0 = tree->c_lnL;
 
@@ -464,13 +483,29 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   Update_PMat_At_Given_Edge(b_fcus,tree);
 
 
+  /* Sanity check */
+  MIXT_Set_Alias_Subpatt(YES,tree);
+  Update_P_Lk(tree,b_fcus,b_fcus->rght);
+  Update_P_Lk(tree,b_fcus,b_fcus->left);
+  lk_temp = Lk(b_fcus,tree);
+  MIXT_Set_Alias_Subpatt(NO,tree);
+  if((lk_temp > lk_init + tree->mod->s_opt->min_diff_lk_local) || (lk_temp < lk_init - tree->mod->s_opt->min_diff_lk_local))
+    {
+      PhyML_Printf("\n== lk_temp = %f lk_init = %f",lk_temp,lk_init);
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+      Exit("\n");
+    }
+
+
   /*! Do first possible swap */
   Swap(v2,b_fcus->left,b_fcus->rght,v3,tree);
 
   MIXT_Set_Alias_Subpatt(YES,tree);
-
   Set_Both_Sides(YES,tree);     
-  lk1 = Update_Lk_At_Given_Edge(b_fcus,tree);
+  Update_P_Lk(tree,b_fcus,b_fcus->left);
+  Update_P_Lk(tree,b_fcus,b_fcus->rght);
+  lk1 = Lk(b_fcus,tree);
+  MIXT_Set_Alias_Subpatt(NO,tree);
 
   For(i,3)
     if(b_fcus->left->v[i] != b_fcus->rght)
@@ -479,8 +514,6 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   For(i,3)
     if(b_fcus->rght->v[i] != b_fcus->left)
       Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
-
-  MIXT_Set_Alias_Subpatt(YES,tree);
 
 
   /*! Optimize branch lengths and update likelihoods */
@@ -493,25 +526,20 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
 	if(b_fcus->left->v[i] != b_fcus->rght)
 	  {
 	    Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left);
-
 	    l_infa  = 10.;
 	    l_infb  = MAX(0.0,tree->mod->l_min/b_fcus->left->b[i]->l->v);
 	    lk_temp = Br_Len_Brent(l_infb,l_infa,b_fcus->left->b[i],tree);
 	  }
 
       Update_P_Lk(tree,b_fcus,b_fcus->left);
-
       l_infa  = 10.;
       l_infb  = MAX(0.0,tree->mod->l_min/b_fcus->l->v);
       lk_temp = Br_Len_Brent(l_infb,l_infa,b_fcus,tree);
-
-
 
       For(i,3)
 	if(b_fcus->rght->v[i] != b_fcus->left)
 	  {
 	    Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
-
 	    l_infa  = 10.;
 	    l_infb  = MAX(0.0,tree->mod->l_min/b_fcus->rght->b[i]->l->v);
 	    lk_temp = Br_Len_Brent(l_infb,l_infa,b_fcus->rght->b[i],tree);
@@ -568,13 +596,31 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   Update_PMat_At_Given_Edge(e4,tree);
   Update_PMat_At_Given_Edge(b_fcus,tree);
 
+  
+  /* Sanity check */
+  MIXT_Set_Alias_Subpatt(YES,tree);
+  Update_P_Lk(tree,b_fcus,b_fcus->rght);
+  Update_P_Lk(tree,b_fcus,b_fcus->left);
+  lk_temp = Lk(b_fcus,tree);
+  MIXT_Set_Alias_Subpatt(NO,tree);
+  if((lk_temp > lk_init + tree->mod->s_opt->min_diff_lk_local) || (lk_temp < lk_init - tree->mod->s_opt->min_diff_lk_local))
+    {
+      PhyML_Printf("\n== lk_temp = %f lk_init = %f",lk_temp,lk_init);
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+      Warn_And_Exit("");
+    }
+
+
+
   /*! do the second possible swap */
   Swap(v2,b_fcus->left,b_fcus->rght,v4,tree);
 
   Set_Both_Sides(YES,tree);
   MIXT_Set_Alias_Subpatt(YES,tree);
-  
-  lk2 = Update_Lk_At_Given_Edge(b_fcus,tree);
+  Update_P_Lk(tree,b_fcus,b_fcus->left);
+  Update_P_Lk(tree,b_fcus,b_fcus->rght);    
+  lk2 = Lk(b_fcus,tree);
+  MIXT_Set_Alias_Subpatt(NO,tree);
 
   For(i,3)
     if(b_fcus->left->v[i] != b_fcus->rght)
@@ -583,8 +629,6 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   For(i,3)
     if(b_fcus->rght->v[i] != b_fcus->left)
       Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
-
-  MIXT_Set_Alias_Subpatt(NO,tree);
 
   /*! Optimize branch lengths and update likelihoods */
   lk_temp = UNLIKELY;
@@ -621,7 +665,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
       l_infa  = 10.;
       l_infb  = MAX(0.0,tree->mod->l_min/b_fcus->l->v);
       lk_temp = Br_Len_Brent(l_infb,l_infa,b_fcus,tree);
-      printf("\n. B: %f",lk_temp);
+      printf("\n. B: %f %f",lk_temp,Lk(b_fcus,tree));
 
       if(lk_temp < lk2 - tree->mod->s_opt->min_diff_lk_local)
 	{
@@ -637,16 +681,6 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
 	    Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
 
             printf("\n. Before C: %f",Lk(b_fcus->rght->b[i],tree));
-
-            if(FABS(lk_temp-tree->c_lnL) > 1.E-5)
-              {
-                Set_Both_Sides(YES,tree);
-                Lk(NULL,tree);
-                Check_Lk_At_Given_Edge(YES,tree);
-                PhyML_Printf("\n== lk_temp = %f lk = %f l = %f",lk_temp,tree->c_lnL,b_fcus->rght->b[i]->l->v);
-                PhyML_Printf("\n== Err. in file %s at line %d",__FILE__,__LINE__);
-                Exit("\n");
-              }
                 
 	    l_infa  = 10.;
 	    l_infb  = MAX(0.0,tree->mod->l_min/b_fcus->rght->b[i]->l->v);
@@ -656,6 +690,9 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
 
             if(lk_temp < lk2 - tree->mod->s_opt->min_diff_lk_local)
               {
+                Set_Both_Sides(YES,tree);
+                Lk(b_fcus,tree);
+                Check_Lk_At_Given_Edge(YES,tree);
                 PhyML_Printf("\n== l_infa: %f l_infb: %f l: %f var:%f",l_infa,l_infb,b_fcus->rght->b[i]->l->v,b_fcus->rght->b[i]->l_var->v);
                 PhyML_Printf("\n== lk_temp = %f lk2 = %f",lk_temp,lk2);
                 PhyML_Printf("\n== Err. in file %s at line %d",__FILE__,__LINE__);
@@ -710,8 +747,8 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   Update_PMat_At_Given_Edge(b_fcus,tree);
 
   MIXT_Set_Alias_Subpatt(YES,tree);
-  Update_P_Lk(tree,b_fcus,b_fcus->rght);
   Update_P_Lk(tree,b_fcus,b_fcus->left);
+  Update_P_Lk(tree,b_fcus,b_fcus->rght);
 
   For(i,3)
     if(b_fcus->left->v[i] != b_fcus->rght)
@@ -732,6 +769,16 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
       Warn_And_Exit("");
     }
 
+  printf("\n. tree->n_root: %p tree->e_root: %p",tree->n_root,tree->e_root);
+  printf("\n. Leaving edge %d with %f",b_fcus->num,Lk(b_fcus,tree));
+  For(i,3)
+    if(b_fcus->left->v[i] != b_fcus->rght)
+      printf("\n. Leaving edge %d with %f",b_fcus->left->b[i]->num,Lk(b_fcus->left->b[i],tree));
+
+  For(i,3)
+    if(b_fcus->rght->v[i] != b_fcus->left)
+      printf("\n. Leaving edge %d with %f",b_fcus->rght->b[i]->num,Lk(b_fcus->rght->b[i],tree));
+
 
   //save likelihoods in NNI structures
   b_fcus->nni->lk0 = lk0;
@@ -747,7 +794,6 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
       b_fcus->nni->lk1 = b_fcus->nni->lk2 = b_fcus->nni->lk0;
     }
 
-
   if((b_fcus->nni->lk1 > b_fcus->nni->lk0) && (b_fcus->nni->lk1 > b_fcus->nni->lk2))
     {
       if(b_fcus->nni->lk0 > b_fcus->nni->lk2) result = 1; //lk1 > lk0 > lk2
@@ -758,7 +804,6 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
       if(b_fcus->nni->lk0 > b_fcus->nni->lk1) result = 2; //lk2 > lk0 > lk1
       else                                    result = 4; //lk2 > lk1 > lk0
     }
-
 
   Free(len_e1);
   Free(len_e2);

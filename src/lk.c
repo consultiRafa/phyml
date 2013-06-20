@@ -402,9 +402,9 @@ phydbl Lk(t_edge *b, t_tree *tree)
 
   if(!b) Set_Model_Parameters(tree->mod);
   
-  Set_Br_Len_Var(tree);
+  /* Set_Br_Len_Var(tree); */
       
-  Check_Br_Lens(tree);
+  /* Check_Br_Lens(tree); */
 
   if(tree->mod->s_opt->skip_tree_traversal == NO)
     {
@@ -2300,7 +2300,6 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
 
   For(i,tree->mod->ras->n_catg)
     {
-
       if(tree->mod->ras->skip_rate_cat[i] == YES) continue;
 
       if(b_fcus->has_zero_br_len == YES) 
@@ -2311,14 +2310,14 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
         }
       else
         {
-          len = b_fcus->l->v*tree->mod->ras->gamma_rr->v[i];	  
+          len = MAX(0.0,b_fcus->l->v)*tree->mod->ras->gamma_rr->v[i];	  
           len *= tree->mod->br_len_multiplier->v;
           if(tree->mixt_tree)  len *= tree->mixt_tree->mod->ras->gamma_rr->v[tree->mod->ras->parent_class_number];
           if(len < l_min)      len = l_min;
           else if(len > l_max) len = l_max;
 
           mean = len;
-          var  = b_fcus->l_var->v * POW(tree->mod->ras->gamma_rr->v[i]*tree->mod->br_len_multiplier->v,2);
+          var  = MAX(0.0,b_fcus->l_var->v) * POW(tree->mod->ras->gamma_rr->v[i]*tree->mod->br_len_multiplier->v,2);
           if(tree->mixt_tree)  var *= POW(tree->mixt_tree->mod->ras->gamma_rr->v[tree->mod->ras->parent_class_number],2);
 
           if(var > tree->mod->l_var_max) var = tree->mod->l_var_max;
@@ -2677,10 +2676,8 @@ void Alias_One_Subpatt(t_node *a, t_node *d, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Alias_Subpatt_Post(t_node *a, t_node *d, t_tree *tree)
 {
-
   if(d->tax) return;
   else
     {
@@ -3399,24 +3396,23 @@ int Check_Lk_At_Given_Edge(int verbose, t_tree *tree)
   For(i,2*tree->n_otu-3)
     {
       lk[i] = Lk(tree->a_edges[i],tree);
-      if(verbose == YES) PhyML_Printf("\n. Edge %3d %13f %13f %13f",
+      if(verbose == YES) PhyML_Printf("\n. Edge %3d %13G %f %13G",
                                       tree->a_edges[i]->num,tree->a_edges[i]->l->v,lk[i],
-                                      POW(tree->a_edges[i]->l->v,2)*tree->mod->l_var_sigma
-                                      );
+                                      tree->a_edges[i]->l_var->v);
     }
 
   if(tree->n_root)
     {
       Lk(tree->n_root->b[1],tree);
-      if(verbose == YES) PhyML_Printf("\n. Edge %3d %13f %13f %13f",
+      if(verbose == YES) PhyML_Printf("\n. Edge %3d %13G %f %13G",
                                       tree->n_root->b[1]->num,tree->n_root->b[1]->l->v,tree->c_lnL,
-                                      POW(tree->n_root->b[1]->l->v,2)*tree->mod->l_var_sigma
+                                      tree->n_root->b[1]->l_var->v
                                       );
 
       Lk(tree->n_root->b[2],tree);
-      if(verbose == YES) PhyML_Printf("\n. Edge %3d %13f %13f %13f",
+      if(verbose == YES) PhyML_Printf("\n. Edge %3d %13G %f %13G",
                                       tree->n_root->b[2]->num,tree->n_root->b[2]->l->v,tree->c_lnL,
-                                      POW(tree->n_root->b[2]->l->v,2)*tree->mod->l_var_sigma
+                                      tree->n_root->b[2]->l_var->v
                                       );
 
     }

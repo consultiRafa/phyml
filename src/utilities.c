@@ -10158,8 +10158,9 @@ void Set_Br_Len_Var(t_tree *tree)
 
       For(i,2*tree->n_otu-1) 
         {
-          len = MAX(tree->mod->l_min,tree->a_edges[i]->l->v);
-          len = MIN(tree->mod->l_max,len);
+          /* len = MAX(tree->mod->l_min,tree->a_edges[i]->l->v); */
+          /* len = MIN(tree->mod->l_max,len); */
+          len = MAX(0.0,tree->a_edges[i]->l->v);
           tree->a_edges[i]->l_var->v = POW(len,2)*tree->mod->l_var_sigma; 
         }
     }    
