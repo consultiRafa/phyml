@@ -997,12 +997,13 @@ void BFGS(t_tree *tree,
 
   For(i,n) init[i] = p[i];
 
-  /* PhyML_Printf("\n. ENTER BFGS WITH: %f\n",Lk(NULL,tree)); */
 
   /*! p is log transformed */
   if(logt == YES) For(i,n) p[i] = EXP(MIN(1.E+2,p[i]));
   fp=(*func)(tree);
   if(logt == YES) For(i,n) p[i] = LOG(p[i]);
+
+  /* PhyML_Printf("\n. ENTER BFGS WITH: %f\n",fp); */
 
   fp_old = fp;
 
@@ -1019,6 +1020,8 @@ void BFGS(t_tree *tree,
   stpmax=STPMX*MAX(SQRT(sum),(phydbl)n);
   for(its=1;its<=ITMAX;its++) 
     {
+      /* PhyML_Printf("\n. BFGS -> %f\n",tree->c_lnL); */
+
       lnsrch(tree,n,p,fp,g,xi,pnew,&fret,stpmax,&check,logt,is_positive);
 
       fp_old = fp;
@@ -1051,8 +1054,8 @@ void BFGS(t_tree *tree,
 	  (*func)(tree);
           if(is_positive == YES) For(i,n) p[i] *= sign[i];
           if(logt == YES) For(i,n) p[i] = LOG(p[i]);
-
-          For(i,n) p[i] = FABS(p[i]);
+          
+          if(is_positive == YES) For(i,n) p[i] = FABS(p[i]);
 
 	  For(i,n) Free(hessin[i]);
 	  free(hessin);
