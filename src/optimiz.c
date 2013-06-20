@@ -917,26 +917,23 @@ void Optimiz_All_Free_Param(t_tree *tree, int verbose)
 		   &Num_Derivative_Several_Param,
 		   &Lnsrch,&failed);
 
-	  
-              if(failed)
+              For(i,5) 
                 {
-                  For(i,5) 
-                    {
-                      /* 	      Optimize_Single_Param_Generic(tree,&(tree->mod->m4mod->o_rr[i]), */
-                      /* 					    1.E-20,1.E+10, */
-                      /* 					    tree->mod->s_opt->min_diff_lk_local, */
-                      /* 					    tree->mod->s_opt->brent_it_max, */
-                      /* 					    tree->mod->s_opt->quickdirty); */
-                      
-                      Generic_Brent_Lk(&(tree->mod->m4mod->o_rr[i]),
-                                       1.E-20,1.E+10,
-                                       tree->mod->s_opt->min_diff_lk_local,
-                                       tree->mod->s_opt->brent_it_max,
-                                       tree->mod->s_opt->quickdirty,
-                                       Wrap_Lk,NULL,tree,NULL,NO);
-                      
-                    }
+                  /* 	      Optimize_Single_Param_Generic(tree,&(tree->mod->m4mod->o_rr[i]), */
+                  /* 					    1.E-20,1.E+10, */
+                  /* 					    tree->mod->s_opt->min_diff_lk_local, */
+                  /* 					    tree->mod->s_opt->brent_it_max, */
+                  /* 					    tree->mod->s_opt->quickdirty); */
+                  
+                  Generic_Brent_Lk(&(tree->mod->m4mod->o_rr[i]),
+                                   1.E-20,1.E+10,
+                                   tree->mod->s_opt->min_diff_lk_local,
+                                   tree->mod->s_opt->brent_it_max,
+                                   tree->mod->s_opt->quickdirty,
+                                   Wrap_Lk,NULL,tree,NULL,NO);
+                  
                 }
+              
               if(verbose) Print_Lk(tree,"[GTR parameters     ]");
 
               Switch_Eigen(NO,tree->mod);
@@ -2589,22 +2586,16 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
 
               /* For(i,tree->mod->r_mat->n_diff_rr) tree->mod->r_mat->rr_val->v[i] = EXP(tree->mod->r_mat->rr_val->v[i]); */
 
-
-	      if(failed == YES)
-		{
-		  For(i,tree->mod->r_mat->n_diff_rr)
-		    if(i != 5)
-		      {
-			Generic_Brent_Lk(&(tree->mod->r_mat->rr_val->v[i]),
-					 1.E-2,1.E+2,
-					 tree->mod->s_opt->min_diff_lk_local,
-					 tree->mod->s_opt->brent_it_max,
-					 tree->mod->s_opt->quickdirty,
-					 Wrap_Lk,NULL,mixt_tree,NULL,NO);
-		      }
-
-		}
-	      
+              For(i,tree->mod->r_mat->n_diff_rr)
+                if(i != 5)
+                  {
+                    Generic_Brent_Lk(&(tree->mod->r_mat->rr_val->v[i]),
+                                     1.E-2,1.E+2,
+                                     tree->mod->s_opt->min_diff_lk_local,
+                                     tree->mod->s_opt->brent_it_max,
+                                     tree->mod->s_opt->quickdirty,
+                                     Wrap_Lk,NULL,mixt_tree,NULL,NO);
+                  }
 
 	      if(verbose) Print_Lk(tree->mixt_tree?
 				   tree->mixt_tree:

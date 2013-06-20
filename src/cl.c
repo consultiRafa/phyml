@@ -100,6 +100,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
       {"ratemodel",           required_argument,NULL,64},
       {"log_l",               no_argument,NULL,65},
       {"gamma_lens",          no_argument,NULL,66},
+      {"il",                  no_argument,NULL,66},
       {"codpos",              required_argument,NULL,67},
       {"constraint_file",     required_argument,NULL,68},
       {"constraint_tree",     required_argument,NULL,68},

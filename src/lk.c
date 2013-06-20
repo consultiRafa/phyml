@@ -402,7 +402,7 @@ phydbl Lk(t_edge *b, t_tree *tree)
 
   if(!b) Set_Model_Parameters(tree->mod);
   
-  /* Set_Br_Len_Var(tree); */
+  Set_Br_Len_Var(tree);
       
   /* Check_Br_Lens(tree); */
 
