@@ -683,6 +683,8 @@ void Set_Defaults_Optimiz(t_opt *s_opt)
 
   s_opt->skip_tree_traversal     = NO;
   s_opt->serial_free_rates       = YES;
+
+  s_opt->curr_opt_free_rates     = NO;
 }
 
 //////////////////////////////////////////////////////////////

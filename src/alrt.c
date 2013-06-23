@@ -636,19 +636,15 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
     {
       lk2 = lk_temp;
 
-      printf("\n");
-      printf("\n. lk2: %f",lk2);
 
       For(i,3)
 	if(b_fcus->left->v[i] != b_fcus->rght)
 	  {
 	    Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left);
 
-            printf("\n. Before A: %f",Lk(b_fcus->left->b[i],tree));
 	    l_infa  = 10.;
 	    l_infb  = MAX(0.0,tree->mod->l_min/b_fcus->left->b[i]->l->v);
 	    lk_temp = Br_Len_Brent(l_infb,l_infa,b_fcus->left->b[i],tree);
-            printf("\n. A: %f",lk_temp);
 
             if(lk_temp < lk2 - tree->mod->s_opt->min_diff_lk_local)
               {
@@ -661,11 +657,9 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
 
       Update_P_Lk(tree,b_fcus,b_fcus->left);
 
-      printf("\n. Before B: %f",Lk(b_fcus,tree));
       l_infa  = 10.;
       l_infb  = MAX(0.0,tree->mod->l_min/b_fcus->l->v);
       lk_temp = Br_Len_Brent(l_infb,l_infa,b_fcus,tree);
-      printf("\n. B: %f %f",lk_temp,Lk(b_fcus,tree));
 
       if(lk_temp < lk2 - tree->mod->s_opt->min_diff_lk_local)
 	{
@@ -680,13 +674,11 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
 	  {
 	    Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
 
-            printf("\n. Before C: %f",Lk(b_fcus->rght->b[i],tree));
                 
 	    l_infa  = 10.;
 	    l_infb  = MAX(0.0,tree->mod->l_min/b_fcus->rght->b[i]->l->v);
 	    lk_temp = Br_Len_Brent(l_infb,l_infa,b_fcus->rght->b[i],tree);
             
-            printf("\n. C: %f",lk_temp);
 
             if(lk_temp < lk2 - tree->mod->s_opt->min_diff_lk_local)
               {
@@ -768,16 +760,6 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
       PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
-
-  printf("\n. tree->n_root: %p tree->e_root: %p",tree->n_root,tree->e_root);
-  printf("\n. Leaving edge %d with %f",b_fcus->num,Lk(b_fcus,tree));
-  For(i,3)
-    if(b_fcus->left->v[i] != b_fcus->rght)
-      printf("\n. Leaving edge %d with %f",b_fcus->left->b[i]->num,Lk(b_fcus->left->b[i],tree));
-
-  For(i,3)
-    if(b_fcus->rght->v[i] != b_fcus->left)
-      printf("\n. Leaving edge %d with %f",b_fcus->rght->b[i]->num,Lk(b_fcus->rght->b[i],tree));
 
 
   //save likelihoods in NNI structures

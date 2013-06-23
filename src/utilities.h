@@ -1041,6 +1041,8 @@ typedef struct __Optimiz { /*! parameters to be optimised (mostly used in 'optim
 
   int       skip_tree_traversal;
   int         serial_free_rates;
+
+  int       curr_opt_free_rates;
 }t_opt;
 
 /*!********************************************************/

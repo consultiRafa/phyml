@@ -2816,8 +2816,10 @@ void Optimize_Free_Rate(t_tree *mixt_tree, int verbose)
             {
               fast = YES;
               lk_before = tree->c_lnL;
-              Optimize_Free_Rate_Weights(tree,fast,verbose);
+              /* Optimize_Free_Rate_Weights(tree,fast,verbose); */
+              tree->mod->s_opt->curr_opt_free_rates = YES;
               Optimize_Free_Rate_Rr(tree,fast,verbose);
+              tree->mod->s_opt->curr_opt_free_rates = NO;
               lk_after = tree->c_lnL;
 
               if(lk_after < lk_before - tree->mod->s_opt->min_diff_lk_global)
@@ -2957,6 +2959,7 @@ void Optimize_Free_Rate_Rr(t_tree *tree, int fast, int verbose)
 
   if(verbose) Print_Lk(tree,"[Rate class values  ]");
   
+  /* int i; */
   /* For(i,tree->mod->ras->n_catg) */
   /*   { */
   /*     printf("\n+ c %2d p: %15f r: %15f up: %15f ur: %5f", */
@@ -2967,6 +2970,8 @@ void Optimize_Free_Rate_Rr(t_tree *tree, int fast, int verbose)
   /*            tree->mod->ras->gamma_rr_unscaled->v[i]); */
   /*   } */
   /* fflush(NULL); */
+
+  /* printf("\n. LK: %f",Lk(NULL,tree)); */
   
   /* int i; */
   /* printf("\n"); */
@@ -2986,42 +2991,43 @@ void Optimize_Free_Rate_Weights(t_tree *tree, int fast, int verbose)
   phydbl wm;
   phydbl lk_before, lk_after;
 
-  lk_before = tree->c_lnL;
+
 
   if(tree->mod->s_opt->first_opt_free_mixt_rates == YES)
     {
+      /* tree->mod->s_opt->opt_alpha     = YES; */
+      /* tree->mod->s_opt->opt_pinvar    = NO; */
+      /* tree->mod->ras->free_mixt_rates = NO; */
 
-      tree->mod->s_opt->opt_alpha     = YES;
-      tree->mod->s_opt->opt_pinvar    = NO;
-      tree->mod->ras->free_mixt_rates = NO;
+      /* Optimize_Alpha(tree,YES); */
 
-      Optimize_Alpha(tree,YES);
+      /* For(i,tree->mod->ras->n_catg) */
+      /*   { */
+      /*     tree->mod->ras->gamma_r_proba_unscaled->v[i] = 1./(phydbl)tree->mod->ras->n_catg; */
+      /*     tree->mod->ras->gamma_rr_unscaled->v[i]      = tree->mod->ras->gamma_rr->v[i]; */
+      /*   } */
 
-      For(i,tree->mod->ras->n_catg)
-        {
-          tree->mod->ras->gamma_r_proba_unscaled->v[i] = 1./(phydbl)tree->mod->ras->n_catg;
-          tree->mod->ras->gamma_rr_unscaled->v[i]      = tree->mod->ras->gamma_rr->v[i];
-        }
-
-      tree->mod->s_opt->opt_alpha                 = NO;
-      tree->mod->ras->free_mixt_rates             = YES;
-      tree->mod->s_opt->first_opt_free_mixt_rates = NO;
+      /* tree->mod->s_opt->opt_alpha                 = NO; */
+      /* tree->mod->ras->free_mixt_rates             = YES; */
+      /* tree->mod->s_opt->first_opt_free_mixt_rates = NO; */
       
-      Lk(NULL,tree);
+      /* Lk(NULL,tree); */
     }
   
+  lk_before = tree->c_lnL;
+
   /*! Only skip tree traversal when data is not partitionned */ 
   if(tree->prev == NULL && tree->next == NULL && fast == YES)
     {
       tree->mod->s_opt->skip_tree_traversal = YES;
-      tree->mod->ras->normalise_rr          = NO;
+      /* tree->mod->ras->normalise_rr          = NO; */
 
-      wm = Weighted_Mean(tree->mod->ras->gamma_rr_unscaled->v,
-                         tree->mod->ras->gamma_r_proba->v,
-                         tree->mod->ras->n_catg);
+      /* wm = Weighted_Mean(tree->mod->ras->gamma_rr_unscaled->v, */
+      /*                    tree->mod->ras->gamma_r_proba->v, */
+      /*                    tree->mod->ras->n_catg); */
       
-      tree->mod->ras->free_rate_mr->v = 100.;
-      For(i,2*tree->n_otu-1) tree->a_edges[i]->l->v /= (wm * tree->mod->ras->free_rate_mr->v);
+      /* tree->mod->ras->free_rate_mr->v = 100.; */
+      /* For(i,2*tree->n_otu-1) tree->a_edges[i]->l->v /= (wm * tree->mod->ras->free_rate_mr->v); */
     }
 
 
@@ -3047,16 +3053,15 @@ void Optimize_Free_Rate_Weights(t_tree *tree, int fast, int verbose)
   if(tree->mod->s_opt->skip_tree_traversal == YES && fast == YES)
     {
       tree->mod->s_opt->skip_tree_traversal = NO;
-      tree->mod->ras->normalise_rr          = YES;
+      /* tree->mod->ras->normalise_rr          = YES; */
 
-      wm = Weighted_Mean(tree->mod->ras->gamma_rr_unscaled->v,
-                         tree->mod->ras->gamma_r_proba->v,
-                         tree->mod->ras->n_catg);
+      /* wm = Weighted_Mean(tree->mod->ras->gamma_rr_unscaled->v, */
+      /*                    tree->mod->ras->gamma_r_proba->v, */
+      /*                    tree->mod->ras->n_catg); */
       
-      For(i,2*tree->n_otu-1) tree->a_edges[i]->l->v *= (wm * tree->mod->ras->free_rate_mr->v);
-
+      /* For(i,2*tree->n_otu-1) tree->a_edges[i]->l->v *= (wm * tree->mod->ras->free_rate_mr->v); */
     }
-  
+
   lk_after = tree->c_lnL;
 
   if(lk_after < lk_before - tree->mod->s_opt->min_diff_lk_global)

@@ -158,6 +158,8 @@ int main(int argc, char **argv)
 		  tree->io           = io;
 		  tree->data         = cdata;
 		  tree->n_pattern    = tree->data->crunch_len;
+                  tree->n_root       = NULL;
+                  tree->e_root       = NULL;
 
                   Set_Both_Sides(YES,tree);     
                   
