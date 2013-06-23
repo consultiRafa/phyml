@@ -11,6 +11,9 @@ the GNU public licence. See http://www.opensource.org for details.
 */
 
 #include "utilities.h"
+#ifdef BEAGLE
+#include "beagle_utils.h"
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -4378,6 +4381,9 @@ void Copy_Tree(t_tree *ori, t_tree *cpy)
 
 /*   Connect_Edges_To_Nodes_Recur(cpy->a_nodes[0],cpy->a_nodes[0]->v[0],cpy); */
 /*   Update_Dirs(cpy); */
+#ifdef BEAGLE
+  cpy->b_inst = ori->b_inst;
+#endif
 }
 
 //////////////////////////////////////////////////////////////
@@ -6099,7 +6105,7 @@ void Check_Dirs(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Warn_And_Exit(char *s)
+void Warn_And_Exit(const char *s)
 {
   PhyML_Fprintf(stdout,"%s",s);
   fflush(NULL);
@@ -7393,14 +7399,26 @@ char *aLRT_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
   Make_Spr_List(tree);
   Make_Best_Spr(tree);
 
+  Br_Len_Not_Involving_Invar(tree);
+  Unscale_Br_Len_Multiplier_Tree(tree);
+#ifdef BEAGLE
+  tree->b_inst = create_beagle_instance(tree, io->quiet);
+#endif
+
   Set_Both_Sides(YES,tree);
   Lk(NULL,tree);
+//  Print_All_Edge_PMats(tree);
+//  Print_All_Edge_Likelihoods(tree);
 
   aLRT(tree);
 
 
   Free(s_tree);
   s_tree = Write_Tree(tree,NO);
+
+#ifdef BEAGLE
+  finalize_beagle_instance(tree);
+#endif
 
   Free_Spr_List(tree);
   Free_Triplet(tree->triplet_struct);

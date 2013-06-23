@@ -1,7 +1,7 @@
 /*
 
 PHYML :  a program that  computes maximum likelihood  phylogenies from
-DNA or AA homologous sequences 
+DNA or AA homologous sequences
 
 Copyright (C) Stephane Guindon. Oct 2003 onward
 
@@ -83,5 +83,7 @@ void Make_Topology_From_XML_Node(xml_node *instance, option *io, t_mod *mod);
 void Make_RAS_From_XML_Node(xml_node *parent, t_mod *mod);
 void Post_Process_Data(option *io);
 int *Return_Int(int in);
+void Print_All_Edge_PMats(t_tree* tree);
+void Print_All_Edge_Likelihoods(t_tree* tree);
 
 #endif

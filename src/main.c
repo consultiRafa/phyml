@@ -163,7 +163,7 @@ int main(int argc, char **argv)
                   tree->data         = cdata;
                   tree->n_pattern    = tree->data->crunch_len;
 
-                          Set_Both_Sides(YES,tree);
+                  Set_Both_Sides(YES,tree);
 
                   if(mod->s_opt->random_input_tree)
                             {
@@ -194,28 +194,43 @@ int main(int argc, char **argv)
                       MIXT_Set_Alias_Subpatt(NO,tree);
                     }
 
-#ifdef BEAGLE
-                  tree->b_inst = -1;//initalize
-                  tree->b_inst = create_beagle_instance(tree, io->quiet);
-#endif
-
                   if(tree->mod->s_opt->opt_topo)
                     {
-                      if(tree->mod->s_opt->topo_search      == NNI_MOVE) Simu_Loop(tree);
-                      else if(tree->mod->s_opt->topo_search == SPR_MOVE) Speed_Spr_Loop(tree);
-                      else                                               Best_Of_NNI_And_SPR(tree);
+                      if(tree->mod->s_opt->topo_search == NNI_MOVE) {
+                          fprintf(stdout,"here1\n");
+                          Simu_Loop(tree);
+                      }
+                      else {
+                          if(tree->mod->s_opt->topo_search == SPR_MOVE) {
+                              fprintf(stdout,"here2\n");
+                              Speed_Spr_Loop(tree);
+                          } else {
+                              fprintf(stdout,"here3\n");
+                              Best_Of_NNI_And_SPR(tree);
+                          }
+                      }
 
                       if(tree->n_root) Add_Root(tree->a_edges[0],tree);
                     }
                   else
                     {
-                      if(tree->mod->s_opt->opt_subst_param || tree->mod->s_opt->opt_bl)
+                      if(tree->mod->s_opt->opt_subst_param || tree->mod->s_opt->opt_bl) {
+                          fprintf(stdout,"here4\n");
                           Round_Optimize(tree,tree->data,ROUND_MAX);
-                      else Lk(NULL,tree);
+                      }
+                      else {
+                          fprintf(stdout,"here5\n");
+#ifdef BEAGLE
+                          tree->b_inst = -1;//initalize
+                          tree->b_inst = create_beagle_instance(tree, io->quiet);
+#endif
+                          Lk(NULL,tree);
+                      }
                     }
 
                   Set_Both_Sides(YES,tree);
                   Lk(NULL,tree);
+                                    Print_All_Edge_Likelihoods(tree);
                   Pars(NULL,tree);
                   Get_Tree_Size(tree);
                   PhyML_Printf("\n\n. Log likelihood of the current tree: %f.",tree->c_lnL);
@@ -223,7 +238,6 @@ int main(int argc, char **argv)
                           //
                           /* ML_Ancestral_Sequences(tree); */
                           //
-
                   Br_Len_Involving_Invar(tree);
                   Rescale_Br_Len_Multiplier_Tree(tree);
 
@@ -291,7 +305,8 @@ int main(int argc, char **argv)
 
                   most_likely_tree = Bootstrap_From_String(most_likely_tree,cdata,mod,io);
                 }
-              else if(io->ratio_test)
+              else
+                  if(io->ratio_test)
                     {
                       /* Launch aLRT */
                       most_likely_tree = aLRT_From_String(most_likely_tree,cdata,mod,io);

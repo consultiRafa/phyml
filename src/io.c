@@ -12,6 +12,10 @@ the GNU public licence. See http://www.opensource.org for details.
 
 #include "io.h"
 
+#ifdef BEAGLE
+#include "libhmsbeagle-1/libhmsbeagle/beagle.h"
+#endif
+
 
 /* Tree parser function. We need to pass a pointer to the string of characters
    since this string might be freed and then re-allocated by that function (i.e.,
@@ -3370,6 +3374,105 @@ void Print_Diversity_Pre(t_node *a, t_node *d, t_edge *b, FILE *fp, t_tree *tree
     }
 
 }
+
+
+void Print_All_Edge_PMats(t_tree* tree)
+{
+    int i;
+    for(i=0;i < 2*tree->n_otu-3;++i)
+    {
+        phydbl *Pij;
+#ifdef BEAGLE
+        Pij = (phydbl*)malloc(tree->mod->ns * tree->mod->ns * tree->mod->ras->n_catg * sizeof(phydbl)); if (NULL==Pij) Warn_And_Exit(__PRETTY_FUNCTION__);
+        int ret = beagleGetTransitionMatrix(tree->b_inst, tree->a_edges[i]->num, Pij);
+        if(ret<0){
+            fprintf(stderr, "beagleGetTransitionMatrix() on instance %i failed:%i\n\n",tree->b_inst,ret);
+            Free(Pij);
+            Exit("");
+        }
+#else
+        Pij = tree->a_edges[i]->Pij_rr;
+#endif
+        fprintf(stdout,"\nflattened P-Matrices (for each rate category) state*state*num_rates[%d*%d*%d] for branch num:%i\n",tree->mod->ns,tree->mod->ns,tree->mod->ras->n_catg, tree->a_edges[i]->num);
+        int j;
+        for(j=0;j<tree->mod->ns * tree->mod->ns * tree->mod->ras->n_catg;++j)
+        {
+            fprintf(stdout,"%f,",Pij[j]);
+        }
+        fprintf(stdout,"\n");
+#ifdef BEAGLE
+    Free(Pij);
+#endif
+    }
+}
+
+void Print_All_Edge_Likelihoods(t_tree* tree)
+{
+    for(int i=0;i < 2*tree->n_otu-3;++i)
+    {
+        phydbl* lk_left = tree->a_edges[i]->p_lk_left;
+        phydbl* lk_right = tree->a_edges[i]->p_lk_rght;
+        if(NULL!=lk_left)
+        {
+            fprintf(stdout,"Partial Likelihoods on LEFT subtree of Branch %d\n[rate,site,state]:\n",tree->a_edges[i]->num);
+            for(int catg=0;catg<tree->mod->ras->n_catg;++catg)
+                for(int site=0;site<tree->n_pattern;++site)
+                    for(int j=0;j<tree->mod->ns;++j)
+#ifdef BEAGLE
+                        fprintf(stdout,"[%d,%d,%d]%f\n",catg,site,j,lk_left[catg*tree->n_pattern*tree->mod->ns + site*tree->mod->ns + j]);
+#else
+                        fprintf(stdout,"[%d,%d,%d]%f\n",catg,site,j,lk_left[catg*tree->mod->ns + site*tree->mod->ras->n_catg*tree->mod->ns + j]);
+#endif
+        }
+        else
+        {
+            fprintf(stdout,"Likelihoods on LEFT tip of Branch %d\n[site,state]:\n",tree->a_edges[i]->num);
+            for(int site=0;site<tree->n_pattern;++site)
+                for(int j=0;j<tree->mod->ns;++j)
+                    fprintf(stdout,"[%d,%d]%d\n",site,j,tree->a_edges[i]->p_lk_tip_l[site*tree->mod->ns + j]);
+        }
+        if(NULL!=lk_right)
+        {
+            fprintf(stdout,"Partial Likelihoods on RIGHT subtree of Branch %d\n[rate,site,state]:\n",tree->a_edges[i]->num);
+            for(int catg=0;catg<tree->mod->ras->n_catg;++catg)
+                for(int site=0;site<tree->n_pattern;++site)
+                    for(int j=0;j<tree->mod->ns;++j)
+#ifdef BEAGLE
+                        fprintf(stdout,"[%d,%d,%d]%f\n",catg,site,j,lk_right[catg*tree->n_pattern*tree->mod->ns + site*tree->mod->ns + j]);
+#else
+                        fprintf(stdout,"[%d,%d,%d]%f\n",catg,site,j,lk_right[catg*tree->mod->ns + site*tree->mod->ras->n_catg*tree->mod->ns + j]);
+#endif
+        }
+        else
+        {
+            fprintf(stdout,"Likelihoods on RIGHT tip of Branch %d\n[site,state]:\n",tree->a_edges[i]->num);
+            for(int site=0;site<tree->n_pattern;++site)
+                for(int j=0;j<tree->mod->ns;++j)
+                    fprintf(stdout,"[%d,%d]%d\n",site,j,tree->a_edges[i]->p_lk_tip_r[site*tree->mod->ns + j]);
+        }
+    }
+#ifdef BEAGLE
+//    for(i=0;i <= (tree->n_otu + (tree->n_otu-2));++i)
+//    {
+//        if(tree->a_nodes[i]->tax)
+//            continue;
+//        phydbl *p_lk = (phydbl*)malloc(tree->mod->ns * tree->n_pattern * tree->mod->ras->n_catg*sizeof(phydbl)); if (NULL==p_lk) Warn_And_Exit(__PRETTY_FUNCTION__);
+//        int ret = beagleGetPartials(tree->b_inst, tree->a_nodes[i]->num, BEAGLE_OP_NONE, (double*)p_lk);
+//        if(ret<0){
+//            fprintf(stderr, "beagleGetPartials() on instance %i failed:%i\n\n",tree->b_inst,ret);
+//            Free(p_lk);
+//            Exit("");
+//        }
+//        fprintf(stdout,"Likelihoods on internal Node %d:\n",tree->a_nodes[i]->num);
+//        int j;
+//        for(j=0;j<tree->mod->ns * tree->n_pattern * tree->mod->ras->n_catg;++j)
+//            fprintf(stdout,"[%d]%f\n",j,p_lk[j]);
+//        Free(p_lk);
+//    }
+#endif
+}
+
+
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
