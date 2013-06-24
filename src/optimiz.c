@@ -2327,7 +2327,7 @@ phydbl Generic_Brent_Lk(phydbl *param, phydbl ax, phydbl cx, phydbl tol,
   if(logt == YES) (*param) = LOG(*param);
   init_lnL = -fw;
 
-  /* PhyML_Printf("\n. %p %p %p init_lnL = %f a=%f b=%f c=%f",branch,tree,stree,init_lnL,ax,bx,cx); */
+  PhyML_Printf("\n. %p %p %p init_lnL = %f a=%f b=%f c=%f",branch,tree,stree,init_lnL,ax,bx,cx);
 
   for(iter=1;iter<=BRENT_IT_MAX;iter++) 
     {
@@ -2391,7 +2391,7 @@ phydbl Generic_Brent_Lk(phydbl *param, phydbl ax, phydbl cx, phydbl tol,
       fu = -(*obj_func)(branch,tree,stree);
       if(logt == YES) (*param) = LOG(*param);
       
-      /* PhyML_Printf("\n. iter=%d/%d param=%f lnL=%f",iter,BRENT_IT_MAX,*param,fu); */
+      PhyML_Printf("\n. iter=%d/%d param=%f lnL=%f",iter,BRENT_IT_MAX,*param,fu);
 
       if(fu <= fx)
 	{
@@ -2817,9 +2817,7 @@ void Optimize_Free_Rate(t_tree *mixt_tree, int verbose)
               fast = YES;
               lk_before = tree->c_lnL;
               /* Optimize_Free_Rate_Weights(tree,fast,verbose); */
-              tree->mod->s_opt->curr_opt_free_rates = YES;
               Optimize_Free_Rate_Rr(tree,fast,verbose);
-              tree->mod->s_opt->curr_opt_free_rates = NO;
               lk_after = tree->c_lnL;
 
               if(lk_after < lk_before - tree->mod->s_opt->min_diff_lk_global)
@@ -2893,6 +2891,10 @@ void Optimize_Free_Rate_Rr(t_tree *tree, int fast, int verbose)
       int i;
       phydbl wm;
       
+      printf("\n BEFORE RATES: %f",Lk(NULL,tree));
+
+      tree->mod->s_opt->curr_opt_free_rates = YES;
+
       if(fast == YES)
         {
           For(i,tree->mod->ras->n_catg) tree->mod->ras->skip_rate_cat[i] = YES;
@@ -2920,6 +2922,15 @@ void Optimize_Free_Rate_Rr(t_tree *tree, int fast, int verbose)
                            Wrap_Lk,NULL,tree,NULL,NO);
                     
           if(fast == YES) tree->mod->ras->skip_rate_cat[i] = YES;
+
+          lk_after = tree->c_lnL;
+          
+          if(lk_after < lk_before - tree->mod->s_opt->min_diff_lk_global)
+            {
+              PhyML_Printf("\n== lk_before: %f lk_after: %f diff: %G",lk_before,lk_after,lk_before-lk_after);
+              PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+              Exit("");
+            }
         }
 
       if(fast == YES)
@@ -2933,6 +2944,9 @@ void Optimize_Free_Rate_Rr(t_tree *tree, int fast, int verbose)
 
           For(i,2*tree->n_otu-1) tree->a_edges[i]->l->v *= (wm * tree->mod->ras->free_rate_mr->v);
         }
+
+      tree->mod->s_opt->curr_opt_free_rates = NO;
+
     }
   else
     {
@@ -3041,6 +3055,9 @@ void Optimize_Free_Rate_Weights(t_tree *tree, int fast, int verbose)
 
   For(i,tree->mod->ras->n_catg-1)
     {
+      /* !!!!!!!!!!!!!!!!!!1 */
+      tree->mod->ras->gamma_r_proba_unscaled->v[i] = 10.;
+
       Generic_Brent_Lk(&(tree->mod->ras->gamma_r_proba_unscaled->v[i]),
                        0.0,
                        100.,
@@ -3072,6 +3089,17 @@ void Optimize_Free_Rate_Weights(t_tree *tree, int fast, int verbose)
     }
 
   if(verbose) Print_Lk(tree,"[Rate class freqs.  ]");
+  printf("\n. Before: %f after: %f",lk_before,lk_after);
+  For(i,tree->mod->ras->n_catg)
+    {
+      printf("\n+ c %2d p: %15f r: %15f up: %15f ur: %5f",
+             i+1,
+             tree->mod->ras->gamma_r_proba->v[i],
+             tree->mod->ras->gamma_rr->v[i],
+             tree->mod->ras->gamma_r_proba_unscaled->v[i],
+             tree->mod->ras->gamma_rr_unscaled->v[i]);
+    }
+  fflush(NULL);
 
 }
 
