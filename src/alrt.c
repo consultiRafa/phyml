@@ -390,18 +390,6 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   len_e3 = MIXT_Get_Lengths_Of_This_Edge(e3,tree);
   len_e4 = MIXT_Get_Lengths_Of_This_Edge(e4,tree);
 
-  printf("\n. Edge %d lk_init: %f",b_fcus->num,Lk(b_fcus,tree));
-  For(i,3)
-    if(b_fcus->left->v[i] != b_fcus->rght)
-      {
-        printf("\n. Left Edge %d lk_init: %f",b_fcus->left->b[i]->num,Lk(b_fcus->left->b[i],tree));
-      }
-  For(i,3)
-    if(b_fcus->rght->v[i] != b_fcus->left)
-      {
-        printf("\n. Rght Edge %d lk_init: %f",b_fcus->rght->b[i]->num,Lk(b_fcus->rght->b[i],tree));
-      }
-
   /*! Optimize branch lengths and update likelihoods for
     the original configuration.
   */
