@@ -1057,15 +1057,15 @@ be considered  as conflicting since  branch lengths depend  on the proportion of
 changing the proportion  of invariants implies that branch lengths are  changing too. More formally,
 let $l$ denote the length of a branch,  i.e., the expected number of substitutions per site, and $p$
 be  the proportion  of invariants.  We have  $l =  (1-p)l'$, where  $l'$ is  the expected  number of
-substitutions per  \_variable\_ sites.  When  asked to optimize  $p$ but leave $l$  unchanged, PhyML
+substitutions at variable sites.  When  asked to optimize  $p$ but leave $l$  unchanged, PhyML
 does the following:
 \begin{enumerate}
 \item Calculate $l' = l/(1-p)$ and leave $l'$ unchanged throughout the optimization.
-\item Find the value of $p$ that maximises the likelihood. Let $p^{*}$ denote this value.
+\item Find the value of the proportion of invariants that maximises the likelihood. Let $p^{*}$ denote this value.
 \item Set $l^{*} = (1-p^{*})l'$ and print out the tree with $l^{*}$ (instead of $l$).
 \end{enumerate} 
 
-PhyML therefore  assumes that the  users wants  to fix the  branch lengths measured  at \_variable\_
+PhyML therefore  assumes that the  users wants  to fix the  branch lengths measured  at variable
 sites only  (i.e., $l^{*}$ is  fixed). This is the  reason why the  branch lengths in the  input and
 output trees  do differ  despite the  use of the  the \x{-o  r} option. While  we believe  that this
 approach relies on a sound rationale, it  is not perfect. In particular, the original transformation
@@ -1992,7 +1992,20 @@ a NNI search algorithm.
 \end{Verbatim}
 
 
+\subsection{Branch lengths with invariants and partionned data}
 
+Accommodating for models with invariable sites applying to some elements of a partitioned data, with
+these elements  sharing the  same set  of edge lengths  can lead  to inconsistencies.   Consider for
+instance a partitioned  data set with two elements.   Assume that these two elements  share the same
+set of edge lengths.  Also, consider that GTR+I  applies to the first element and HKY applies to the
+second. Now, the expected number of substitutions per site for the first element of the partition is
+equal  to  $(1-p)l$,  where  $p$  is  the   estimated  proportion  of  invariants  and  $l$  is  the
+maximum-likelihood estimate  for the length  of that  specific edge. For  the second element  of the
+partition, the  expected number of  substitutions per  site is equal  to $l$, rather  than $(1-p)l$.
+While $l$ are common to the two elements,  matching the specification of the input model, the actual
+edge  lengths do  differ across  the  two partition  elements.  Please  be  aware that,  due to  the
+programming structure implemented in PhyML, the program  will only return one value here, which will
+be equal to $(1-p)l$.
 
 \section{Citing PhyML}
 The ``default citation'' for PhyML is:

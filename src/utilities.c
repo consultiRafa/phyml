@@ -7570,6 +7570,7 @@ char *aLRT_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
   Set_Both_Sides(YES,tree);
   Lk(NULL,tree);
 
+
   aLRT(tree);
   
 
