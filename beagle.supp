@@ -1,0 +1,25 @@
+{
+   beagle_ignore_cond
+   Memcheck:Cond
+   obj:/usr/local/lib/beagle/lib/libhmsbeagle.so.1.0.1
+}
+
+{
+   beagle_ignore_free
+   Memcheck:Free
+   obj:/usr/local/lib/beagle/lib/libhmsbeagle.so.1.0.1
+}
+
+{
+   beagle_ignore_value8
+   Memcheck:Value8
+   obj:/usr/local/lib/beagle/lib/libhmsbeagle.so.1.0.1
+}
+
+{
+  beagle_ignore_leaks
+  Memcheck:Leak
+  ...
+  obj:/usr/local/lib/beagle/lib/libhmsbeagle.so.1.0.1
+  ...
+}
