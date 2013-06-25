@@ -85,5 +85,5 @@ void Post_Process_Data(option *io);
 int *Return_Int(int in);
 void Print_All_Edge_PMats(t_tree* tree);
 void Print_All_Edge_Likelihoods(t_tree* tree);
-
+void Print_Edge_Likelihoods(t_tree* tree, t_edge* b);
 #endif

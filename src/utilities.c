@@ -794,17 +794,17 @@ void Update_Dirs(t_tree *tree)
       b = tree->a_edges[i];
 
       if((!b->left->tax) && (b->left->v[b->l_v1]->num < b->left->v[b->l_v2]->num))
-    {
-      buff    = b->l_v1;
-      b->l_v1 = b->l_v2;
-      b->l_v2 = buff;
-    }
+        {
+          buff    = b->l_v1;
+          b->l_v1 = b->l_v2;
+          b->l_v2 = buff;
+        }
       if((!b->rght->tax) && (b->rght->v[b->r_v1]->num < b->rght->v[b->r_v2]->num))
-    {
-      buff    = b->r_v1;
-      b->r_v1 = b->r_v2;
-      b->r_v2 = buff;
-    }
+        {
+          buff    = b->r_v1;
+          b->r_v1 = b->r_v2;
+          b->r_v2 = buff;
+        }
     }
 
 }
@@ -7370,6 +7370,56 @@ char *Bootstrap_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+char *aLRT222(t_tree *tree, calign *cdata, t_mod *mod, option *io)
+{
+
+    if(!tree)
+      {
+        PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+        Warn_And_Exit("");
+      }
+
+    tree->mod         = mod;
+    tree->io          = io;
+    tree->data        = cdata;
+    tree->n_pattern   = tree->data->crunch_len;
+
+    Connect_CSeqs_To_Nodes(cdata,tree);
+    if(tree->mod->s_opt->random_input_tree) Random_Tree(tree);
+    Fill_Dir_Table(tree);
+    Update_Dirs(tree);
+    Make_Tree_4_Pars(tree,cdata,cdata->init_len);
+    Make_Tree_4_Lk(tree,cdata,cdata->init_len);
+    tree->triplet_struct = Make_Triplet_Struct(mod);
+    Init_Triplet_Struct(tree->triplet_struct);
+    Make_Spr_List(tree);
+    Make_Best_Spr(tree);
+
+    Br_Len_Not_Involving_Invar(tree);
+    Unscale_Br_Len_Multiplier_Tree(tree);
+
+#ifdef BEAGLE
+    tree->b_inst = create_beagle_instance(tree, io->quiet);
+#endif
+
+    Set_Both_Sides(YES,tree);
+//    Print_All_Edge_Likelihoods(tree);
+    Lk(NULL,tree);
+    aLRT(tree);
+    char* s_tree = Write_Tree(tree,NO);
+
+#ifdef BEAGLE
+    finalize_beagle_instance(tree);
+#endif
+
+    Free_Spr_List(tree);
+    Free_Triplet(tree->triplet_struct);
+    Free_Tree_Pars(tree);
+    Free_Tree_Lk(tree);
+    Free_Tree(tree);
+
+    return s_tree;
+}
 
 char *aLRT_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
 {
@@ -7382,6 +7432,14 @@ char *aLRT_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
       PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
+
+//  matrix *mat;
+//  Connect_CSeqs_To_Nodes(cdata,tree);
+//  mat = ML_Dist(cdata,mod);
+//  mat->tree = tree;
+//  mat->method = 0;
+//  Bionj_Br_Length(mat);
+//  Free_Mat(mat);
 
   tree->mod         = mod;
   tree->io          = io;
@@ -7406,12 +7464,12 @@ char *aLRT_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
 #endif
 
   Set_Both_Sides(YES,tree);
+  Print_All_Edge_Likelihoods(tree);
   Lk(NULL,tree);
-//  Print_All_Edge_PMats(tree);
-//  Print_All_Edge_Likelihoods(tree);
+  Print_All_Edge_PMats(tree);
+  Print_All_Edge_Likelihoods(tree);
 
   aLRT(tree);
-
 
   Free(s_tree);
   s_tree = Write_Tree(tree,NO);

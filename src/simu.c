@@ -70,8 +70,8 @@ void Simu_Loop(t_tree *mixt_tree)
 
   Set_Both_Sides(YES,mixt_tree);
   Lk(NULL,mixt_tree);
-  Print_All_Edge_PMats(mixt_tree);
-  Print_All_Edge_Likelihoods(mixt_tree);
+//  Print_All_Edge_PMats(mixt_tree);
+//  Print_All_Edge_Likelihoods(mixt_tree);
 
 
   mixt_tree->best_pars                     = 1E+8;

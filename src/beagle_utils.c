@@ -8,8 +8,51 @@
 #include  <stdio.h>
 #include "beagle_utils.h"
 
+double* tips_to_partials_nucl(const char *sequence) {
+    int n = strlen(sequence);
+    double *partials = (double*)malloc(sizeof(double) * n * 4);
 
-void printFlags(long inFlags) {
+    int k = 0;
+    for (int i = 0; i < n; i++) {
+        switch (sequence[i]) {
+            case 'A':
+                partials[k++] = 1;
+                partials[k++] = 0;
+                partials[k++] = 0;
+                partials[k++] = 0;
+                break;
+            case 'C':
+                partials[k++] = 0;
+                partials[k++] = 1;
+                partials[k++] = 0;
+                partials[k++] = 0;
+                break;
+            case 'G':
+                partials[k++] = 0;
+                partials[k++] = 0;
+                partials[k++] = 1;
+                partials[k++] = 0;
+                break;
+            case 'T':
+                partials[k++] = 0;
+                partials[k++] = 0;
+                partials[k++] = 0;
+                partials[k++] = 1;
+                break;
+            case 'X':
+                partials[k++] = 1;
+                partials[k++] = 1;
+                partials[k++] = 1;
+                partials[k++] = 1;
+                break;
+            default:
+                Warn_And_Exit("TODO: Add other states");
+        }
+    }
+    return partials;
+}
+
+void print_beagle_flags(long inFlags) {
     if (inFlags & BEAGLE_FLAG_PROCESSOR_CPU)      fprintf(stdout, " PROCESSOR_CPU");
     if (inFlags & BEAGLE_FLAG_PROCESSOR_GPU)      fprintf(stdout, " PROCESSOR_GPU");
     if (inFlags & BEAGLE_FLAG_PROCESSOR_FPGA)     fprintf(stdout, " PROCESSOR_FPGA");
@@ -34,6 +77,7 @@ void printFlags(long inFlags) {
     if (inFlags & BEAGLE_FLAG_FRAMEWORK_CPU)      fprintf(stdout, " FRAMEWORK_CPU");
     if (inFlags & BEAGLE_FLAG_FRAMEWORK_CUDA)     fprintf(stdout, " FRAMEWORK_CUDA");
     if (inFlags & BEAGLE_FLAG_FRAMEWORK_OPENCL)   fprintf(stdout, " FRAMEWORK_OPENCL");
+    fflush(stdout);
 }
 
 void print_beagle_resource_list()
@@ -45,10 +89,11 @@ void print_beagle_resource_list()
         fprintf(stdout, "\tResource %i:\n\t\tName : %s\n", i, rList->list[i].name);
         fprintf(stdout, "\t\tDesc : %s\n", rList->list[i].description);
         fprintf(stdout, "\t\tFlags:");
-        printFlags(rList->list[i].supportFlags);
+        print_beagle_flags(rList->list[i].supportFlags);
         fprintf(stdout, "\n");
     }
     fprintf(stdout, "\n");
+    fflush(stdout);
 }
 
 void print_beagle_instance_details(BeagleInstanceDetails *inst)
@@ -59,8 +104,10 @@ void print_beagle_instance_details(BeagleInstanceDetails *inst)
     fprintf(stdout, "\tImpl Name : %s\n", inst->implName);
     fprintf(stdout, "\tImpl Desc : %s\n", inst->implDescription);
     fprintf(stdout, "\tFlags:");
-    printFlags(inst->flags);
+    fflush(stdout);
+    print_beagle_flags(inst->flags);
     fprintf(stdout, "\n\n");
+    fflush(stdout);
 }
 
 int create_beagle_instance(t_tree *tree, int quiet)
@@ -71,9 +118,10 @@ int create_beagle_instance(t_tree *tree, int quiet)
     BeagleInstanceDetails inst_d;
     int num_rate_catg = tree->mod->ras->n_catg;
     int num_partials = (tree->n_otu + (tree->n_otu-2)); //taxa+internal nodes
+//    int num_partials = 2*tree->n_otu-3;
     int num_scales = 2 + num_rate_catg;
     int num_branches = 2*tree->n_otu-3;
-//    DUMP_I(tree->n_otu, num_rate_catg, num_partials, num_branches, tree->mod->ns, tree->n_pattern, tree->mod->whichmodel);
+    DUMP_I(tree->n_otu, num_rate_catg, num_partials, num_branches, tree->mod->ns, tree->n_pattern, tree->mod->whichmodel);fflush(stderr);
     int beagle_inst = beagleCreateInstance(
                                   tree->n_otu,                /**< Number of tip data elements (input) */
                                   num_partials,               /**< Number of partial buffer (input) */
@@ -84,7 +132,7 @@ int create_beagle_instance(t_tree *tree, int quiet)
                                   num_branches,               /**< Number of rate matrix buffers (input) */
                                   num_rate_catg,              /**< Number of rate categories (input) */
                                   num_scales,                 /**< Number of scaling buffers */
-                                  NULL,			/**< List of potential resource on which this instance is allowed (input, NULL implies no restriction */
+                                  NULL,                       /**< List of potential resource on which this instance is allowed (input, NULL implies no restriction */
                                   0,			    /**< Length of resourceList list (input) */
                                   BEAGLE_FLAG_FRAMEWORK_CPU | BEAGLE_FLAG_PRECISION_DOUBLE | BEAGLE_FLAG_PROCESSOR_CPU | BEAGLE_FLAG_SCALING_MANUAL,
                                   0,                /**< Bit-flags indicating required implementation characteristics, see BeagleFlags (input) */
@@ -103,21 +151,23 @@ int create_beagle_instance(t_tree *tree, int quiet)
     for(int i=0; i<tree->n_otu; ++i)
     {
         assert(tree->data->c_seq[i]->len == tree->n_pattern); // number of compacts sites == number of distinct site patterns
-        const int* tip = tree->data->c_seq[i]->d_state;
-        int ret = beagleSetTipStates(beagle_inst, i, tip);
+        double* tip = tips_to_partials_nucl(tree->data->c_seq[i]->state);
+        int ret = beagleSetTipPartials(beagle_inst, i, tip);
         if(ret<0){
-            fprintf(stderr, "beagleSetTipStates() on instance %i failed:%i\n\n",beagle_inst,ret);
+            fprintf(stderr, "beagleSetTipPartials() on instance %i failed:%i\n\n",beagle_inst,ret);
+            Free(tip);
             return ret;
         }
+        Free(tip);
     }
 
-//    //Set the equilibrium freqs
-//    assert(tree->mod->e_frq->pi->len == tree->mod->ns);
-//    int ret = beagleSetStateFrequencies(beagle_inst, 0, tree->mod->e_frq->pi->v);
-//    if(ret<0){
-//        fprintf(stderr, "beagleSetStateFrequencies() on instance %i failed:%i\n\n",beagle_inst,ret);
-//        return ret;
-//    }
+    //Set the equilibrium freqs
+    assert(tree->mod->e_frq->pi->len == tree->mod->ns);
+    int ret = beagleSetStateFrequencies(beagle_inst, 0, tree->mod->e_frq->pi->v);
+    if(ret<0){
+        fprintf(stderr, "beagleSetStateFrequencies() on instance %i failed:%i\n\n",beagle_inst,ret);
+        return ret;
+    }
 
 //    //Set the pattern weights
 //    ret = beagleSetPatternWeights(beagle_inst, (const double*)tree->data->wght);
@@ -159,9 +209,7 @@ void update_beagle_partials(t_tree* tree, t_edge* b, t_node* d)
 
     assert(!d->tax); //Partial likelihoods are only calculated on internal nodes
 
-    //Determine d's "left" and "right" neighbors. BTW, we don't need all
-    //other variables but we use the Set_All_P_Lk() function
-    //because it already exists
+    //Determine d's "left" and "right" neighbors.
     t_node *n_v1, *n_v2;//d's "left" and "right" neighbor nodes
     phydbl *p_lk,*p_lk_v1,*p_lk_v2;
     phydbl *Pij1,*Pij2;
@@ -191,10 +239,11 @@ void update_beagle_partials(t_tree* tree, t_edge* b, t_node* d)
             if(n_v2->b[i] == d->b[0] || n_v2->b[i] == d->b[1] || n_v2->b[i] == d->b[2])
                 b2 = n_v2->b[i];
     }
-//    DUMP_I(d->num, n_v1->num, n_v2->num, b->num,b1->num,b2->num);
+//    DUMP_I(d->num, n_v1->num, n_v2->num, b->num, b1->num, b2->num);
 
     //Create the corresponding BEAGLE operation
     BeagleOperation operations[1] = {{d->num, BEAGLE_OP_NONE, BEAGLE_OP_NONE, n_v1->num, b1->num, n_v2->num, b2->num}};
+//    BeagleOperation operations[1] = {{d->num, BEAGLE_OP_NONE, BEAGLE_OP_NONE, n_v1->tax?b1->num:n_v1->num, b1->num, n_v2->tax?b2->num:n_v2->num, b2->num}};
     int ret = beagleResetScaleFactors(tree->b_inst, 0);
     if(ret<0){
         fprintf(stderr, "beagleResetScaleFactors() on instance %i failed:%i\n\n",tree->b_inst,ret);
@@ -214,17 +263,17 @@ void update_beagle_partials(t_tree* tree, t_edge* b, t_node* d)
     }
 
     //Scaling (BEAGLE specific). That is, the p_lk vector (which is returned by BEAGLE) is indexed based on the memory layout rates * patterns * state
-    int n_patterns = tree->n_pattern;
-    phydbl p_lk_lim_inf = (phydbl)P_LK_LIM_INF;
-    int dim1 = n_patterns * tree->mod->ns;
-    int dim2 = tree->mod->ns;
-    int sum_scale_v1_val = 0;
-    int sum_scale_v2_val = 0;
-    phydbl curr_scaler;
-    phydbl smallest_p_lk;
-    int curr_scaler_pow, piecewise_scaler_pow;
-    curr_scaler = .0;
-    curr_scaler_pow = piecewise_scaler_pow = 0;
+//    int n_patterns = tree->n_pattern;
+//    phydbl p_lk_lim_inf = (phydbl)P_LK_LIM_INF;
+//    int dim1 = n_patterns * tree->mod->ns;
+//    int dim2 = tree->mod->ns;
+//    int sum_scale_v1_val = 0;
+//    int sum_scale_v2_val = 0;
+//    phydbl curr_scaler;
+//    phydbl smallest_p_lk;
+//    int curr_scaler_pow, piecewise_scaler_pow;
+//    curr_scaler = .0;
+//    curr_scaler_pow = piecewise_scaler_pow = 0;
 //    for(int site=0;site<n_patterns;++site)
 //    {
 //        for(int catg=0;catg<tree->mod->ras->n_catg;++catg)
@@ -313,6 +362,7 @@ int finalize_beagle_instance(t_tree *tree)
     }
     return 0;
 }
+
 
 #endif // BEAGLE_UTILS_CPP
 

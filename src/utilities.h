@@ -304,9 +304,9 @@ typedef	double phydbl;
 #define FOR_EACH_7(m, x1, x2, x3, x4, x5, x6, x7) m(x1) m(x2) m(x3) m(x4) m(x5) m(x6) m(x7)
 #define FOR_EACH_8(m, x1, x2, x3, x4, x5, x6, x7, x8) m(x1) m(x2) m(x3) m(x4) m(x5) m(x6) m(x7) m(x8)
 #define FOR_EACH_9(m, x1, x2, x3, x4, x5, x6, x7, x8, x9) m(x1) m(x2) m(x3) m(x4) m(x5) m(x6) m(x7) m(x8) m(x9)
-#define DUMP_EACH_INT(v)     fprintf(stderr,"\n\t\tDEBUG:%s:\t\t%s--->%i",__PRETTY_FUNCTION__,#v,(v));
-#define DUMP_EACH_STRING(v)  fprintf(stderr,"\n\t\tDEBUG:%s:\t\t%s--->%s",__PRETTY_FUNCTION__,#v,(v));
-#define DUMP_EACH_DECIMAL(v) fprintf(stderr,"\n\t\tDEBUG:%s:\t\t%s--->%f",__PRETTY_FUNCTION__,#v,(v));
+#define DUMP_EACH_INT(v)     fprintf(stdout,"\n\t\tDEBUG:%s:\t\t%s--->%i",__PRETTY_FUNCTION__,#v,(v));
+#define DUMP_EACH_STRING(v)  fprintf(stdout,"\n\t\tDEBUG:%s:\t\t%s--->%s",__PRETTY_FUNCTION__,#v,(v));
+#define DUMP_EACH_DECIMAL(v) fprintf(stdout,"\n\t\tDEBUG:%s:\t\t%s--->%f",__PRETTY_FUNCTION__,#v,(v));
 #define DUMP_I(...) FOR_EACH(DUMP_EACH_INT, __VA_ARGS__)
 #define DUMP_S(...) FOR_EACH(DUMP_EACH_STRING, __VA_ARGS__)
 #define DUMP_D(...) FOR_EACH(DUMP_EACH_DECIMAL, __VA_ARGS__)
@@ -536,7 +536,7 @@ typedef struct __Tree{
   int                               n_pattern; /*! number of distinct site patterns */
   int                      has_branch_lengths; /*! =1 iff input tree displays branch lengths */
   int                          print_boot_val; /*! if print_boot_val=1, the bootstrap values are printed */
-  int                          print_alrt_val; /*! if print_boot_val=1, the bootstrap values are printed */
+  int                          print_alrt_val; /*! if print_boot_val=1, the aLRT values are printed */
   int                              both_sides; /*! both_sides=1 -> a pre-order and a post-order tree
                           traversals are required to compute the likelihood
                           of every subtree in the phylogeny*/
@@ -1748,7 +1748,7 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
                   phydbl **Pij1, phydbl **p_lk1, int **sum_scale1,
                   phydbl **Pij2, phydbl **p_lk2, int **sum_scale2,
                   t_node *d, t_edge *b, t_tree *tree);
-
+char *aLRT222(t_tree *tree, calign *cdata, t_mod *mod, option *io);
 
 #include "xml.h"
 #include "free.h"

@@ -145,6 +145,14 @@ int main(int argc, char **argv)
                       tree = Read_Tree(&s);
                       io->in_tree = 2;
                       Free(s);
+                      Copy_Tax_Names_To_Tip_Labels(tree,cdata);
+                      tree->data = cdata;
+                      matrix* mat;
+                      mat = ML_Dist(cdata,mod);
+                      Fill_Missing_Dist(mat);
+                      mat->tree = tree;
+                      Bionj(mat);
+                      tree->mat = mat;
                       Check_Constraint_Tree_Taxa_Names(io->cstr_tree,cdata);
                       Alloc_Bip(io->cstr_tree);
                       Get_Bip(io->cstr_tree->a_nodes[0],
@@ -197,15 +205,15 @@ int main(int argc, char **argv)
                   if(tree->mod->s_opt->opt_topo)
                     {
                       if(tree->mod->s_opt->topo_search == NNI_MOVE) {
-                          fprintf(stdout,"here1\n");
+                          fprintf(stdout,"here1\n");fflush(stdout);
                           Simu_Loop(tree);
                       }
                       else {
                           if(tree->mod->s_opt->topo_search == SPR_MOVE) {
-                              fprintf(stdout,"here2\n");
+                              fprintf(stdout,"here2\n");fflush(stdout);
                               Speed_Spr_Loop(tree);
                           } else {
-                              fprintf(stdout,"here3\n");
+                              fprintf(stdout,"here3\n");fflush(stdout);
                               Best_Of_NNI_And_SPR(tree);
                           }
                       }
@@ -215,22 +223,24 @@ int main(int argc, char **argv)
                   else
                     {
                       if(tree->mod->s_opt->opt_subst_param || tree->mod->s_opt->opt_bl) {
-                          fprintf(stdout,"here4\n");
+                          fprintf(stdout,"here4\n");fflush(stdout);
                           Round_Optimize(tree,tree->data,ROUND_MAX);
                       }
                       else {
-                          fprintf(stdout,"here5\n");
+                          fprintf(stdout,"here5\n");fflush(stdout);
 #ifdef BEAGLE
                           tree->b_inst = -1;//initalize
                           tree->b_inst = create_beagle_instance(tree, io->quiet);
 #endif
+//                          for(int x=0;x<tree->n_otu;x++)
+//                                  fprintf(stdout,"%s\n",tree->data->c_seq[x]->state);
                           Lk(NULL,tree);
                       }
                     }
 
                   Set_Both_Sides(YES,tree);
                   Lk(NULL,tree);
-                                    Print_All_Edge_Likelihoods(tree);
+//                  Print_All_Edge_Likelihoods(tree);
                   Pars(NULL,tree);
                   Get_Tree_Size(tree);
                   PhyML_Printf("\n\n. Log likelihood of the current tree: %f.",tree->c_lnL);
@@ -285,12 +295,12 @@ int main(int argc, char **argv)
 #ifdef BEAGLE
                   finalize_beagle_instance(tree);
 #endif
-                  if(io->fp_in_constraint_tree != NULL) Free_Tree(io->cstr_tree);
-                  Free_Spr_List(tree);
-                  Free_Triplet(tree->triplet_struct);
-                  Free_Tree_Pars(tree);
-                  Free_Tree_Lk(tree);
-                  Free_Tree(tree);
+//                  if(io->fp_in_constraint_tree != NULL) Free_Tree(io->cstr_tree);
+//                  Free_Spr_List(tree);
+//                  Free_Triplet(tree->triplet_struct);
+//                  Free_Tree_Pars(tree);
+//                  Free_Tree_Lk(tree);
+//                  Free_Tree(tree);
                 } //Tree done
 
               /* Launch bootstrap analysis */
@@ -310,6 +320,7 @@ int main(int argc, char **argv)
                     {
                       /* Launch aLRT */
                       most_likely_tree = aLRT_From_String(most_likely_tree,cdata,mod,io);
+//                      most_likely_tree = aLRT222(tree,cdata,mod,io);
                     }
 
               /* Print the most likely tree in the output file */

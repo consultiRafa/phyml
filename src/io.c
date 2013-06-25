@@ -144,15 +144,15 @@ void R_rtree(char *s_tree_a, char *s_tree_d, t_node *a, t_tree *tree, int *n_int
       (*n_int)+=1;
 
       if((*n_int + n_otu) == (2*n_otu-1))
-    {
-      PhyML_Printf("\n== The number of internal nodes in the tree exceeds the number of taxa minus one.");
-      PhyML_Printf("\n== There probably is a formating problem in the input tree.");
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
-      Exit("\n");
-    }
+        {
+          PhyML_Printf("\n== The number of internal nodes in the tree exceeds the number of taxa minus one.");
+          PhyML_Printf("\n== There probably is a formating problem in the input tree.");
+          PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+          Exit("\n");
+        }
 
       d      = tree->a_nodes[n_otu+*n_int];
-      d->num = n_otu+*n_int;
+      d->num = n_otu + *n_int;
       d->tax = 0;
       b      = tree->a_edges[tree->num_curr_branch_available];
 
@@ -160,48 +160,48 @@ void R_rtree(char *s_tree_a, char *s_tree_d, t_node *a, t_tree *tree, int *n_int
       Read_Branch_Length(s_tree_d,s_tree_a,tree);
 
       For(i,3)
-    {
-      if(!a->v[i])
         {
-          a->v[i]=d;
-          d->l[0]=tree->a_edges[tree->num_curr_branch_available]->l->v;
-          a->l[i]=tree->a_edges[tree->num_curr_branch_available]->l->v;
-          break;
+          if(!a->v[i])
+            {
+              a->v[i]=d;
+              d->l[0]=tree->a_edges[tree->num_curr_branch_available]->l->v;
+              a->l[i]=tree->a_edges[tree->num_curr_branch_available]->l->v;
+              break;
+            }
         }
-    }
       d->v[0]=a;
 
       if(a != tree->n_root)
-    {
-      Connect_One_Edge_To_Two_Nodes(a,d,tree->a_edges[tree->num_curr_branch_available],tree);
-    }
+        {
+          Connect_One_Edge_To_Two_Nodes(a,d,tree->a_edges[tree->num_curr_branch_available],tree);
+        }
 
       subs=Sub_Trees(s_tree_d,&degree);
 
       if(degree > 2)
-    {
-      Clean_Multifurcation(subs,degree,2);
-
-      Free(s_tree_d);
-
-      s_tree_d = (char *)mCalloc(strlen(subs[0])+strlen(subs[1])+5,sizeof(char));
-
-      strcat(s_tree_d,"(");
-      strcat(s_tree_d,subs[0]);
-      strcat(s_tree_d,",");
-      strcat(s_tree_d,subs[1]);
-      strcat(s_tree_d,")");
-      For(i,b->n_labels)
         {
-          strcat(s_tree_d,"#");
-          strcat(s_tree_d,b->labels[i]);
+          Clean_Multifurcation(subs,degree,2);
+
+          Free(s_tree_d);
+
+          s_tree_d = (char *)mCalloc(strlen(subs[0])+strlen(subs[1])+5,sizeof(char));
+
+          strcat(s_tree_d,"(");
+          strcat(s_tree_d,subs[0]);
+          strcat(s_tree_d,",");
+          strcat(s_tree_d,subs[1]);
+          strcat(s_tree_d,")");
+          For(i,b->n_labels)
+            {
+              strcat(s_tree_d,"#");
+              strcat(s_tree_d,b->labels[i]);
+            }
+
+          For(i,NODE_DEG_MAX) Free(subs[i]);
+          Free(subs);
+
+          subs=Sub_Trees(s_tree_d,&degree);
         }
-
-      For(i,NODE_DEG_MAX) Free(subs[i]);
-      Free(subs);
-
-      subs=Sub_Trees(s_tree_d,&degree);
-    }
 
       R_rtree(s_tree_d,subs[0],d,tree,n_int,n_ext);
       R_rtree(s_tree_d,subs[1],d,tree,n_int,n_ext);
@@ -577,21 +577,22 @@ char *Write_Tree(t_tree *tree, int custom)
   if(custom == NO)
     {
       if(!tree->n_root)
-    {
-      i = 0;
-      while((!tree->a_nodes[tree->n_otu+i]->v[0]) ||
-        (!tree->a_nodes[tree->n_otu+i]->v[1]) ||
-        (!tree->a_nodes[tree->n_otu+i]->v[2])) i++;
+        {
+          i = 0;
+          while((!tree->a_nodes[tree->n_otu+i]->v[0]) ||
+                (!tree->a_nodes[tree->n_otu+i]->v[1]) ||
+                (!tree->a_nodes[tree->n_otu+i]->v[2]))
+              i++;
 
-      R_wtree(tree->a_nodes[tree->n_otu+i],tree->a_nodes[tree->n_otu+i]->v[0],&available,&s,tree);
-      R_wtree(tree->a_nodes[tree->n_otu+i],tree->a_nodes[tree->n_otu+i]->v[1],&available,&s,tree);
-      R_wtree(tree->a_nodes[tree->n_otu+i],tree->a_nodes[tree->n_otu+i]->v[2],&available,&s,tree);
-    }
+          R_wtree(tree->a_nodes[tree->n_otu+i],tree->a_nodes[tree->n_otu+i]->v[0],&available,&s,tree);
+          R_wtree(tree->a_nodes[tree->n_otu+i],tree->a_nodes[tree->n_otu+i]->v[1],&available,&s,tree);
+          R_wtree(tree->a_nodes[tree->n_otu+i],tree->a_nodes[tree->n_otu+i]->v[2],&available,&s,tree);
+        }
       else
-    {
-      R_wtree(tree->n_root,tree->n_root->v[2],&available,&s,tree);
-      R_wtree(tree->n_root,tree->n_root->v[1],&available,&s,tree);
-    }
+        {
+          R_wtree(tree->n_root,tree->n_root->v[2],&available,&s,tree);
+          R_wtree(tree->n_root,tree->n_root->v[1],&available,&s,tree);
+        }
     }
   else
     {
@@ -600,21 +601,22 @@ char *Write_Tree(t_tree *tree, int custom)
       pos = 1;
 
       if(!tree->n_root)
-    {
-      i = 0;
-      while((!tree->a_nodes[tree->n_otu+i]->v[0]) ||
-        (!tree->a_nodes[tree->n_otu+i]->v[1]) ||
-        (!tree->a_nodes[tree->n_otu+i]->v[2])) i++;
+        {
+          i = 0;
+          while((!tree->a_nodes[tree->n_otu+i]->v[0]) ||
+                (!tree->a_nodes[tree->n_otu+i]->v[1]) ||
+                (!tree->a_nodes[tree->n_otu+i]->v[2]))
+              i++;
 
-      R_wtree_Custom(tree->a_nodes[tree->n_otu+i],tree->a_nodes[tree->n_otu+i]->v[0],&available,&s,&pos,tree);
-      R_wtree_Custom(tree->a_nodes[tree->n_otu+i],tree->a_nodes[tree->n_otu+i]->v[1],&available,&s,&pos,tree);
-      R_wtree_Custom(tree->a_nodes[tree->n_otu+i],tree->a_nodes[tree->n_otu+i]->v[2],&available,&s,&pos,tree);
-    }
+          R_wtree_Custom(tree->a_nodes[tree->n_otu+i],tree->a_nodes[tree->n_otu+i]->v[0],&available,&s,&pos,tree);
+          R_wtree_Custom(tree->a_nodes[tree->n_otu+i],tree->a_nodes[tree->n_otu+i]->v[1],&available,&s,&pos,tree);
+          R_wtree_Custom(tree->a_nodes[tree->n_otu+i],tree->a_nodes[tree->n_otu+i]->v[2],&available,&s,&pos,tree);
+        }
       else
-    {
-      R_wtree_Custom(tree->n_root,tree->n_root->v[2],&available,&s,&pos,tree);
-      R_wtree_Custom(tree->n_root,tree->n_root->v[1],&available,&s,&pos,tree);
-    }
+        {
+          R_wtree_Custom(tree->n_root,tree->n_root->v[2],&available,&s,&pos,tree);
+          R_wtree_Custom(tree->n_root,tree->n_root->v[1],&available,&s,&pos,tree);
+        }
 
     }
 
@@ -650,33 +652,33 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
       last_len = (int)strlen(*s_tree);
 
       if(OUTPUT_TREE_FORMAT == NEWICK)
-    {
-      if(tree->write_tax_names == YES)
         {
-          if(tree->io && tree->io->long_tax_names)
-        {
-          strcat(*s_tree,tree->io->long_tax_names[fils->num]);
+          if(tree->write_tax_names == YES)
+            {
+              if(tree->io && tree->io->long_tax_names)
+            {
+              strcat(*s_tree,tree->io->long_tax_names[fils->num]);
+            }
+              else
+            {
+              strcat(*s_tree,fils->name);
+            }
+            }
+          else if(tree->write_tax_names == NO)
+            {
+              sprintf(*s_tree+(int)strlen(*s_tree),"%d",fils->num+1);
+            }
         }
-          else
-        {
-          strcat(*s_tree,fils->name);
-        }
-        }
-      else if(tree->write_tax_names == NO)
+      else if(OUTPUT_TREE_FORMAT == NEXUS)
         {
           sprintf(*s_tree+(int)strlen(*s_tree),"%d",fils->num+1);
         }
-    }
-      else if(OUTPUT_TREE_FORMAT == NEXUS)
-    {
-      sprintf(*s_tree+(int)strlen(*s_tree),"%d",fils->num+1);
-    }
       else
-    {
-      PhyML_Printf("\n== Unknown tree format.");
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
-      PhyML_Printf("\n== s=%s\n",*s_tree);
-    }
+        {
+          PhyML_Printf("\n== Unknown tree format.");
+          PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+          PhyML_Printf("\n== s=%s\n",*s_tree);
+        }
 
       if((fils->b) && (fils->b[0]) && (tree->write_br_lens == YES))
     {
@@ -865,7 +867,7 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
 #else
       if(!tree->n_root)
         {
-          sprintf(*s_tree+(int)strlen(*s_tree),format,fils->b[p]->l->v);
+          sprintf(*s_tree+(int)strlen(*s_tree),format,fils->b[p]->num);
         }
       else
         {
@@ -3400,59 +3402,71 @@ void Print_All_Edge_PMats(t_tree* tree)
             fprintf(stdout,"%f,",Pij[j]);
         }
         fprintf(stdout,"\n");
+        fflush(stdout);
 #ifdef BEAGLE
     Free(Pij);
 #endif
     }
 }
 
+void Print_Edge_Likelihoods(t_tree* tree, t_edge* b)
+{
+    phydbl* lk_left = b->p_lk_left;
+    phydbl* lk_right = b->p_lk_rght;
+
+    if(NULL!=lk_left)
+    {
+        fprintf(stdout,"Partial Likelihoods on LEFT subtree of Branch %d\n[rate,site,state]:\n",b->num);
+        for(int catg=0;catg<tree->mod->ras->n_catg;++catg)
+            for(int site=0;site<tree->n_pattern;++site)
+                for(int j=0;j<tree->mod->ns;++j)
+#ifdef BEAGLE
+                    fprintf(stdout,"[%d,%d,%d]%f\n",catg,site,j,lk_left[catg*tree->n_pattern*tree->mod->ns + site*tree->mod->ns + j]);
+#else
+                    fprintf(stdout,"[%d,%d,%d]%f\n",catg,site,j,lk_left[catg*tree->mod->ns + site*tree->mod->ras->n_catg*tree->mod->ns + j]);
+#endif
+        fflush(stdout);
+    }
+    else
+    {
+        fprintf(stdout,"Likelihoods on LEFT tip of Branch %d\n[site,state]:\n",b->num);
+        for(int site=0;site<tree->n_pattern;++site)
+            for(int j=0;j<tree->mod->ns;++j)
+                fprintf(stdout,"[%d,%d]%d\n",site,j,b->p_lk_tip_l[site*tree->mod->ns + j]);
+        fflush(stdout);
+    }
+    if(NULL!=lk_right)
+    {
+        fprintf(stdout,"Partial Likelihoods on RIGHT subtree of Branch %d\n[rate,site,state]:\n",b->num);
+        for(int catg=0;catg<tree->mod->ras->n_catg;++catg)
+            for(int site=0;site<tree->n_pattern;++site)
+                for(int j=0;j<tree->mod->ns;++j)
+#ifdef BEAGLE
+                    fprintf(stdout,"[%d,%d,%d]%f\n",catg,site,j,lk_right[catg*tree->n_pattern*tree->mod->ns + site*tree->mod->ns + j]);
+#else
+                    fprintf(stdout,"[%d,%d,%d]%f\n",catg,site,j,lk_right[catg*tree->mod->ns + site*tree->mod->ras->n_catg*tree->mod->ns + j]);
+#endif
+        fflush(stdout);
+    }
+    else
+    {
+        fprintf(stdout,"Likelihoods on RIGHT tip of Branch %d\n[site,state]:\n",b->num);
+        for(int site=0;site<tree->n_pattern;++site)
+            for(int j=0;j<tree->mod->ns;++j)
+                fprintf(stdout,"[%d,%d]%d\n",site,j,b->p_lk_tip_r[site*tree->mod->ns + j]);
+        fflush(stdout);
+    }
+}
+
+
 void Print_All_Edge_Likelihoods(t_tree* tree)
 {
     for(int i=0;i < 2*tree->n_otu-3;++i)
-    {
-        phydbl* lk_left = tree->a_edges[i]->p_lk_left;
-        phydbl* lk_right = tree->a_edges[i]->p_lk_rght;
-        if(NULL!=lk_left)
-        {
-            fprintf(stdout,"Partial Likelihoods on LEFT subtree of Branch %d\n[rate,site,state]:\n",tree->a_edges[i]->num);
-            for(int catg=0;catg<tree->mod->ras->n_catg;++catg)
-                for(int site=0;site<tree->n_pattern;++site)
-                    for(int j=0;j<tree->mod->ns;++j)
+        Print_Edge_Likelihoods(tree, tree->a_edges[i]);
+    fflush(stdout);
+
 #ifdef BEAGLE
-                        fprintf(stdout,"[%d,%d,%d]%f\n",catg,site,j,lk_left[catg*tree->n_pattern*tree->mod->ns + site*tree->mod->ns + j]);
-#else
-                        fprintf(stdout,"[%d,%d,%d]%f\n",catg,site,j,lk_left[catg*tree->mod->ns + site*tree->mod->ras->n_catg*tree->mod->ns + j]);
-#endif
-        }
-        else
-        {
-            fprintf(stdout,"Likelihoods on LEFT tip of Branch %d\n[site,state]:\n",tree->a_edges[i]->num);
-            for(int site=0;site<tree->n_pattern;++site)
-                for(int j=0;j<tree->mod->ns;++j)
-                    fprintf(stdout,"[%d,%d]%d\n",site,j,tree->a_edges[i]->p_lk_tip_l[site*tree->mod->ns + j]);
-        }
-        if(NULL!=lk_right)
-        {
-            fprintf(stdout,"Partial Likelihoods on RIGHT subtree of Branch %d\n[rate,site,state]:\n",tree->a_edges[i]->num);
-            for(int catg=0;catg<tree->mod->ras->n_catg;++catg)
-                for(int site=0;site<tree->n_pattern;++site)
-                    for(int j=0;j<tree->mod->ns;++j)
-#ifdef BEAGLE
-                        fprintf(stdout,"[%d,%d,%d]%f\n",catg,site,j,lk_right[catg*tree->n_pattern*tree->mod->ns + site*tree->mod->ns + j]);
-#else
-                        fprintf(stdout,"[%d,%d,%d]%f\n",catg,site,j,lk_right[catg*tree->mod->ns + site*tree->mod->ras->n_catg*tree->mod->ns + j]);
-#endif
-        }
-        else
-        {
-            fprintf(stdout,"Likelihoods on RIGHT tip of Branch %d\n[site,state]:\n",tree->a_edges[i]->num);
-            for(int site=0;site<tree->n_pattern;++site)
-                for(int j=0;j<tree->mod->ns;++j)
-                    fprintf(stdout,"[%d,%d]%d\n",site,j,tree->a_edges[i]->p_lk_tip_r[site*tree->mod->ns + j]);
-        }
-    }
-#ifdef BEAGLE
-//    for(i=0;i <= (tree->n_otu + (tree->n_otu-2));++i)
+//    for(int i=0;i <= (tree->n_otu + (tree->n_otu-2));++i)
 //    {
 //        if(tree->a_nodes[i]->tax)
 //            continue;
@@ -3471,7 +3485,6 @@ void Print_All_Edge_Likelihoods(t_tree* tree)
 //    }
 #endif
 }
-
 
 
 //////////////////////////////////////////////////////////////

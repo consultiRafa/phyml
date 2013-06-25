@@ -2336,7 +2336,7 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
       //Update the transition prob. matrix
       if(tree->mod->gamma_mgf_bl == NO)
           {
-            PMat(len,tree->mod,tree->mod->ns*tree->mod->ns*i,b_fcus->Pij_rr);
+            PMat(len,tree->mod,i*tree->mod->ns*tree->mod->ns,b_fcus->Pij_rr);
           }
       else
           {
@@ -2357,6 +2357,9 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
           Exit("");
       }
 #endif
+      DUMP_I(b_fcus->num);
+      Print_All_Edge_PMats(tree);
+      Print_Edge_Likelihoods(tree,b_fcus);
 }
 
 //////////////////////////////////////////////////////////////

@@ -28,13 +28,14 @@ void PMat_JC69(phydbl l, int pos, phydbl *Pij, t_mod *mod)
   ns = mod->ns;
 
 
-  For(i,ns) Pij[pos+ ns*i+i] = 1. - ((ns - 1.)/ns)*(1. - EXP(-ns*l/(ns - 1.)));
+  For(i,ns)
+    Pij[pos+ ns*i+i] = 1. - ((ns - 1.)/ns)*(1. - EXP(-ns*l/(ns - 1.)));
   For(i,ns-1)
     for(j=i+1;j<ns;j++)
       {
-    Pij[pos+ ns*i+j] = (1./ns)*(1. - EXP(-ns*l/(ns - 1.)));
-    if(Pij[pos+ns*i+j] < SMALL_PIJ) Pij[pos+ns*i+j] = SMALL_PIJ;
-    Pij[pos+ ns*j+i] = Pij[pos+ ns*i+j];
+        Pij[pos+ ns*i+j] = (1./ns)*(1. - EXP(-ns*l/(ns - 1.)));
+        if(Pij[pos+ns*i+j] < SMALL_PIJ) Pij[pos+ns*i+j] = SMALL_PIJ;
+        Pij[pos+ ns*j+i] = Pij[pos+ ns*i+j];
       }
 }
 
