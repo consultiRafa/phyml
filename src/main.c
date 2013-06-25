@@ -145,14 +145,6 @@ int main(int argc, char **argv)
                       tree = Read_Tree(&s);
                       io->in_tree = 2;
                       Free(s);
-                      Copy_Tax_Names_To_Tip_Labels(tree,cdata);
-                      tree->data = cdata;
-                      matrix* mat;
-                      mat = ML_Dist(cdata,mod);
-                      Fill_Missing_Dist(mat);
-                      mat->tree = tree;
-                      Bionj(mat);
-                      tree->mat = mat;
                       Check_Constraint_Tree_Taxa_Names(io->cstr_tree,cdata);
                       Alloc_Bip(io->cstr_tree);
                       Get_Bip(io->cstr_tree->a_nodes[0],
@@ -232,8 +224,6 @@ int main(int argc, char **argv)
                           tree->b_inst = -1;//initalize
                           tree->b_inst = create_beagle_instance(tree, io->quiet);
 #endif
-//                          for(int x=0;x<tree->n_otu;x++)
-//                                  fprintf(stdout,"%s\n",tree->data->c_seq[x]->state);
                           Lk(NULL,tree);
                       }
                     }
@@ -295,12 +285,12 @@ int main(int argc, char **argv)
 #ifdef BEAGLE
                   finalize_beagle_instance(tree);
 #endif
-//                  if(io->fp_in_constraint_tree != NULL) Free_Tree(io->cstr_tree);
-//                  Free_Spr_List(tree);
-//                  Free_Triplet(tree->triplet_struct);
-//                  Free_Tree_Pars(tree);
-//                  Free_Tree_Lk(tree);
-//                  Free_Tree(tree);
+                  if(io->fp_in_constraint_tree != NULL) Free_Tree(io->cstr_tree);
+                  Free_Spr_List(tree);
+                  Free_Triplet(tree->triplet_struct);
+                  Free_Tree_Pars(tree);
+                  Free_Tree_Lk(tree);
+                  Free_Tree(tree);
                 } //Tree done
 
               /* Launch bootstrap analysis */
@@ -320,7 +310,6 @@ int main(int argc, char **argv)
                     {
                       /* Launch aLRT */
                       most_likely_tree = aLRT_From_String(most_likely_tree,cdata,mod,io);
-//                      most_likely_tree = aLRT222(tree,cdata,mod,io);
                     }
 
               /* Print the most likely tree in the output file */

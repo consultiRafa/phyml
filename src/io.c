@@ -3398,9 +3398,7 @@ void Print_All_Edge_PMats(t_tree* tree)
         fprintf(stdout,"\nflattened P-Matrices (for each rate category) state*state*num_rates[%d*%d*%d] for branch num:%i\n",tree->mod->ns,tree->mod->ns,tree->mod->ras->n_catg, tree->a_edges[i]->num);
         int j;
         for(j=0;j<tree->mod->ns * tree->mod->ns * tree->mod->ras->n_catg;++j)
-        {
             fprintf(stdout,"%f,",Pij[j]);
-        }
         fprintf(stdout,"\n");
         fflush(stdout);
 #ifdef BEAGLE
@@ -3461,7 +3459,7 @@ void Print_Edge_Likelihoods(t_tree* tree, t_edge* b)
 
 void Print_All_Edge_Likelihoods(t_tree* tree)
 {
-    for(int i=0;i < 2*tree->n_otu-3;++i)
+    for(int i=0;i < 2*tree->n_otu-3; ++i)
         Print_Edge_Likelihoods(tree, tree->a_edges[i]);
     fflush(stdout);
 

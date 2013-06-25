@@ -2357,9 +2357,9 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
           Exit("");
       }
 #endif
-      DUMP_I(b_fcus->num);
-      Print_All_Edge_PMats(tree);
-      Print_Edge_Likelihoods(tree,b_fcus);
+//      DUMP_I(b_fcus->num);
+//      Print_All_Edge_PMats(tree);
+//      Print_Edge_Likelihoods(tree,b_fcus);
 }
 
 //////////////////////////////////////////////////////////////

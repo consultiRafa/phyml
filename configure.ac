@@ -77,14 +77,14 @@ AC_ARG_ENABLE([debug],
                               [Remove optimization options and add debug informations.])])
 AS_IF([test "x$enable_debug" = "xyes"],
       [CFLAGS="-ansi -pedantic -Wall -std=c99 -O0 -g"],
-      [CFLAGS="-Wall -O2 -fomit-frame-pointer -funroll-loops ${ARCH_flag}"]) 
+      [CFLAGS="-Wall -O2 -msse -fomit-frame-pointer -funroll-loops ${ARCH_flag}"]) 
 
 AC_ARG_ENABLE([gprof],
               [AS_HELP_STRING([--enable-gprof],
                               [Remove optimization options and add profiling informations.])])
 AS_IF([test "x$enable_gprof" = "xyes"],
       [CFLAGS="-ansi -pedantic -Wall -std=c99 -O0 -g -pg"],
-      [AS_IF([test "x$enable_debug" = "xno"],[CFLAGS="-Wall -O2 -fomit-frame-pointer -funroll-loops ${ARCH_flag}"])]) 
+      [AS_IF([test "x$enable_debug" = "xno"],[CFLAGS="-Wall -O2 -msse -fomit-frame-pointer -funroll-loops ${ARCH_flag}"])]) 
 
 AC_ARG_ENABLE([mpi],
               [AS_HELP_STRING([--enable-mpi],
@@ -100,8 +100,8 @@ AS_IF([test "x$enable_win" = "xyes"],[CC="i586-mingw32msvc-cc"])
 
 AC_ARG_ENABLE([beagle], [AS_HELP_STRING([--enable-beagle], [Compute likelihoods using Beagle library.])], [beagle=yes],[beagle=no])
 AS_IF([test "x$enable_beagle" = "xyes"],
-      [CFLAGS="-ansi -O2 -pedantic -Wall -std=c99 -g ${BEAGLE_CFLAGS} ${BEAGLE_LIBS} ${ARCH_flag}"],
-      [CFLAGS="-ansi -Wall -O2 -fomit-frame-pointer -std=c99 -funroll-loops ${ARCH_flag}"])
+      [CFLAGS="-ansi -O2 -pedantic -Wall -std=c99 -msse -g ${BEAGLE_CFLAGS} ${BEAGLE_LIBS} ${ARCH_flag}"],
+      [CFLAGS="-ansi -Wall -O2 -msse -fomit-frame-pointer -std=c99 -funroll-loops ${ARCH_flag}"])
 AS_IF([test "x$enable_beagle" = "xyes"], AC_DEFINE([BEAGLE],[1],[BEAGLE tag on]))
 AM_CONDITIONAL([WANT_BEAGLE], [test "$enable_beagle" = yes]) 
 

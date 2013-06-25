@@ -121,7 +121,7 @@ int create_beagle_instance(t_tree *tree, int quiet)
 //    int num_partials = 2*tree->n_otu-3;
     int num_scales = 2 + num_rate_catg;
     int num_branches = 2*tree->n_otu-3;
-    DUMP_I(tree->n_otu, num_rate_catg, num_partials, num_branches, tree->mod->ns, tree->n_pattern, tree->mod->whichmodel);fflush(stderr);
+    DUMP_I(tree->n_otu, num_rate_catg, num_partials, num_branches, tree->mod->ns, tree->n_pattern, tree->mod->whichmodel);
     int beagle_inst = beagleCreateInstance(
                                   tree->n_otu,                /**< Number of tip data elements (input) */
                                   num_partials,               /**< Number of partial buffer (input) */
@@ -148,17 +148,20 @@ int create_beagle_instance(t_tree *tree, int quiet)
     }
 
     //Set the tips
-    for(int i=0; i<tree->n_otu; ++i)
+    for(int i=0; i<2*tree->n_otu-1; ++i) //taxa+internal nodes
     {
-        assert(tree->data->c_seq[i]->len == tree->n_pattern); // number of compacts sites == number of distinct site patterns
-        double* tip = tips_to_partials_nucl(tree->data->c_seq[i]->state);
-        int ret = beagleSetTipPartials(beagle_inst, i, tip);
-        if(ret<0){
-            fprintf(stderr, "beagleSetTipPartials() on instance %i failed:%i\n\n",beagle_inst,ret);
+        if(tree->a_nodes[i]->tax)
+        {
+            assert(tree->a_nodes[i]->c_seq->len == tree->n_pattern); // number of compacts sites == number of distinct site patterns
+            double* tip = tips_to_partials_nucl(tree->a_nodes[i]->c_seq->state);
+            int ret = beagleSetTipPartials(beagle_inst, tree->a_nodes[i]->num, tip);
+            if(ret<0){
+                fprintf(stderr, "beagleSetTipPartials() on instance %i failed:%i\n\n",beagle_inst,ret);
+                Free(tip);
+                return ret;
+            }
             Free(tip);
-            return ret;
         }
-        Free(tip);
     }
 
     //Set the equilibrium freqs

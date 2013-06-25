@@ -199,15 +199,12 @@ void aLRT(t_tree *tree)
   if(tree->io->quiet == NO) PhyML_Printf("\n\n. Calculating fast branch supports (using '%s').",method);
   Free(method);
 
-//  Print_All_Edge_Likelihoods(tree);
   MIXT_Set_Alias_Subpatt(YES,tree);
-//  Print_All_Edge_Likelihoods(tree);
   Set_Both_Sides(YES,tree);
 //  Print_All_Edge_Likelihoods(tree);
   Lk(NULL,tree);
 //  Print_All_Edge_Likelihoods(tree);
   MIXT_Set_Alias_Subpatt(NO,tree);
-//  Print_All_Edge_Likelihoods(tree);
 
   For(i,2*tree->n_otu-3)
     if((!tree->a_edges[i]->left->tax) && (!tree->a_edges[i]->rght->tax))
