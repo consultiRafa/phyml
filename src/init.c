@@ -938,11 +938,10 @@ void Init_Model(calign *data, t_mod *mod, option *io)
       mod->l_max = LOG(mod->l_max);
     }
 
-
   if(mod->ras->init_r_proba == YES)
     {
       For(i,mod->ras->n_catg) mod->ras->gamma_r_proba->v[i]          = (phydbl)1./mod->ras->n_catg;
-      For(i,mod->ras->n_catg) mod->ras->gamma_r_proba_unscaled->v[i] = (phydbl)i;
+      For(i,mod->ras->n_catg) mod->ras->gamma_r_proba_unscaled->v[i] = (phydbl)(i+1);
     }
   else
     {
@@ -955,9 +954,20 @@ void Init_Model(calign *data, t_mod *mod, option *io)
 
   if(mod->ras->init_rr == YES)
     {
-      For(i,mod->ras->n_catg) mod->ras->gamma_rr->v[i]               = (phydbl)i;
-      For(i,mod->ras->n_catg) mod->ras->gamma_rr_unscaled->v[i]      = (phydbl)i;
+      if(mod->ras->n_catg > 1)
+        {
+          For(i,mod->ras->n_catg) mod->ras->gamma_rr->v[i]               = (phydbl)i;
+          For(i,mod->ras->n_catg) mod->ras->gamma_rr_unscaled->v[i]      = (phydbl)i;
+        }
+      else
+        {
+          mod->ras->gamma_rr->v[0]          = 1.0;
+          mod->ras->gamma_rr_unscaled->v[0] = 1.0;
+        }
     }
+
+
+
 
   mod->br_len_multiplier->v = 1.0;
 
@@ -1269,6 +1279,7 @@ void Init_Model(calign *data, t_mod *mod, option *io)
       PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
+
   if(!mod->use_m4mod) Set_Model_Parameters(mod);      
 		  
   Init_Eigen_Struct(mod->eigen);

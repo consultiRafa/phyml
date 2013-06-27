@@ -161,6 +161,7 @@ int main(int argc, char **argv)
                   tree->n_root       = NULL;
                   tree->e_root       = NULL;
 
+                  
                   Set_Both_Sides(YES,tree);     
                   
 		  if(mod->s_opt->random_input_tree) 
@@ -193,7 +194,6 @@ int main(int argc, char **argv)
 		      Lk(NULL,tree);
 		      MIXT_Set_Alias_Subpatt(NO,tree);
 		    }
-
 
 		  if(tree->mod->s_opt->opt_topo)
 		    {

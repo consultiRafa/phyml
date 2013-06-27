@@ -4969,7 +4969,6 @@ void PhyML_XML(char *xml_filename)
                                 iomod->ras->init_r_proba = NO;
 			      }
     			  }
-
 		      }
 
 		    //////////////////////////////////////////////

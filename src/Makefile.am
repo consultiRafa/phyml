@@ -277,7 +277,6 @@ interface.c  interface.h\
 cl.c  cl.h\
 spr.c spr.h\
 draw.c  draw.h\
-mpi_boot.c  mpi_boot.h\
 stats.c stats.h\
 rates.c rates.h\
 mcmc.c mcmc.h\
@@ -285,8 +284,14 @@ times.c times.h\
 tiporder.c tiporder.h\
 mg.c mg.h\
 m4.c m4.h\
+io.c io.h\
+make.c make.h\
+nexus.c nexus.h\
+init.c init.h\
+xml.c xml.h\
 sergeii.c sergeii.h\
-xml.c xml.h
+mixt.c mixt.h\
+mpi_boot.c mpi_boot.h
 phyml_mpi_LDADD = -lm
 else
 if WANT_TEST

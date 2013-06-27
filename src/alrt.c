@@ -567,7 +567,6 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   while(tree);
   tree = (t_tree *)buff;
 
-
   /*! undo the swap */
   Swap(v3,b_fcus->left,b_fcus->rght,v2,tree);
 
@@ -583,7 +582,6 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   Update_PMat_At_Given_Edge(e3,tree);
   Update_PMat_At_Given_Edge(e4,tree);
   Update_PMat_At_Given_Edge(b_fcus,tree);
-
   
   /* Sanity check */
   MIXT_Set_Alias_Subpatt(YES,tree);
@@ -597,8 +595,6 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
       PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
-
-
 
   /*! do the second possible swap */
   Swap(v2,b_fcus->left,b_fcus->rght,v4,tree);

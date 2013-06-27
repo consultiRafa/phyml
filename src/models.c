@@ -751,8 +751,6 @@ void Update_RAS(t_mod *mod)
   phydbl sum;
   int i;
 
-
-
   if(mod->ras->free_mixt_rates == NO) DiscreteGamma(mod->ras->gamma_r_proba->v, 
 						    mod->ras->gamma_rr->v, 
 						    mod->ras->alpha->v, 
@@ -813,12 +811,12 @@ void Update_RAS(t_mod *mod)
           mod->ras->gamma_rr->v[i] = mod->ras->gamma_rr_unscaled->v[i] * mod->ras->free_rate_mr->v;
 
       /* printf("\n"); */
-      /* For(i,mod->ras->n_catg)  */
+      /* For(i,mod->ras->n_catg) */
       /*   printf("\nx %12f %12f xx %12f %12f", */
       /*          mod->ras->gamma_r_proba->v[i], */
       /*          mod->ras->gamma_rr->v[i], */
-      /*          LOG(mod->ras->gamma_r_proba_unscaled->v[i]), */
-      /*          LOG(mod->ras->gamma_rr_unscaled->v[i])); */
+      /*          mod->ras->gamma_r_proba_unscaled->v[i], */
+      /*          mod->ras->gamma_rr_unscaled->v[i]); */
     }  
 
 }

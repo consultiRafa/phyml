@@ -6790,7 +6790,6 @@ void Evolve(calign *data, t_mod *mod, t_tree *tree)
           tree->a_edges[i]->l->v = orig_l[i] * Rgamma(shape,scale);
         }
 
-
       Set_Model_Parameters(mod);      
       For(i,2*tree->n_otu-3) Update_PMat_At_Given_Edge(tree->a_edges[i],tree);
 
