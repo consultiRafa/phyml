@@ -2619,7 +2619,8 @@ void Print_Fp_Out(FILE *fp_out, time_t t_beg, time_t t_end, t_tree *tree, option
 
   PhyML_Fprintf(fp_out,"\n. Tree size: \t\t\t\t%.5f",Get_Tree_Size(tree));
 
-  if(tree->mod->ras->n_catg > 1 && tree->mod->ras->free_mixt_rates == NO)
+  /* if(tree->mod->ras->n_catg > 1 && tree->mod->ras->free_mixt_rates == NO) */
+  if(tree->mod->ras->free_mixt_rates == NO)
     {
       PhyML_Fprintf(fp_out,"\n. Discrete gamma model: \t\t%s","Yes");
       PhyML_Fprintf(fp_out,"\n  - Number of classes: \t\t\t%d",tree->mod->ras->n_catg);
