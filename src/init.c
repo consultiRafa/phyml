@@ -155,7 +155,7 @@ void Init_Edge_Light(t_edge *b, int num)
   b->topo_dist_btw_edges  = 0;
   b->has_zero_br_len      = NO;
   b->n_jumps              = 0;
-  b->l_var                = 1.E-2;
+  b->l_var->v             = -1.;
   b->does_exist           = YES;
   b->l->v                 = -1.;
   b->bin_cod_num          = -1.;
@@ -571,12 +571,13 @@ void Set_Defaults_Model(t_mod *mod)
   mod->mod_num                 = 0;
   mod->update_eigen            = NO;
   mod->is_mixt_mod             = NO;
+  mod->ras->normalise_rr       = YES;
 
   mod->kappa->v                = 4.0;
   mod->ras->alpha->v           = 1.0;
   mod->lambda->v               = 1.0;
   mod->ras->pinvar->v          = 0.0;
-  mod->l_var                   = 1.E-2;
+  mod->l_var_sigma             = 1.E-2;
   mod->e_frq_weight->v         = 1.0;
   mod->r_mat_weight->v         = 1.0;
 
@@ -611,6 +612,11 @@ void Set_Defaults_Model(t_mod *mod)
   mod->l_min = 1.E-8;
   mod->l_max = 2.0;
 #endif
+
+  mod->l_var_min  = mod->l_min;
+  mod->l_var_max  = mod->l_max;
+
+
 }
 
 //////////////////////////////////////////////////////////////
@@ -663,6 +669,7 @@ void Set_Defaults_Optimiz(t_opt *s_opt)
   s_opt->opt_free_mixt_rates  = YES;
   s_opt->constrained_br_len   = NO;
   s_opt->opt_gamma_br_len     = NO;
+  s_opt->first_opt_free_mixt_rates = YES;
 
   s_opt->wim_n_rgrft          = -1;
   s_opt->wim_n_globl          = -1;
@@ -673,6 +680,11 @@ void Set_Defaults_Optimiz(t_opt *s_opt)
 
   s_opt->opt_rmat_weight      = NO;
   s_opt->opt_efrq_weight      = NO;
+
+  s_opt->skip_tree_traversal     = NO;
+  s_opt->serial_free_rates       = YES;
+
+  s_opt->curr_opt_free_rates     = NO;
 }
 
 //////////////////////////////////////////////////////////////

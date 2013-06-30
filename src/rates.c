@@ -2414,10 +2414,9 @@ void RATES_Update_Cur_Bl(t_tree *tree)
 	(t1-t0)/(t1+t2-2.*t0)*tree->rates->cur_gamma_prior_mean[n0->num] +
 	(t2-t0)/(t1+t2-2.*t0)*tree->rates->cur_gamma_prior_mean[n1->num];
       
-      tree->e_root->l_var = 
+      tree->e_root->l_var->v = 
 	POW((t1-t0)/(t1+t2-2.*t0),2)*tree->rates->cur_gamma_prior_var[n0->num] +
 	POW((t2-t0)/(t1+t2-2.*t0),2)*tree->rates->cur_gamma_prior_var[n1->num];
-
 
       /* printf("\n. ROOT: %f %f %f %f", */
       /* 	     tree->rates->cur_gamma_prior_mean[n0->num], */
@@ -2483,12 +2482,12 @@ void RATES_Update_Cur_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 	{
 	  b->l->v                      = tree->rates->cur_l[d->num];
 	  tree->rates->u_cur_l[b->num] = tree->rates->cur_l[d->num];
-	  b->l_var                     = tree->rates->cur_gamma_prior_var[d->num];
+	  b->l_var->v                  = tree->rates->cur_gamma_prior_var[d->num];
 	}
       
-      if(b && (isnan(b->l->v) || isnan(b->l_var)))
+      if(b && (isnan(b->l->v) || isnan(b->l_var->v)))
 	{
-	  PhyML_Printf("\n. dt=%G rr=%G cr=%G ra=%G rd=%G nu=%G %f %f ",dt,rr,cr,ra,rd,nu,b->l_var,b->l->v);	  
+	  PhyML_Printf("\n. dt=%G rr=%G cr=%G ra=%G rd=%G nu=%G %f %f ",dt,rr,cr,ra,rd,nu,b->l_var->v,b->l->v);	  
 	  PhyML_Printf("\n. ta=%G td=%G ra*cr=%G rd*cr=%G sd=%G",
 		       ta,td,ra*cr,rd*cr,
 		       SQRT(dt*nu)*cr);

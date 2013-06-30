@@ -103,5 +103,6 @@ phydbl Inverse_Truncated_Normal(phydbl y, phydbl mu, phydbl sigma, phydbl lim_in
 phydbl Progressive_EXP(phydbl x);
 int *Permutate(int len);
 phydbl Mantel(phydbl *x, phydbl *y, int nrow, int ncol);
+phydbl Weighted_Mean(phydbl *x, phydbl *w, int l);
 
 #endif

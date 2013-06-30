@@ -162,6 +162,8 @@ int main(int argc, char **argv)
                   tree->io           = io;
                   tree->data         = cdata;
                   tree->n_pattern    = tree->data->crunch_len;
+                  tree->n_root       = NULL;
+                  tree->e_root       = NULL;
 
                   Set_Both_Sides(YES,tree);
 
@@ -194,34 +196,44 @@ int main(int argc, char **argv)
                       MIXT_Set_Alias_Subpatt(NO,tree);
                     }
 
-                  if(tree->mod->s_opt->opt_topo)
+                  if(tree->mod->s_opt->opt_topo)//Optimize Tree topology?
                     {
-                      if(tree->mod->s_opt->topo_search == NNI_MOVE) {
+                      if(tree->mod->s_opt->topo_search == NNI_MOVE)
+                      {
                           fprintf(stdout,"here1\n");fflush(stdout);
                           Simu_Loop(tree);
                       }
-                      else {
-                          if(tree->mod->s_opt->topo_search == SPR_MOVE) {
+                      else
+                      {
+                          if(tree->mod->s_opt->topo_search == SPR_MOVE)
+                          {
                               fprintf(stdout,"here2\n");fflush(stdout);
                               Speed_Spr_Loop(tree);
-                          } else {
+                          }
+                          else
+                          {
                               fprintf(stdout,"here3\n");fflush(stdout);
                               Best_Of_NNI_And_SPR(tree);
                           }
                       }
 
-                      if(tree->n_root) Add_Root(tree->a_edges[0],tree);
+                      if(tree->n_root)
+                          Add_Root(tree->a_edges[0],tree);
                     }
                   else
                     {
-                      if(tree->mod->s_opt->opt_subst_param || tree->mod->s_opt->opt_bl) {
+                      if(tree->mod->s_opt->opt_subst_param || tree->mod->s_opt->opt_bl)//Optimize Branch lengths?
+                      {
                           fprintf(stdout,"here4\n");fflush(stdout);
+#ifdef BEAGLE
+                          tree->b_inst = create_beagle_instance(tree, io->quiet);
+#endif
                           Round_Optimize(tree,tree->data,ROUND_MAX);
                       }
-                      else {
+                      else
+                      {
                           fprintf(stdout,"here5\n");fflush(stdout);
 #ifdef BEAGLE
-                          tree->b_inst = -1;//initalize
                           tree->b_inst = create_beagle_instance(tree, io->quiet);
 #endif
                           Lk(NULL,tree);
@@ -238,6 +250,8 @@ int main(int argc, char **argv)
                           //
                           /* ML_Ancestral_Sequences(tree); */
                           //
+
+                  Check_Br_Lens(tree);
                   Br_Len_Involving_Invar(tree);
                   Rescale_Br_Len_Multiplier_Tree(tree);
 

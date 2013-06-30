@@ -4588,7 +4588,17 @@ phydbl Mantel(phydbl *x, phydbl *y, int nrow, int ncol)
 
 }
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 
+phydbl Weighted_Mean(phydbl *x, phydbl *w, int l)
+{
+  int i;
+  phydbl wm;
+  wm = .0;
+  For(i,l) wm += x[i]*w[i];
+  return(wm);
+}
 
 
 

@@ -66,7 +66,7 @@ dnl CFLAGS="-O3 -Wfloat-equal -fomit-frame-pointer -funroll-loops"
 dnl CFLAGS="-O3 -Wfloat-equal"
 dnl CFLAGS="-g"
 
-LDFLAGS="${ARGC_flag} -march=native"
+LDFLAGS="${ARGC_flag}"
 
 dnl LT_INIT
 dnl AC_PROG_LIBTOOL
@@ -77,21 +77,22 @@ AC_ARG_ENABLE([debug],
                               [Remove optimization options and add debug informations.])])
 AS_IF([test "x$enable_debug" = "xyes"],
       [CFLAGS="-ansi -pedantic -Wall -std=c99 -O0 -g"],
-      [CFLAGS="-Wall -O2 -msse -fomit-frame-pointer -funroll-loops ${ARCH_flag}"]) 
+      [CFLAGS="-Wall -O2 -msse -fomit-frame-pointer -funroll-loops ${ARCH_flag}"])
 
 AC_ARG_ENABLE([gprof],
               [AS_HELP_STRING([--enable-gprof],
                               [Remove optimization options and add profiling informations.])])
 AS_IF([test "x$enable_gprof" = "xyes"],
       [CFLAGS="-ansi -pedantic -Wall -std=c99 -O0 -g -pg"],
-      [AS_IF([test "x$enable_debug" = "xno"],[CFLAGS="-Wall -O2 -msse -fomit-frame-pointer -funroll-loops ${ARCH_flag}"])]) 
+      [AS_IF([test "x$enable_debug" = "xno"],[CFLAGS="-Wall -O2 -msse -fomit-frame-pointer -funroll-loops ${ARCH_flag}"])])
 
 AC_ARG_ENABLE([mpi],
               [AS_HELP_STRING([--enable-mpi],
                               [Compile with mpicc instead of gcc.])])
 AS_IF([test "x$enable_mpi" = "xyes"],[CC="mpicc"])
 AS_IF([test "x$enable_mpi" = "xyes"],AC_DEFINE([MPI],[1],[MPI tag on]))
-AM_CONDITIONAL([WANT_MPI], [test "x$enable_mpi" = "xyes"]) 
+AM_CONDITIONAL([WANT_MPI], [test "x$enable_mpi" = "xyes"])
+
 
 AC_ARG_ENABLE([win],
               [AS_HELP_STRING([--enable-win],
@@ -100,80 +101,80 @@ AS_IF([test "x$enable_win" = "xyes"],[CC="i586-mingw32msvc-cc"])
 
 AC_ARG_ENABLE([beagle], [AS_HELP_STRING([--enable-beagle], [Compute likelihoods using Beagle library.])], [beagle=yes],[beagle=no])
 AS_IF([test "x$enable_beagle" = "xyes"],
-      [CFLAGS="-ansi -O2 -pedantic -Wall -std=c99 -msse -g ${BEAGLE_CFLAGS} ${BEAGLE_LIBS} ${ARCH_flag}"],
-      [CFLAGS="-ansi -Wall -O2 -msse -fomit-frame-pointer -std=c99 -funroll-loops ${ARCH_flag}"])
+      [CFLAGS="-ansi -Wall -g -msse -std=c99 -pedantic ${BEAGLE_CFLAGS} ${BEAGLE_LIBS} ${ARCH_flag}"],
+      [CFLAGS="-ansi -Wall -g -msse -std=c99 ${ARCH_flag}"])
 AS_IF([test "x$enable_beagle" = "xyes"], AC_DEFINE([BEAGLE],[1],[BEAGLE tag on]))
-AM_CONDITIONAL([WANT_BEAGLE], [test "$enable_beagle" = yes]) 
+AM_CONDITIONAL([WANT_BEAGLE], [test "$enable_beagle" = yes])
 
 
 AC_ARG_ENABLE([phytime],[AS_HELP_STRING([--enable-phytime],[Compile PhyTime])],[phytime=yes],[phytime=no])
-AM_CONDITIONAL([WANT_PHYTIME], [test "$phytime" = yes]) 
+AM_CONDITIONAL([WANT_PHYTIME], [test "$phytime" = yes])
 if test "$phytime" = yes; then
    AC_DEFINE([PHYTIME],[1],[PHYTIME tag on])
 fi
 
 AC_ARG_ENABLE([tiporder],[AS_HELP_STRING([--enable-tiporder],[Compile tiporder])],[tiporder=yes],[tiporder=no])
-AM_CONDITIONAL([WANT_TIPORDER], [test "$tiporder" = yes]) 
+AM_CONDITIONAL([WANT_TIPORDER], [test "$tiporder" = yes])
 if test "$tiporder" = yes; then
    AC_DEFINE([TIPORDER],[1],[TIPORDER tag on])
 fi
 
 AC_ARG_ENABLE([part],[AS_HELP_STRING([--enable-part],[Compile Part])],[part=yes],[part=no])
-AM_CONDITIONAL([WANT_PART], [test "$part" = yes]) 
+AM_CONDITIONAL([WANT_PART], [test "$part" = yes])
 if test "$part" = yes; then
    AC_DEFINE([PART],[1],[PART tag on])
 fi
 
 AC_ARG_ENABLE([rwrap],[AS_HELP_STRING([--enable-rwrap],[Compile Rwrap])],[rwrap=yes],[rwrap=no])
-AM_CONDITIONAL([WANT_RWRAP], [test "$rwrap" = yes]) 
+AM_CONDITIONAL([WANT_RWRAP], [test "$rwrap" = yes])
 if test "$rwrap" = yes; then
    AC_DEFINE([RWRAP],[1],[RWRAP tag on])
 fi
 
 AC_ARG_ENABLE([phycont],[AS_HELP_STRING([--enable-phycont],[Compile PhyCont])],[phycont=yes],[phycont=no])
-AM_CONDITIONAL([WANT_PHYCONT], [test "$phycont" = yes]) 
+AM_CONDITIONAL([WANT_PHYCONT], [test "$phycont" = yes])
 if test "$phycont" = yes; then
    AC_DEFINE([PHYCONT],[1],[PHYCONT tag on])
 fi
 
 AC_ARG_ENABLE([m4],[AS_HELP_STRING([--enable-m4],[Compile M4])],[m4=yes],[m4=no])
-AM_CONDITIONAL([WANT_M4], [test "$m4" = yes]) 
+AM_CONDITIONAL([WANT_M4], [test "$m4" = yes])
 if test "$m4" = yes; then
    AC_DEFINE([M4],[1],[m4 tag on])
 fi
 
 AC_ARG_ENABLE([rf],[AS_HELP_STRING([--enable-rf],[Compile RF])],[rf=yes],[rf=no])
-AM_CONDITIONAL([WANT_RF], [test "$rf" = yes]) 
+AM_CONDITIONAL([WANT_RF], [test "$rf" = yes])
 if test "$rf" = yes; then
    AC_DEFINE([RF],[1],[RF tag on])
 fi
 
 AC_ARG_ENABLE([test],[AS_HELP_STRING([--enable-test],[Compile test])],[test=yes],[test=no])
-AM_CONDITIONAL([WANT_TEST], [test "$test" = yes]) 
+AM_CONDITIONAL([WANT_TEST], [test "$test" = yes])
 if test "$test" = yes; then
    AC_DEFINE([TEST],[1],[TEST tag on])
 fi
 
 AC_ARG_ENABLE([evolve],[AS_HELP_STRING([--enable-evolve],[Compile evolve])],[evolve=yes],[evolve=no])
-AM_CONDITIONAL([WANT_EVOLVE], [test "$evolve" = yes]) 
+AM_CONDITIONAL([WANT_EVOLVE], [test "$evolve" = yes])
 if test "$evolve" = yes; then
    AC_DEFINE([EVOLVE],[1],[EVOLVE tag on])
 fi
 
 AC_ARG_ENABLE([sergeii],[AS_HELP_STRING([--enable-sergeii],[Compile sergeii])],[sergeii=yes],[sergeii=no])
-AM_CONDITIONAL([WANT_SERGEII], [test "$sergeii" = yes]) 
+AM_CONDITIONAL([WANT_SERGEII], [test "$sergeii" = yes])
 if test "$sergeii" = yes; then
    AC_DEFINE([SERGEII],[1],[SERGEII tag on])
 fi
 
 AC_ARG_ENABLE([geo],[AS_HELP_STRING([--enable-geo],[Compile geo])],[geo=yes],[geo=no])
-AM_CONDITIONAL([WANT_GEO], [test "$geo" = yes]) 
+AM_CONDITIONAL([WANT_GEO], [test "$geo" = yes])
 if test "$geo" = yes; then
    AC_DEFINE([GEO],[1],[GEO tag on])
 fi
 
 AC_ARG_ENABLE([checkpoint],[AS_HELP_STRING([--enable-checkpoint],[Compile checkpoint])],[checkpoint=yes],[checkpoint=no])
-AM_CONDITIONAL([WANT_CHECKPOINT], [test "$checkpoint" = yes]) 
+AM_CONDITIONAL([WANT_CHECKPOINT], [test "$checkpoint" = yes])
 if test "$checkpoint" = yes; then
    AC_DEFINE([CHECKPOINT],[1],[CHECKPOINT tag on])
 fi

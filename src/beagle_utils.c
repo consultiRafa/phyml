@@ -46,6 +46,7 @@ double* tips_to_partials_nucl(const char *sequence) {
                 partials[k++] = 1;
                 break;
             default:
+                Free(partials);
                 Warn_And_Exit("TODO: Add other states");
         }
     }
@@ -117,11 +118,11 @@ int create_beagle_instance(t_tree *tree, int quiet)
     }
     BeagleInstanceDetails inst_d;
     int num_rate_catg = tree->mod->ras->n_catg;
-    int num_partials = (tree->n_otu + (tree->n_otu-2)); //taxa+internal nodes
-//    int num_partials = 2*tree->n_otu-3;
+//    int num_partials = tree->n_otu + (tree->n_otu-2); //taxa+internal nodes
+    int num_partials = tree->n_otu + (2*tree->n_otu-3);
     int num_scales = 2 + num_rate_catg;
     int num_branches = 2*tree->n_otu-3;
-    DUMP_I(tree->n_otu, num_rate_catg, num_partials, num_branches, tree->mod->ns, tree->n_pattern, tree->mod->whichmodel);
+//    DUMP_I(tree->n_otu, num_rate_catg, num_partials, num_branches, tree->mod->ns, tree->n_pattern, tree->mod->whichmodel);
     int beagle_inst = beagleCreateInstance(
                                   tree->n_otu,                /**< Number of tip data elements (input) */
                                   num_partials,               /**< Number of partial buffer (input) */
@@ -148,12 +149,16 @@ int create_beagle_instance(t_tree *tree, int quiet)
     }
 
     //Set the tips
-    for(int i=0; i<2*tree->n_otu-1; ++i) //taxa+internal nodes
+    for(int i=0; i<2*tree->n_otu-2; ++i) //taxa+internal nodes
     {
+//        Print_Tip_Partials(tree, tree->a_nodes[i]);
         if(tree->a_nodes[i]->tax)
         {
             assert(tree->a_nodes[i]->c_seq->len == tree->n_pattern); // number of compacts sites == number of distinct site patterns
+//            assert(tree->a_nodes[i]->b[0]->rght == tree->a_nodes[i]);
+//            assert(tree->a_nodes[i]->b[0]->rght->tax);
             double* tip = tips_to_partials_nucl(tree->a_nodes[i]->c_seq->state);
+//            DUMP_I(tree->a_nodes[i]->num);
             int ret = beagleSetTipPartials(beagle_inst, tree->a_nodes[i]->num, tip);
             if(ret<0){
                 fprintf(stderr, "beagleSetTipPartials() on instance %i failed:%i\n\n",beagle_inst,ret);
@@ -210,7 +215,12 @@ void update_beagle_partials(t_tree* tree, t_edge* b, t_node* d)
         n_v1     n_v2
     */
 
-    assert(!d->tax); //Partial likelihoods are only calculated on internal nodes
+    if(d->tax) //Partial likelihoods are only calculated on internal nodes
+      {
+        PhyML_Printf("\n== t_node %d is a leaf...",d->num);
+        PhyML_Printf("\n== Err in file %s at line %d\n\n",__FILE__,__LINE__);
+        Warn_And_Exit("\n");
+      }
 
     //Determine d's "left" and "right" neighbors.
     t_node *n_v1, *n_v2;//d's "left" and "right" neighbor nodes
@@ -242,11 +252,28 @@ void update_beagle_partials(t_tree* tree, t_edge* b, t_node* d)
             if(n_v2->b[i] == d->b[0] || n_v2->b[i] == d->b[1] || n_v2->b[i] == d->b[2])
                 b2 = n_v2->b[i];
     }
-//    DUMP_I(d->num, n_v1->num, n_v2->num, b->num, b1->num, b2->num);
+    int offset = tree->n_otu;
+    ////
+    double* p_lk_v1_b = (double*)malloc(tree->mod->ras->n_catg*tree->mod->ns*tree->n_pattern*sizeof(double));if(NULL==p_lk_v1_b) Warn_And_Exit("Couldnt allocate memory");
+    beagleGetPartials(tree->b_inst, n_v1->tax?n_v1->num:offset+b1->num, BEAGLE_OP_NONE, (double*)p_lk_v1_b);
+    double* p_lk_v2_b = (double*)malloc(tree->mod->ras->n_catg*tree->mod->ns*tree->n_pattern*sizeof(double));if(NULL==p_lk_v2_b) Warn_And_Exit("Couldnt allocate memory");
+    beagleGetPartials(tree->b_inst, n_v2->tax?n_v2->num:offset+b2->num, BEAGLE_OP_NONE, (double*)p_lk_v2_b);
 
+    fprintf(stdout, "\nUpdating partials on Branch %d (on the side where Node %d lies)\n",b->num,d->num);fflush(stdout);
+    fprintf(stdout, "Left partials :");fflush(stdout);
+    Dump_Arr_D(p_lk_v1_b,   tree->mod->ras->n_catg*tree->mod->ns*tree->n_pattern);
+    fprintf(stdout, "Right partials:");fflush(stdout);
+    Dump_Arr_D(p_lk_v2_b,   tree->mod->ras->n_catg*tree->mod->ns*tree->n_pattern);
+    Free(p_lk_v1_b);
+    Free(p_lk_v2_b);
+    ////
+
+//    DUMP_I(d->num, n_v1->num, n_v2->num, b->num, b1->num, b2->num);
+//    DUMP_I(offset+b->num, offset+b1->num, offset+b2->num);
     //Create the corresponding BEAGLE operation
-    BeagleOperation operations[1] = {{d->num, BEAGLE_OP_NONE, BEAGLE_OP_NONE, n_v1->num, b1->num, n_v2->num, b2->num}};
+    BeagleOperation operations[1] = {{offset+b->num, BEAGLE_OP_NONE, BEAGLE_OP_NONE, n_v1->tax?n_v1->num:offset+b1->num, b1->num, n_v2->tax?n_v2->num:offset+b2->num, b2->num}};
 //    BeagleOperation operations[1] = {{d->num, BEAGLE_OP_NONE, BEAGLE_OP_NONE, n_v1->tax?b1->num:n_v1->num, b1->num, n_v2->tax?b2->num:n_v2->num, b2->num}};
+//    BeagleOperation operations[1] = {{d->num, BEAGLE_OP_NONE, BEAGLE_OP_NONE, n_v1->num, n_v1->tax?n_v1->b[0]->num:b1->num, n_v2->num, n_v2->tax?n_v2->b[0]->num:b2->num}};
     int ret = beagleResetScaleFactors(tree->b_inst, 0);
     if(ret<0){
         fprintf(stderr, "beagleResetScaleFactors() on instance %i failed:%i\n\n",tree->b_inst,ret);
@@ -259,11 +286,29 @@ void update_beagle_partials(t_tree* tree, t_edge* b, t_node* d)
     }
 
     //Fetch and Set the updated partial likelihoods
-    ret = beagleGetPartials(tree->b_inst, d->num, BEAGLE_OP_NONE, (double*)p_lk);
+    ret = beagleGetPartials(tree->b_inst, offset+b->num, BEAGLE_OP_NONE, (double*)p_lk);
     if(ret<0){
         fprintf(stderr, "beagleGetPartials() on instance %i failed:%i\n\n",tree->b_inst,ret);
         Exit("");
     }
+
+    ////
+    fprintf(stdout, "Updated partials:");fflush(stdout);
+    Dump_Arr_D(p_lk, tree->mod->ras->n_catg*tree->mod->ns*tree->n_pattern);
+
+//    fprintf(stdout, "\nUpdated partials (Node %d, Branch %d):",d->num,b->num);fflush(stdout);
+//    Dump_Arr_D(p_lk, tree->mod->ras->n_catg*tree->mod->ns*tree->n_pattern);
+//    fprintf(stdout, "Left partials(from PhyML  ):");fflush(stdout);
+//    n_v1->tax?Dump_Arr_S(b1->p_lk_tip_r, tree->mod->ns*tree->n_pattern):Dump_Arr_D(p_lk_v1,   tree->mod->ras->n_catg*tree->mod->ns*tree->n_pattern);
+//    fprintf(stdout, "Left partials(from BEAGLE ):");fflush(stdout);
+//    Dump_Arr_D(p_lk_v1_b, tree->mod->ras->n_catg*tree->mod->ns*tree->n_pattern);
+//    fprintf(stdout, "Right partials(from PhyML ):");fflush(stdout);
+//    n_v2->tax?Dump_Arr_S(b2->p_lk_tip_r, tree->mod->ns*tree->n_pattern):Dump_Arr_D(p_lk_v2,   tree->mod->ras->n_catg*tree->mod->ns*tree->n_pattern);
+//    fprintf(stdout, "Right partials(from BEAGLE):");fflush(stdout);
+//    Dump_Arr_D(p_lk_v2_b, tree->mod->ras->n_catg*tree->mod->ns*tree->n_pattern);
+//    Free(p_lk_v1_b);
+//    Free(p_lk_v2_b);
+    ////
 
     //Scaling (BEAGLE specific). That is, the p_lk vector (which is returned by BEAGLE) is indexed based on the memory layout rates * patterns * state
 //    int n_patterns = tree->n_pattern;
@@ -325,19 +370,6 @@ void update_beagle_partials(t_tree* tree, t_edge* b, t_node* d)
 //                  }
 //                while(curr_scaler_pow != 0);
 //              }
-//        }
-//    }
-
-//    int site1,catg1;
-//    for(site1=0;site1<n_patterns;++site1)
-//    {
-//        for(catg1=0;catg1<tree->mod->ras->n_catg;++catg1)
-//        {
-//            int i;
-//            for(i=0;i<tree->mod->ns;++i)
-//            {
-//                fprintf(stdout, "%f\n",p_lk[catg1*dim1+site1*dim2+i]);
-//            }
 //        }
 //    }
 

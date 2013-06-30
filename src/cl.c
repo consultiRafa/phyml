@@ -100,6 +100,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
       {"ratemodel",           required_argument,NULL,64},
       {"log_l",               no_argument,NULL,65},
       {"gamma_lens",          no_argument,NULL,66},
+      {"il",                  no_argument,NULL,66},
       {"codpos",              required_argument,NULL,67},
       {"constraint_file",     required_argument,NULL,68},
       {"constraint_tree",     required_argument,NULL,68},
@@ -129,7 +130,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	{
 	case 74:
           {
-            io->mod->l_var = String_To_Dbl(optarg);
+            io->mod->l_var_sigma = String_To_Dbl(optarg);
             break;
           }
 	case 73:
@@ -1303,22 +1304,22 @@ int Read_Command_Line(option *io, int argc, char **argv)
      (io->mod->s_opt->topo_search == NNI_MOVE) && 
      (io->mod->s_opt->random_input_tree))
     {
-      Warn_And_Exit("\n. The random starting tree option is only compatible with SPR based search options.\n"); 
+      Warn_And_Exit("\n== The random starting tree option is only compatible with SPR based search options.\n"); 
     }
   
   if ((io->datatype == NT) && (io->mod->whichmodel > 10))
     {
       char choix;
-      PhyML_Printf("\n. Err: model incompatible with the data type. Please use JC69, K80, F81, HKY, F84, TN93 or GTR\n");
-      PhyML_Printf("\n. Type any key to exit.\n");
+      PhyML_Printf("\n== Err.: model incompatible with the data type. Please use JC69, K80, F81, HKY, F84, TN93 or GTR\n");
+      PhyML_Printf("\n== Type any key to exit.\n");
       if(!scanf("%c",&choix)) Exit("\n");
       Warn_And_Exit("\n");
     }
   else if ((io->datatype == AA) && (io->mod->whichmodel < 11))
     {
       char choix;
-      PhyML_Printf("\n. Err: model incompatible with the data type. Please use LG, Dayhoff, JTT, MtREV, WAG, DCMut, RtREV, CpREV, VT, Blosum62, MtMam, MtArt, HIVw or HIVb.\n");
-      PhyML_Printf("\n. Type any key to exit.\n");
+      PhyML_Printf("\n== Err.: model incompatible with the data type. Please use LG, Dayhoff, JTT, MtREV, WAG, DCMut, RtREV, CpREV, VT, Blosum62, MtMam, MtArt, HIVw or HIVb.\n");
+      PhyML_Printf("\n== Type any key to exit.\n");
       if(!scanf("%c",&choix)) Exit("\n");
       Exit("\n");
     }

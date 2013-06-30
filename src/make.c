@@ -21,7 +21,7 @@ void Make_Tree_4_Lk(t_tree *tree, calign *cdata, int n_site)
   tree->c_lnL_sorted = (phydbl *)mCalloc(tree->n_pattern, sizeof(phydbl));
   tree->cur_site_lk  = (phydbl *)mCalloc(cdata->crunch_len,sizeof(phydbl));
   tree->old_site_lk  = (phydbl *)mCalloc(cdata->crunch_len,sizeof(phydbl));
-  tree->site_lk_cat  = (phydbl *)mCalloc(MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes),sizeof(phydbl));  
+  tree->site_lk_cat  = (phydbl *)mCalloc(MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes),sizeof(phydbl));
   tree->log_site_lk_cat = (phydbl **)mCalloc(MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes),sizeof(phydbl *));
   For(i,MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes))
     tree->log_site_lk_cat[i] = (phydbl *)mCalloc(cdata->crunch_len,sizeof(phydbl));
@@ -33,14 +33,14 @@ void Make_Tree_4_Lk(t_tree *tree, calign *cdata, int n_site)
 
   if(tree->is_mixt_tree == NO)
     {
-      For(i,2*tree->n_otu-1) Make_Edge_Lk(tree->a_edges[i],tree);    
+      For(i,2*tree->n_otu-1) Make_Edge_Lk(tree->a_edges[i],tree);
       For(i,2*tree->n_otu-2) Make_Node_Lk(tree->a_nodes[i]);
-      
-      if(tree->mod->s_opt->greedy) 
-	Init_P_Lk_Tips_Double(tree);
-      else 
-	Init_P_Lk_Tips_Int(tree);
-      
+
+      if(tree->mod->s_opt->greedy)
+        Init_P_Lk_Tips_Double(tree);
+      else
+        Init_P_Lk_Tips_Int(tree);
+
       Init_P_Lk_Loc(tree);
     }
 }
@@ -72,10 +72,10 @@ void Make_All_Edges_Lk(t_node *a, t_node *d, t_tree *tree)
   else
     {
       For(i,3)
-	{
-	  if(d->v[i] != a)
-	    Make_All_Edges_Lk(d,d->v[i],tree);
-	}
+    {
+      if(d->v[i] != a)
+        Make_All_Edges_Lk(d,d->v[i],tree);
+    }
     }
 }
 
@@ -114,6 +114,12 @@ t_edge *Make_Edge_Light(t_node *a, t_node *d, int num)
   b->l_old = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
   Init_Scalar_Dbl(b->l_old);
 
+  b->l_var = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
+  Init_Scalar_Dbl(b->l_var);
+
+  b->l_var_old = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
+  Init_Scalar_Dbl(b->l_var_old);
+
   Init_Edge_Light(b,num);
 
   if(a && b)
@@ -123,8 +129,8 @@ t_edge *Make_Edge_Light(t_node *a, t_node *d, int num)
       /* a tip is necessary on the right side of the t_edge */
 
       (b->left == a)?
-	(Make_Edge_Dirs(b,a,d,NULL)):
-	(Make_Edge_Dirs(b,d,a,NULL));
+    (Make_Edge_Dirs(b,a,d,NULL)):
+    (Make_Edge_Dirs(b,d,a,NULL));
 
       b->l->v             = a->l[b->l_r];
       if(a->tax) b->l->v  = a->l[b->r_l];
@@ -145,19 +151,28 @@ t_edge *Make_Edge_Light(t_node *a, t_node *d, int num)
 
 void Make_Edge_Pars(t_edge *b, t_tree *tree)
 {
-/*   int site; */
+  Make_Edge_Pars_Left(b,tree);
+  Make_Edge_Pars_Rght(b,tree);
+}
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Make_Edge_Pars_Left(t_edge *b, t_tree *tree)
+{
   b->pars_l = (int *)mCalloc(tree->data->crunch_len,sizeof(int));
-  b->pars_r = (int *)mCalloc(tree->data->crunch_len,sizeof(int));
-
-
   b->ui_l = (unsigned int *)mCalloc(tree->data->crunch_len,sizeof(unsigned int));
-  b->ui_r = (unsigned int *)mCalloc(tree->data->crunch_len,sizeof(unsigned int));
-
-
   b->p_pars_l = (int *)mCalloc(tree->data->crunch_len*tree->mod->ns,sizeof(int ));
-  b->p_pars_r = (int *)mCalloc(tree->data->crunch_len*tree->mod->ns,sizeof(int ));
+}
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Make_Edge_Pars_Rght(t_edge *b, t_tree *tree)
+{
+  b->pars_r = (int *)mCalloc(tree->data->crunch_len,sizeof(int));
+  b->ui_r = (unsigned int *)mCalloc(tree->data->crunch_len,sizeof(unsigned int));
+  b->p_pars_r = (int *)mCalloc(tree->data->crunch_len*tree->mod->ns,sizeof(int ));
 }
 
 //////////////////////////////////////////////////////////////
@@ -165,37 +180,35 @@ void Make_Edge_Pars(t_edge *b, t_tree *tree)
 
 void Make_Edge_Lk(t_edge *b, t_tree *tree)
 {
-  int ns;
-  
-  ns = -1;
-
   if(tree->is_mixt_tree)
     {
       PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
 
-  ns = tree->mod->ns;
-
   b->l_old->v = b->l->v;
-
-  b->div_post_pred_left = (short int *)mCalloc(ns,sizeof(short int));
-  b->div_post_pred_rght = (short int *)mCalloc(ns,sizeof(short int));
 
   b->Pij_rr = (phydbl *)mCalloc(tree->mod->ras->n_catg*tree->mod->ns*tree->mod->ns,sizeof(phydbl));
   
-  b->sum_scale_left_cat = (int *)mCalloc(MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes),sizeof(int));  
-  b->sum_scale_rght_cat = (int *)mCalloc(MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes),sizeof(int));
+  Make_Edge_Lk_Left(b,tree);
+  Make_Edge_Lk_Rght(b,tree);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Make_Edge_Lk_Left(t_edge *b, t_tree *tree)
+{
+  int ns = tree->mod->ns;
+
+  b->div_post_pred_left = (short int *)mCalloc(ns,sizeof(short int));
+
+  b->sum_scale_left_cat = (int *)mCalloc(MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes),sizeof(int));
 
   if(b->left && !b->left->tax)
     b->sum_scale_left = (int *)mCalloc(tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes),sizeof(int));
   else
     b->sum_scale_left = NULL;
-  
-  if(b->rght && !b->rght->tax)
-    b->sum_scale_rght = (int *)mCalloc(tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes),sizeof(int));
-  else
-    b->sum_scale_rght = NULL;
 
 
   if(b->left)
@@ -207,7 +220,7 @@ void Make_Edge_Lk(t_edge *b, t_tree *tree)
         }
       else if(b->left->tax)
         {
-          b->p_lk_left   = NULL;      
+          b->p_lk_left   = NULL;
           b->p_lk_tip_l  = (short int *)mCalloc(tree->data->crunch_len*tree->mod->ns,sizeof(short int ));
         }
     }
@@ -216,7 +229,35 @@ void Make_Edge_Lk(t_edge *b, t_tree *tree)
       b->p_lk_left  = NULL;
       b->p_lk_tip_l = NULL;
     }
+
+  if(b->num >= 2*tree->n_otu-3)
+    {
+      b->sum_scale_left = (int *)mCalloc(tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes),sizeof(int));
+      b->p_lk_left      = (phydbl *)mCalloc(tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns,sizeof(phydbl));
+    }
+
+
+  b->patt_id_left  = (int *)mCalloc(tree->data->crunch_len,sizeof(int));
+  b->p_lk_loc_left = (int *)mCalloc(tree->data->crunch_len,sizeof(int));
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Make_Edge_Lk_Rght(t_edge *b, t_tree *tree)
+{
+  int ns = tree->mod->ns;
+
+  b->div_post_pred_rght = (short int *)mCalloc(ns,sizeof(short int));
+
+  b->sum_scale_rght_cat = (int *)mCalloc(MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes),sizeof(int));  
+
+  if(b->rght && !b->rght->tax)
+    b->sum_scale_rght = (int *)mCalloc(tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes),sizeof(int));
+  else
+    b->sum_scale_rght = NULL;
   
+
   if(b->rght)
     {
       if((!b->rght->tax) || (tree->mod->s_opt->greedy))
@@ -226,7 +267,7 @@ void Make_Edge_Lk(t_edge *b, t_tree *tree)
         }
       else if(b->rght->tax)
         {
-          b->p_lk_rght = NULL;      
+          b->p_lk_rght = NULL;
           b->p_lk_tip_r  = (short int *)mCalloc(tree->data->crunch_len*tree->mod->ns,sizeof(short int));
         }
     }
@@ -238,18 +279,13 @@ void Make_Edge_Lk(t_edge *b, t_tree *tree)
 
   if(b->num >= 2*tree->n_otu-3)
     {
-      b->sum_scale_left = (int *)mCalloc(tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes),sizeof(int));
-      b->p_lk_left      = (phydbl *)mCalloc(tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns,sizeof(phydbl));
+      b->sum_scale_rght = (int *)mCalloc(tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes),sizeof(int));
+      b->p_lk_rght      = (phydbl *)mCalloc(tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns,sizeof(phydbl));
     }
 
-
-  b->patt_id_left  = (int *)mCalloc(tree->data->crunch_len,sizeof(int));
   b->patt_id_rght  = (int *)mCalloc(tree->data->crunch_len,sizeof(int));
-  b->p_lk_loc_left = (int *)mCalloc(tree->data->crunch_len,sizeof(int));
   b->p_lk_loc_rght = (int *)mCalloc(tree->data->crunch_len,sizeof(int));
-
 }
-
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -280,7 +316,7 @@ nni *Make_NNI()
 t_node *Make_Node_Light(int num)
 {
   t_node *n;
-  
+
   n           = (t_node *)mCalloc(1,sizeof(t_node));
   n->v        = (t_node **)mCalloc(3,sizeof(t_node *));
   n->l        = (phydbl *)mCalloc(3,sizeof(phydbl));
@@ -311,7 +347,7 @@ nexcom **Make_Nexus_Com()
   int i;
 
   com = (nexcom **)mCalloc(N_MAX_NEX_COM,sizeof(nexcom *));
-  
+
   For(i,N_MAX_NEX_COM)
     {
       com[i]       = (nexcom *)mCalloc(1,sizeof(nexcom));
@@ -330,7 +366,7 @@ nexparm *Make_Nexus_Parm()
 {
   nexparm *parm;
 
-  parm        = (nexparm *)mCalloc(1,sizeof(nexparm));  
+  parm        = (nexparm *)mCalloc(1,sizeof(nexparm));
   parm->name  = (char *)mCalloc(T_MAX_TOKEN,sizeof(char ));
   parm->value = (char *)mCalloc(T_MAX_TOKEN,sizeof(char ));
 
@@ -346,7 +382,7 @@ matrix *Make_Mat(int n_otu)
   int i;
 
   mat = (matrix *)mCalloc(1,sizeof(matrix));
-  
+
   mat->n_otu = n_otu;
 
   mat->P        = (phydbl **)mCalloc(n_otu,sizeof(phydbl *));
@@ -542,7 +578,7 @@ t_mod *Make_Model_Basic()
   t_mod *mod;
 
   mod = (t_mod *)mCalloc(1,sizeof(t_mod));
-  
+
   mod->modelname = Make_String(T_MAX_NAME);
   Init_String(mod->modelname);
 
@@ -550,7 +586,7 @@ t_mod *Make_Model_Basic()
   Init_String(mod->custom_mod_string);
 
   mod->ras = Make_RAS_Basic();
- 
+
   mod->kappa                  = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
   Init_Scalar_Dbl(mod->kappa);
 
@@ -590,29 +626,29 @@ void Make_Model_Complete(t_mod *mod)
       M4_Make_Complete(mod->m4mod->n_h,mod->m4mod->n_o,mod->m4mod);
       mod->ns = mod->m4mod->n_o * mod->m4mod->n_h;
     }
-  
+
   mod->Pij_rr = (vect_dbl *)mCalloc(1,sizeof(vect_dbl));
   Init_Vect_Dbl(0,mod->Pij_rr);
   mod->Pij_rr->v = (phydbl *)mCalloc(mod->ras->n_catg*mod->ns*mod->ns,sizeof(phydbl));
 
   mod->eigen     = (eigen *)Make_Eigen_Struct(mod->ns);
-  
+
   // If r_mat (e_frq) are not NULL, then they have been created elsewhere and affected.
-  if(!mod->r_mat) 
+  if(!mod->r_mat)
     {
       mod->r_mat = (t_rmat *)Make_Rmat(mod->ns);
       Init_Rmat(mod->r_mat);
     }
-  if(!mod->e_frq) 
+  if(!mod->e_frq)
     {
       mod->e_frq = (t_efrq *)Make_Efrq(mod->ns);
       Init_Efrq(mod->e_frq);
     }
 
   Make_RAS_Complete(mod->ras);
-  
+
   mod->user_b_freq->len = mod->ns;
-  
+
   if(mod->whichmodel < 0)
     {
       PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
@@ -636,7 +672,7 @@ void Make_Model_Complete(t_mod *mod)
 t_ras *Make_RAS_Basic()
 {
   t_ras *ras;
-  
+
   ras = (t_ras *)mCalloc(1,sizeof(t_ras));
 
   ras->gamma_r_proba          = (vect_dbl *)mCalloc(1,sizeof(vect_dbl));
@@ -654,12 +690,15 @@ t_ras *Make_RAS_Basic()
   ras->gamma_rr_unscaled      = (vect_dbl *)mCalloc(1,sizeof(vect_dbl));
   Init_Vect_Dbl(0,ras->gamma_rr_unscaled);
   ras->gamma_rr_unscaled->v = NULL;
-  
+
   ras->alpha             = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
   Init_Scalar_Dbl(ras->alpha);
 
   ras->pinvar            = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
   Init_Scalar_Dbl(ras->pinvar);
+
+  ras->free_rate_mr           = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
+  Init_Scalar_Dbl(ras->free_rate_mr);
 
   return(ras);
 }
@@ -676,6 +715,7 @@ void Make_RAS_Complete(t_ras *ras)
       ras->gamma_r_proba_unscaled->v = (phydbl *)mCalloc(ras->n_catg,sizeof(phydbl));
       ras->gamma_rr->v               = (phydbl *)mCalloc(ras->n_catg,sizeof(phydbl));
       ras->gamma_rr_unscaled->v      = (phydbl *)mCalloc(ras->n_catg,sizeof(phydbl));
+      ras->skip_rate_cat             = (short int *)mCalloc(ras->n_catg,sizeof(short int));
     }
 }
 
@@ -695,7 +735,7 @@ t_efrq *Make_Efrq(int ns)
   e_frq->pi_unscaled      = (vect_dbl *)mCalloc(1,sizeof(vect_dbl));
   e_frq->pi_unscaled->v   = (phydbl *)mCalloc(ns,sizeof(phydbl));
   e_frq->pi_unscaled->len = ns;
-    
+
   return e_frq;
 }
 
@@ -707,7 +747,7 @@ t_rmat *Make_Rmat(int ns)
   t_rmat *r_mat;
 
   r_mat                         = (t_rmat *)mCalloc(1,sizeof(t_rmat));
-  
+
   r_mat->qmat                   = (vect_dbl *)mCalloc(1,sizeof(vect_dbl));
   Init_Vect_Dbl(0,r_mat->qmat);
 
@@ -729,7 +769,7 @@ t_rmat *Make_Rmat(int ns)
   r_mat->qmat->v                = (phydbl *)mCalloc(ns*ns,sizeof(phydbl));
   r_mat->qmat_buff->v           = (phydbl *)mCalloc(ns*ns,sizeof(phydbl));
 
-  
+
   return(r_mat);
 }
 
@@ -826,25 +866,25 @@ triplet *Make_Triplet_Struct(t_mod *mod)
     {
       triplet_struct->core[k]                = (phydbl ***)mCalloc(mod->ns,sizeof(phydbl **));
       For(i,mod->ns)
-	{
-	  triplet_struct->core[k][i]         = (phydbl **)mCalloc(mod->ns,sizeof(phydbl *));
-	  For(j,mod->ns)
-	    triplet_struct->core[k][i][j]    = (phydbl  *)mCalloc(mod->ns,sizeof(phydbl ));
-	}
+    {
+      triplet_struct->core[k][i]         = (phydbl **)mCalloc(mod->ns,sizeof(phydbl *));
+      For(j,mod->ns)
+        triplet_struct->core[k][i][j]    = (phydbl  *)mCalloc(mod->ns,sizeof(phydbl ));
+    }
     }
 
   For(i,mod->ns)
     {
       triplet_struct->p_one_site[i]          = (phydbl **)mCalloc(mod->ns,sizeof(phydbl *));
       For(j,mod->ns)
-	triplet_struct->p_one_site[i][j]     = (phydbl  *)mCalloc(mod->ns,sizeof(phydbl ));
+    triplet_struct->p_one_site[i][j]     = (phydbl  *)mCalloc(mod->ns,sizeof(phydbl ));
     }
 
   For(i,mod->ns)
     {
       triplet_struct->sum_p_one_site[i]      = (phydbl **)mCalloc(mod->ns,sizeof(phydbl *));
       For(j,mod->ns)
-	triplet_struct->sum_p_one_site[i][j] = (phydbl  *)mCalloc(mod->ns,sizeof(phydbl ));
+    triplet_struct->sum_p_one_site[i][j] = (phydbl  *)mCalloc(mod->ns,sizeof(phydbl ));
     }
 
   return triplet_struct;
@@ -868,11 +908,11 @@ xml_attr *XML_Make_Attribute(xml_attr *prev, char *attr_name, char *attr_value)
   xml_attr *new_attr;
 
   new_attr = (xml_attr *)mCalloc(1,sizeof(xml_attr));
-  
+
   new_attr->prev = prev;
   new_attr->next = NULL;
   if(prev != NULL) prev->next = new_attr;
-  
+
   new_attr->name = (char *)mCalloc(strlen(attr_name)+1,sizeof(char));
   strcpy(new_attr->name,attr_name);
 
@@ -904,7 +944,7 @@ void XML_Make_Node_Value(xml_node *n, char *val)
 
 xml_node *XML_Make_Node(char *name)
 {
-  
+
   xml_node *new_node = (xml_node *)mCalloc(1,sizeof(xml_node));
 
   if(name)
@@ -913,7 +953,7 @@ xml_node *XML_Make_Node(char *name)
     }
 
   new_node->ds = (t_ds *)mCalloc(1,sizeof(t_ds));
-  
+
   return new_node;
 }
 
@@ -934,7 +974,7 @@ void Make_Spr_List(t_tree *tree)
   int i;
 
   tree->size_spr_list = 2*tree->n_otu-3;
-  
+
   tree->spr_list = (t_spr **)mCalloc(2*tree->n_otu-2,sizeof(t_spr *));
 
   For(i,2*tree->n_otu-2)
@@ -963,7 +1003,7 @@ t_spr *Make_One_Spr(t_tree *tree)
 t_rate *RATES_Make_Rate_Struct(int n_otu)
 {
   t_rate *rates;
-  
+
   rates = (t_rate  *)mCalloc(1,sizeof(t_rate));
   rates->is_allocated = NO;
 
@@ -1041,8 +1081,8 @@ t_cal *Make_Calib(int n_otu)
   calib                        = (t_cal *)mCalloc(1, sizeof(t_cal));
   calib -> proba               = (phydbl *)mCalloc(2 * n_otu, sizeof(phydbl));
   calib -> all_applies_to      = (t_node **)mCalloc(2 * n_otu - 1, sizeof(t_node *));
-  For(i, 2 * n_otu - 1)   
-  calib -> all_applies_to[i]   = (t_node *)mCalloc(1, sizeof(t_node)); 
+  For(i, 2 * n_otu - 1)
+  calib -> all_applies_to[i]   = (t_node *)mCalloc(1, sizeof(t_node));
   return(calib);
 }
 
@@ -1058,7 +1098,7 @@ void Make_Rmat_Weight(t_tree *mixt_tree)
   int i,n_mats;
 
   all_r_mats = (scalar_dbl **)mCalloc(1,sizeof(scalar_dbl *));
-  
+
   buff_tree = tree = curr_mixt_tree = mixt_tree;
   do // For each mixt_tree
     {
@@ -1072,20 +1112,20 @@ void Make_Rmat_Weight(t_tree *mixt_tree)
           all_r_mats = (scalar_dbl **)realloc(all_r_mats,(n_mats+1)*sizeof(scalar_dbl *));
 
           if(tree != curr_mixt_tree->next)
-            {              
+            {
               // Find out whether curr_r_mat was found previously
               buff_tree = curr_mixt_tree->next;  // Start from first tree in the mixture
               match_weight = NULL;
               while(buff_tree != tree) // Stop when you have reached the current tree
                 {
-                  if(buff_tree->mod->r_mat == curr_r_mat) 
+                  if(buff_tree->mod->r_mat == curr_r_mat)
                     {
                       match_weight = buff_tree->mod->r_mat_weight;
                       break;
                     }
                   buff_tree = buff_tree->next;
                 }
-              
+
               if(match_weight)
                 {
                   Free(tree->mod->r_mat_weight);
@@ -1096,8 +1136,8 @@ void Make_Rmat_Weight(t_tree *mixt_tree)
           tree = tree->next;
         }
       while(tree && tree->is_mixt_tree == NO);
-      
-      For(i,n_mats-1) 
+
+      For(i,n_mats-1)
         {
           all_r_mats[i]->next = all_r_mats[i+1];
           all_r_mats[i+1]->prev = all_r_mats[i];
@@ -1128,7 +1168,7 @@ void Make_Efrq_Weight(t_tree *mixt_tree)
   int i,n_frqs;
 
   all_e_frqs = (scalar_dbl **)mCalloc(1,sizeof(scalar_dbl *));
-  
+
   buff_tree = tree = curr_mixt_tree = mixt_tree;
   do // For each mixt_tree
     {
@@ -1142,20 +1182,20 @@ void Make_Efrq_Weight(t_tree *mixt_tree)
           all_e_frqs = (scalar_dbl **)realloc(all_e_frqs,(n_frqs+1)*sizeof(scalar_dbl *));
 
           if(tree != curr_mixt_tree->next)
-            {              
+            {
               // Find out whether curr_e_frq was found previously
               buff_tree = curr_mixt_tree->next;  // Start from first tree in the mixture
               match_weight = NULL;
               while(buff_tree != tree) // Stop when you have reached the current tree
                 {
-                  if(buff_tree->mod->e_frq == curr_e_frq) 
+                  if(buff_tree->mod->e_frq == curr_e_frq)
                     {
                       match_weight = buff_tree->mod->e_frq_weight;
                       break;
                     }
                   buff_tree = buff_tree->next;
                 }
-              
+
               if(match_weight)
                 {
                   Free(tree->mod->e_frq_weight);
@@ -1166,8 +1206,8 @@ void Make_Efrq_Weight(t_tree *mixt_tree)
           tree = tree->next;
         }
       while(tree && tree->is_mixt_tree == NO);
-      
-      For(i,n_frqs-1) 
+
+      For(i,n_frqs-1)
         {
           all_e_frqs[i]->next = all_e_frqs[i+1];
           all_e_frqs[i+1]->prev = all_e_frqs[i];

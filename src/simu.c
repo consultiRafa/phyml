@@ -27,7 +27,7 @@ void Simu_Loop(t_tree *mixt_tree)
   t_tree *tree,**tree_list;
 
   if((mixt_tree->mod->s_opt->print) &&
-     (!mixt_tree->io->quiet)) PhyML_Printf("\n\n. Refining the input tree...\n");
+     (!mixt_tree->io->quiet)) PhyML_Printf("\n\n. Refining the tree...\n");
 
   /*! Get the number of classes in each mixture */
   orig_catg = MIXT_Get_Number_Of_Classes_In_All_Mixtures(mixt_tree);
@@ -145,7 +145,10 @@ void Simu_Loop(t_tree *mixt_tree)
   Free(orig_inv);
 
   if((mixt_tree->mod->s_opt->print) && (!mixt_tree->io->quiet))
+    {
+      PhyML_Printf("\n\n. End of refining stage...\n. The log-likelihood might now decrease and then increase again...\n");
     PhyML_Printf("\n\n. Maximizing likelihood (using NNI moves)...\n");
+    }
 
 
   Set_Both_Sides(YES,mixt_tree);
@@ -219,7 +222,7 @@ int Simu(t_tree *tree, int n_step_max)
     {
       if((tree->mod->s_opt->print) && (!tree->io->quiet)) PhyML_Printf("\n\n. Moving backward\n");
       if(!Mov_Backward_Topo_Bl(tree,old_loglk,tested_b,n_tested))
-        Exit("\n== Err: mov_back failed\n");
+        Exit("\n== Err. mov_back failed\n");
       if(!tree->n_swap) n_neg = 0;
 
       /* For(i,2*tree->n_otu-3) tree->a_edges[i]->l_old->v = tree->a_edges[i]->l->v;	     */

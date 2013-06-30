@@ -28,8 +28,7 @@ void PMat_JC69(phydbl l, int pos, phydbl *Pij, t_mod *mod)
   ns = mod->ns;
 
 
-  For(i,ns)
-    Pij[pos+ ns*i+i] = 1. - ((ns - 1.)/ns)*(1. - EXP(-ns*l/(ns - 1.)));
+  For(i,ns) Pij[pos+ ns*i+i] = 1. - ((ns - 1.)/ns)*(1. - EXP(-ns*l/(ns - 1.)));
   For(i,ns-1)
     for(j=i+1;j<ns;j++)
       {
@@ -436,7 +435,7 @@ void PMat_Zero_Br_Len(t_mod *mod, int pos, phydbl *Pij)
 
 void PMat(phydbl l, t_mod *mod, int pos, phydbl *Pij)
 {
-  /* Warning: l is never the og of branch length here */
+  /* Warning: l is never the log of branch length here */
   if(l < 0.0)
     {
       PMat_Zero_Br_Len(mod,pos,Pij);
@@ -618,7 +617,14 @@ void Update_Qmat_GTR(phydbl *rr, phydbl *rr_val, int *rr_num, phydbl *pi, phydbl
   phydbl mr;
 
   For(i,6) rr[i] = rr_val[rr_num[i]];
-  For(i,6) if(rr[i] < 0.001) rr[i] = 0.001;
+  For(i,6) 
+    if(rr[i] < 0.0) 
+      {
+        PhyML_Printf("\n. rr%d: %f",i,rr[i]);
+        PhyML_Printf("\n. Err. in file %s at line %d\n\n",__FILE__,__LINE__);
+        Exit("");
+      }
+
   For(i,6) rr[i] /= rr[5];
 
   qmat[0*4+1] = (rr[0]*pi[1]);
@@ -748,6 +754,8 @@ void Update_RAS(t_mod *mod)
   phydbl sum;
   int i;
 
+
+
   if(mod->ras->free_mixt_rates == NO) DiscreteGamma(mod->ras->gamma_r_proba->v,
                             mod->ras->gamma_rr->v,
                             mod->ras->alpha->v,
@@ -756,6 +764,9 @@ void Update_RAS(t_mod *mod)
                             mod->ras->gamma_median);
   else
     {
+
+#if (!defined PHYML)
+
       Qksort(mod->ras->gamma_r_proba_unscaled->v,NULL,0,mod->ras->n_catg-1); // Unscaled class frequencies sorted in increasing order
 
       // Update class frequencies
@@ -770,7 +781,15 @@ void Update_RAS(t_mod *mod)
           (mod->ras->gamma_r_proba_unscaled->v[mod->ras->n_catg-1]) ;
         }
 
-      // Update class rates
+#else
+
+      sum = 0.0;
+      For(i,mod->ras->n_catg) sum += mod->ras->gamma_r_proba_unscaled->v[i];
+      For(i,mod->ras->n_catg) mod->ras->gamma_r_proba->v[i] = mod->ras->gamma_r_proba_unscaled->v[i] / sum;
+
+
+#endif
+
       do
         {
           sum = .0;
@@ -784,13 +803,25 @@ void Update_RAS(t_mod *mod)
         }
       while((sum > 1.01) || (sum < 0.99));
 
-      sum = .0;
-      For(i,mod->ras->n_catg) sum += mod->ras->gamma_r_proba->v[i] * FABS(mod->ras->gamma_rr_unscaled->v[i]);
-      For(i,mod->ras->n_catg) mod->ras->gamma_rr->v[i] = FABS(mod->ras->gamma_rr_unscaled->v[i])/sum;
 
-      /* sum = .0; */
-      /* For(i,mod->ras->n_catg) sum += mod->ras->gamma_r_proba->v[i] * FABS(mod->ras->gamma_rr->v[i]); */
-      /* printf("\n. sum=%f",sum); */
+      // Update class rates
+      sum = .0;
+      For(i,mod->ras->n_catg) sum += mod->ras->gamma_r_proba->v[i] * mod->ras->gamma_rr_unscaled->v[i];
+
+      if(mod->ras->normalise_rr == YES)
+        For(i,mod->ras->n_catg) 
+          mod->ras->gamma_rr->v[i] = mod->ras->gamma_rr_unscaled->v[i]/sum;
+      else
+        For(i,mod->ras->n_catg) 
+          mod->ras->gamma_rr->v[i] = mod->ras->gamma_rr_unscaled->v[i] * mod->ras->free_rate_mr->v;
+
+      /* printf("\n"); */
+      /* For(i,mod->ras->n_catg)  */
+      /*   printf("\nx %12f %12f xx %12f %12f", */
+      /*          mod->ras->gamma_r_proba->v[i], */
+      /*          mod->ras->gamma_rr->v[i], */
+      /*          LOG(mod->ras->gamma_r_proba_unscaled->v[i]), */
+      /*          LOG(mod->ras->gamma_rr_unscaled->v[i])); */
     }
 
 }
@@ -879,8 +910,14 @@ void Update_Eigen(t_mod *mod)
       scalar   = 1.0;
       n_iter   = 0;
       result   = 0;
+            
       For(i,mod->ns*mod->ns) mod->r_mat->qmat_buff->v[i] = mod->r_mat->qmat->v[i];
 
+      /* compute eigenvectors/values */
+      /*       if(!EigenRealGeneral(mod->eigen->size,mod->r_mat->qmat,mod->eigen->e_val, */
+      /* 			  mod->eigen->e_val_im, mod->eigen->r_e_vect, */
+      /* 			  mod->eigen->space_int,mod->eigen->space)) */
+      
       if(!Eigen(1,mod->r_mat->qmat_buff->v,mod->eigen->size,mod->eigen->e_val,
         mod->eigen->e_val_im,mod->eigen->r_e_vect,
         mod->eigen->r_e_vect_im,mod->eigen->space))
@@ -909,6 +946,36 @@ void Update_Eigen(t_mod *mod)
 
           /* compute the diagonal terms of EXP(D) */
           For(i,mod->ns) mod->eigen->e_val[i] = (phydbl)EXP(mod->eigen->e_val[i]);
+
+
+	  /* int j; */
+	  /* double *U,*V,*R; */
+	  /* double *expt; */
+	  /* double *uexpt; */
+	  /* int n; */
+
+	  /* expt  = mod->eigen->e_val_im; */
+	  /* uexpt = mod->eigen->r_e_vect_im; */
+	  /* U     = mod->eigen->r_e_vect; */
+	  /* V     = mod->eigen->l_e_vect; */
+	  /* R     = mod->eigen->e_val; /\* exponential of the eigen value matrix *\/ */
+	  /* n     = mod->ns; */
+
+	  /* PhyML_Printf("\n"); */
+	  /* PhyML_Printf("\n. Q\n"); */
+	  /* For(i,n) { For(j,n) PhyML_Printf("%7.3f ",mod->eigen->q[i*n+j]); PhyML_Printf("\n"); } */
+	  /* PhyML_Printf("\n. U\n"); */
+	  /* For(i,n) { For(j,n) PhyML_Printf("%7.3f ",U[i*n+j]); PhyML_Printf("\n"); } */
+	  /* PhyML_Printf("\n"); */
+	  /* PhyML_Printf("\n. V\n"); */
+	  /* For(i,n) { For(j,n) PhyML_Printf("%7.3f ",V[i*n+j]); PhyML_Printf("\n"); } */
+	  /* PhyML_Printf("\n"); */
+	  /* PhyML_Printf("\n. Eigen\n"); */
+	  /* For(i,n)  PhyML_Printf("%E ",mod->eigen->e_val[i]); */
+	  /* PhyML_Printf("\n"); */
+	  
+/* 	  Exit("\n"); */
+
         }
       else
         {

@@ -11,6 +11,7 @@ the GNU public licence. See http://www.opensource.org for details.
 */
 
 #include "utilities.h"
+
 #ifdef BEAGLE
 #include "beagle_utils.h"
 #endif
@@ -95,16 +96,16 @@ void Make_Edge_Dirs(t_edge *b, t_node *a, t_node *d, t_tree *tree)
     {
       /* if((a->v[i]) && ((a->v[i] == d) || (e_root && a->b[i] == e_root))) */
       if((a->v[i]) && ((a->v[i] == d)))
-    {
-      b->l_r  = i; /* we consider here that 'a' is on the left handside of 'b'*/
-      a->b[i] = b;
-    }
+        {
+          b->l_r  = i; /* we consider here that 'a' is on the left handside of 'b'*/
+          a->b[i] = b;
+        }
       /* if((d->v[i]) && ((d->v[i] == a) || (e_root && d->b[i] == e_root))) */
       if((d->v[i]) && ((d->v[i] == a)))
-    {
-      b->r_l  = i; /* we consider here that 'd' is on the right handside of 'b'*/
-      d->b[i] = b;
-    }
+        {
+          b->r_l  = i; /* we consider here that 'd' is on the right handside of 'b'*/
+          d->b[i] = b;
+        }
     }
 
   if(a->tax) {b->r_l = 0; For(i,3) if(d->v[i]==a) {b->l_r = i; break;}}
@@ -113,16 +114,16 @@ void Make_Edge_Dirs(t_edge *b, t_node *a, t_node *d, t_tree *tree)
   For(i,3)
     {
       if(b->left->v[i] != b->rght)
-    {
-      if(b->l_v1 < 0) b->l_v1 = i;
-      else            b->l_v2 = i;
-    }
+        {
+          if(b->l_v1 < 0) b->l_v1 = i;
+          else            b->l_v2 = i;
+        }
 
       if(b->rght->v[i] != b->left)
-    {
-      if(b->r_v1 < 0) b->r_v1 = i;
-      else            b->r_v2 = i;
-    }
+        {
+          if(b->r_v1 < 0) b->r_v1 = i;
+          else            b->r_v2 = i;
+        }
     }
 }
 
@@ -1148,7 +1149,6 @@ char *Add_Taxa_To_Constraint_Tree(FILE *fp, calign *cdata)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Check_Constraint_Tree_Taxa_Names(t_tree *tree, calign *cdata)
 {
   int i,j,n_otu_tree,n_otu_cdata;
@@ -1408,7 +1408,7 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
 
   if(tree->prev)
     {
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Exit("\n");
     }
 
@@ -1430,12 +1430,12 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
 
   if(v1->num < v2->num)
     {
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Exit("\n");
     }
   if(v3->num < v4->num)
     {
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Exit("\n");
     }
 
@@ -1520,13 +1520,13 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
 
   if(FABS(lk0_init - lk_init) > tree->mod->s_opt->min_diff_lk_local)
     {
-      PhyML_Printf("\n== lk_init = %f; lk = %f diff = %f l = %G\n",
+      PhyML_Printf("\n== lk_init = %f; lk = %f diff = %f l = %G",
            lk_init,
            lk0_init,
            lk_init-lk0_init,
            b_fcus->l->v);
-      PhyML_Printf("\n== Curr_lnL = %f\n",Lk(NULL,tree));
-      Exit("\n== Err. in NNI (3)\n");
+      PhyML_Printf("\n== Curr_lnL = %f",Lk(NULL,tree));
+      Exit("\n== Err. in NNI (3)");
     }
 
   l_infa = 10.;
@@ -1831,8 +1831,8 @@ void Swap(t_node *a, t_node *b, t_node *c, t_node *d, t_tree *tree)
   /* \             /d      \             /a
    *  \           /         \           /
    *   \b__...__c/    ->     \b__...__c/
-   *   /         \	     /		\
-   *  /           \	    /		 \
+   *   /         \	         /  		\
+   *  /           \	        /   	   	 \
    * /a            \  	   /d             \
    *
    * nodes b and c are not necessarily on the same branch
@@ -2425,14 +2425,14 @@ void Set_D_States(calign *data, int datatype, int stepsize)
   For(j,data->crunch_len)
     {
       For(i,data->n_otu)
-    {
-      if(data->c_seq[i]->is_ambigu[j] == NO)
         {
-              data->c_seq[i]->d_state[j] = Assign_State(data->c_seq[i]->state+j,
-                                                        datatype,
-                                                        stepsize);
+          if(data->c_seq[i]->is_ambigu[j] == NO)
+            {
+                  data->c_seq[i]->d_state[j] = Assign_State(data->c_seq[i]->state+j,
+                                                            datatype,
+                                                            stepsize);
+            }
         }
-    }
     }
 }
 
@@ -2511,17 +2511,17 @@ int Assign_State(char *c, int datatype, int stepsize)
   if(datatype == NT)
     {
       For(i,stepsize)
-    {
-      switch(c[i])
         {
-        case 'A' : {state[i]=0;  break;}
-        case 'C' : {state[i]=1;  break;}
-        case 'G' : {state[i]=2;  break;}
-        case 'T' : {state[i]=3;  break;}
-        case 'U' : {state[i]=3;  break;}
-        default  : {state[i]=-1; break;}
+          switch(c[i])
+            {
+            case 'A' : {state[i]=0;  break;}
+            case 'C' : {state[i]=1;  break;}
+            case 'G' : {state[i]=2;  break;}
+            case 'T' : {state[i]=3;  break;}
+            case 'U' : {state[i]=3;  break;}
+            default  : {state[i]=-1; fprintf(stdout,"THE CHARACTER IS: %s\n",c);break;}
+            }
         }
-    }
       return (stepsize>1)?(state[0]*16+state[1]*4+state[2]):(state[0]);
     }
   else if(datatype == AA)
@@ -2671,7 +2671,7 @@ int Assign_State_With_Ambiguity(char *c, int datatype, int stepsize)
         case 'D' : {state[i]=11;  break;}
         case 'H' : {state[i]=12;  break;}
         case 'V' : {state[i]=13;  break;}
-        case 'N' : case 'X' : case '?' : case 'O' : case '-' : {state[i]=T_MAX_ALPHABET-1;  break;}
+        case 'N' : case 'X' : case '?' : case 'O' : case '-' : {state[i]=T_MAX_ALPHABET-1;  fprintf(stdout,"THE CHARACTER IS: %s\n",c);break;}
         default :
           {
         PhyML_Printf("\n. Unknown character state : '%c'\n",c[i]);
@@ -2861,6 +2861,7 @@ void Bootstrap(t_tree *tree)
 
       Connect_CSeqs_To_Nodes(boot_data,boot_tree);
 
+      Check_Br_Lens(boot_tree);
       Share_Lk_Struct(tree,boot_tree);
       Share_Spr_Struct(tree,boot_tree);
       Share_Pars_Struct(tree,boot_tree);
@@ -2915,6 +2916,7 @@ void Bootstrap(t_tree *tree)
 
       Compare_Bip(tree,boot_tree,NO);
 
+      Check_Br_Lens(boot_tree);
       Br_Len_Involving_Invar(boot_tree);
 
       if(tree->io->print_boot_trees)
@@ -2971,7 +2973,7 @@ void Br_Len_Involving_Invar(t_tree *tree)
       return;
     }
 
-  For(i,2*tree->n_otu-3) tree->a_edges[i]->l->v *= (1.0-tree->mod->ras->pinvar->v);
+  For(i,2*tree->n_otu-1) tree->a_edges[i]->l->v *= (1.0-tree->mod->ras->pinvar->v);
 }
 
 //////////////////////////////////////////////////////////////
@@ -2987,10 +2989,7 @@ void Br_Len_Not_Involving_Invar(t_tree *tree)
       return;
     }
 
-  For(i,2*tree->n_otu-3)
-    {
-      tree->a_edges[i]->l->v /= (1.0-tree->mod->ras->pinvar->v);
-    }
+  For(i,2*tree->n_otu-1) tree->a_edges[i]->l->v /= (1.0-tree->mod->ras->pinvar->v);
 }
 
 //////////////////////////////////////////////////////////////
@@ -3008,70 +3007,92 @@ void Getstring_Stdin(char *s)
 //////////////////////////////////////////////////////////////
 
 phydbl Num_Derivatives_One_Param(phydbl (*func)(t_tree *tree), t_tree *tree,
-                 phydbl f0, phydbl *param, phydbl stepsize,
-                 phydbl *err, int precise)
+                 phydbl f0, phydbl *param, int which, int n_param, phydbl stepsize, int logt,
+                 phydbl *err, int precise, int is_positive)
 {
   int i,j;
-  phydbl errt,fac,hh,**a,ans;
+  phydbl errt,fac,hh,**a,ans,*sign;
   int n_iter;
+
+  sign = (phydbl *)mCalloc(n_param,sizeof(phydbl));
+
   a = (phydbl **)mCalloc(11,sizeof(phydbl *));
   For(i,11) a[i] = (phydbl *)mCalloc(11,sizeof(phydbl));
-
 
   n_iter = 10; /* */
 
   ans  = .0;
 
-  if(stepsize < SMALL) Warn_And_Exit("\n. h must be nonzero in Dfridr.");
+  if(stepsize < SMALL) Warn_And_Exit("\n== h must be nonzero in Dfridr.");
 
   hh=stepsize;
 
   if(!precise)
     {
-      *param   = *param+hh;
+      param[which]   = param[which]+hh;
+
+      if(logt == YES) For(i,n_param) param[i] = EXP(MIN(1.E+2,param[i]));
+      For(i,n_param) sign[i] = param[i] > .0 ? 1. : -1.;
+      if(is_positive == YES) For(i,n_param) param[i] = FABS(param[i]);
       a[0][0]  = (*func)(tree);
-/*       printf("\n. f0=%f f1=%f hh=%G",f0,a[0][0],hh); */
+      if(is_positive == YES) For(i,n_param) param[i] *= sign[i];
+      if(logt == YES) For(i,n_param) param[i] = LOG(param[i]);
+
+      /* printf("\n. f0=%f f1=%f hh=%G %f",f0,a[0][0],hh,param[which]); */
+
       a[0][0]  -= f0;
       a[0][0]  /= hh;
-      *param   = *param-hh;
+      param[which]   = param[which]-hh;
 
       ans =  a[0][0];
-
     }
   else
     {
-      *param   = *param+hh;
+      param[which]   = param[which]+hh;
+
+      if(logt == YES) For(i,n_param) param[i] = EXP(MIN(1.E+2,param[i]));
+      For(i,n_param) sign[i] = param[i] > .0 ? 1. : -1.;
+      if(is_positive == YES) For(i,n_param) param[i] = FABS(param[i]);
       a[0][0]  = (*func)(tree);
-      /*   *param   = *param-2*hh; */
+      if(is_positive == YES) For(i,n_param) param[i] *= sign[i];
+      if(logt == YES) For(i,n_param) param[i] = LOG(param[i]);
+
+      /*   param[which]   = param[which]-2*hh; */
       /*   a[0][0] -= (*func)(tree); */
       /*   a[0][0] /= (2.0*hh); */
-      /*   *param   = *param+hh; */
+      /*   param[which]   = param[which]+hh; */
       a[0][0]  -= f0;
       a[0][0]  /= hh;
-      *param   = *param-hh;
+      param[which]   = param[which]-hh;
 
       *err=1e30;
       for(i=1;i<n_iter;i++)
     {
       hh /= 1.4;
 
-      /*       *param   = *param+hh; */
+      /*       param[which]   = param[which]+hh; */
       /*       a[0][i]  = (*func)(tree); */
-      /*       *param   = *param-2*hh; */
+      /*       param[which]   = param[which]-2*hh; */
       /*       a[0][i] -= (*func)(tree); */
       /*       a[0][i] /= (2.0*hh); */
-      /*       *param   = *param+hh; */
+      /*       param[which]   = param[which]+hh; */
 
+      param[which]   = param[which]+hh;
 
-      *param   = *param+hh;
+          if(logt == YES) For(j,n_param) param[j] = EXP(MIN(1.E+2,param[j]));
+          For(i,n_param) sign[i] = param[i] > .0 ? 1. : -1.;
+          if(is_positive == YES) For(i,n_param) param[i] = FABS(param[i]);
       a[0][i]  = (*func)(tree);
-      /*   *param   = *param-2*hh; */
+          if(is_positive == YES) For(i,n_param) param[i] *= sign[i];
+          if(logt == YES) For(j,n_param) param[j] = LOG(param[j]);
+
+      /*   param[which]   = param[which]-2*hh; */
       /*   a[0][i] -= (*func)(tree); */
       /*   a[0][i] /= (2.0*hh); */
-      /*   *param   = *param+hh; */
+      /*   param[which]   = param[which]+hh; */
       a[0][i]  -= f0;
       a[0][i]  /= hh;
-      *param   = *param-hh;
+      param[which]   = param[which]-hh;
 
 
       fac=1.4*1.4;
@@ -3094,6 +3115,7 @@ phydbl Num_Derivatives_One_Param(phydbl (*func)(t_tree *tree), t_tree *tree,
     }
   For(i,11) Free(a[i]);
   Free(a);
+  Free(sign);
 
   return ans;
 }
@@ -3101,50 +3123,196 @@ phydbl Num_Derivatives_One_Param(phydbl (*func)(t_tree *tree), t_tree *tree,
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-int Num_Derivative_Several_Param(t_tree *tree, phydbl *param, int n_param, phydbl stepsize,
-                  phydbl (*func)(t_tree *tree), phydbl *derivatives)
+phydbl Num_Derivatives_One_Param_Nonaligned(phydbl (*func)(t_tree *tree), t_tree *tree,
+                                            phydbl f0, phydbl **param, int which, int n_param, phydbl stepsize, int logt,
+                                            phydbl *err, int precise, int is_positive)
+{
+  int i,j;
+  phydbl errt,fac,hh,**a,ans,*sign;
+  int n_iter;
+
+  sign = (phydbl *)mCalloc(n_param,sizeof(phydbl));
+
+  a = (phydbl **)mCalloc(11,sizeof(phydbl *));
+  For(i,11) a[i] = (phydbl *)mCalloc(11,sizeof(phydbl));
+
+  n_iter = 10; /* */
+
+  ans  = .0;
+
+  if(stepsize < SMALL) Warn_And_Exit("\n== h must be nonzero in Dfridr.");
+
+  hh=stepsize;
+
+  if(!precise)
+    {
+      *(param[which])   = *(param[which])+hh;
+
+      if(logt == YES) For(i,n_param) *(param[i]) = EXP(MIN(1.E+2,*(param[i])));
+      For(i,n_param) sign[i] = (*(param[i])) > .0 ? 1. : -1.;
+      if(is_positive == YES) For(i,n_param) (*(param[i])) = FABS(*(param[i]));
+      a[0][0]  = (*func)(tree);
+      if(is_positive == YES) For(i,n_param) (*(param[i])) *= sign[i];
+      if(logt == YES) For(i,n_param) *(param[i]) = LOG(*(param[i]));
+
+      /* printf("\n. f0=%f f1=%f hh=%G %f",f0,a[0][0],hh,*(param[which])); */
+
+      a[0][0]  -= f0;
+      a[0][0]  /= hh;
+      *(param[which]) = *(param[which])-hh;
+
+      ans =  a[0][0];
+    }
+  else
+    {
+      *(param[which])   = *(param[which])+hh;
+
+      if(logt == YES) For(i,n_param) *(param[i]) = EXP(MIN(1.E+2,*(param[i])));
+      For(i,n_param) sign[i] = (*(param[i])) > .0 ? 1. : -1.;
+      if(is_positive == YES) For(i,n_param) (*(param[i])) = FABS(*(param[i]));
+      a[0][0]  = (*func)(tree);
+      if(is_positive == YES) For(i,n_param) (*(param[i])) *= sign[i];
+      if(logt == YES) For(i,n_param) *(param[i]) = LOG(*(param[i]));
+
+      /*   *(param[which]   = *(param[which]-2*hh; */
+      /*   a[0][0] -= (*func)(tree); */
+      /*   a[0][0] /= (2.0*hh); */
+      /*   *(param[which]   = *(param[which]+hh; */
+      a[0][0]  -= f0;
+      a[0][0]  /= hh;
+      *(param[which])   = *(param[which])-hh;
+
+      *err=1e30;
+      for(i=1;i<n_iter;i++)
+    {
+      hh /= 1.4;
+
+      /*       *(param[which]   = *(param[which]+hh; */
+      /*       a[0][i]  = (*func)(tree); */
+      /*       *(param[which]   = *(param[which]-2*hh; */
+      /*       a[0][i] -= (*func)(tree); */
+      /*       a[0][i] /= (2.0*hh); */
+      /*       *(param[which]   = *(param[which]+hh; */
+
+      *(param[which])   = *(param[which])+hh;
+
+          if(logt == YES) For(j,n_param) *(param[j]) = EXP(MIN(1.E+2,*(param[j])));
+          For(i,n_param) sign[i] = (*(param[i])) > .0 ? 1. : -1.;
+          if(is_positive == YES) For(i,n_param) (*(param[i])) = FABS(*(param[i]));
+      a[0][i]  = (*func)(tree);
+          if(is_positive == YES) For(i,n_param) (*(param[i])) *= sign[i];
+          if(logt == YES) For(j,n_param) *(param[j]) = LOG(*(param[j]));
+
+      /*   *(param[which]   = *(param[which]-2*hh; */
+      /*   a[0][i] -= (*func)(tree); */
+      /*   a[0][i] /= (2.0*hh); */
+      /*   *(param[which]   = *(param[which]+hh; */
+      a[0][i]  -= f0;
+      a[0][i]  /= hh;
+      *(param[which])   = *(param[which])-hh;
+
+
+      fac=1.4*1.4;
+      for (j=1;j<=i;j++)
+        {
+          a[j][i]=(a[j-1][i]*fac-a[j-1][i-1])/(fac-1.0);
+          fac=1.4*1.4*fac;
+
+          errt=MAX(FABS(a[j][i]-a[j-1][i]),FABS(a[j][i]-a[j-1][i-1]));
+
+          if (errt <= *err)
+        {
+          *err=errt;
+          ans=a[j][i];
+        }
+        }
+
+      if(FABS(a[i][i]-a[i-1][i-1]) >= 2.0*(*err)) break;
+    }
+    }
+  For(i,11) Free(a[i]);
+  Free(a);
+  Free(sign);
+  return ans;
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+int Num_Derivative_Several_Param(t_tree *tree, phydbl *param, int n_param, phydbl stepsize, int logt,
+                                 phydbl (*func)(t_tree *tree), phydbl *derivatives, int is_positive)
 {
   int i;
-  phydbl err,f0;
+  phydbl err,f0,*sign;
 
+  sign = (phydbl *)mCalloc(n_param,sizeof(phydbl));
+
+  if(logt == YES)   For(i,n_param) param[i] = EXP(MIN(1.E+2,param[i]));
+  For(i,n_param) sign[i] = (param[i]) > .0 ? 1. : -1.;
+  if(is_positive == YES) For(i,n_param) param[i] = FABS(param[i]);
   f0 = (*func)(tree);
+  if(is_positive == YES) For(i,n_param) param[i] *= sign[i];
+  if(logt == YES)   For(i,n_param) param[i] = LOG(param[i]);
 
   For(i,n_param)
     {
       derivatives[i] = Num_Derivatives_One_Param(func,
                          tree,
                          f0,
-                         param+i,
+                         param,
+                                                 i,
+                                                 n_param,
                          stepsize,
+                                                 logt,
                          &err,
-                         0
+                         0,
+                                                 is_positive
                          );
     }
+
+  Free(sign);
+
   return 1;
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-int Num_Derivative_Several_Param_Nonaligned(t_tree *tree, phydbl **param, int n_param, phydbl stepsize,
-                                            phydbl (*func)(t_tree *tree), phydbl *derivatives)
+int Num_Derivative_Several_Param_Nonaligned(t_tree *tree, phydbl **param, int n_param, phydbl stepsize, int logt,
+                                            phydbl (*func)(t_tree *tree), phydbl *derivatives, int is_positive)
 {
   int i;
-  phydbl err,f0;
+  phydbl err,f0,*sign;
 
+  sign = (phydbl *)mCalloc(n_param,sizeof(phydbl));
+
+  if(logt == YES)   For(i,n_param) (*(param[i])) = EXP(MIN(1.E+2,*(param[i])));
+  For(i,n_param) sign[i] = (*(param[i])) > .0 ? 1. : -1.;
+  if(is_positive == YES) For(i,n_param) *(param[i]) = FABS(*(param[i]));
   f0 = (*func)(tree);
+  if(is_positive == YES) For(i,n_param) *(param[i]) *= sign[i];
+  if(logt == YES)   For(i,n_param) (*(param[i])) = LOG(*(param[i]));
+
 
   For(i,n_param)
     {
-      derivatives[i] = Num_Derivatives_One_Param(func,
+
+      derivatives[i] = Num_Derivatives_One_Param_Nonaligned(func,
                          tree,
                          f0,
-                         param[i],
+                                                            param,
+                                                            i,
+                                                            n_param,
                          stepsize,
+                                                            logt,
                          &err,
-                         0
+                                                            0,
+                                                            is_positive
                          );
     }
+
+  Free(sign);
+
   return 1;
 }
 
@@ -3154,6 +3322,7 @@ int Num_Derivative_Several_Param_Nonaligned(t_tree *tree, phydbl **param, int n_
 
 int Compare_Two_States(char *state1, char *state2, int state_size)
 {
+
   /* 1 the two states are identical */
   /* 0 the two states are different */
   int i;
@@ -3232,6 +3401,7 @@ void Record_Model(t_mod *ori, t_mod *cpy)
   cpy->log_l                = ori->log_l;
   cpy->ras->free_mixt_rates = ori->ras->free_mixt_rates;
   cpy->ras->gamma_median    = ori->ras->gamma_median;
+
 
   if((ori->whichmodel == CUSTOM) || (ori->whichmodel == GTR))
     {
@@ -4353,7 +4523,6 @@ void Copy_Tree(t_tree *ori, t_tree *cpy)
       cpy->a_edges[i]->l_r              = ori->a_edges[i]->l_r;
       cpy->a_edges[i]->r_l              = ori->a_edges[i]->r_l;
       cpy->a_edges[i]->does_exist       = ori->a_edges[i]->does_exist;
-      cpy->a_edges[i]->l_var            = ori->a_edges[i]->l_var;
     }
 
 
@@ -4391,6 +4560,7 @@ void Copy_Tree(t_tree *ori, t_tree *cpy)
 
 void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_tree *tree)
 {
+
   t_node *v1, *v2;
   t_edge *b1, *b2;
   int dir_v1, dir_v2;
@@ -4413,10 +4583,10 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
   For(i,3)
     {
       if(a->v[i] != d)
-    {
-      if(dir_v1 < 0) dir_v1 = i;
-      else           dir_v2 = i;
-    }
+        {
+          if(dir_v1 < 0) dir_v1 = i;
+          else           dir_v2 = i;
+        }
     }
 
   if(a->v[dir_v1]->num < a->v[dir_v2]->num)
@@ -4446,169 +4616,169 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
       b1->rght = v2;
 
       if(v2 == b2->left)
-    {
-      buff_p_lk            = b1->p_lk_rght;
-      b1->p_lk_rght        = b2->p_lk_left;
-      b2->p_lk_left        = buff_p_lk;
+        {
+          buff_p_lk            = b1->p_lk_rght;
+          b1->p_lk_rght        = b2->p_lk_left;
+          b2->p_lk_left        = buff_p_lk;
 
-      buff_p_lk_tip        = b1->p_lk_tip_r;
-      b1->p_lk_tip_r       = b2->p_lk_tip_l;
-      b2->p_lk_tip_l       = buff_p_lk_tip;
+          buff_p_lk_tip        = b1->p_lk_tip_r;
+          b1->p_lk_tip_r       = b2->p_lk_tip_l;
+          b2->p_lk_tip_l       = buff_p_lk_tip;
 
-      buff_scale           = b1->sum_scale_rght;
-      b1->sum_scale_rght   = b2->sum_scale_left;
-      b2->sum_scale_left   = buff_scale;
+          buff_scale           = b1->sum_scale_rght;
+          b1->sum_scale_rght   = b2->sum_scale_left;
+          b2->sum_scale_left   = buff_scale;
 
-      buff_scale             = b1->sum_scale_rght_cat;
-      b1->sum_scale_rght_cat = b2->sum_scale_left_cat;
-      b2->sum_scale_left_cat = buff_scale;
+          buff_scale             = b1->sum_scale_rght_cat;
+          b1->sum_scale_rght_cat = b2->sum_scale_left_cat;
+          b2->sum_scale_left_cat = buff_scale;
 
-      buff_pars            = b1->pars_r;
-      b1->pars_r           = b2->pars_l;
-      b2->pars_l           = buff_pars;
+          buff_pars            = b1->pars_r;
+          b1->pars_r           = b2->pars_l;
+          b2->pars_l           = buff_pars;
 
-      buff_ui              = b1->ui_r;
-      b1->ui_r             = b2->ui_l;
-      b2->ui_l             = buff_ui;
+          buff_ui              = b1->ui_r;
+          b1->ui_r             = b2->ui_l;
+          b2->ui_l             = buff_ui;
 
-      buff_p_pars          = b1->p_pars_r;
-      b1->p_pars_r         = b2->p_pars_l;
-      b2->p_pars_l         = buff_p_pars;
+          buff_p_pars          = b1->p_pars_r;
+          b1->p_pars_r         = b2->p_pars_l;
+          b2->p_pars_l         = buff_p_pars;
 
-      buff_p_lk_loc        = b1->p_lk_loc_rght;
-      b1->p_lk_loc_rght    = b2->p_lk_loc_left;
-      b2->p_lk_loc_left    = buff_p_lk_loc;
+          buff_p_lk_loc        = b1->p_lk_loc_rght;
+          b1->p_lk_loc_rght    = b2->p_lk_loc_left;
+          b2->p_lk_loc_left    = buff_p_lk_loc;
 
-      buff_patt_id         = b1->patt_id_rght;
-      b1->patt_id_rght     = b2->patt_id_left;
-      b2->patt_id_left     = buff_patt_id;
+          buff_patt_id         = b1->patt_id_rght;
+          b1->patt_id_rght     = b2->patt_id_left;
+          b2->patt_id_left     = buff_patt_id;
 
-    }
+        }
       else
-    {
-      buff_p_lk            = b1->p_lk_rght; /* b1->p_lk_rght = NULL if b1->rght->tax */
-      b1->p_lk_rght        = b2->p_lk_rght; /* b2->p_lk_rght = NULL if b2->rght->tax */
-      b2->p_lk_rght        = buff_p_lk;
+        {
+          buff_p_lk            = b1->p_lk_rght; /* b1->p_lk_rght = NULL if b1->rght->tax */
+          b1->p_lk_rght        = b2->p_lk_rght; /* b2->p_lk_rght = NULL if b2->rght->tax */
+          b2->p_lk_rght        = buff_p_lk;
 
-      buff_p_lk_tip        = b1->p_lk_tip_r;
-      b1->p_lk_tip_r       = b2->p_lk_tip_r;
-      b2->p_lk_tip_r       = buff_p_lk_tip;
+          buff_p_lk_tip        = b1->p_lk_tip_r;
+          b1->p_lk_tip_r       = b2->p_lk_tip_r;
+          b2->p_lk_tip_r       = buff_p_lk_tip;
 
-      buff_scale           = b1->sum_scale_rght;
-      b1->sum_scale_rght = b2->sum_scale_rght;
-      b2->sum_scale_rght = buff_scale;
+          buff_scale           = b1->sum_scale_rght;
+          b1->sum_scale_rght   = b2->sum_scale_rght;
+          b2->sum_scale_rght   = buff_scale;
 
-      buff_pars            = b1->pars_r;
-      b1->pars_r           = b2->pars_r;
-      b2->pars_r           = buff_pars;
+          buff_pars            = b1->pars_r;
+          b1->pars_r           = b2->pars_r;
+          b2->pars_r           = buff_pars;
 
-      buff_ui              = b1->ui_r;
-      b1->ui_r             = b2->ui_r;
-      b2->ui_r             = buff_ui;
+          buff_ui              = b1->ui_r;
+          b1->ui_r             = b2->ui_r;
+          b2->ui_r             = buff_ui;
 
-      buff_p_pars          = b1->p_pars_r;
-      b1->p_pars_r         = b2->p_pars_r;
-      b2->p_pars_r         = buff_p_pars;
+          buff_p_pars          = b1->p_pars_r;
+          b1->p_pars_r         = b2->p_pars_r;
+          b2->p_pars_r         = buff_p_pars;
 
-      buff_p_lk_loc        = b1->p_lk_loc_rght;
-      b1->p_lk_loc_rght    = b2->p_lk_loc_rght;
-      b2->p_lk_loc_rght    = buff_p_lk_loc;
+          buff_p_lk_loc        = b1->p_lk_loc_rght;
+          b1->p_lk_loc_rght    = b2->p_lk_loc_rght;
+          b2->p_lk_loc_rght    = buff_p_lk_loc;
 
-      buff_patt_id         = b1->patt_id_rght;
-      b1->patt_id_rght     = b2->patt_id_rght;
-      b2->patt_id_rght     = buff_patt_id;
+          buff_patt_id         = b1->patt_id_rght;
+          b1->patt_id_rght     = b2->patt_id_rght;
+          b2->patt_id_rght     = buff_patt_id;
 
-    }
+        }
     }
   else
     {
       b1->left = v2;
 
       if(v2 == b2->left)
-    {
-      buff_p_lk            = b1->p_lk_left;
-      b1->p_lk_left        = b2->p_lk_left;
-      b2->p_lk_left        = buff_p_lk;
+        {
+          buff_p_lk            = b1->p_lk_left;
+          b1->p_lk_left        = b2->p_lk_left;
+          b2->p_lk_left        = buff_p_lk;
 
-      buff_p_lk_tip        = b1->p_lk_tip_l;
-      b1->p_lk_tip_l       = b2->p_lk_tip_l;
-      b2->p_lk_tip_l       = buff_p_lk_tip;
+          buff_p_lk_tip        = b1->p_lk_tip_l;
+          b1->p_lk_tip_l       = b2->p_lk_tip_l;
+          b2->p_lk_tip_l       = buff_p_lk_tip;
 
-      buff_scale           = b1->sum_scale_left;
-      b1->sum_scale_left = b2->sum_scale_left;
-      b2->sum_scale_left = buff_scale;
+          buff_scale           = b1->sum_scale_left;
+          b1->sum_scale_left   = b2->sum_scale_left;
+          b2->sum_scale_left   = buff_scale;
 
-      buff_scale             = b1->sum_scale_left_cat;
-      b1->sum_scale_left_cat = b2->sum_scale_left_cat;
-      b2->sum_scale_left_cat = buff_scale;
+          buff_scale             = b1->sum_scale_left_cat;
+          b1->sum_scale_left_cat = b2->sum_scale_left_cat;
+          b2->sum_scale_left_cat = buff_scale;
 
-      buff_pars            = b1->pars_l;
-      b1->pars_l           = b2->pars_l;
-      b2->pars_l           = buff_pars;
+          buff_pars            = b1->pars_l;
+          b1->pars_l           = b2->pars_l;
+          b2->pars_l           = buff_pars;
 
-      buff_ui              = b1->ui_l;
-      b1->ui_l             = b2->ui_l;
-      b2->ui_l             = buff_ui;
+          buff_ui              = b1->ui_l;
+          b1->ui_l             = b2->ui_l;
+          b2->ui_l             = buff_ui;
 
-      buff_p_pars          = b1->p_pars_l;
-      b1->p_pars_l         = b2->p_pars_l;
-      b2->p_pars_l         = buff_p_pars;
+          buff_p_pars          = b1->p_pars_l;
+          b1->p_pars_l         = b2->p_pars_l;
+          b2->p_pars_l         = buff_p_pars;
 
-      buff_p_lk_loc        = b1->p_lk_loc_left;
-      b1->p_lk_loc_left    = b2->p_lk_loc_left;
-      b2->p_lk_loc_left    = buff_p_lk_loc;
+          buff_p_lk_loc        = b1->p_lk_loc_left;
+          b1->p_lk_loc_left    = b2->p_lk_loc_left;
+          b2->p_lk_loc_left    = buff_p_lk_loc;
 
-      buff_patt_id         = b1->patt_id_left;
-      b1->patt_id_left     = b2->patt_id_left;
-      b2->patt_id_left     = buff_patt_id;
+          buff_patt_id         = b1->patt_id_left;
+          b1->patt_id_left     = b2->patt_id_left;
+          b2->patt_id_left     = buff_patt_id;
 
-    }
+        }
       else
-    {
-      buff_p_lk            = b1->p_lk_left;
-      b1->p_lk_left        = b2->p_lk_rght; /* b2->p_lk_rght = NULL if b2->rght->tax */
-      b2->p_lk_rght        = buff_p_lk;
+        {
+          buff_p_lk            = b1->p_lk_left;
+          b1->p_lk_left        = b2->p_lk_rght; /* b2->p_lk_rght = NULL if b2->rght->tax */
+          b2->p_lk_rght        = buff_p_lk;
 
-      buff_p_lk_tip        = b1->p_lk_tip_l;
-      b1->p_lk_tip_l       = b2->p_lk_tip_r;
-      b2->p_lk_tip_r       = buff_p_lk_tip;
+          buff_p_lk_tip        = b1->p_lk_tip_l;
+          b1->p_lk_tip_l       = b2->p_lk_tip_r;
+          b2->p_lk_tip_r       = buff_p_lk_tip;
 
-      buff_scale           = b1->sum_scale_left;
-      b1->sum_scale_left = b2->sum_scale_rght;
-      b2->sum_scale_rght = buff_scale;
+          buff_scale           = b1->sum_scale_left;
+          b1->sum_scale_left   = b2->sum_scale_rght;
+          b2->sum_scale_rght   = buff_scale;
 
-      buff_scale             = b1->sum_scale_left_cat;
-      b1->sum_scale_left_cat = b2->sum_scale_rght_cat;
-      b2->sum_scale_rght_cat = buff_scale;
+          buff_scale             = b1->sum_scale_left_cat;
+          b1->sum_scale_left_cat = b2->sum_scale_rght_cat;
+          b2->sum_scale_rght_cat = buff_scale;
 
-      buff_pars            = b1->pars_l;
-      b1->pars_l           = b2->pars_r;
-      b2->pars_r           = buff_pars;
+          buff_pars            = b1->pars_l;
+          b1->pars_l           = b2->pars_r;
+          b2->pars_r           = buff_pars;
 
-      buff_ui              = b1->ui_l;
-      b1->ui_l             = b2->ui_r;
-      b2->ui_r             = buff_ui;
+          buff_ui              = b1->ui_l;
+          b1->ui_l             = b2->ui_r;
+          b2->ui_r             = buff_ui;
 
-      buff_p_pars          = b1->p_pars_l;
-      b1->p_pars_l         = b2->p_pars_r;
-      b2->p_pars_r         = buff_p_pars;
+          buff_p_pars          = b1->p_pars_l;
+          b1->p_pars_l         = b2->p_pars_r;
+          b2->p_pars_r         = buff_p_pars;
 
-      buff_p_lk_loc        = b1->p_lk_loc_left;
-      b1->p_lk_loc_left    = b2->p_lk_loc_rght;
-      b2->p_lk_loc_rght    = buff_p_lk_loc;
+          buff_p_lk_loc        = b1->p_lk_loc_left;
+          b1->p_lk_loc_left    = b2->p_lk_loc_rght;
+          b2->p_lk_loc_rght    = buff_p_lk_loc;
 
-      buff_patt_id         = b1->patt_id_left;
-      b1->patt_id_left     = b2->patt_id_rght;
-      b2->patt_id_rght     = buff_patt_id;
-    }
+          buff_patt_id         = b1->patt_id_left;
+          b1->patt_id_left     = b2->patt_id_rght;
+          b2->patt_id_rght     = buff_patt_id;
+        }
     }
 
   For(i,3)
     if(v2->v[i] == a)
       {
-    v2->v[i] = v1;
-    v2->b[i] = b1;
-    break;
+        v2->v[i] = v1;
+        v2->b[i] = b1;
+        break;
       }
 
 #ifdef DEBUG
@@ -4646,20 +4816,19 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
   if(target)   (*target)   = b1;
   if(residual) (*residual) = b2;
 
-  /* if(tree->n_root) */
-  /*   { */
-  /*     if(tree->n_root->v[1] == a) tree->n_root->v[1] = NULL; */
-  /*     if(tree->n_root->v[2] == a) tree->n_root->v[2] = NULL; */
-  /*   } */
-
   if(tree->n_root)
     {
-      tree->n_root->v[1]       = tree->e_root->left;
-      tree->n_root->v[2]       = tree->e_root->rght;
-      tree->n_root->b[1]->rght = tree->e_root->left;
-      tree->n_root->b[2]->rght = tree->e_root->rght;
+      if(tree->n_root->v[1] == a) tree->n_root->v[1] = NULL;
+      if(tree->n_root->v[2] == a) tree->n_root->v[2] = NULL;
     }
 
+  /* if(tree->n_root) */
+  /*   { */
+  /*     tree->n_root->v[1]       = tree->e_root->left; */
+  /*     tree->n_root->v[2]       = tree->e_root->rght; */
+  /*     tree->n_root->b[1]->rght = tree->e_root->left; */
+  /*     tree->n_root->b[2]->rght = tree->e_root->rght; */
+  /*   } */
 
 #ifdef DEBUG
   if(b1->left->tax == YES && b1->rght->tax == NO)
@@ -4816,13 +4985,13 @@ void Graft_Subtree(t_edge *target, t_node *link, t_edge *residual, t_tree *tree)
   Make_Edge_Dirs(residual,residual->left,residual->rght,tree);
   Make_Edge_Dirs(b_up,b_up->left,b_up->rght,tree);
 
-  if(tree->n_root)
-    {
-      tree->n_root->v[1]       = tree->e_root->left;
-      tree->n_root->v[2]       = tree->e_root->rght;
-      tree->n_root->b[1]->rght = tree->e_root->left;
-      tree->n_root->b[2]->rght = tree->e_root->rght;
-    }
+  /* if(tree->n_root) */
+  /*   { */
+  /*     tree->n_root->v[1]       = tree->e_root->left; */
+  /*     tree->n_root->v[2]       = tree->e_root->rght; */
+  /*     tree->n_root->b[1]->rght = tree->e_root->left; */
+  /*     tree->n_root->b[2]->rght = tree->e_root->rght; */
+  /*   } */
 
 
   if(tree->is_mixt_tree == YES) MIXT_Graft_Subtree(target,link,residual,tree);
@@ -5221,7 +5390,7 @@ void Joint_Proba_States_Left_Right(phydbl *Pij, phydbl *p_lk_left, phydbl *p_lk_
                          POW(2.,-(scale_left + scale_rght)));
 
           PhyML_Printf("\n== sum = %G",sum);
-          Print_Site(tree->data,site,tree->n_otu,"\n",1);
+          Print_Site(tree->data,site,tree->n_otu,"\n",1,stderr);
           PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
           Exit("\n");
         }
@@ -5237,6 +5406,7 @@ phydbl Triple_Dist(t_node *a, t_tree *tree, int approx)
   if(a->tax) return UNLIKELY;
   else
     {
+
       Update_PMat_At_Given_Edge(a->b[1],tree);
       Update_PMat_At_Given_Edge(a->b[2],tree);
 
@@ -5422,7 +5592,7 @@ void Record_Br_Len(t_tree *mixt_tree)
   if(mixt_tree->br_len_recorded == YES)
     {
       PhyML_Printf("\n== Overwriting recorded edge lengths.\n");
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Exit("\n");
     }
 
@@ -5430,14 +5600,9 @@ void Record_Br_Len(t_tree *mixt_tree)
 
   do
     {
-      For(i,2*tree->n_otu-3)
-    {
-      tree->a_edges[i]->l_old->v  = tree->a_edges[i]->l->v;
-      tree->a_edges[i]->l_var_old = tree->a_edges[i]->l_var;
-    }
-
+      For(i,2*tree->n_otu-1) tree->a_edges[i]->l_old->v     = tree->a_edges[i]->l->v;
+      For(i,2*tree->n_otu-1) tree->a_edges[i]->l_var_old->v = tree->a_edges[i]->l_var->v;
       tree = tree->next;
-
     }
   while(tree);
 }
@@ -5457,14 +5622,9 @@ void Restore_Br_Len(t_tree *mixt_tree)
 
   do
     {
-      For(i,2*tree->n_otu-3)
-    {
-      tree->a_edges[i]->l->v  = tree->a_edges[i]->l_old->v;
-      tree->a_edges[i]->l_var = tree->a_edges[i]->l_var_old;
-    }
-
+      For(i,2*tree->n_otu-1) tree->a_edges[i]->l->v     = tree->a_edges[i]->l_old->v;
+      For(i,2*tree->n_otu-1) tree->a_edges[i]->l_var->v = tree->a_edges[i]->l_var_old->v;
       tree = tree->next;
-
     }
   while(tree);
 }
@@ -6267,17 +6427,17 @@ void Add_Root(t_edge *target, t_tree *tree)
   b1->p_lk_rght = tree->e_root->p_lk_left;
   b2->p_lk_rght = tree->e_root->p_lk_rght;
 
-  b1->sum_scale_rght = tree->e_root->sum_scale_left;
-  b2->sum_scale_rght = tree->e_root->sum_scale_rght;
-
-  b1->p_lk_loc_rght = tree->e_root->p_lk_loc_left;
-  b2->p_lk_loc_rght = tree->e_root->p_lk_loc_rght;
-
   b1->p_lk_tip_r = tree->e_root->p_lk_tip_l;
   b2->p_lk_tip_r = tree->e_root->p_lk_tip_r;
 
-  b1->patt_id_rght = tree->e_root->patt_id_left;
-  b2->patt_id_rght = tree->e_root->patt_id_rght;
+  b1->sum_scale_rght = tree->e_root->sum_scale_left;
+  b2->sum_scale_rght = tree->e_root->sum_scale_rght;
+
+  b1->sum_scale_rght_cat = tree->e_root->sum_scale_left_cat;
+  b2->sum_scale_rght_cat = tree->e_root->sum_scale_rght_cat;
+
+  b1->p_lk_loc_rght = tree->e_root->p_lk_loc_left;
+  b2->p_lk_loc_rght = tree->e_root->p_lk_loc_rght;
 
   b1->pars_r = tree->e_root->pars_l;
   b2->pars_r = tree->e_root->pars_r;
@@ -6287,6 +6447,12 @@ void Add_Root(t_edge *target, t_tree *tree)
 
   b1->p_pars_r = tree->e_root->p_pars_l;
   b2->p_pars_r = tree->e_root->p_pars_r;
+
+  b1->p_lk_loc_rght = tree->e_root->p_lk_loc_left;
+  b2->p_lk_loc_rght = tree->e_root->p_lk_loc_rght;
+
+  b1->patt_id_rght = tree->e_root->patt_id_left;
+  b2->patt_id_rght = tree->e_root->patt_id_rght;
 
   Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
   Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
@@ -6366,7 +6532,7 @@ t_tree *Generate_Random_Tree_From_Scratch(int n_otu, int rooted)
   mu     = 2.5;
   rho    = 9./150.;
 
-  expval = EXP(mu-lambda);
+  expval = EXP(MIN(1.E+2,mu-lambda));
   phi = (rho*lambda*(expval-1.) + (mu-lambda)*expval)/(expval-1.); /* Equation 16 */
 
   For(i,tree->n_otu-1)
@@ -6623,7 +6789,7 @@ void Evolve(calign *data, t_mod *mod, t_tree *tree)
 
           /* tree->a_edges[i]->l->v = Rgamma(shape,scale); */
 
-          var   = mod->l_var;
+          var   = mod->l_var_sigma;
           mean  = 1.0;
 
           shape = mean * mean / var;
@@ -7100,8 +7266,8 @@ void Best_Of_NNI_And_SPR(t_tree *tree)
 
       if(FABS(tree->c_lnL - ori_lnL) > tree->mod->s_opt->min_diff_lk_local)
     {
-      PhyML_Printf("\n. ori_lnL = %f, c_lnL = %f",ori_lnL,tree->c_lnL);
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== ori_lnL = %f, c_lnL = %f",ori_lnL,tree->c_lnL);
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
 
@@ -7149,6 +7315,9 @@ void Best_Of_NNI_And_SPR(t_tree *tree)
 
       Free_Model_Complete(ori_mod);
       Free_Model_Complete(best_mod);
+
+      M4_Free_M4_Model(ori_mod->m4mod);
+      M4_Free_M4_Model(best_mod->m4mod);
 
       Free_Model_Basic(ori_mod);
       Free_Model_Basic(best_mod);
@@ -7322,9 +7491,12 @@ char *Bootstrap_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
 
   tree = Read_Tree(&s_tree);
 
+  tree->n_root = NULL;
+  tree->e_root = NULL;
+
   if(!tree)
     {
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Exit("");
     }
 
@@ -7345,6 +7517,7 @@ char *Bootstrap_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
   Br_Len_Not_Involving_Invar(tree);
   Make_Spr_List(tree);
   Make_Best_Spr(tree);
+
 
   Set_Both_Sides(YES,tree);
   Lk(NULL,tree);
@@ -7377,9 +7550,12 @@ char *aLRT_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
 
   tree = Read_Tree(&s_tree);
 
+  tree->n_root = NULL;
+  tree->e_root = NULL;
+
   if(!tree)
     {
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
 
@@ -7399,8 +7575,6 @@ char *aLRT_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
   Make_Spr_List(tree);
   Make_Best_Spr(tree);
 
-  Br_Len_Not_Involving_Invar(tree);
-  Unscale_Br_Len_Multiplier_Tree(tree);
 #ifdef BEAGLE
   tree->b_inst = create_beagle_instance(tree, io->quiet);
 #endif
@@ -7482,8 +7656,13 @@ phydbl Get_Tree_Size(t_tree *tree)
 
   tree_size = 0.0;
   For(i,2*tree->n_otu-3) tree_size += tree->a_edges[i]->l->v;
-/*   tree_size = 0.0; */
-/*   For(i,2*tree->n_otu-3) tree_size += tree->rates->u_cur_l[i]; */
+
+  if(tree->n_root)
+    {
+      tree_size += tree->n_root->b[1]->l->v;
+      tree_size += tree->n_root->b[2]->l->v;
+    }
+
 
 /*   For(i,2*tree->n_otu-3)  */
 /*     tree_size +=  */
@@ -8425,7 +8604,7 @@ int Check_Sequence_Name(char *s)
       if(s[i] == ':')
     {
       PhyML_Printf("\n== Character ':' is not permitted in sequence name (%s).",s);
-      PhyML_Printf("\n== Err in file %s at line %d",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
     }
@@ -8582,45 +8761,6 @@ int Scale_Subtree_Rates(t_node *a, phydbl mult, int *n_nodes, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
-void Check_Br_Len_Bounds(t_tree *mixt_tree)
-{
-  int i;
-  t_edge *b;
-  t_tree *tree;
-
-  tree = mixt_tree;
-
-  do
-    {
-      b = NULL;
-
-      For(i,2*tree->n_otu-1)
-        {
-          b = tree->a_edges[i];
-
-          if(b->l->v > tree->mod->l_max) b->l->v = tree->mod->l_max;
-          if(b->l->v < tree->mod->l_min) b->l->v = tree->mod->l_min;
-        }
-
-      if(tree->rates)
-        {
-          For(i,2*tree->n_otu-1)
-            {
-              if(tree->rates->u_cur_l[i] > tree->mod->l_max) tree->rates->u_cur_l[i] = tree->mod->l_max;
-              if(tree->rates->u_cur_l[i] < tree->mod->l_min) tree->rates->u_cur_l[i] = tree->mod->l_min;
-            }
-        }
-
-      tree = tree->next;
-
-    }
-  while(tree);
-}
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-
 int Scale_Subtree_Rates_Post(t_node *a, t_node *d, phydbl mult, int *n_nodes, t_tree *tree)
 {
 
@@ -8775,7 +8915,7 @@ void Adjust_Variances(t_tree *tree)
                    1.E-10,
                    10000,
                    NO,
-                   Wrap_Diff_Lk_Norm_At_Given_Edge,tree->a_edges[i],tree,NULL);
+                   Wrap_Diff_Lk_Norm_At_Given_Edge,tree->a_edges[i],tree,NULL,NO);
 
           /* 		      Generic_Brent_Lk(&(tree->rates->mean_l[0]), */
           /* 				       -100., */
@@ -8791,7 +8931,7 @@ void Adjust_Variances(t_tree *tree)
                    1.E-10,
                    10000,
                    NO,
-                   Wrap_Diff_Lk_Norm_At_Given_Edge,tree->a_edges[i],tree,NULL);
+                   Wrap_Diff_Lk_Norm_At_Given_Edge,tree->a_edges[i],tree,NULL,NO);
 
           new_diff = Diff_Lk_Norm_At_Given_Edge(tree->a_edges[i],tree);
         }while(FABS(new_diff-curr_diff) > 1.E-3);
@@ -8821,25 +8961,6 @@ phydbl Effective_Sample_Size(phydbl first_val, phydbl last_val, phydbl sum, phyd
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
-phydbl Rescale_Free_Rate_Tree(t_tree *tree)
-{
-  int i;
-  phydbl sum;
-
-  sum = 0.0;
-  For(i,tree->mod->ras->n_catg) sum += tree->mod->ras->gamma_rr->v[i]*tree->mod->ras->gamma_r_proba->v[i];
-  For(i,tree->mod->ras->n_catg) tree->mod->ras->gamma_rr->v[i] /= sum;
-
-  For(i,2*tree->n_otu-3) tree->a_edges[i]->l->v *= sum;
-
-  return(-1.);
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-
 phydbl Rescale_Br_Len_Multiplier_Tree(t_tree *tree)
 {
   int i;
@@ -8850,24 +8971,7 @@ phydbl Rescale_Br_Len_Multiplier_Tree(t_tree *tree)
       return(-1.);
     }
 
-  For(i,2*tree->n_otu-3) tree->a_edges[i]->l->v *= tree->mod->br_len_multiplier->v;
-  return(-1.);
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-
-phydbl Unscale_Free_Rate_Tree(t_tree *tree)
-{
-  int i;
-  phydbl sum;
-
-  sum = 0.0;
-  For(i,tree->mod->ras->n_catg) sum += tree->mod->ras->gamma_rr->v[i]*tree->mod->ras->gamma_r_proba->v[i];
-  For(i,tree->mod->ras->n_catg) tree->mod->ras->gamma_rr->v[i] *= sum;
-  For(i,2*tree->n_otu-3) tree->a_edges[i]->l->v /= sum;
-
+  For(i,2*tree->n_otu-1) tree->a_edges[i]->l->v *= tree->mod->br_len_multiplier->v;
   return(-1.);
 }
 
@@ -8884,8 +8988,7 @@ phydbl Unscale_Br_Len_Multiplier_Tree(t_tree *tree)
       return(-1.);
     }
 
-  For(i,2*tree->n_otu-3) tree->a_edges[i]->l->v /= tree->mod->br_len_multiplier->v;
-
+  For(i,2*tree->n_otu-1) tree->a_edges[i]->l->v /= tree->mod->br_len_multiplier->v;
   return(-1.);
 }
 
@@ -9395,7 +9498,7 @@ void Get_Mutmap_Coord(int idx, int *edge, int *site, int *mut, t_tree *tree)
 void Copy_Edge_Lengths(t_tree *to, t_tree *from)
 {
   int i;
-  For(i,2*from->n_otu-3) to->a_edges[i]->l->v = from->a_edges[i]->l->v;
+  For(i,2*from->n_otu-1) to->a_edges[i]->l->v = from->a_edges[i]->l->v;
 }
 
 //////////////////////////////////////////////////////////////
@@ -9413,10 +9516,7 @@ char *To_Lower_String(char *in)
 
   out = (char *)mCalloc(len+1,sizeof(char));
 
-  For(i,len)
-    {
-      out[i] = (char)tolower(in[i]);
-    }
+  For(i,len) out[i] = (char)tolower(in[i]);
 
   out[len] = '\0';
   return(out);
@@ -9576,7 +9676,7 @@ void Random_SPRs_On_Rooted_Tree(t_tree *tree)
 
       if(a == tree->n_root)
         {
-          PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+          PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
           Exit("\n");
         }
       /* if(a == tree->n_root->v[1] || a == tree->n_root->v[2]) continue; */
@@ -9676,7 +9776,7 @@ void Random_SPRs_On_Rooted_Tree(t_tree *tree)
 
       if(dir12 == -1)
         {
-          PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+          PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
           Exit("\n");
         }
 
@@ -9685,7 +9785,7 @@ void Random_SPRs_On_Rooted_Tree(t_tree *tree)
 
       if(dir21 == -1)
         {
-          PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+          PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
           Exit("\n");
         }
 
@@ -9836,12 +9936,12 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
         {
           if(d->b[i] != b)//Skip d's own branch(i.e. the branch coming from d's parent); because we only care about the branches of d's neighbors
             {
-              if(!(*n_v1))
+              if(!(*n_v1))//if we haven't found d's first neighbor
                 {
                   *n_v1 = d->v[i];
                   Set_P_Lk_One_Side(Pij1,p_lk_v1,sum_scale_v1,d,d->b[i],tree);
                 }
-              else
+              else//we found his second neighbor
                 {
                   *n_v2 = d->v[i];
                   Set_P_Lk_One_Side(Pij2,p_lk_v2,sum_scale_v2,d,d->b[i],tree);
@@ -10011,3 +10111,122 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void Optimum_Root_Position_IL_Model(t_tree *tree)
+{
+
+  if(tree->n_root)
+    {
+      PhyML_Printf("\n== The tree already has a root node");
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+      Exit("\n");
+    }
+  else
+    {
+      int i;
+      t_edge *best_edge;
+      phydbl best_lnL;
+
+      Free_Edge_Lk_Rght(tree->a_edges[2*tree->n_otu-3]);
+      Free_Edge_Lk_Rght(tree->a_edges[2*tree->n_otu-2]);
+      Free_Edge_Pars_Rght(tree->a_edges[2*tree->n_otu-3]);
+      Free_Edge_Pars_Rght(tree->a_edges[2*tree->n_otu-2]);
+
+      best_edge = NULL;
+      best_lnL  = UNLIKELY;
+      For(i,2*tree->n_otu-3)
+        {
+          PhyML_Printf("\n. Positionning root node on edge %4d",tree->a_edges[i]->num);
+          Add_Root(tree->a_edges[i],tree);
+          Set_Both_Sides(YES,tree);
+          Lk(NULL,tree);
+
+          /* Optimize_Br_Len_Serie(tree); */
+
+          Update_P_Lk(tree,tree->n_root->b[1],tree->n_root);
+          Br_Len_Brent(tree->mod->l_min,tree->mod->l_max,tree->n_root->b[1],tree);
+          Update_P_Lk(tree,tree->n_root->b[2],tree->n_root);
+          Br_Len_Brent(tree->mod->l_min,tree->mod->l_max,tree->n_root->b[2],tree);
+
+          PhyML_Printf(" -- lnL: %20f",tree->c_lnL);
+          if(tree->c_lnL > best_lnL)
+            {
+              best_lnL  = tree->c_lnL;
+              best_edge = tree->a_edges[i];
+            }
+        }
+
+      Add_Root(best_edge,tree);
+      Set_Both_Sides(YES,tree);
+      Lk(NULL,tree);
+      Update_P_Lk(tree,tree->n_root->b[1],tree->n_root);
+      Br_Len_Brent(tree->mod->l_min,tree->mod->l_max,tree->n_root->b[1],tree);
+      Update_P_Lk(tree,tree->n_root->b[2],tree->n_root);
+      Br_Len_Brent(tree->mod->l_min,tree->mod->l_max,tree->n_root->b[2],tree);
+    }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Set_Br_Len_Var(t_tree *tree)
+{
+  if(!tree->rates)
+    {
+      int i;
+      phydbl len;
+
+      For(i,2*tree->n_otu-1)
+        {
+          /* len = MAX(tree->mod->l_min,tree->a_edges[i]->l->v); */
+          /* len = MIN(tree->mod->l_max,len); */
+          len = MAX(0.0,tree->a_edges[i]->l->v);
+          tree->a_edges[i]->l_var->v = POW(len,2)*tree->mod->l_var_sigma;
+        }
+    }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Check_Br_Lens(t_tree *tree)
+{
+  int i;
+  scalar_dbl *l;
+
+  For(i,2*tree->n_otu-1)
+    {
+      l = tree->a_edges[i]->l;
+      do
+        {
+          /* if(l->v < tree->mod->l_min) l->v = tree->mod->l_min; */
+          /* if(l->v > tree->mod->l_max) l->v = tree->mod->l_max; */
+          if(l->v < 0.0) l->v = 0.0;
+          l = l->next;
+        }
+      while(l);
+    }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+

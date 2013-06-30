@@ -286,7 +286,7 @@ int TIPO_main(int argc, char **argv)
   		   1.E-3,1.E+2,1.E-6,
   		   100,NO,
   		   &Wrap_Geo_Lk,
-  		   NULL,tree,NULL);
+  		   NULL,tree,NULL,NO);
 
   PhyML_Printf("\n. sd=%f",tree->geo_mig_sd);
 

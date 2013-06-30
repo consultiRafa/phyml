@@ -36,8 +36,10 @@ void MIXT_Chain_All(t_tree *mixt_tree)
       MIXT_Chain_Scalar_Dbl(curr->mod->mr,next->mod->mr);
       MIXT_Chain_Vector_Dbl(curr->mod->Pij_rr,next->mod->Pij_rr);
       MIXT_Chain_Vector_Dbl(curr->mod->user_b_freq,next->mod->user_b_freq);
-      For(i,2*mixt_tree->n_otu-2) MIXT_Chain_Scalar_Dbl(curr->a_edges[i]->l,next->a_edges[i]->l);
-      For(i,2*mixt_tree->n_otu-2) MIXT_Chain_Scalar_Dbl(curr->a_edges[i]->l_old,next->a_edges[i]->l_old);
+      For(i,2*mixt_tree->n_otu-1) MIXT_Chain_Scalar_Dbl(curr->a_edges[i]->l,next->a_edges[i]->l);
+      For(i,2*mixt_tree->n_otu-1) MIXT_Chain_Scalar_Dbl(curr->a_edges[i]->l_old,next->a_edges[i]->l_old);
+      For(i,2*mixt_tree->n_otu-1) MIXT_Chain_Scalar_Dbl(curr->a_edges[i]->l_var,next->a_edges[i]->l_var);
+      For(i,2*mixt_tree->n_otu-1) MIXT_Chain_Scalar_Dbl(curr->a_edges[i]->l_var_old,next->a_edges[i]->l_var_old);
       MIXT_Chain_Rmat(curr->mod->r_mat,next->mod->r_mat);
       MIXT_Chain_RAS(curr->mod->ras,next->mod->ras);
       MIXT_Chain_Efrq(curr->mod->e_frq,next->mod->e_frq);
@@ -74,7 +76,7 @@ void MIXT_Chain_Edges(t_tree *tree)
   int i;
   t_edge *b;
 
-  For(i,2*tree->n_otu-3)
+  For(i,2*tree->n_otu-1)
     {
       b = tree->a_edges[i];
 
@@ -405,10 +407,7 @@ void MIXT_Chain_Eigen(eigen *curr, eigen *next)
 
 void MIXT_Chain_RAS(t_ras *curr, t_ras *next)
 {
-  if(!next)
-    {
-      return;
-    }
+  if(!next) return;
   else
     {
       t_ras *buff,*last;
@@ -454,7 +453,7 @@ void MIXT_Turn_Branches_OnOff(int onoff, t_tree *mixt_tree)
 
   if(mixt_tree->is_mixt_tree == NO)
     {
-      PhyML_Printf("\n== Err in file %s at line %d\n\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d\n\n",__FILE__,__LINE__);
       Exit("\n");
     }
 
@@ -462,7 +461,7 @@ void MIXT_Turn_Branches_OnOff(int onoff, t_tree *mixt_tree)
 
   do
     {
-      For(i,2*tree->n_otu-3) tree->a_edges[i]->l->onoff = onoff;
+      For(i,2*tree->n_otu-1) tree->a_edges[i]->l->onoff = onoff;
       tree = tree->next;
     }
   while(tree && tree->is_mixt_tree == NO);
@@ -491,7 +490,7 @@ phydbl *MIXT_Get_Lengths_Of_This_Edge(t_edge *mixt_b, t_tree *mixt_tree)
 
       lens[n_lens] = b->l->v;
 
-      if(tree->mod->gamma_mgf_bl == YES) lens[n_lens+1] = b->l_var;
+      if(tree->mod->gamma_mgf_bl == YES) lens[n_lens+1] = b->l_var->v;
       else                               lens[n_lens+1] = -1.;
 
       n_lens+=2;
@@ -520,7 +519,7 @@ void MIXT_Set_Lengths_Of_This_Edge(phydbl *lens, t_edge *mixt_b, t_tree *mixt_tr
     {
       b->l->v = lens[n_lens];
 
-      if(tree->mod->gamma_mgf_bl == YES) b->l_var  = lens[n_lens+1];
+      if(tree->mod->gamma_mgf_bl == YES) b->l_var->v = lens[n_lens+1];
 
       n_lens+=2;
       b = b->next;
@@ -616,33 +615,57 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
   cpy_mixt_tree   = mixt_tree;
   cpy_mixt_b      = mixt_b;
 
+
   do /*! Consider each element of the data partition */
     {
-      Check_Br_Len_Bounds(mixt_tree);
+      if(!cpy_mixt_b) Set_Model_Parameters(mixt_tree->mod);      
+      
+      Set_Br_Len_Var(mixt_tree);
 
-      if(!cpy_mixt_b)
-        {
-          Set_Model_Parameters(mixt_tree->mod);
-        }
       if(!cpy_mixt_b)
         {
           For(br,2*mixt_tree->n_otu-3) Update_PMat_At_Given_Edge(mixt_tree->a_edges[br],mixt_tree);
+          if(mixt_tree->n_root)
+        {
+              Update_PMat_At_Given_Edge(mixt_tree->n_root->b[1],tree);
+              Update_PMat_At_Given_Edge(mixt_tree->n_root->b[2],tree);
+            }
         }
       else
-        {
           Update_PMat_At_Given_Edge(mixt_b,mixt_tree);
-        }
 
       if(!cpy_mixt_b)
         {
+          if(mixt_tree->n_root)
+            {
+              MIXT_Post_Order_Lk(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree);
+              MIXT_Post_Order_Lk(mixt_tree->n_root,mixt_tree->n_root->v[2],mixt_tree);
+
+              MIXT_Update_P_Lk(mixt_tree,mixt_tree->n_root->b[1],mixt_tree->n_root);
+              MIXT_Update_P_Lk(mixt_tree,mixt_tree->n_root->b[2],mixt_tree->n_root);
+
+              if(tree->both_sides == YES)
+                {
+                  MIXT_Pre_Order_Lk(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree);              
+                  MIXT_Pre_Order_Lk(mixt_tree->n_root,mixt_tree->n_root->v[2],mixt_tree);
+                }
+            }
+          else
+            {
           MIXT_Post_Order_Lk(mixt_tree->a_nodes[0],mixt_tree->a_nodes[0]->v[0],mixt_tree);
           if(mixt_tree->both_sides == YES)
             MIXT_Pre_Order_Lk(mixt_tree->a_nodes[0],
                               mixt_tree->a_nodes[0]->v[0],
                               mixt_tree);
         }
+        }
 
-      if(!cpy_mixt_b) mixt_b = mixt_tree->a_nodes[0]->b[0];
+
+      if(!cpy_mixt_b) 
+        {
+          if(mixt_tree->n_root) mixt_b = (mixt_tree->n_root->v[1]->tax == NO)?(mixt_tree->n_root->b[2]):(mixt_tree->n_root->b[1]);
+          else                  mixt_b = mixt_tree->a_nodes[0]->b[0];
+        }
 
       sum_scale_left_cat = (phydbl *)mCalloc(MAX(mixt_tree->mod->ras->n_catg,mixt_tree->mod->n_mixt_classes),sizeof(phydbl));
       sum_scale_rght_cat = (phydbl *)mCalloc(MAX(mixt_tree->mod->ras->n_catg,mixt_tree->mod->n_mixt_classes),sizeof(phydbl));
@@ -847,9 +870,6 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
               b    = b->next;
             }
           while(tree && tree->is_mixt_tree == NO);
-
-
-
 
           tree    = mixt_tree->next;
           b       = mixt_b->next;
@@ -1158,14 +1178,14 @@ void MIXT_Break_All_Mixtures(int c_max, t_tree *mixt_tree)
           if(tree->mixt_tree->next_mixt == NULL)
             {
               tree->next = NULL;
-              For(i,2*tree->n_otu-2) tree->a_edges[i]->next  = NULL;
+              For(i,2*tree->n_otu-1) tree->a_edges[i]->next  = NULL;
               For(i,2*tree->n_otu-1) tree->a_nodes[i]->next  = NULL;
               For(i,2*tree->n_otu-2) tree->spr_list[i]->next = NULL;
             }
           else
             {
               tree->next = tree->mixt_tree->next_mixt;
-              For(i,2*tree->n_otu-2) tree->a_edges[i]->next  = tree->mixt_tree->next_mixt->a_edges[i];
+              For(i,2*tree->n_otu-1) tree->a_edges[i]->next  = tree->mixt_tree->next_mixt->a_edges[i];
               For(i,2*tree->n_otu-1) tree->a_nodes[i]->next  = tree->mixt_tree->next_mixt->a_nodes[i];
               For(i,2*tree->n_otu-2) tree->spr_list[i]->next = tree->mixt_tree->next_mixt->spr_list[i];
             }
@@ -1504,7 +1524,7 @@ void MIXT_Br_Len_Involving_Invar(t_tree *mixt_tree)
   int i;
   scalar_dbl *l;
 
-  For(i,2*mixt_tree->n_otu-3)
+  For(i,2*mixt_tree->n_otu-1) 
     {
       l = mixt_tree->a_edges[i]->l;
       do
@@ -1524,7 +1544,7 @@ void MIXT_Br_Len_Not_Involving_Invar(t_tree *mixt_tree)
   int i;
   scalar_dbl *l;
 
-  For(i,2*mixt_tree->n_otu-3)
+  For(i,2*mixt_tree->n_otu-1) 
     {
       l = mixt_tree->a_edges[i]->l;
       do
@@ -1544,7 +1564,7 @@ phydbl MIXT_Unscale_Br_Len_Multiplier_Tree(t_tree *mixt_tree)
   int i;
   scalar_dbl *l;
 
-  For(i,2*mixt_tree->n_otu-3)
+  For(i,2*mixt_tree->n_otu-1) 
     {
       l = mixt_tree->a_edges[i]->l;
       do
@@ -1565,7 +1585,7 @@ phydbl MIXT_Rescale_Br_Len_Multiplier_Tree(t_tree *mixt_tree)
   int i;
   scalar_dbl *l;
 
-  For(i,2*mixt_tree->n_otu-3)
+  For(i,2*mixt_tree->n_otu-1) 
     {
       l = mixt_tree->a_edges[i]->l;
       do
@@ -1576,6 +1596,32 @@ phydbl MIXT_Rescale_Br_Len_Multiplier_Tree(t_tree *mixt_tree)
       while(l);
     }
   return(-1);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+phydbl MIXT_Rescale_Free_Rate_Tree(t_tree *mixt_tree)
+{
+  int i,side_effect,at_boundary;
+  t_edge *b;
+
+  side_effect = NO;
+  For(i,2*mixt_tree->n_otu-1)
+    {
+      b = mixt_tree->a_edges[i]->next;
+
+      at_boundary = NO;
+      if(b->l->v > mixt_tree->mod->l_max-1.E-100 && b->l->v < mixt_tree->mod->l_max+1.E-100) at_boundary = YES;
+      if(b->l->v > mixt_tree->mod->l_min-1.E-100 && b->l->v < mixt_tree->mod->l_min+1.E-100) at_boundary = YES;
+      
+      b->l->v *= mixt_tree->mod->ras->free_rate_mr->v;
+      
+      if(b->l->v > mixt_tree->mod->l_max && at_boundary == NO) side_effect = YES;
+      if(b->l->v < mixt_tree->mod->l_min && at_boundary == NO) side_effect = YES;
+    }
+  
+  return side_effect;
 }
 
 //////////////////////////////////////////////////////////////
@@ -1607,7 +1653,7 @@ void MIXT_Check_Single_Edge_Lens(t_tree *mixt_tree)
     {
       if(tree->next && tree->next->is_mixt_tree == NO)
         {
-          For(i,2*tree->n_otu-3)
+          For(i,2*tree->n_otu-1)
             {
               if(tree->a_edges[i]->l != tree->next->a_edges[i]->l)
                 {
@@ -1909,12 +1955,6 @@ phydbl MIXT_Get_Sum_Of_Probas_Across_Mixtures(phydbl r_mat_weight_sum, phydbl e_
 
   return(sum);
 }
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
