@@ -2519,7 +2519,7 @@ int Assign_State(char *c, int datatype, int stepsize)
             case 'G' : {state[i]=2;  break;}
             case 'T' : {state[i]=3;  break;}
             case 'U' : {state[i]=3;  break;}
-            default  : {state[i]=-1; fprintf(stdout,"THE CHARACTER IS: %s\n",c);break;}
+            default  : {state[i]=-1; break;}
             }
         }
       return (stepsize>1)?(state[0]*16+state[1]*4+state[2]):(state[0]);
@@ -2671,7 +2671,7 @@ int Assign_State_With_Ambiguity(char *c, int datatype, int stepsize)
         case 'D' : {state[i]=11;  break;}
         case 'H' : {state[i]=12;  break;}
         case 'V' : {state[i]=13;  break;}
-        case 'N' : case 'X' : case '?' : case 'O' : case '-' : {state[i]=T_MAX_ALPHABET-1;  fprintf(stdout,"THE CHARACTER IS: %s\n",c);break;}
+        case 'N' : case 'X' : case '?' : case 'O' : case '-' : {state[i]=T_MAX_ALPHABET-1;  break;}
         default :
           {
         PhyML_Printf("\n. Unknown character state : '%c'\n",c[i]);
@@ -9861,8 +9861,17 @@ void Random_SPRs_On_Rooted_Tree(t_tree *tree)
   Returns p_lk and sum_scale for subtree with x as root, Pij for edge b
 */
 
-void Set_P_Lk_One_Side(phydbl **Pij, phydbl **p_lk,  int **sum_scale, t_node *d, t_edge *b, t_tree *tree)
+void Set_P_Lk_One_Side(phydbl **Pij, phydbl **p_lk,  int **sum_scale, t_node *d, t_edge *b, t_tree *tree
+#ifdef BEAGLE
+                       , int* c_p_buf
+#endif
+                                              )
 {
+
+#ifdef BEAGLE
+  int gap = 2*tree->n_otu-3;
+#endif
+
   if(Pij) *Pij = b->Pij_rr;
 
   if(!d->tax)//if d is not a tip
@@ -9872,15 +9881,24 @@ void Set_P_Lk_One_Side(phydbl **Pij, phydbl **p_lk,  int **sum_scale, t_node *d,
         {
           *p_lk      = b->p_lk_rght;
           *sum_scale = b->sum_scale_rght;
+#ifdef BEAGLE
+          *c_p_buf       = b->num + gap;
+#endif
         }
       else
         {
           *p_lk      = b->p_lk_left;
           *sum_scale = b->sum_scale_left;
+#ifdef BEAGLE
+          *c_p_buf   = b->num;
+#endif
         }
     }
   else
     {
+#ifdef BEAGLE
+      Warn_And_Exit("You havent handled this case");
+#endif
       *p_lk        = NULL;
       *sum_scale   = NULL;
     }
@@ -9910,11 +9928,21 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
                                  phydbl **p_lk   , int **sum_scale   , int **p_lk_loc,
                   phydbl **Pij1, phydbl **p_lk_v1, int **sum_scale_v1,
                   phydbl **Pij2, phydbl **p_lk_v2, int **sum_scale_v2,
-                  t_node *d, t_edge *b, t_tree *tree)
+                  t_node *d, t_edge *b, t_tree *tree
+#ifdef BEAGLE
+                  , int *c1_p_buf, int *c2_p_buf, int* dest_partial_buf
+#endif
+                  )
 {
+
+#ifdef BEAGLE
+  //Recall that in PhyML, each edge has two "left" and "right" partial vectors. Therefore,
+  //in BEAGLE we have 2*num_branches number of partials.
+  //BEAGLE's partials buffer = [ tax1, tax2, ..., taxN, b1L, b2L, b3L,...,bML, b1R, b2R, b3R,...,bMR]
+  int gap = 2*tree->n_otu-3;
+#endif
+
   int i;
-
-
   if(!tree->n_root)
     {
       //Does d lie on the "left" or "right" of the branch?
@@ -9923,12 +9951,18 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
           *p_lk      = b->p_lk_left;
           *sum_scale = b->sum_scale_left;
           *p_lk_loc  = b->p_lk_loc_left;
+#ifdef BEAGLE
+          *dest_partial_buf = b->num;
+#endif
         }
       else
         {
           *p_lk      = b->p_lk_rght;
           *sum_scale = b->sum_scale_rght;
           *p_lk_loc  = b->p_lk_loc_rght;
+#ifdef BEAGLE
+          *dest_partial_buf = b->num + gap;
+#endif
         }
 
       *n_v1 = *n_v2 = NULL;
@@ -9939,12 +9973,20 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
               if(!(*n_v1))//if we haven't found d's first neighbor
                 {
                   *n_v1 = d->v[i];
+#ifdef BEAGLE
+                  Set_P_Lk_One_Side(Pij1,p_lk_v1,sum_scale_v1,d,d->b[i],tree,c1_p_buf);
+#else
                   Set_P_Lk_One_Side(Pij1,p_lk_v1,sum_scale_v1,d,d->b[i],tree);
+#endif
                 }
               else//we found his second neighbor
                 {
                   *n_v2 = d->v[i];
+#ifdef BEAGLE
+                  Set_P_Lk_One_Side(Pij2,p_lk_v2,sum_scale_v2,d,d->b[i],tree,c2_p_buf);
+#else
                   Set_P_Lk_One_Side(Pij2,p_lk_v2,sum_scale_v2,d,d->b[i],tree);
+#endif
                 }
             }
         }
@@ -9953,8 +9995,10 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
     {
       if(b == tree->e_root)
         {
-          if(d == tree->n_root->v[1]) b = tree->n_root->b[1];
-          else if(d == tree->n_root->v[2]) b = tree->n_root->b[2];
+          if(d == tree->n_root->v[1])
+              b = tree->n_root->b[1];
+          else if(d == tree->n_root->v[2])
+              b = tree->n_root->b[2];
           else
             {
               PhyML_Printf("\n== Err. in file %s at line %d.",__FILE__,__LINE__);
@@ -9969,12 +10013,18 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
               *p_lk      = tree->n_root->b[1]->p_lk_left;
               *sum_scale = tree->n_root->b[1]->sum_scale_left;
               *p_lk_loc  = tree->n_root->b[1]->p_lk_loc_left;
+#ifdef BEAGLE
+              *dest_partial_buf = tree->n_root->b[1]->num;
+#endif
             }
           else
             {
               *p_lk      = tree->n_root->b[2]->p_lk_left;
               *sum_scale = tree->n_root->b[2]->sum_scale_left;
               *p_lk_loc  = tree->n_root->b[2]->p_lk_loc_left;
+#ifdef BEAGLE
+              *dest_partial_buf = tree->n_root->b[2]->num;
+#endif
             }
 
           *n_v1         = NULL;
@@ -9988,6 +10038,9 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
               *Pij2         = tree->n_root->b[2]->Pij_rr;
               *p_lk_v2      = tree->n_root->b[2]->p_lk_rght;
               *sum_scale_v2 = tree->n_root->b[2]->sum_scale_rght;
+#ifdef BEAGLE
+              *c2_p_buf         = tree->n_root->b[2]->num + gap;
+#endif
             }
           else if(b == tree->n_root->b[2])
             {
@@ -9995,6 +10048,9 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
               *Pij2         = tree->n_root->b[1]->Pij_rr;
               *p_lk_v2      = tree->n_root->b[1]->p_lk_rght;
               *sum_scale_v2 = tree->n_root->b[1]->sum_scale_rght;
+#ifdef BEAGLE
+              *c2_p_buf         = tree->n_root->b[1]->num + gap;
+#endif
             }
           else
             {
@@ -10011,12 +10067,18 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
                   *p_lk      = tree->n_root->b[1]->p_lk_rght;
                   *sum_scale = tree->n_root->b[1]->sum_scale_rght;
                   *p_lk_loc  = tree->n_root->b[1]->p_lk_loc_left;
+#ifdef BEAGLE
+                  *dest_partial_buf = tree->n_root->b[1]->num + gap;
+#endif
                 }
               else
                 {
                   *p_lk      = tree->n_root->b[2]->p_lk_rght;
                   *sum_scale = tree->n_root->b[2]->sum_scale_rght;
                   *p_lk_loc  = tree->n_root->b[2]->p_lk_loc_rght;
+#ifdef BEAGLE
+                  *dest_partial_buf = tree->n_root->b[2]->num + gap;
+#endif
                 }
 
 
@@ -10028,12 +10090,20 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
                       if(!(*n_v1))
                         {
                           *n_v1 = d->v[i];
+#ifdef BEAGLE
+                          Set_P_Lk_One_Side(Pij1,p_lk_v1,sum_scale_v1,d,d->b[i],tree,c1_p_buf);
+#else
                           Set_P_Lk_One_Side(Pij1,p_lk_v1,sum_scale_v1,d,d->b[i],tree);
+#endif
                         }
                       else
                         {
                           *n_v2 = d->v[i];
+#ifdef BEAGLE
+                          Set_P_Lk_One_Side(Pij2,p_lk_v2,sum_scale_v2,d,d->b[i],tree,c2_p_buf);
+#else
                           Set_P_Lk_One_Side(Pij2,p_lk_v2,sum_scale_v2,d,d->b[i],tree);
+#endif
                         }
                     }
                 }
@@ -10045,28 +10115,45 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
                   *p_lk      = b->p_lk_left;
                   *sum_scale = b->sum_scale_left;
                   *p_lk_loc  = b->p_lk_loc_left;
+#ifdef BEAGLE
+                  *dest_partial_buf = b->num;
+#endif
                 }
               else
                 {
                   *p_lk      = b->p_lk_rght;
                   *sum_scale = b->sum_scale_rght;
                   *p_lk_loc  = b->p_lk_loc_rght;
+#ifdef BEAGLE
+                  *dest_partial_buf = b->num + gap;
+#endif
                 }
 
 
               *n_v1 = tree->n_root;
+#ifdef BEAGLE
+              Set_P_Lk_One_Side(Pij1,p_lk_v1,sum_scale_v1,d,
+                                (d == tree->n_root->v[1])?
+                                (tree->n_root->b[1]):
+                                (tree->n_root->b[2]),
+                                tree,c1_p_buf);
+#else
               Set_P_Lk_One_Side(Pij1,p_lk_v1,sum_scale_v1,d,
                                 (d == tree->n_root->v[1])?
                                 (tree->n_root->b[1]):
                                 (tree->n_root->b[2]),
                                 tree);
-
+#endif
               For(i,3)
                 {
                   if(d->b[i] != tree->e_root && d->b[i] != b)
                     {
                       *n_v2 = d->v[i];
+#ifdef BEAGLE
+                      Set_P_Lk_One_Side(Pij2,p_lk_v2,sum_scale_v2,d,d->b[i],tree,c2_p_buf);
+#else
                       Set_P_Lk_One_Side(Pij2,p_lk_v2,sum_scale_v2,d,d->b[i],tree);
+#endif
                       break;
                     }
                 }
@@ -10080,12 +10167,18 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
               *p_lk      = b->p_lk_left;
               *sum_scale = b->sum_scale_left;
               *p_lk_loc  = b->p_lk_loc_left;
+#ifdef BEAGLE
+              *dest_partial_buf = b->num;
+#endif
             }
           else
             {
               *p_lk      = b->p_lk_rght;
               *sum_scale = b->sum_scale_rght;
               *p_lk_loc  = b->p_lk_loc_rght;
+#ifdef BEAGLE
+              *dest_partial_buf = b->num + gap;
+#endif
             }
 
           *n_v1 = *n_v2 = NULL;
@@ -10096,12 +10189,20 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
                   if(!(*n_v1))
                     {
                       *n_v1 = d->v[i];
+#ifdef BEAGLE
+                      Set_P_Lk_One_Side(Pij1,p_lk_v1,sum_scale_v1,d,d->b[i],tree,c1_p_buf);
+#else
                       Set_P_Lk_One_Side(Pij1,p_lk_v1,sum_scale_v1,d,d->b[i],tree);
+#endif
                     }
                   else
                     {
                       *n_v2 = d->v[i];
+#ifdef BEAGLE
+                      Set_P_Lk_One_Side(Pij2,p_lk_v2,sum_scale_v2,d,d->b[i],tree,c2_p_buf);
+#else
                       Set_P_Lk_One_Side(Pij2,p_lk_v2,sum_scale_v2,d,d->b[i],tree);
+#endif
                     }
                 }
             }

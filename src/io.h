@@ -88,7 +88,6 @@ void Print_All_Edge_Likelihoods(t_tree* tree);
 void Print_Edge_Likelihoods(t_tree* tree, t_edge* b);
 void Print_Edge_PMats(t_tree* tree, t_edge* b);
 void Print_Tip_Partials(t_tree* tree, t_node* d);
-void Dump_Tree(t_tree*);
 void Dump_Arr_D(phydbl* arr, int num);
 void Dump_Arr_S(short int* arr, int num);
 void Dump_Arr_I(int* arr, int num);

@@ -639,9 +639,7 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
         }
 
       tree->site_lk_cat[catg] = site_lk_cat;
-      fprintf(stderr,"[%d,%d,%d]site_lk_cat:%f,e.frq:%f,edge:%d,tax:%d\n",catg,site,state,site_lk_cat,tree->mod->e_frq->pi->v[state],b->num,b->rght->tax);fflush(stderr);
-//      if(state==-1)
-//        Dump_Arr_D(b->Pij_rr, tree->mod->ras->n_catg*dim3);
+//      fprintf(stderr,"[%d,%d,%d]site_lk_cat:%f,e.frq:%f,edge:%d,tax:%d\n",catg,site,state,site_lk_cat,tree->mod->e_frq->pi->v[state],b->num,b->rght->tax);fflush(stderr);
 
     }//site likelihood for all rate classes
 
@@ -1026,6 +1024,7 @@ void Update_P_Lk(t_tree *tree, t_edge *b, t_node *d)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#ifndef BEAGLE
 void Update_P_Lk_Generic(t_tree *tree, t_edge *b, t_node *d)
 {
 /*
@@ -1337,25 +1336,11 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
                &Pij2,&p_lk_v2,&sum_scale_v2,
                d,b,tree);
 
-  fprintf(stdout, "\nUpdating partials on Branch %d (on the side where Node %d lies)\n",b->num,d->num);fflush(stdout);
-  fprintf(stdout, "Left partials :");fflush(stdout);
-  n_v1->tax?Dump_Arr_S(n_v1->b[0]->p_lk_tip_r, tree->mod->ns*tree->n_pattern):Dump_Arr_D(p_lk_v1,   tree->mod->ras->n_catg*tree->mod->ns*tree->n_pattern);
-  fprintf(stdout, "Right partials:");fflush(stdout);
-  n_v2->tax?Dump_Arr_S(n_v2->b[0]->p_lk_tip_r, tree->mod->ns*tree->n_pattern):Dump_Arr_D(p_lk_v2,   tree->mod->ras->n_catg*tree->mod->ns*tree->n_pattern);
-
-//  t_edge *b1, *b2;
-//  b1 = b2 = NULL;
-//  int k;
-//  for(k=0;k<3;++k)//each node has 3 branches
-//  {
-//      if(NULL==b1)
-//          if(n_v1->b[k] == d->b[0] || n_v1->b[k] == d->b[1] || n_v1->b[k] == d->b[2])
-//              b1 = n_v1->b[k];
-//      if(NULL==b2)
-//          if(n_v2->b[k] == d->b[0] || n_v2->b[k] == d->b[1] || n_v2->b[k] == d->b[2])
-//              b2 = n_v2->b[k];
-//  }
-//  DUMP_I(d->num, n_v1->num, n_v2->num, b->num,b1->num,b2->num);
+//  fprintf(stdout, "\nUpdating partials on Branch %d (on the side where Node %d lies)\n",b->num,d->num);fflush(stdout);
+//  fprintf(stdout, "Left partials :");fflush(stdout);
+//  n_v1->tax?Dump_Arr_S(n_v1->b[0]->p_lk_tip_r, tree->mod->ns*tree->n_pattern):Dump_Arr_D(p_lk_v1,   tree->mod->ras->n_catg*tree->mod->ns*tree->n_pattern);
+//  fprintf(stdout, "Right partials:");fflush(stdout);
+//  n_v2->tax?Dump_Arr_S(n_v2->b[0]->p_lk_tip_r, tree->mod->ns*tree->n_pattern):Dump_Arr_D(p_lk_v2,   tree->mod->ras->n_catg*tree->mod->ns*tree->n_pattern);
 
   /* printf("\n. p_lk: %p p_lk_v1: %p p_lk_v2: %p",p_lk,p_lk_v1,p_lk_v2); */
 
@@ -1566,8 +1551,10 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
         }
     }
 
-  fprintf(stdout, "Updated partials:");fflush(stdout);
-  Dump_Arr_D(p_lk, tree->mod->ras->n_catg*tree->mod->ns*tree->n_pattern);
+//  fprintf(stdout, "Updated partials:");fflush(stdout);
+//  Dump_Arr_D(p_lk, tree->mod->ras->n_catg*tree->mod->ns*tree->n_pattern);
+
+
 
 //  for(int site1=0;site1<n_patterns;++site1)
 //  {
@@ -1930,7 +1917,7 @@ void Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
     }
     }
 }
-
+#endif
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 

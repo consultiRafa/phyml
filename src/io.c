@@ -3410,13 +3410,6 @@ void Print_Tip_Partials(t_tree* tree, t_node* d)
         return;
     }
 
-//    int dim;
-//#ifdef BEAGLE
-//    dim = tree->mod->ras->n_catg*tree->n_pattern*tree->mod->ns;
-//#else
-//    dim = tree->n_pattern*tree->mod->ns;
-//#endif
-
     assert(d->b[0]->rght == d);
     assert(d->b[0]->rght->tax);
     fprintf(stdout,"Taxa/Node %d\n",d->num);
@@ -3592,66 +3585,6 @@ void Dump_Arr_I(int* arr, int num)
     }
     fprintf(stdout,"]\n");fflush(stdout);
 }
-
-void Dump_Node(t_tree* tree, t_node* d)
-{
-
-    fprintf(stdout,"%d,%d,%d,%d,%d,%d,%d,%d\n",d->n_calib,d->num,d->tax,d->check_branch,d->common,d->id_rank,d->rank,d->rank_max);fflush(stdout);
-    fprintf(stdout,"%f,%f,%f,%f,%f\n",d->dist_to_root,d->y_rank,d->y_rank_max,d->y_rank_min,d->y_rank_ori);fflush(stdout);
-    fprintf(stdout,"%d,%d,%d,%d,%d,%d,%d,%d\n",d->v[0]?d->v[0]->num:-42,d->v[1]?d->v[1]->num:-42,d->v[2]?d->v[2]->num:-42,d->b[0]?d->b[0]->num:-42,d->b[1]?d->b[1]->num:-42,d->b[2]?d->b[2]->num:-42,d->next?d->next->num:-42,d->prev?d->prev->num:-42);fflush(stdout);
-    fprintf(stdout,"%d,%d\n",d->next_mixt?d->next_mixt->num:-42,d->prev_mixt?d->prev_mixt->num:-42);fflush(stdout);
-    fprintf(stdout,"%s\n,",d->c_seq?d->c_seq->name:"IntNode");
-    Dump_Arr_D(d->l,3);
-
-
-}
-
-
-void Dump_Edge(t_tree* tree, t_edge* b)
-{
-    fprintf(stdout,"%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",b->l_r,b->r_l,b->l_v1,b->l_v2,b->r_v1,b->r_v2,b->num,b->bip_score,b->is_alive,b->topo_dist_btw_edges,b->has_zero_br_len,b->n_labels,b->n_jumps);fflush(stdout);
-    fprintf(stdout,"%f,%f,%f\n",b->bootval,b->dist_btw_edges,b->bin_cod_num);fflush(stdout);
-    fprintf(stdout,"%f,%f,%f,%f,%f\n",b->l?b->l->v:-42, b->best_l?b->best_l->v:-42, b->l_old?b->l_old->v:-42, b->l_var?b->l_var->v:-42, b->l_var_old?b->l_var_old->v:-42);fflush(stdout);
-    fprintf(stdout,"%d,%d,%d,%d,%d,%d,%d,%d",b->nni && b->nni->left?b->nni->left->num:-42,b->nni && b->nni->rght?b->nni->rght->num:-42,b->nni && b->nni->b?b->nni->b->num:-42,b->nni && b->nni->swap_node_v1?b->nni->swap_node_v1->num:-42,b->nni && b->nni->swap_node_v2?b->nni->swap_node_v2->num:-42,b->nni && b->nni->swap_node_v3?b->nni->swap_node_v3->num:-42,b->nni && b->nni->swap_node_v4?b->nni->swap_node_v4->num:-42,b->nni?b->nni->best_conf:-42);fflush(stdout);
-    fprintf(stdout,"%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n",b->nni->score,b->nni->init_l,b->nni->init_lk,b->nni->best_l,b->nni->lk0,b->nni->lk1,b->nni->lk2,b->nni->l0,b->nni->l1,b->nni->l2);fflush(stdout);
-    Dump_Arr_D(b->p_lk_left, tree->mod->ras->n_catg*tree->n_pattern*tree->mod->ns);
-    Dump_Arr_D(b->p_lk_rght, tree->mod->ras->n_catg*tree->n_pattern*tree->mod->ns);
-    Dump_Arr_D(b->Pij_rr, tree->mod->ras->n_catg*tree->mod->ns*tree->mod->ns);
-    Dump_Arr_S(b->p_lk_tip_l, tree->n_pattern*tree->mod->ns);
-    Dump_Arr_S(b->p_lk_tip_r, tree->n_pattern*tree->mod->ns);
-    Dump_Arr_I(b->patt_id_left, tree->n_pattern);
-    Dump_Arr_I(b->p_lk_loc_left, tree->n_pattern);
-    Dump_Arr_I(b->patt_id_rght, tree->n_pattern);
-    Dump_Arr_I(b->p_lk_loc_rght, tree->n_pattern);
-    Dump_Arr_I(b->sum_scale_left, tree->n_pattern*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes));
-    Dump_Arr_I(b->sum_scale_rght, tree->n_pattern*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes));
-    Dump_Arr_I(b->sum_scale_left_cat, MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes));
-    Dump_Arr_I(b->sum_scale_rght_cat, MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes));
-
-}
-
-void Dump_Tree(t_tree* tree)
-{
-    fprintf(stdout,"%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",tree->is_mixt_tree, tree->tree_num, tree->ps_page_number, tree->depth_curr_path, tree->has_bip, tree->n_otu, tree->curr_site, tree->curr_catg,tree->n_swap,tree->n_pattern,tree->has_branch_lengths,tree->print_boot_val,tree->print_alrt_val,tree->both_sides,tree->num_curr_branch_available,tree->n_improvements,tree->n_moves,tree->dp,tree->s_mod_num,tree->lock_topo,tree->write_labels,tree->write_br_lens,tree->best_pars,tree->c_pars,tree->size_spr_list,tree->perform_spr_right_away,tree->bl_from_node_stamps,tree->write_tax_names,tree->update_alias_subpatt,tree->bl_ndigits,tree->n_short_l,tree->br_len_recorded,tree->max_spr_depth,tree->apply_lk_scaling);fflush(stdout);
-#if BEAGLE
-    fprintf(stdout,",%d\n",tree->b_inst);fflush(stdout);
-#endif
-    fprintf(stdout,"%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n",tree->init_lnL,tree->best_lnL,tree->c_lnL,tree->old_lnL,tree->sum_min_sum_scale,tree->unconstraint_lk,tree->n_root_pos,tree->size,tree->sum_y_dist_sq,tree->sum_y_dist,tree->tip_order_score,tree->geo_mig_sd,tree->geo_lnL,tree->norm_scale);fflush(stdout);
-
-    for(int i=0; i<2*tree->n_otu-2; ++i)
-    {
-        fprintf(stdout,"Dumping Node %d\n",tree->a_nodes[i]->num);fflush(stdout);
-        Dump_Node(tree, tree->a_nodes[i]);
-        fprintf(stdout,"=============================\n");fflush(stdout);
-    }
-    for(int i=0; i<2*tree->n_otu-3; ++i)
-    {
-        fprintf(stdout,"Dumping Edge %d\n",tree->a_edges[i]->num);fflush(stdout);
-        Dump_Edge(tree, tree->a_edges[i]);
-        fprintf(stdout,"*****************************\n");fflush(stdout);
-    }
-}
-
 
 void Print_Tree_Structure(t_tree* tree)
 {
