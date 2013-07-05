@@ -11,6 +11,7 @@ the GNU public licence. See http://www.opensource.org for details.
 */
 
 #include "utilities.h"
+#include "assert.h"
 
 #ifdef BEAGLE
 #include "beagle_utils.h"
@@ -4523,6 +4524,11 @@ void Copy_Tree(t_tree *ori, t_tree *cpy)
       cpy->a_edges[i]->l_r              = ori->a_edges[i]->l_r;
       cpy->a_edges[i]->r_l              = ori->a_edges[i]->r_l;
       cpy->a_edges[i]->does_exist       = ori->a_edges[i]->does_exist;
+#ifdef BEAGLE
+      cpy->a_edges[i]->p_lk_left_idx    = ori->a_edges[i]->p_lk_left_idx;
+      cpy->a_edges[i]->p_lk_rght_idx    = ori->a_edges[i]->p_lk_rght_idx;
+      cpy->a_edges[i]->p_lk_tip_idx     = ori->a_edges[i]->p_lk_tip_idx;
+#endif
     }
 
 
@@ -4550,6 +4556,7 @@ void Copy_Tree(t_tree *ori, t_tree *cpy)
 
 /*   Connect_Edges_To_Nodes_Recur(cpy->a_nodes[0],cpy->a_nodes[0]->v[0],cpy); */
 /*   Update_Dirs(cpy); */
+
 #ifdef BEAGLE
   cpy->b_inst = ori->b_inst;
 #endif
@@ -4603,6 +4610,7 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
       b1 = a->b[dir_v2];
       b2 = a->b[dir_v1];
     }
+  assert(NULL != b1 && NULL != b2);
 
   /* if(v1->tax && v2->tax) PhyML_Printf("\n. Pruning is meaningless here.\n"); */
 
@@ -4610,6 +4618,10 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
   a->v[dir_v2] = NULL;
   a->b[dir_v1] = NULL;
   a->b[dir_v2] = NULL;
+
+#ifdef BEAGLE
+  int temp;
+#endif
 
   if(v1 == b1->left)
     {
@@ -4624,7 +4636,11 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
           buff_p_lk_tip        = b1->p_lk_tip_r;
           b1->p_lk_tip_r       = b2->p_lk_tip_l;
           b2->p_lk_tip_l       = buff_p_lk_tip;
-
+#ifdef BEAGLE
+          temp                 = b1->p_lk_rght_idx;
+          b1->p_lk_rght_idx    = b2->p_lk_left_idx;
+          b2->p_lk_left_idx    = temp;
+#endif
           buff_scale           = b1->sum_scale_rght;
           b1->sum_scale_rght   = b2->sum_scale_left;
           b2->sum_scale_left   = buff_scale;
@@ -4663,7 +4679,13 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
           buff_p_lk_tip        = b1->p_lk_tip_r;
           b1->p_lk_tip_r       = b2->p_lk_tip_r;
           b2->p_lk_tip_r       = buff_p_lk_tip;
+#ifdef BEAGLE
+          temp                 = b1->p_lk_rght_idx;
+          b1->p_lk_rght_idx    = b2->p_lk_rght_idx;
+          b2->p_lk_rght_idx    = temp;
 
+          b2->p_lk_tip_idx     = b1->p_lk_tip_idx;
+#endif
           buff_scale           = b1->sum_scale_rght;
           b1->sum_scale_rght   = b2->sum_scale_rght;
           b2->sum_scale_rght   = buff_scale;
@@ -4703,7 +4725,11 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
           buff_p_lk_tip        = b1->p_lk_tip_l;
           b1->p_lk_tip_l       = b2->p_lk_tip_l;
           b2->p_lk_tip_l       = buff_p_lk_tip;
-
+#ifdef BEAGLE
+          temp                 = b1->p_lk_left_idx;
+          b1->p_lk_left_idx    = b2->p_lk_left_idx;
+          b2->p_lk_left_idx    = temp;
+#endif
           buff_scale           = b1->sum_scale_left;
           b1->sum_scale_left   = b2->sum_scale_left;
           b2->sum_scale_left   = buff_scale;
@@ -4742,7 +4768,13 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
           buff_p_lk_tip        = b1->p_lk_tip_l;
           b1->p_lk_tip_l       = b2->p_lk_tip_r;
           b2->p_lk_tip_r       = buff_p_lk_tip;
+#ifdef BEAGLE
+          temp                 = b1->p_lk_left_idx;
+          b1->p_lk_left_idx    = b2->p_lk_rght_idx;
+          b2->p_lk_rght_idx    = temp;
 
+          b2->p_lk_tip_idx     = b1->p_lk_tip_idx;
+#endif
           buff_scale           = b1->sum_scale_left;
           b1->sum_scale_left   = b2->sum_scale_rght;
           b2->sum_scale_rght   = buff_scale;
@@ -4862,12 +4894,16 @@ void Graft_Subtree(t_edge *target, t_node *link, t_edge *residual, t_tree *tree)
   For(i,3)
     {
       if(!link->v[i])
-    {
-      if(dir_v1 < 0) dir_v1 = i;
-      else           dir_v2 = i;
-    }
+        {
+          if(dir_v1 < 0) dir_v1 = i;
+          else           dir_v2 = i;
+        }
       else b_up = link->b[i];
     }
+
+#ifdef BEAGLE
+  int temp;
+#endif
 
   if(target->left->num < target->rght->num)
     {
@@ -4881,7 +4917,15 @@ void Graft_Subtree(t_edge *target, t_node *link, t_edge *residual, t_tree *tree)
       buff_p_lk_tip                = residual->p_lk_tip_r;
       residual->p_lk_tip_r         = target->p_lk_tip_r;
       target->p_lk_tip_r           = buff_p_lk_tip;
+#ifdef BEAGLE
+      temp                         = residual->p_lk_rght_idx;
+      residual->p_lk_rght_idx      = target->p_lk_rght_idx;
+      target->p_lk_rght_idx        = temp;
 
+      temp                         = residual->p_lk_tip_idx;
+      residual->p_lk_tip_idx       = target->p_lk_tip_idx;
+      target->p_lk_tip_idx         = temp;
+#endif
       buff_scale                   = residual->sum_scale_rght;
       residual->sum_scale_rght     = target->sum_scale_rght;
       target->sum_scale_rght       = buff_scale;
@@ -4918,7 +4962,11 @@ void Graft_Subtree(t_edge *target, t_node *link, t_edge *residual, t_tree *tree)
       buff_p_lk_tip                = residual->p_lk_tip_r;
       residual->p_lk_tip_r         = target->p_lk_tip_l;
       target->p_lk_tip_l           = buff_p_lk_tip;
-
+#ifdef BEAGLE
+      temp                         = residual->p_lk_rght_idx;
+      residual->p_lk_rght_idx      = target->p_lk_left_idx;
+      target->p_lk_left_idx        = temp;
+#endif
       buff_scale                   = residual->sum_scale_rght;
       residual->sum_scale_rght     = target->sum_scale_left;
       target->sum_scale_left       = buff_scale;
@@ -4952,9 +5000,9 @@ void Graft_Subtree(t_edge *target, t_node *link, t_edge *residual, t_tree *tree)
   For(i,3)
     if(v2->b[i] == target)
       {
-    v2->v[i] = link;
-    v2->b[i] = residual;
-    break;
+        v2->v[i] = link;
+        v2->b[i] = residual;
+        break;
       }
 
   link->v[dir_v2] = v2;
@@ -4971,8 +5019,8 @@ void Graft_Subtree(t_edge *target, t_node *link, t_edge *residual, t_tree *tree)
   For(i,3)
     if(v1->v[i] == v2)
       {
-    v1->v[i] = link;
-    break;
+        v1->v[i] = link;
+        break;
       }
 
   if(target->l->onoff == ON)
@@ -9856,23 +9904,24 @@ void Random_SPRs_On_Rooted_Tree(t_tree *tree)
      /    \
     /      \b
    /        \
-  /          \x
+  /          \x (either n_v1 or n_v2)
 
   Returns p_lk and sum_scale for subtree with x as root, Pij for edge b
 */
 
 void Set_P_Lk_One_Side(phydbl **Pij, phydbl **p_lk,  int **sum_scale, t_node *d, t_edge *b, t_tree *tree
 #ifdef BEAGLE
-                       , int* c_p_buf
+                       , int* child_p_idx, int* Pij_idx
 #endif
                                               )
 {
 
+  if(Pij) {
+      *Pij = b->Pij_rr;
 #ifdef BEAGLE
-  int gap = 2*tree->n_otu-3;
+      *Pij_idx = b->Pij_rr_idx;
 #endif
-
-  if(Pij) *Pij = b->Pij_rr;
+  }
 
   if(!d->tax)//if d is not a tip
     {
@@ -9882,7 +9931,7 @@ void Set_P_Lk_One_Side(phydbl **Pij, phydbl **p_lk,  int **sum_scale, t_node *d,
           *p_lk      = b->p_lk_rght;
           *sum_scale = b->sum_scale_rght;
 #ifdef BEAGLE
-          *c_p_buf       = b->num + gap;
+          *child_p_idx = b->rght->tax? b->p_lk_tip_idx: b->p_lk_rght_idx;
 #endif
         }
       else
@@ -9890,7 +9939,7 @@ void Set_P_Lk_One_Side(phydbl **Pij, phydbl **p_lk,  int **sum_scale, t_node *d,
           *p_lk      = b->p_lk_left;
           *sum_scale = b->sum_scale_left;
 #ifdef BEAGLE
-          *c_p_buf   = b->num;
+          *child_p_idx   = b->rght->tax? b->p_lk_tip_idx: b->p_lk_left_idx;
 #endif
         }
     }
@@ -9930,17 +9979,10 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
                   phydbl **Pij2, phydbl **p_lk_v2, int **sum_scale_v2,
                   t_node *d, t_edge *b, t_tree *tree
 #ifdef BEAGLE
-                  , int *c1_p_buf, int *c2_p_buf, int* dest_partial_buf
+                  , int *dest_p_idx, int *child1_p_idx, int* child2_p_idx, int* Pij1_idx, int* Pij2_idx
 #endif
                   )
 {
-
-#ifdef BEAGLE
-  //Recall that in PhyML, each edge has two "left" and "right" partial vectors. Therefore,
-  //in BEAGLE we have 2*num_branches number of partials.
-  //BEAGLE's partials buffer = [ tax1, tax2, ..., taxN, b1L, b2L, b3L,...,bML, b1R, b2R, b3R,...,bMR]
-  int gap = 2*tree->n_otu-3;
-#endif
 
   int i;
   if(!tree->n_root)
@@ -9952,7 +9994,7 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
           *sum_scale = b->sum_scale_left;
           *p_lk_loc  = b->p_lk_loc_left;
 #ifdef BEAGLE
-          *dest_partial_buf = b->num;
+          *dest_p_idx = b->p_lk_left_idx;
 #endif
         }
       else
@@ -9961,7 +10003,7 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
           *sum_scale = b->sum_scale_rght;
           *p_lk_loc  = b->p_lk_loc_rght;
 #ifdef BEAGLE
-          *dest_partial_buf = b->num + gap;
+          *dest_p_idx = b->p_lk_rght_idx;
 #endif
         }
 
@@ -9974,7 +10016,7 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
                 {
                   *n_v1 = d->v[i];
 #ifdef BEAGLE
-                  Set_P_Lk_One_Side(Pij1,p_lk_v1,sum_scale_v1,d,d->b[i],tree,c1_p_buf);
+                  Set_P_Lk_One_Side(Pij1,p_lk_v1,sum_scale_v1,d,d->b[i],tree,child1_p_idx,Pij1_idx);
 #else
                   Set_P_Lk_One_Side(Pij1,p_lk_v1,sum_scale_v1,d,d->b[i],tree);
 #endif
@@ -9983,7 +10025,7 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
                 {
                   *n_v2 = d->v[i];
 #ifdef BEAGLE
-                  Set_P_Lk_One_Side(Pij2,p_lk_v2,sum_scale_v2,d,d->b[i],tree,c2_p_buf);
+                  Set_P_Lk_One_Side(Pij2,p_lk_v2,sum_scale_v2,d,d->b[i],tree,child2_p_idx,Pij2_idx);
 #else
                   Set_P_Lk_One_Side(Pij2,p_lk_v2,sum_scale_v2,d,d->b[i],tree);
 #endif
@@ -10014,7 +10056,7 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
               *sum_scale = tree->n_root->b[1]->sum_scale_left;
               *p_lk_loc  = tree->n_root->b[1]->p_lk_loc_left;
 #ifdef BEAGLE
-              *dest_partial_buf = tree->n_root->b[1]->num;
+              *dest_p_idx = tree->n_root->b[1]->p_lk_left_idx;
 #endif
             }
           else
@@ -10023,7 +10065,7 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
               *sum_scale = tree->n_root->b[2]->sum_scale_left;
               *p_lk_loc  = tree->n_root->b[2]->p_lk_loc_left;
 #ifdef BEAGLE
-              *dest_partial_buf = tree->n_root->b[2]->num;
+              *dest_p_idx = tree->n_root->b[2]->p_lk_left_idx;
 #endif
             }
 
@@ -10039,7 +10081,8 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
               *p_lk_v2      = tree->n_root->b[2]->p_lk_rght;
               *sum_scale_v2 = tree->n_root->b[2]->sum_scale_rght;
 #ifdef BEAGLE
-              *c2_p_buf         = tree->n_root->b[2]->num + gap;
+              *child2_p_idx = tree->n_root->b[2]->p_lk_rght_idx;
+              *Pij2_idx     = tree->n_root->b[2]->Pij_rr_idx;
 #endif
             }
           else if(b == tree->n_root->b[2])
@@ -10049,7 +10092,8 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
               *p_lk_v2      = tree->n_root->b[1]->p_lk_rght;
               *sum_scale_v2 = tree->n_root->b[1]->sum_scale_rght;
 #ifdef BEAGLE
-              *c2_p_buf         = tree->n_root->b[1]->num + gap;
+              *child2_p_idx = tree->n_root->b[1]->p_lk_rght_idx;
+              *Pij2_idx     = tree->n_root->b[1]->Pij_rr_idx;
 #endif
             }
           else
@@ -10068,7 +10112,7 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
                   *sum_scale = tree->n_root->b[1]->sum_scale_rght;
                   *p_lk_loc  = tree->n_root->b[1]->p_lk_loc_left;
 #ifdef BEAGLE
-                  *dest_partial_buf = tree->n_root->b[1]->num + gap;
+                  *dest_p_idx = tree->n_root->b[1]->p_lk_rght_idx;
 #endif
                 }
               else
@@ -10077,7 +10121,7 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
                   *sum_scale = tree->n_root->b[2]->sum_scale_rght;
                   *p_lk_loc  = tree->n_root->b[2]->p_lk_loc_rght;
 #ifdef BEAGLE
-                  *dest_partial_buf = tree->n_root->b[2]->num + gap;
+                  *dest_p_idx = tree->n_root->b[2]->p_lk_rght_idx;
 #endif
                 }
 
@@ -10091,7 +10135,7 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
                         {
                           *n_v1 = d->v[i];
 #ifdef BEAGLE
-                          Set_P_Lk_One_Side(Pij1,p_lk_v1,sum_scale_v1,d,d->b[i],tree,c1_p_buf);
+                          Set_P_Lk_One_Side(Pij1,p_lk_v1,sum_scale_v1,d,d->b[i],tree,child1_p_idx,Pij1_idx);
 #else
                           Set_P_Lk_One_Side(Pij1,p_lk_v1,sum_scale_v1,d,d->b[i],tree);
 #endif
@@ -10100,7 +10144,7 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
                         {
                           *n_v2 = d->v[i];
 #ifdef BEAGLE
-                          Set_P_Lk_One_Side(Pij2,p_lk_v2,sum_scale_v2,d,d->b[i],tree,c2_p_buf);
+                          Set_P_Lk_One_Side(Pij2,p_lk_v2,sum_scale_v2,d,d->b[i],tree,child2_p_idx,Pij2_idx);
 #else
                           Set_P_Lk_One_Side(Pij2,p_lk_v2,sum_scale_v2,d,d->b[i],tree);
 #endif
@@ -10116,7 +10160,7 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
                   *sum_scale = b->sum_scale_left;
                   *p_lk_loc  = b->p_lk_loc_left;
 #ifdef BEAGLE
-                  *dest_partial_buf = b->num;
+                  *dest_p_idx = b->p_lk_left_idx;
 #endif
                 }
               else
@@ -10125,7 +10169,7 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
                   *sum_scale = b->sum_scale_rght;
                   *p_lk_loc  = b->p_lk_loc_rght;
 #ifdef BEAGLE
-                  *dest_partial_buf = b->num + gap;
+                  *dest_p_idx = b->p_lk_rght_idx;
 #endif
                 }
 
@@ -10136,7 +10180,7 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
                                 (d == tree->n_root->v[1])?
                                 (tree->n_root->b[1]):
                                 (tree->n_root->b[2]),
-                                tree,c1_p_buf);
+                                tree,child1_p_idx,Pij1_idx);
 #else
               Set_P_Lk_One_Side(Pij1,p_lk_v1,sum_scale_v1,d,
                                 (d == tree->n_root->v[1])?
@@ -10150,7 +10194,7 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
                     {
                       *n_v2 = d->v[i];
 #ifdef BEAGLE
-                      Set_P_Lk_One_Side(Pij2,p_lk_v2,sum_scale_v2,d,d->b[i],tree,c2_p_buf);
+                      Set_P_Lk_One_Side(Pij2,p_lk_v2,sum_scale_v2,d,d->b[i],tree,child2_p_idx,Pij2_idx);
 #else
                       Set_P_Lk_One_Side(Pij2,p_lk_v2,sum_scale_v2,d,d->b[i],tree);
 #endif
@@ -10168,7 +10212,7 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
               *sum_scale = b->sum_scale_left;
               *p_lk_loc  = b->p_lk_loc_left;
 #ifdef BEAGLE
-              *dest_partial_buf = b->num;
+              *dest_p_idx = b->p_lk_left_idx;
 #endif
             }
           else
@@ -10177,7 +10221,7 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
               *sum_scale = b->sum_scale_rght;
               *p_lk_loc  = b->p_lk_loc_rght;
 #ifdef BEAGLE
-              *dest_partial_buf = b->num + gap;
+              *dest_p_idx = b->p_lk_rght_idx;
 #endif
             }
 
@@ -10190,7 +10234,7 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
                     {
                       *n_v1 = d->v[i];
 #ifdef BEAGLE
-                      Set_P_Lk_One_Side(Pij1,p_lk_v1,sum_scale_v1,d,d->b[i],tree,c1_p_buf);
+                      Set_P_Lk_One_Side(Pij1,p_lk_v1,sum_scale_v1,d,d->b[i],tree,child1_p_idx,Pij1_idx);
 #else
                       Set_P_Lk_One_Side(Pij1,p_lk_v1,sum_scale_v1,d,d->b[i],tree);
 #endif
@@ -10199,7 +10243,7 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
                     {
                       *n_v2 = d->v[i];
 #ifdef BEAGLE
-                      Set_P_Lk_One_Side(Pij2,p_lk_v2,sum_scale_v2,d,d->b[i],tree,c2_p_buf);
+                      Set_P_Lk_One_Side(Pij2,p_lk_v2,sum_scale_v2,d,d->b[i],tree,child2_p_idx,Pij2_idx);
 #else
                       Set_P_Lk_One_Side(Pij2,p_lk_v2,sum_scale_v2,d,d->b[i],tree);
 #endif

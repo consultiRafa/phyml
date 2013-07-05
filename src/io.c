@@ -3431,7 +3431,7 @@ void Print_Edge_PMats(t_tree* tree, t_edge* b)
     phydbl *Pij;
 #ifdef BEAGLE
     Pij = (phydbl*)malloc(tree->mod->ns * tree->mod->ns * tree->mod->ras->n_catg * sizeof(phydbl)); if (NULL==Pij) Warn_And_Exit(__PRETTY_FUNCTION__);
-    int ret = beagleGetTransitionMatrix(tree->b_inst, b->num, Pij);
+    int ret = beagleGetTransitionMatrix(tree->b_inst, b->Pij_rr_idx, Pij);
     if(ret<0){
         fprintf(stderr, "beagleGetTransitionMatrix() on instance %i failed:%i\n\n",tree->b_inst,ret);
         Free(Pij);

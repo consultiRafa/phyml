@@ -450,9 +450,17 @@ typedef struct __Edge {
   phydbl            *p_lk_left,*p_lk_rght; /*! likelihoods of the subtree on the left and
                           right side (for each site and each relative rate category) */
   short int      *p_lk_tip_r, *p_lk_tip_l;
+
+#ifdef BEAGLE
+  int        p_lk_left_idx, p_lk_rght_idx;
+  int                        p_lk_tip_idx;
+  int                          Pij_rr_idx;
+#endif
+
   short int           *div_post_pred_left; /*! posterior prediction of nucleotide/aa diversity (left-hand subtree) */
   short int           *div_post_pred_rght; /*! posterior prediction of nucleotide/aa diversity (rght-hand subtree) */
   short int                    does_exist;
+
 
   int                       *patt_id_left;
   int                       *patt_id_rght;
@@ -1764,7 +1772,7 @@ void Random_SPRs_On_Rooted_Tree(t_tree *tree);
 
 void Set_P_Lk_One_Side(phydbl **Pij, phydbl **p_lk,  int **sum_scale, t_node *d, t_edge *b, t_tree *tree
 #ifdef BEAGLE
-                       , int* c_p_buf
+                       , int* child_p_idx, int* Pij_idx
 #endif
                        );
 
@@ -1775,7 +1783,7 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
                   phydbl **Pij2, phydbl **p_lk2, int **sum_scale2,
                   t_node *d, t_edge *b, t_tree *tree
 #ifdef BEAGLE
-                  , int *c1_p_buf, int *c2_p_buf, int* dest_partial_buf
+                  , int *dest_p_idx, int *child1_p_idx, int* child2_p_idx, int* Pij1_idx, int* Pij2_idx
 #endif
                   );
 

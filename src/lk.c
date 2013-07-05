@@ -639,7 +639,7 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
         }
 
       tree->site_lk_cat[catg] = site_lk_cat;
-//      fprintf(stderr,"[%d,%d,%d]site_lk_cat:%f,e.frq:%f,edge:%d,tax:%d\n",catg,site,state,site_lk_cat,tree->mod->e_frq->pi->v[state],b->num,b->rght->tax);fflush(stderr);
+//      fprintf(stdout,"[%d,%d,%d]site_lk_cat:%f,e.frq:%f,edge:%d,tax:%d\n",catg,site,state,site_lk_cat,tree->mod->e_frq->pi->v[state],b->num,b->rght->tax);fflush(stderr);
 
     }//site likelihood for all rate classes
 
@@ -2313,7 +2313,10 @@ void Init_P_Lk_Tips_Int(t_tree *tree)
           /* 					tree->mod->io->state_len, */
           /* 					curr_site*dim1, */
           /* 					tree->a_nodes[i]->b[0]->p_lk_tip_r); */
-        }
+            }
+#ifdef BEAGLE
+        tree->a_nodes[i]->b[0]->p_lk_tip_idx = i;
+#endif
       }
     }
    if(tree->mod->use_m4mod)
@@ -2387,7 +2390,7 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
     }
   if(tree->mod->log_l == YES) b_fcus->l->v = LOG(b_fcus->l->v);
 #ifdef BEAGLE
-      int ret = beagleSetTransitionMatrix(tree->b_inst, b_fcus->num, b_fcus->Pij_rr, -1);
+      int ret = beagleSetTransitionMatrix(tree->b_inst, b_fcus->Pij_rr_idx, b_fcus->Pij_rr, -1);
       if(ret<0){
           fprintf(stderr, "beagleSetTransitionMatrix() on instance %i failed:%i\n\n",tree->b_inst,ret);
           Exit("");

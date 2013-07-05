@@ -2327,7 +2327,7 @@ phydbl Generic_Brent_Lk(phydbl *param, phydbl ax, phydbl cx, phydbl tol,
   fw=fv=fx=fu=-(*obj_func)(branch,tree,stree);
   if(logt == YES) (*param) = LOG(*param);
   init_lnL = -fw;
-  DUMP_D(init_lnL);
+//  DUMP_D(init_lnL);
 
   /* PhyML_Printf("\n. %p %p %p init_lnL = %f a=%f b=%f c=%f",branch,tree,stree,init_lnL,ax,bx,cx); */
 

@@ -11,6 +11,9 @@ the GNU public licence. See http://www.opensource.org for details.
 */
 
 #include "init.h"
+#ifdef BEAGLE
+#include "beagle_utils.h"
+#endif
 
 void Init_Eigen_Struct(eigen *this)
 {
@@ -172,6 +175,14 @@ void Init_Edge_Light(t_edge *b, int num)
   b->p_lk_loc_rght        = NULL;
   b->Pij_rr               = NULL;
   b->labels               = NULL;
+
+#ifdef BEAGLE
+  b->p_lk_left_idx         = num;
+  b->p_lk_rght_idx         = UNINITIALIZED; //Will be initialized later when the total number of branches is known
+  b->Pij_rr_idx            = num;
+  b->p_lk_tip_idx          = UNINITIALIZED; //Will be initialized later only if this branch is connected to a tip
+#endif
+
 }
 
 //////////////////////////////////////////////////////////////

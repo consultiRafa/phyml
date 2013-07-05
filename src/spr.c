@@ -3342,11 +3342,11 @@ int Test_All_Spr_Targets(t_edge *b_pulled, t_node *n_link, t_tree *tree)
                 b_pulled,n_link,b_residual,&best_found,tree);
 
 
-      Graft_Subtree(b_target,n_link,b_residual,tree);
+      Graft_Subtree(b_target,n_link,b_residual,tree);//XXX
 
 
       if((n_link->v[dir1] != n_v1) || (n_link->v[dir2] != n_v2))
-    PhyML_Printf("\n. Warning: -- SWITCH NEEDED -- ! \n");
+        PhyML_Printf("\n. Warning: -- SWITCH NEEDED -- ! \n");
 
       /* n_link->b[dir1]->l->v = init_len_v1; */
       /* n_link->b[dir2]->l->v = init_len_v2;  */
@@ -3381,9 +3381,9 @@ int Test_All_Spr_Targets(t_edge *b_pulled, t_node *n_link, t_tree *tree)
       {
         if(tree->mod->s_opt->spr_lnL)
           {
-        MIXT_Set_Alias_Subpatt(YES,tree);
-        Pre_Order_Lk(n_link,n_link->v[i],tree);
-        MIXT_Set_Alias_Subpatt(NO,tree);
+            MIXT_Set_Alias_Subpatt(YES,tree);
+            Pre_Order_Lk(n_link,n_link->v[i],tree);
+            MIXT_Set_Alias_Subpatt(NO,tree);
           }
         else
           Pre_Order_Pars(n_link,n_link->v[i],tree);
@@ -3422,11 +3422,11 @@ void Test_One_Spr_Target_Recur(t_node *a, t_node *d, t_edge *pulled, t_node *lin
         {
 
           if(tree->mod->s_opt->spr_lnL)
-        {
-          MIXT_Set_Alias_Subpatt(YES,tree);
-          Update_P_Lk(tree,d->b[i],d);
-          MIXT_Set_Alias_Subpatt(NO,tree);
-        }
+            {
+              MIXT_Set_Alias_Subpatt(YES,tree);
+              Update_P_Lk(tree,d->b[i],d);
+              MIXT_Set_Alias_Subpatt(NO,tree);
+            }
           else
         Update_P_Pars(tree,d->b[i],d);
 
@@ -3434,17 +3434,17 @@ void Test_One_Spr_Target_Recur(t_node *a, t_node *d, t_edge *pulled, t_node *lin
           tree->curr_path[tree->depth_curr_path] = d->v[i];
 
           if((tree->depth_curr_path <= tree->mod->s_opt->max_depth_path) &&
-         (tree->depth_curr_path >= tree->mod->s_opt->min_depth_path))
-        {
-          move_lnL = Test_One_Spr_Target(d->b[i],pulled,link,residual,tree);
-          if(move_lnL > tree->best_lnL + tree->mod->s_opt->min_diff_lk_move)
+             (tree->depth_curr_path >= tree->mod->s_opt->min_depth_path))
             {
-              *best_found = 1;
+              move_lnL = Test_One_Spr_Target(d->b[i],pulled,link,residual,tree);
+              if(move_lnL > tree->best_lnL + tree->mod->s_opt->min_diff_lk_move)
+                {
+                  *best_found = 1;
+                }
             }
-        }
 
           if(tree->depth_curr_path < tree->mod->s_opt->max_depth_path)
-        Test_One_Spr_Target_Recur(d,d->v[i],pulled,link,residual,best_found,tree);
+            Test_One_Spr_Target_Recur(d,d->v[i],pulled,link,residual,best_found,tree);
 
           tree->depth_curr_path--;
         }
@@ -3559,21 +3559,21 @@ phydbl Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
       move->n_opp_to_link = (n_link==b_arrow->left)?(b_arrow->rght):(b_arrow->left);
 
       if(tree->next)
-    {
-      tree     = tree->next;
-      b_target = b_target->next;
-      b_arrow  = b_arrow->next;
-      n_link   = n_link->next;
-      move     = move->next;
-    }
+        {
+          tree     = tree->next;
+          b_target = b_target->next;
+          b_arrow  = b_arrow->next;
+          n_link   = n_link->next;
+          move     = move->next;
+        }
       else
-    {
-      tree     = tree->next;
-      b_target = b_target->next;
-      b_arrow  = b_arrow->next;
-      n_link   = n_link->next;
-      move     = move->next;
-    }
+        {
+          tree     = tree->next;
+          b_target = b_target->next;
+          b_arrow  = b_arrow->next;
+          n_link   = n_link->next;
+          move     = move->next;
+        }
 
       i+=2;
     }
@@ -3870,23 +3870,23 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
           orig_tree = tree;
           n = 0;
           do
-        {
-          move->init_target_l = recorded_l[n];
-          move->init_target_v = recorded_l[n+1];
-          n+=2;
+            {
+              move->init_target_l = recorded_l[n];
+              move->init_target_v = recorded_l[n+1];
+              n+=2;
 
 
-          if(tree->next)
-            {
-              move = move->next;
-              tree = tree->next;
+              if(tree->next)
+                {
+                  move = move->next;
+                  tree = tree->next;
+                }
+              else
+                {
+                  move = move->next;
+                  tree = tree->next;
+                }
             }
-          else
-            {
-              move = move->next;
-              tree = tree->next;
-            }
-        }
           while(tree);
           move = orig_move;
           tree = orig_tree;
@@ -3899,22 +3899,22 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
           orig_tree = tree;
           n = 0;
           do
-        {
-          move->init_target_l = recorded_l[n];
-          move->init_target_v = recorded_l[n+1];
-          n+=2;
+            {
+              move->init_target_l = recorded_l[n];
+              move->init_target_v = recorded_l[n+1];
+              n+=2;
 
-          if(tree->next)
-            {
-              move = move->next;
-              tree = tree->next;
+              if(tree->next)
+                {
+                  move = move->next;
+                  tree = tree->next;
+                }
+              else
+                {
+                  move = move->next;
+                  tree = tree->next;
+                }
             }
-          else
-            {
-              move = move->next;
-              tree = tree->next;
-            }
-        }
           while(tree);
           move = orig_move;
           tree = orig_tree;
@@ -4177,17 +4177,17 @@ int Try_One_Spr_Move_Triple(t_spr *move, t_tree *tree)
       init_target->l_var->v = move->init_target_v;
 
       if(tree->next)
-    {
-      init_target = init_target->next;
-      move        = move->next;
-      tree        = tree->next;
-    }
+        {
+          init_target = init_target->next;
+          move        = move->next;
+          tree        = tree->next;
+        }
       else
-    {
-      init_target = init_target->next;
-      move        = move->next;
-      tree        = tree->next;
-    }
+        {
+          init_target = init_target->next;
+          move        = move->next;
+          tree        = tree->next;
+        }
     }
   while(tree);
   init_target = orig_b;
@@ -4212,38 +4212,38 @@ int Try_One_Spr_Move_Triple(t_spr *move, t_tree *tree)
       move->n_link->b[dir_v0]->l_var->v = move->v0;
 
       if(move->n_link->v[dir_v1]->num > move->n_link->v[dir_v2]->num)
-    {
-      move->n_link->b[dir_v2]->l->v = move->l1;
-      move->n_link->b[dir_v1]->l->v = move->l2;
+        {
+          move->n_link->b[dir_v2]->l->v = move->l1;
+          move->n_link->b[dir_v1]->l->v = move->l2;
 
-          if(tree->io->mod->gamma_mgf_bl == YES)
-            {
-              move->n_link->b[dir_v2]->l_var->v = move->v1;
-              move->n_link->b[dir_v1]->l_var->v = move->v2;
-            }
-    }
+              if(tree->io->mod->gamma_mgf_bl == YES)
+                {
+                  move->n_link->b[dir_v2]->l_var->v = move->v1;
+                  move->n_link->b[dir_v1]->l_var->v = move->v2;
+                }
+        }
       else
-    {
-      move->n_link->b[dir_v1]->l->v = move->l1;
-      move->n_link->b[dir_v2]->l->v = move->l2;
+        {
+          move->n_link->b[dir_v1]->l->v = move->l1;
+          move->n_link->b[dir_v2]->l->v = move->l2;
 
-          if(tree->io->mod->gamma_mgf_bl == YES)
-            {
-              move->n_link->b[dir_v1]->l_var->v = move->v1;
-              move->n_link->b[dir_v2]->l_var->v = move->v2;
-            }
-    }
+              if(tree->io->mod->gamma_mgf_bl == YES)
+                {
+                  move->n_link->b[dir_v1]->l_var->v = move->v1;
+                  move->n_link->b[dir_v2]->l_var->v = move->v2;
+                }
+        }
 
       if(tree->next)
-    {
-      move = move->next;
-      tree = tree->next;
-    }
+        {
+          move = move->next;
+          tree = tree->next;
+        }
       else
-    {
-      move = move->next;
-      tree = tree->next;
-    }
+        {
+          move = move->next;
+          tree = tree->next;
+        }
 
     }
   while(tree);
@@ -4300,10 +4300,10 @@ int Try_One_Spr_Move_Triple(t_spr *move, t_tree *tree)
 
 
       if((tree->mod->s_opt->print) && (!tree->io->quiet))
-    {
-      Print_Lk_And_Pars(tree);
-      PhyML_Printf(" [depth=%5d]",move->depth_path); fflush(NULL);
-    }
+        {
+          Print_Lk_And_Pars(tree);
+          PhyML_Printf(" [depth=%5d]",move->depth_path); fflush(NULL);
+        }
 
       if(move->depth_path > tree->max_spr_depth) tree->max_spr_depth = move->depth_path;
 

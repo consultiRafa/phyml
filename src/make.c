@@ -189,7 +189,7 @@ void Make_Edge_Lk(t_edge *b, t_tree *tree)
   b->l_old->v = b->l->v;
 
   b->Pij_rr = (phydbl *)mCalloc(tree->mod->ras->n_catg*tree->mod->ns*tree->mod->ns,sizeof(phydbl));
-  
+
   Make_Edge_Lk_Left(b,tree);
   Make_Edge_Lk_Rght(b,tree);
 }
@@ -250,13 +250,13 @@ void Make_Edge_Lk_Rght(t_edge *b, t_tree *tree)
 
   b->div_post_pred_rght = (short int *)mCalloc(ns,sizeof(short int));
 
-  b->sum_scale_rght_cat = (int *)mCalloc(MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes),sizeof(int));  
+  b->sum_scale_rght_cat = (int *)mCalloc(MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes),sizeof(int));
 
   if(b->rght && !b->rght->tax)
     b->sum_scale_rght = (int *)mCalloc(tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes),sizeof(int));
   else
     b->sum_scale_rght = NULL;
-  
+
 
   if(b->rght)
     {
@@ -421,6 +421,16 @@ t_tree *Make_Tree_From_Scratch(int n_otu, calign *data)
       Copy_Tax_Names_To_Tip_Labels(tree,data);
       tree->data = data;
     }
+#ifdef BEAGLE
+  //offset the branch indices because BEAGLE insists on first storing
+  //the tips/taxa
+  for(int i=0;i<2*tree->n_otu-1;++i)
+  {
+      tree->a_edges[i]->p_lk_left_idx = tree->n_otu + tree->a_edges[i]->p_lk_left_idx;
+      tree->a_edges[i]->p_lk_rght_idx = tree->n_otu + tree->a_edges[i]->p_lk_left_idx + (2*tree->n_otu-1);
+  }
+#endif
+
   return tree;
 }
 

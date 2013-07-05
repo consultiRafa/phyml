@@ -117,6 +117,12 @@ void Simu_Loop(t_tree *mixt_tree)
   do
     {
       tree->mod->ras->n_catg = orig_catg[n];
+#ifdef BEAGLE
+      //We simply create a new BEAGLE instance rather than
+      //extending the number of rate classes of the existing instance
+      finalize_beagle_instance(tree);
+      tree->b_inst = create_beagle_instance(tree, tree->io->quiet);
+#endif
       tree = tree->next_mixt;
       n++;
     }
@@ -147,7 +153,7 @@ void Simu_Loop(t_tree *mixt_tree)
   if((mixt_tree->mod->s_opt->print) && (!mixt_tree->io->quiet))
     {
       PhyML_Printf("\n\n. End of refining stage...\n. The log-likelihood might now decrease and then increase again...\n");
-    PhyML_Printf("\n\n. Maximizing likelihood (using NNI moves)...\n");
+      PhyML_Printf("\n\n. Maximizing likelihood (using NNI moves)...\n");
     }
 
 

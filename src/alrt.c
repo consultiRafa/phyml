@@ -151,9 +151,9 @@ int Check_NNI_Five_Branches(t_tree *tree)
 
           if(tree->c_lnL < init_lnL)
             {
-	      PhyML_Printf("\n\n== tree->c_lnL = %f init_lnL = %f.",tree->c_lnL,init_lnL);
-	      PhyML_Printf("\n== Err. in file %s at line %d\n\n.\n",__FILE__,__LINE__);
-	      Exit("\n");
+          PhyML_Printf("\n\n== tree->c_lnL = %f init_lnL = %f.",tree->c_lnL,init_lnL);
+          PhyML_Printf("\n== Err. in file %s at line %d\n\n.\n",__FILE__,__LINE__);
+          Exit("\n");
             }
 
           if((tree->mod->s_opt->print) && (!tree->io->quiet)) Print_Lk(tree,"[Topology           ]");
@@ -404,10 +404,10 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   len_e3 = MIXT_Get_Lengths_Of_This_Edge(e3,tree);
   len_e4 = MIXT_Get_Lengths_Of_This_Edge(e4,tree);
 
-  DUMP_I(b_fcus->left->num, b_fcus->rght->num);
-  DUMP_I(v1->num, v2->num, v3->num, v4->num);
-  DUMP_I(e1->num, e2->num, e3->num, e4->num);
-  DUMP_D(len_e1[0],len_e2[0],len_e3[0], len_e4[0]);
+//  DUMP_I(b_fcus->left->num, b_fcus->rght->num);
+//  DUMP_I(v1->num, v2->num, v3->num, v4->num);
+//  DUMP_I(e1->num, e2->num, e3->num, e4->num);
+//  DUMP_D(len_e1[0],len_e2[0],len_e3[0], len_e4[0]);
   /*! Optimize branch lengths and update likelihoods for
     the original configuration.
   */
@@ -423,11 +423,11 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
             Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left);
 
             l_infa  = 10.;
-	        l_infb  = MAX(0.0,tree->mod->l_min/b_fcus->left->b[i]->l->v);
-            
-             DUMP_D(lk_temp);
+            l_infb  = MAX(0.0,tree->mod->l_min/b_fcus->left->b[i]->l->v);
+
+//            DUMP_D(lk_temp);
             lk_temp = Br_Len_Brent(l_infb,l_infa,b_fcus->left->b[i],tree);
-            DUMP_D(lk_temp);//XXX: This value doesn't match, something happens in Br_Len_Brent()
+//            DUMP_D(lk_temp);
           }
 
       Update_P_Lk(tree,b_fcus,b_fcus->left);
@@ -440,30 +440,29 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
       For(i,3)
         if(b_fcus->rght->v[i] != b_fcus->left)//Only consider right_1 and right_2
           {
-            DUMP_D(lk_temp);
+//            DUMP_D(lk_temp);
             Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
-            DUMP_D(lk_temp);
+//            DUMP_D(lk_temp);
             l_infa  = 10.;
-	    l_infb  = MAX(0.0,tree->mod->l_min/b_fcus->rght->b[i]->l->v);
+        l_infb  = MAX(0.0,tree->mod->l_min/b_fcus->rght->b[i]->l->v);
 
             lk_temp = Br_Len_Brent(l_infb,l_infa,b_fcus->rght->b[i],tree);
-            DUMP_D(lk_temp);
+//            DUMP_D(lk_temp);
           }
       Update_P_Lk(tree,b_fcus,b_fcus->rght);
 
-      DUMP_D(lk_temp);
+//      DUMP_D(lk_temp);
       if(lk_temp < lk0 - tree->mod->s_opt->min_diff_lk_local)
         {
-	  PhyML_Printf("\n== lk_temp = %f lk0 = %f\n",lk_temp,lk0);
-	  PhyML_Printf("\n== Err. in file %s at line %d\n\n",__FILE__,__LINE__);
-	  Exit("\n");
+      PhyML_Printf("\n== lk_temp = %f lk0 = %f\n",lk_temp,lk0);
+      PhyML_Printf("\n== Err. in file %s at line %d\n\n",__FILE__,__LINE__);
+      Exit("\n");
         }
     }
   while(FABS(lk_temp-lk0) > tree->mod->s_opt->min_diff_lk_global);
   //until no significative improvement is detected
 
   lk0 = tree->c_lnL;
-  //XXX: From here on... the PMats and Likelihoods differ. That means something happens above that causes this
 //  Print_All_Edge_PMats(tree);
 //  Print_All_Edge_Likelihoods(tree);
   buff = (t_tree *)tree;
@@ -545,7 +544,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
         Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left);
 
         l_infa  = 10.;
-	    l_infb  = MAX(0.0,tree->mod->l_min/b_fcus->left->b[i]->l->v);
+        l_infb  = MAX(0.0,tree->mod->l_min/b_fcus->left->b[i]->l->v);
         lk_temp = Br_Len_Brent(l_infb,l_infa,b_fcus->left->b[i],tree);
       }
 
@@ -563,7 +562,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
             Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
 
             l_infa  = 10.;
-	        l_infb  = MAX(0.0,tree->mod->l_min/b_fcus->rght->b[i]->l->v);
+            l_infb  = MAX(0.0,tree->mod->l_min/b_fcus->rght->b[i]->l->v);
             lk_temp = Br_Len_Brent(l_infb,l_infa,b_fcus->rght->b[i],tree);
           }
 
@@ -620,7 +619,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   Update_PMat_At_Given_Edge(e4,tree);
   Update_PMat_At_Given_Edge(b_fcus,tree);
 
-  
+
   /* Sanity check */
   MIXT_Set_Alias_Subpatt(YES,tree);
   Update_P_Lk(tree,b_fcus,b_fcus->rght);
@@ -643,7 +642,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   Set_Both_Sides(YES,tree);
   MIXT_Set_Alias_Subpatt(YES,tree);
   Update_P_Lk(tree,b_fcus,b_fcus->left);
-  Update_P_Lk(tree,b_fcus,b_fcus->rght);    
+  Update_P_Lk(tree,b_fcus,b_fcus->rght);
   lk2 = Lk(b_fcus,tree);
   MIXT_Set_Alias_Subpatt(NO,tree);
 
@@ -668,7 +667,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
             Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left);
 
             l_infa  = 10.;
-	        l_infb  = MAX(0.0,tree->mod->l_min/b_fcus->left->b[i]->l->v);
+            l_infb  = MAX(0.0,tree->mod->l_min/b_fcus->left->b[i]->l->v);
             lk_temp = Br_Len_Brent(l_infb,l_infa,b_fcus->left->b[i],tree);
 
             if(lk_temp < lk2 - tree->mod->s_opt->min_diff_lk_local)
@@ -686,22 +685,22 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
       lk_temp = Br_Len_Brent(l_infb,l_infa,b_fcus,tree);
 
       if(lk_temp < lk2 - tree->mod->s_opt->min_diff_lk_local)
-	{
+    {
           PhyML_Printf("\n== l_infa: %f l_infb: %f l: %f var:%f",l_infa,l_infb,b_fcus->l->v,b_fcus->l_var->v);
-	  PhyML_Printf("\n== lk_temp = %f lk2 = %f",lk_temp,lk2);
-	  PhyML_Printf("\n== Err. in file %s at line %d",__FILE__,__LINE__);
-	  Exit("\n");
-	}
+      PhyML_Printf("\n== lk_temp = %f lk2 = %f",lk_temp,lk2);
+      PhyML_Printf("\n== Err. in file %s at line %d",__FILE__,__LINE__);
+      Exit("\n");
+    }
 
       For(i,3)
         if(b_fcus->rght->v[i] != b_fcus->left)
           {
             Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
-            DUMP_D(lk_temp,lk2);
+//            DUMP_D(lk_temp,lk2);
             l_infa  = 10.;
-	        l_infb  = MAX(0.0,tree->mod->l_min/b_fcus->rght->b[i]->l->v);
+            l_infb  = MAX(0.0,tree->mod->l_min/b_fcus->rght->b[i]->l->v);
             lk_temp = Br_Len_Brent(l_infb,l_infa,b_fcus->rght->b[i],tree);
-            
+
 
             if(lk_temp < lk2 - tree->mod->s_opt->min_diff_lk_local)
               {
@@ -713,7 +712,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
                 PhyML_Printf("\n== Err. in file %s at line %d",__FILE__,__LINE__);
                 Exit("\n");
               }
-	  }
+      }
 
       Update_P_Lk(tree,b_fcus,b_fcus->rght);
 
