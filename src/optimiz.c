@@ -491,7 +491,6 @@ phydbl Br_Len_Brent(phydbl prop_min, phydbl prop_max, t_edge *b_fcus, t_tree *tr
   loc_tree = tree;
   loc_b    = b_fcus; 
   
-
   /*! Rewind back to the first mixt_tree */
   while(loc_tree->prev)
     { 
@@ -510,9 +509,7 @@ phydbl Br_Len_Brent(phydbl prop_min, phydbl prop_max, t_edge *b_fcus, t_tree *tr
   if(isinf(prop_min) || isnan(prop_min)) prop_min = 1.E-04;  
   if(isinf(prop_max) || isnan(prop_max)) prop_max = 1.E+04;  
 
-
-  lk_begin = Lk(b_fcus,tree); /*! We can't assume that the log-lk value is up-to-date */
-
+  lk_begin = Lk(loc_b,loc_tree); /*! We can't assume that the log-lk value is up-to-date */
 
   Generic_Brent_Lk(&(b_fcus->l->v),
                    MAX(tree->mod->l_min,MIN(tree->mod->l_max,b_fcus->l->v))*MAX(1.E-04,prop_min),
@@ -537,7 +534,7 @@ phydbl Br_Len_Brent(phydbl prop_min, phydbl prop_max, t_edge *b_fcus, t_tree *tr
   /*       } */
   /*   } */
 
-  lk_end = tree->c_lnL;
+  lk_end = loc_tree->c_lnL;
 
   if(lk_end < lk_begin - tree->mod->s_opt->min_diff_lk_local)
     {
@@ -679,15 +676,15 @@ void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tr
   l_infa = tree->mod->l_max/b_fcus->l->v;
   l_infb = tree->mod->l_min/b_fcus->l->v;
 
-  if(tree->io->mod->s_opt->opt_bl == YES)
-    Br_Len_Brent(l_infb,l_infa,b_fcus,tree);
+  if(tree->io->mod->s_opt->opt_bl == YES) Br_Len_Brent(l_infb,l_infa,b_fcus,tree);
 
   if(tree->c_lnL < lk_init - tree->mod->s_opt->min_diff_lk_local)
     {
       PhyML_Printf("\n== %f %f %G",l_infa,l_infb,b_fcus->l->v);
       PhyML_Printf("\n== %f -- %f",lk_init,tree->c_lnL);
       PhyML_Printf("\n== Edge: %d",b_fcus->num);
-      Warn_And_Exit("\n== Err. in Optimize_Br_Len_Serie_Post\n");
+      PhyML_Printf("\n== is_mixt_tree: %d",tree->is_mixt_tree);
+      Exit("\n== Err. in Optimize_Br_Len_Serie_Post\n");
     }
     
   if(d->tax) return;
@@ -1066,7 +1063,6 @@ void BFGS(t_tree *tree,
 	  free(dg);   
           free(init);
           free(sign);
-
 	  return;
 	}
 
@@ -1099,6 +1095,7 @@ void BFGS(t_tree *tree,
 	  free(hdg);
 	  free(g);
 	  free(dg);
+          free(init);
           free(sign);
 	  return;
 	}
@@ -1303,7 +1300,8 @@ void BFGS_Nonaligned(t_tree *tree,
 	  free(pnew);
 	  free(hdg);
 	  free(g);
-	  free(dg);   
+	  free(dg);
+          free(init);
           free(sign);
 	  return;
 	}
@@ -2132,7 +2130,11 @@ int Optimiz_Alpha_And_Pinv(t_tree *mixt_tree, int verbose)
 			  Optimize_Br_Len_Serie(mixt_tree);
 			  fa = mixt_tree->c_lnL;
 			  /* PhyML_Printf("\n1 a=%f, b=%f, c=%f, fa=%f, fb=%f, fc=%f",a,b,c,fa,fb,fc); */
-			  if(iter++ > 10) return 0;
+			  if(iter++ > 10) 
+                            {
+                              if(alpha) Free(alpha);
+                              return 0;
+                            }
 			}
 		    }
 		  else
@@ -2167,7 +2169,11 @@ int Optimiz_Alpha_And_Pinv(t_tree *mixt_tree, int verbose)
 			  Optimize_Br_Len_Serie(mixt_tree);
 			  fc = mixt_tree->c_lnL;
 			  /* PhyML_Printf("\n2 a=%f, b=%f, c=%f, fa=%f, fb=%f, fc=%f",a,b,c,fa,fb,fc); */
-			  if(iter++ > 10) return 0;
+			  if(iter++ > 10) 
+                            {
+                              if(alpha) Free(alpha);
+                              return 0;
+                            }
 			}
 		    }
 		  
@@ -2773,7 +2779,7 @@ void Optimize_Alpha(t_tree *mixt_tree, int verbose)
                   if(tree->mod->ras->n_catg > 1)
                     {
                       Generic_Brent_Lk(&(tree->mod->ras->alpha->v),
-                                       tree->mod->ras->alpha->v/2.,tree->mod->ras->alpha->v*2.,
+                                       tree->mod->ras->alpha->v/2.,100.,
                                        tree->mod->s_opt->min_diff_lk_local,
                                        tree->mod->s_opt->brent_it_max,
                                        tree->mod->s_opt->quickdirty,

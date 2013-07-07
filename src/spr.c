@@ -4599,18 +4599,14 @@ void Spr_Pars(t_tree *tree)
 void SPR_Shuffle(t_tree *mixt_tree)
 {
   phydbl lk_old;
-  int *orig_catg,*orig_inv,n;
+  int *orig_catg,n;
   t_tree *tree,**tree_list;
   
   if(mixt_tree->mod->s_opt->print) PhyML_Printf("\n\n. Refining the tree...\n");
 
-
   /*! Get the number of classes in each mixture */
   orig_catg = MIXT_Get_Number_Of_Classes_In_All_Mixtures(mixt_tree);
 
-  /*! Record values of mod->invar in every tree 
-   */
-  orig_inv  = MIXT_Record_Has_Invariants(mixt_tree);
 
   /*! Set the number of rate classes to (at most) 2.
     ! Propagate this to every mixture tree in the analysis
@@ -4620,6 +4616,7 @@ void SPR_Shuffle(t_tree *mixt_tree)
   do
     {
       tree->mod->ras->n_catg = MIN(2,orig_catg[n]);
+      if(tree->mod->ras->invar == YES) tree->mod->ras->n_catg--;
       tree = tree->next_mixt;
       n++;
     }
@@ -4629,18 +4626,7 @@ void SPR_Shuffle(t_tree *mixt_tree)
   /*! Make sure the number of trees in each mixture is at most 2
    */
   tree_list = MIXT_Record_All_Mixtures(mixt_tree);
-  MIXT_Break_All_Mixtures(mixt_tree->mod->ras->n_catg,mixt_tree);
-
-  /*! Set mod->ras->invar to NO for all the trees.
-  */
-  /* orig_tree_list = tree_list; */
-  /* do */
-  /*   { */
-  /*     (*tree_list)->mod->ras->invar = NO; */
-  /*     tree_list++; */
-  /*   } */
-  /* while(*tree_list); */
-  /* tree_list = orig_tree_list; */
+  MIXT_Break_All_Mixtures(orig_catg,mixt_tree);
   
   Set_Both_Sides(YES,mixt_tree);
   Lk(NULL,mixt_tree);
@@ -4679,6 +4665,7 @@ void SPR_Shuffle(t_tree *mixt_tree)
     }
   while(1);
 
+
   if(mixt_tree->mod->s_opt->print && (!mixt_tree->io->quiet)) 
     PhyML_Printf("\n\n. End of refining stage...\n. The log-likelihood might now decrease and then increase again...\n");
 
@@ -4696,6 +4683,7 @@ void SPR_Shuffle(t_tree *mixt_tree)
   do
     {
       tree->mod->ras->n_catg = orig_catg[n];
+      if(tree->mod->ras->invar == YES) tree->mod->ras->n_catg--;
       tree = tree->next_mixt;
       n++;
     }
@@ -4714,13 +4702,6 @@ void SPR_Shuffle(t_tree *mixt_tree)
       tree = tree->next;
     }
   while(tree);
-
-
-  /*! Reset the mod->invar to their original values
-   */
-  MIXT_Reset_Has_Invariants(orig_inv,mixt_tree);
-  Free(orig_inv);
-
 }
 
 

@@ -1690,8 +1690,9 @@ distribution of the relative rates. The available options for such element are:
     optimise.pinv="no">
     </weights>
   </siterates>
-
 \end{Verbatim}
+
+
 
 \subsubsection{{\tt partitionelem} and {\tt mixtureelem} components}\index{XML options!{\tt partitionelem}
   component}\index{XML options!{\tt mixtureelem} component}
@@ -1707,7 +1708,8 @@ Options:
 
 Each \x{partitionelem} element should include exactly four \x{mixtureelem} elements, corresponding to
 branch lengths, equilibrium frequencies, substitution rate model and tree topology. The ordering of
-in which the \x{mixtureelem} elements are given does not matter. The $n$-th element in the \x{list}
+in which the \x{mixtureelem} elements are given does not matter, though exceptions apply for the
+$\Gamma+I$ model (see below). The $n$-th element in the \x{list}
 attribute of each \x{mixtureelem} defines the $n$-th class of the mixture model. In the example given
 below, the first class of the mixture is made of the following elements: \x{T1}, \x{F1}, \x{R1} and
 \x{L1}, the second class is made of \x{T1}, \x{F1}, \x{R2} and \x{L1}, etc.
@@ -1726,6 +1728,31 @@ below, the first class of the mixture is made of the following elements: \x{T1},
   </partitionelem>
 
 \end{Verbatim}
+
+In general, the  ordering of the \x{mixtureelem}  elements does not matter. However,  when the model
+has invariable sites, then  the corresponding class should be first in  the list of classes provided
+by \x{mixtureelem}. For instance, in the example above, if the rates are defined as follows:
+
+\vspace{0.2cm}
+\begin{Verbatim}[frame=single, label=Example of `siterates' component, samepage=true,
+  baselinestretch=0.5, fontsize=\small, numbers=left]
+
+  <siterates id="SR1">
+    <instance id="R1" init.value="0.0"/>
+    <instance id="R2" init.value="1.0"/>
+    <instance id="R3" init.value="1.0"/>
+    <instance id="R4" init.value="1.0"/>
+    <weights  id="D1" family="gamma+inv" optimise.alpha="yes" \
+    optimise.pinv="no">
+    </weights>
+  </siterates>
+\end{Verbatim}
+
+then \x{R1} corresponds to the invariable  rate class (as \x{init.value="0.0"}).  As \x{R1} is first
+in the  \x{mixtureelem} (see line  6 in  the example of  \x{`partionelem'} given above),  PhyML will
+print out an  explicit error message and bail out.   One way to avoid this  shortcoming is to define
+\x{mixtureelem} as \x{R4, R2, R3, R1} instead.
+
 
 \subsection{A simple example: GTR + $\Gamma$4 + I}
 

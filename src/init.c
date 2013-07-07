@@ -987,7 +987,8 @@ void Init_Model(calign *data, t_mod *mod, option *io)
 	  mod->lambda->v = 1.0;
 	}
 
-      if(mod->s_opt->opt_rr)
+      /* if(mod->s_opt->opt_rr) */
+      if(mod->whichmodel == GTR || mod->whichmodel == CUSTOM)
 	{
 	  int i;
 

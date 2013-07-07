@@ -1535,10 +1535,10 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
     }
   else
     {
-      lk0 = Br_Len_Brent(l_infb,l_infa,b_fcus,tree);
+       lk0 = Br_Len_Brent(l_infb,l_infa,b_fcus,tree);
     }
   
-  if(lk0 < lk_init - tree->mod->s_opt->min_diff_lk_local)
+ if(lk0 < lk_init - tree->mod->s_opt->min_diff_lk_local)
     {
       PhyML_Printf("\n== %f %f %f",l_infa,l_infb,b_fcus->l->v);
       PhyML_Printf("\n== %f -- %f",lk0_init,lk0);
@@ -10151,6 +10151,12 @@ void Optimum_Root_Position_IL_Model(t_tree *tree)
 
 void Set_Br_Len_Var(t_tree *tree)
 {
+  if(tree->is_mixt_tree)
+    {
+      MIXT_Set_Br_Len_Var(tree);
+      return;
+    }
+
   if(!tree->rates)
     {
       int i;

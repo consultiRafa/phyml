@@ -4134,7 +4134,8 @@ void Print_Data_Structure(int final, FILE *fp, t_tree *mixt_tree)
                 {
                   if(tree->is_mixt_tree) tree = tree->next;
 
-                  if(mixt_tree->mod->whichmodel == tree->mod->whichmodel &&
+                  if(mixt_tree->mod->r_mat == tree->mod->r_mat &&
+                     mixt_tree->mod->whichmodel == tree->mod->whichmodel &&
                      !strcmp(mixt_tree->mod->custom_mod_string->s,
                              tree->mod->custom_mod_string->s) && 
                      !strcmp(mixt_tree->mod->aa_rate_mat_file->s,
@@ -4562,7 +4563,7 @@ void PhyML_XML(char *xml_filename)
       mixt_tree->n_pattern = io->cdata->crunch_len;
 
       /*! Remove branch lengths from mixt_tree */
-      For(i,2*mixt_tree->n_otu-2)
+      For(i,2*mixt_tree->n_otu-1)
         {
           Free_Scalar_Dbl(mixt_tree->a_edges[i]->l);
           Free_Scalar_Dbl(mixt_tree->a_edges[i]->l_old);
@@ -4986,7 +4987,7 @@ void PhyML_XML(char *xml_filename)
                         if(instance->ds->obj == NULL)
 			  {
 			    if(!lens)                               
-                              {
+                              {                                
                                 ori_lens         = (scalar_dbl **)mCalloc(2*tree->n_otu-1,sizeof(scalar_dbl *));
                                 ori_lens_old     = (scalar_dbl **)mCalloc(2*tree->n_otu-1,sizeof(scalar_dbl *));
 
@@ -5006,8 +5007,8 @@ void PhyML_XML(char *xml_filename)
                                 ori_lens         = (scalar_dbl **)mRealloc(ori_lens,2*tree->n_otu-1+lens_size,sizeof(scalar_dbl *));
                                 ori_lens_old     = (scalar_dbl **)mRealloc(ori_lens_old,2*tree->n_otu-1+lens_size,sizeof(scalar_dbl *));
 
-                                ori_lens_var     = (scalar_dbl **)mRealloc(ori_lens,2*tree->n_otu-1+lens_size,sizeof(scalar_dbl *));
-                                ori_lens_var_old = (scalar_dbl **)mRealloc(ori_lens_old,2*tree->n_otu-1+lens_size,sizeof(scalar_dbl *));
+                                ori_lens_var     = (scalar_dbl **)mRealloc(ori_lens_var,2*tree->n_otu-1+lens_size,sizeof(scalar_dbl *));
+                                ori_lens_var_old = (scalar_dbl **)mRealloc(ori_lens_var_old,2*tree->n_otu-1+lens_size,sizeof(scalar_dbl *));
 
                                 lens         = ori_lens     + lens_size;;
                                 lens_old     = ori_lens_old + lens_size;;
@@ -5074,6 +5075,14 @@ void PhyML_XML(char *xml_filename)
 
 			    ds->next      = (t_ds *)mCalloc(1,sizeof(t_ds));                            
                             ds            = ds->next;
+			    ds->obj       = (scalar_dbl **)lens_var;
+
+			    ds->next      = (t_ds *)mCalloc(1,sizeof(t_ds));                            
+                            ds            = ds->next;
+			    ds->obj       = (scalar_dbl **)lens_var_old;
+
+			    ds->next      = (t_ds *)mCalloc(1,sizeof(t_ds));                            
+                            ds            = ds->next;
 			    ds->obj       = (int *)(&iomod->s_opt->opt_bl);
 			  }
 			else
@@ -5091,7 +5100,13 @@ void PhyML_XML(char *xml_filename)
 			    lens     = (scalar_dbl **)ds->obj;
 
                             ds = ds->next;
-			    lens_old = (scalar_dbl **)instance->ds->next->obj;
+			    lens_old = (scalar_dbl **)ds->obj;
+
+                            ds = ds->next;
+			    lens_var = (scalar_dbl **)ds->obj;
+
+                            ds = ds->next;
+			    lens_var_old = (scalar_dbl **)ds->obj;
 
                             ds = ds->next;
                             iomod->s_opt->opt_bl = *((int *)ds->obj);
@@ -5104,7 +5119,7 @@ void PhyML_XML(char *xml_filename)
 			    Exit("\n");
 			  }
                         
-			For(i,2*tree->n_otu-2) 
+			For(i,2*tree->n_otu-1) 
                           {
                             tree->a_edges[i]->l          = lens[i];
                             mixt_tree->a_edges[i]->l     = lens[i];
@@ -5294,9 +5309,6 @@ void PhyML_XML(char *xml_filename)
         }
       while(tree);
 
-      /*! Check that all edge lengths are non-negative */
-      Check_Br_Lens(mixt_tree);
-
       /* TO DO
          
          1) REMOVE ROOT
@@ -5338,13 +5350,7 @@ void PhyML_XML(char *xml_filename)
       MIXT_Check_Invar_Struct_In_Each_Partition_Elem(mixt_tree);
       MIXT_Check_RAS_Struct_In_Each_Partition_Elem(mixt_tree);
       
-      tree = mixt_tree;
-      do
-        {
-          Set_Both_Sides(YES,tree);
-          tree = tree->next;
-        }
-      while(tree);
+      Set_Both_Sides(YES,mixt_tree);      
 
       if(mixt_tree->mod->s_opt->opt_topo)
         {
@@ -5442,6 +5448,7 @@ void PhyML_XML(char *xml_filename)
   Free_Model_Complete(mixt_tree->mod);
   Free_Model_Basic(mixt_tree->mod);
   Free_Tree(mixt_tree);
+
   if(io->fp_out_trees) fclose(io->fp_out_trees);
   if(io->fp_out_tree)  fclose(io->fp_out_tree);
   if(io->fp_out_stats) fclose(io->fp_out_stats);

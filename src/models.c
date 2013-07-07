@@ -622,6 +622,7 @@ void Update_Qmat_GTR(phydbl *rr, phydbl *rr_val, int *rr_num, phydbl *pi, phydbl
         Exit("");
       }
 
+
   For(i,6) rr[i] /= rr[5];
 
   qmat[0*4+1] = (rr[0]*pi[1]);

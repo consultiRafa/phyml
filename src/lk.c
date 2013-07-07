@@ -604,7 +604,7 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
             }
           tree->site_lk_cat[catg] = site_lk_cat;
         }
-  
+      
       if(tree->apply_lk_scaling == YES)
         {
           max_sum_scale =   (phydbl)BIG;
@@ -877,8 +877,8 @@ void Rate_Correction(int exponent, phydbl *site_lk_cat, t_tree *tree)
 	{
 	  PhyML_Printf("\n== site_lk_cat = %G",*site_lk_cat);
           PhyML_Printf("\n== exponent: %d", exponent);
-	  PhyML_Printf("\n== Numerical precision issue alert.");
-	  PhyML_Printf("\n== File %s at line %d\n\n",__FILE__,__LINE__);
+	  PhyML_Printf("\n== Numerical precision issue alert.");	  
+          PhyML_Printf("\n== File %s at line %d\n\n",__FILE__,__LINE__);
 	  Exit("\n");
 	}
       (*site_lk_cat) = .0;
@@ -1234,7 +1234,7 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
           / \
        	 /   \
        	/     \
-	n_v1   n_v2
+      n_v1   n_v2
 */
   t_node *n_v1, *n_v2;
   phydbl p1_lk1,p2_lk2;
@@ -1281,16 +1281,18 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
   Pij1 = Pij2                 = NULL;
   sum_scale_v1 = sum_scale_v2 = NULL;
   p_lk_loc                    = NULL;
+
   Set_All_P_Lk(&n_v1,&n_v2,
                &p_lk,&sum_scale,&p_lk_loc,
                &Pij1,&p_lk_v1,&sum_scale_v1,
                &Pij2,&p_lk_v2,&sum_scale_v2,
                d,b,tree);
 
+  /* printf("\n. Tree: %p",(void *)tree); */
+  /* printf("\n. Update on edge %d node %d [%d %d] l: %f",b->num,d->num,n_v1?n_v1->num:-1,n_v2?n_v2->num:-1,b->l->v); */
+  /* printf("\n. p_lk: %p p_lk_v1: %p p_lk_v2: %p",(void *)p_lk,(void *)p_lk_v1,(void *)p_lk_v2); */
+  /* printf("\n. Pij1: %p Pij2: %p",(void *)Pij1,(void *)Pij2); */
 
-  /* printf("\n. Update on edge %d node %d [%d %d]",b->num,d->num,n_v1?n_v1->num:-1,n_v2?n_v2->num:-1); */
-
-  /* printf("\n. p_lk: %p p_lk_v1: %p p_lk_v2: %p",p_lk,p_lk_v1,p_lk_v2); */
 
   /* For every site in the alignment */
   For(site,n_patterns)
@@ -1413,11 +1415,11 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
                               p2_lk2 = Pij2[catg*dim3+i*dim2+state_v2];
                               if(isnan(p2_lk2))
                                 {
-                                  PhyML_Printf("\n. Tree %d",tree->tree_num);
-                                  PhyML_Printf("\n. catg=%d dim3=%d dim2=%d i=%d state_v2=%d",catg,dim3,dim2,i,state_v2);
-                                  PhyML_Printf("\n. Pij2[0] = %f",Pij2[0]);
-                                  PhyML_Printf("\n. q[0]=%f",tree->mod->eigen->q[0]);
-                                  PhyML_Printf("\n. Err in file %s at line %d.",__FILE__,__LINE__);
+                                  PhyML_Printf("\n== Tree %d",tree->tree_num);
+                                  PhyML_Printf("\n== catg=%d dim3=%d dim2=%d i=%d state_v2=%d",catg,dim3,dim2,i,state_v2);
+                                  PhyML_Printf("\n== Pij2[0] = %f",Pij2[0]);
+                                  PhyML_Printf("\n== q[0]=%f",tree->mod->eigen->q[0]);
+                                  PhyML_Printf("\n== Err. in file %s at line %d.",__FILE__,__LINE__);
                                   Warn_And_Exit("\n");		  
                                 }
                             }
@@ -1433,8 +1435,8 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
                               
                               if(isnan(p2_lk2))
                                 {
-                                  PhyML_Printf("\n. p0=%f p1=%f p2=%f p3=%f",p0,p1,p2,p3);
-                                  PhyML_Printf("\n. Err in file %s at line %d.",__FILE__,__LINE__);
+                                  PhyML_Printf("\n== p0=%f p1=%f p2=%f p3=%f",p0,p1,p2,p3);
+                                  PhyML_Printf("\n== Err. in file %s at line %d.",__FILE__,__LINE__);
                                   Warn_And_Exit("\n");		  
                                 }
                             }
