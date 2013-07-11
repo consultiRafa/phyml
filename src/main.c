@@ -198,21 +198,12 @@ int main(int argc, char **argv)
 
                   if(tree->mod->s_opt->opt_topo)//Optimize Tree topology?
                     {
-                      if(tree->mod->s_opt->topo_search == NNI_MOVE)
-                      {
-                          fprintf(stdout,"here1\n");fflush(stdout);
+                      if(tree->mod->s_opt->topo_search == NNI_MOVE) {
                           Simu_Loop(tree);
-                      }
-                      else
-                      {
-                          if(tree->mod->s_opt->topo_search == SPR_MOVE)
-                          {
-                              fprintf(stdout,"here2\n");fflush(stdout);
+                      } else {
+                          if(tree->mod->s_opt->topo_search == SPR_MOVE) {
                               Speed_Spr_Loop(tree);
-                          }
-                          else
-                          {
-                              fprintf(stdout,"here3\n");fflush(stdout);
+                          } else {
                               Best_Of_NNI_And_SPR(tree);
                           }
                       }
@@ -222,27 +213,20 @@ int main(int argc, char **argv)
                     }
                   else
                     {
-                      if(tree->mod->s_opt->opt_subst_param || tree->mod->s_opt->opt_bl)//Optimize Branch lengths?
-                      {
-                          fprintf(stdout,"here4\n");fflush(stdout);
 #ifdef BEAGLE
-                          tree->b_inst = create_beagle_instance(tree, io->quiet);
+                      tree->b_inst = create_beagle_instance(tree, io->quiet);
 #endif
+                      //Optimize Branch lengths?
+                      if(tree->mod->s_opt->opt_subst_param || tree->mod->s_opt->opt_bl) {
                           Round_Optimize(tree,tree->data,ROUND_MAX);
-                      }
-                      else
-                      {
-                          fprintf(stdout,"here5\n");fflush(stdout);
-#ifdef BEAGLE
-                          tree->b_inst = create_beagle_instance(tree, io->quiet);
-#endif
+                      } else { //No topology or branch length optimizations
                           Lk(NULL,tree);
                       }
                     }
 
                   Set_Both_Sides(YES,tree);
                   Lk(NULL,tree);
-                  Print_All_Edge_Likelihoods(tree);
+//                  Print_All_Edge_Likelihoods(tree);
                   Pars(NULL,tree);
                   Get_Tree_Size(tree);
                   PhyML_Printf("\n\n. Log likelihood of the current tree: %f.",tree->c_lnL);

@@ -102,43 +102,44 @@ void print_beagle_resource_list()
 {
     BeagleResourceList* rList;
     rList = beagleGetResourceList();
-    fprintf(stdout, "Available resources:\n");
+    fprintf(stdout, "\n\tAvailable resources:\n");
     for (int i = 0; i < rList->length; i++) {
-        fprintf(stdout, "\tResource %i:\n\t\tName : %s\n", i, rList->list[i].name);
-        fprintf(stdout, "\t\tDesc : %s\n", rList->list[i].description);
-        fprintf(stdout, "\t\tFlags:");
+        fprintf(stdout, "\t\tResource %i:\n\t\tName : %s\n", i, rList->list[i].name);
+        fprintf(stdout, "\t\t\tDesc : %s\n", rList->list[i].description);
+        fprintf(stdout, "\t\t\tFlags:");
         print_beagle_flags(rList->list[i].supportFlags);
         fprintf(stdout, "\n");
     }
-    fprintf(stdout, "\n");
     fflush(stdout);
 }
 
 void print_beagle_instance_details(BeagleInstanceDetails *inst)
 {
     int rNumber = inst->resourceNumber;
-    fprintf(stdout, "Using resource %i:\n", rNumber);
-    fprintf(stdout, "\tRsrc Name : %s\n",inst->resourceName);
-    fprintf(stdout, "\tImpl Name : %s\n", inst->implName);
-    fprintf(stdout, "\tImpl Desc : %s\n", inst->implDescription);
-    fprintf(stdout, "\tFlags:");
+    fprintf(stdout, "\tUsing resource %i:\n", rNumber);
+    fprintf(stdout, "\t\tRsrc Name : %s\n",inst->resourceName);
+    fprintf(stdout, "\t\tImpl Name : %s\n", inst->implName);
+    fprintf(stdout, "\t\tImpl Desc : %s\n", inst->implDescription);
+    fprintf(stdout, "\t\tFlags:");
     fflush(stdout);
     print_beagle_flags(inst->flags);
-    fprintf(stdout, "\n\n");
     fflush(stdout);
 }
 
 int create_beagle_instance(t_tree *tree, int quiet)
 {
+    if(UNINITIALIZED != tree->b_inst){
+        fprintf(stdout,"\n\tWARNING: Creating a BEAGLE instance on a tree with an pre-existing BEAGLE instance:%d\n",tree->b_inst);
+    }
     if(!quiet){
         print_beagle_resource_list();
     }
     BeagleInstanceDetails inst_d;
     int num_rate_catg = tree->mod->ras->n_catg;
-    int num_branches  = 2*tree->n_otu-1; //XXX: Why not 2*tree->n_otu-3 ?
+    int num_branches  = 2*tree->n_otu-1; //rooted tree
     //Recall that in PhyML, each edge has two "left" and "right" partial vectors. Therefore,
     //in BEAGLE we have 2*num_branches number of partials.
-    //BEAGLE's partials buffer = [ tax1, tax2, ..., taxN, b1L, b2L, b3L,...,bML, b1R, b2R, b3R,...,bMR] (N taxa, M nodes)
+    //BEAGLE's partials buffer = [ tax1, tax2, ..., taxN, b1Left, b2Left, b3Left,...,bMLeft, b1Rght, b2Rght, b3Rght,...,bMRght] (N taxa, M branches)
     int num_partials  = tree->n_otu + (2*num_branches);
     int num_scales    = 2 + num_rate_catg;
 //    DUMP_I(tree->n_otu, num_rate_catg, num_partials, num_branches, tree->mod->ns, tree->n_pattern, tree->mod->whichmodel);
@@ -163,7 +164,7 @@ int create_beagle_instance(t_tree *tree, int quiet)
     }
 
     if(!quiet){
-        fprintf(stdout, "\nUnique BEAGLE instance id:%i\n", beagle_inst);
+        fprintf(stdout, "\n\tUnique BEAGLE instance id:%i\n", beagle_inst);
         print_beagle_instance_details(&inst_d);
     }
 
@@ -186,13 +187,13 @@ int create_beagle_instance(t_tree *tree, int quiet)
         }
     }
 
-    //Set the equilibrium freqs
-    assert(tree->mod->e_frq->pi->len == tree->mod->ns);
-    int ret = beagleSetStateFrequencies(beagle_inst, 0, tree->mod->e_frq->pi->v);
-    if(ret<0){
-        fprintf(stderr, "beagleSetStateFrequencies() on instance %i failed:%i\n\n",beagle_inst,ret);
-        return ret;
-    }
+//    //Set the equilibrium freqs
+//    assert(tree->mod->e_frq->pi->len == tree->mod->ns);
+//    int ret = beagleSetStateFrequencies(beagle_inst, 0, tree->mod->e_frq->pi->v);
+//    if(ret<0){
+//        fprintf(stderr, "beagleSetStateFrequencies() on instance %i failed:%i\n\n",beagle_inst,ret);
+//        return ret;
+//    }
 
 //    //Set the pattern weights
 //    ret = beagleSetPatternWeights(beagle_inst, (const double*)tree->data->wght);
@@ -377,7 +378,7 @@ void update_beagle_partials(t_tree* tree, t_edge* b, t_node* d)
 
 int finalize_beagle_instance(t_tree *tree)
 {
-    if(tree->b_inst > 0)
+    if(tree->b_inst >= 0)
     {
         int ret = beagleFinalizeInstance(tree->b_inst);
         if(ret<0) fprintf(stderr, "\nFailed to finalize BEAGLE instance %i: %i\n\n", tree->b_inst, ret);

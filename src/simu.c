@@ -43,10 +43,23 @@ void Simu_Loop(t_tree *mixt_tree)
   n = 0;
   do
     {
-      tree->mod->ras->n_catg = MIN(2,orig_catg[n]);
 #ifdef BEAGLE
       tree->b_inst = create_beagle_instance(tree, tree->io->quiet);
+      //Instead of capping the rate categories at 2, just
+      //give the other categories 0 weight
+      if(orig_catg[n] > 2) //should we even bother?
+      {
+          double cat_wghts[orig_catg[n]];
+          cat_wghts[0] = 0.5; //Give the first two categories equal weights
+          cat_wghts[1] = 0.5;
+          for(int i=2;i<orig_catg[n];++i){
+              cat_wghts[i] = 0.0;
+          }
+          int ret = beagleSetCategoryWeights(tree->b_inst,0,cat_wghts);
+          if(ret<0) {fprintf(stderr, "beagleSetCategoryWeights() on instance %i failed:%i\n\n",tree->b_inst,ret);Exit(""); }
+      }
 #endif
+      tree->mod->ras->n_catg = MIN(2,orig_catg[n]);
       tree = tree->next_mixt;
       n++;
     }
@@ -116,13 +129,20 @@ void Simu_Loop(t_tree *mixt_tree)
   n = 0;
   do
     {
-      tree->mod->ras->n_catg = orig_catg[n];
 #ifdef BEAGLE
-      //We simply create a new BEAGLE instance rather than
-      //extending the number of rate classes of the existing instance
-      finalize_beagle_instance(tree);
-      tree->b_inst = create_beagle_instance(tree, tree->io->quiet);
+      //Reset the rate categories to have equal weights
+      if(orig_catg[n] > 2)
+      {
+          double cat_wghts[orig_catg[n]];
+          double equal_wgt = 1.0/orig_catg[n];
+          for(int i=0;i<orig_catg[n];++i){
+              cat_wghts[i]=equal_wgt;
+          }
+          int ret = beagleSetCategoryWeights(tree->b_inst,0,cat_wghts);
+          if(ret<0) {fprintf(stderr, "beagleSetCategoryWeights() on instance %i failed:%i\n\n",tree->b_inst,ret);Exit(""); }
+      }
 #endif
+      tree->mod->ras->n_catg = orig_catg[n];
       tree = tree->next_mixt;
       n++;
     }

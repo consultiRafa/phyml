@@ -7255,7 +7255,8 @@ phydbl Mean(phydbl *x, int n)
 
 void Best_Of_NNI_And_SPR(t_tree *tree)
 {
-  if(tree->mod->s_opt->random_input_tree) Speed_Spr_Loop(tree); /* Don't do simultaneous NNIs if starting tree is random */
+  if(tree->mod->s_opt->random_input_tree)
+      Speed_Spr_Loop(tree); /* Don't do simultaneous NNIs if starting tree is random */
   else
     {
       t_tree *ori_tree,*best_tree;
@@ -7263,7 +7264,9 @@ void Best_Of_NNI_And_SPR(t_tree *tree)
       phydbl *ori_bl,*best_bl;
       phydbl best_lnL,ori_lnL,nni_lnL,spr_lnL;
       int i;
-
+#ifdef BEAGLE
+      tree->b_inst = create_beagle_instance(tree, tree->io->quiet);
+#endif
       ori_bl = (phydbl *)mCalloc(2*tree->n_otu-3,sizeof(phydbl));
       best_bl = (phydbl *)mCalloc(2*tree->n_otu-3,sizeof(phydbl));
 
@@ -7271,18 +7274,7 @@ void Best_Of_NNI_And_SPR(t_tree *tree)
       best_mod  = Copy_Model(tree->mod);
 
       ori_tree = Make_Tree_From_Scratch(tree->n_otu,tree->data);
-
-/*       ori_tree = Make_Tree(tree->n_otu); */
-/*       Init_Tree(ori_tree,ori_tree->n_otu); */
-/*       Make_All_Tree_Nodes(ori_tree); */
-/*       Make_All_Tree_Edges(ori_tree); */
-
       best_tree = Make_Tree_From_Scratch(tree->n_otu,tree->data);
-
-/*       best_tree = Make_Tree(tree->n_otu); */
-/*       Init_Tree(best_tree,best_tree->n_otu); */
-/*       Make_All_Tree_Nodes(best_tree); */
-/*       Make_All_Tree_Edges(best_tree); */
 
       Copy_Tree(tree,ori_tree);
       Record_Br_Len(tree);
@@ -7293,11 +7285,12 @@ void Best_Of_NNI_And_SPR(t_tree *tree)
       Lk(NULL,tree);
       ori_lnL = tree->c_lnL; /* Record likelihood of the starting tree */
 
-
-
+      // ****** Perform NNI ******
       Simu_Loop(tree); /* Perform simultaneous NNIs */
       best_lnL = tree->c_lnL; /* Record the likelihood */
       nni_lnL = tree->c_lnL;
+
+      //Mark the NNI tree as the "best" tree
       Copy_Tree(tree,best_tree); /* Record the tree topology and branch lengths */
       Record_Br_Len(tree);
       For(i,2*tree->n_otu-3) best_bl[i] = tree->a_edges[i]->l->v;
@@ -7310,26 +7303,32 @@ void Best_Of_NNI_And_SPR(t_tree *tree)
 
       /* Make sure the tree is in its original form */
       Lk(NULL,tree);
-
-
       if(FABS(tree->c_lnL - ori_lnL) > tree->mod->s_opt->min_diff_lk_local)
-    {
-      PhyML_Printf("\n== ori_lnL = %f, c_lnL = %f",ori_lnL,tree->c_lnL);
-      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
-      Warn_And_Exit("");
-    }
+        {
+          PhyML_Printf("\n== ori_lnL = %f, c_lnL = %f",ori_lnL,tree->c_lnL);
+          PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+          Warn_And_Exit("");
+        }
 
+
+      // ****** Perform SPR ******
       Speed_Spr_Loop(tree);
       spr_lnL = tree->c_lnL;
+
+
+      //Did SPR perform better than NNI?
       if(tree->c_lnL > best_lnL)
-    {
-      best_lnL = tree->c_lnL;
-      Copy_Tree(tree,best_tree); /* Record tree topology, branch lengths and model parameters */
-      Record_Br_Len(tree);
-      For(i,2*tree->n_otu-3) best_bl[i] = tree->a_edges[i]->l->v;
-      For(i,2*tree->n_otu-3) best_tree->a_edges[i]->l->v = best_bl[i];
-      Record_Model(tree->mod,best_mod);
-    }
+        {
+#ifdef BEAGLE
+          finalize_beagle_instance(best_tree);//Free the old BEAGLE instance associated with the NNI tree (since SPR is better)
+#endif
+          best_lnL = spr_lnL;
+          Copy_Tree(tree,best_tree); /* Record tree topology, branch lengths and model parameters */
+          Record_Br_Len(tree);
+          For(i,2*tree->n_otu-3) best_bl[i] = tree->a_edges[i]->l->v;
+          For(i,2*tree->n_otu-3) best_tree->a_edges[i]->l->v = best_bl[i];
+          Record_Model(tree->mod,best_mod);
+        }
 
       Copy_Tree(best_tree,tree);
       Fill_Dir_Table(tree);
@@ -7343,17 +7342,17 @@ void Best_Of_NNI_And_SPR(t_tree *tree)
       /* Make sure the current tree has the best topology, branch lengths and model parameters */
       Lk(NULL,tree);
       if(FABS(tree->c_lnL - best_lnL) > tree->mod->s_opt->min_diff_lk_local)
-    {
-      PhyML_Printf("\n. best_lnL = %f, c_lnL = %f",best_lnL,tree->c_lnL);
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
-      Warn_And_Exit("");
-    }
+        {
+          PhyML_Printf("\n. best_lnL = %f, c_lnL = %f",best_lnL,tree->c_lnL);
+          PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+          Warn_And_Exit("");
+        }
 
       if(tree->mod->s_opt->print)
-    {
-      PhyML_Printf("\n\n. Log likelihood obtained after NNI moves : %f",nni_lnL);
-      PhyML_Printf("\n. Log likelihood obtained after SPR moves : %f",spr_lnL);
-    }
+        {
+          PhyML_Printf("\n\n. Log likelihood obtained after NNI moves : %f",nni_lnL);
+          PhyML_Printf("\n. Log likelihood obtained after SPR moves : %f",spr_lnL);
+        }
 
       Free(ori_bl);
       Free(best_bl);

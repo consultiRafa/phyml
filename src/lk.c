@@ -2315,6 +2315,11 @@ void Init_P_Lk_Tips_Int(t_tree *tree)
           /* 					tree->a_nodes[i]->b[0]->p_lk_tip_r); */
             }
 #ifdef BEAGLE
+          //Recall that tip partials are stored on the branch leading
+          //to the tip, rather than on the tip itself (hence `p_lk_tip_idx`
+          //is a field of the branch (i.e. b[0]) rather than the node.
+          //Secondly, the BEAGLE's partial buffers are laid out as
+          //BEAGLE's partials buffer = [ tax1, tax2, ..., taxN, b1Left, b2Left, b3Left,...,bMLeft, b1Rght, b2Rght, b3Rght,...,bMRght] (N taxa, M branches)
         tree->a_nodes[i]->b[0]->p_lk_tip_idx = i;
 #endif
       }

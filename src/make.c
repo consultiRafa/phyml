@@ -426,7 +426,9 @@ t_tree *Make_Tree_From_Scratch(int n_otu, calign *data)
   //the tips/taxa
   for(int i=0;i<2*tree->n_otu-1;++i)
   {
+      //For edgeX, its "left" partial lies at index `num_tax + edgeX->num"
       tree->a_edges[i]->p_lk_left_idx = tree->n_otu + tree->a_edges[i]->p_lk_left_idx;
+      //For edgeX, its "right" partial lies at index `num_tax + edgeX->num + num_branches"
       tree->a_edges[i]->p_lk_rght_idx = tree->n_otu + tree->a_edges[i]->p_lk_left_idx + (2*tree->n_otu-1);
   }
 #endif
