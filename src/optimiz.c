@@ -630,7 +630,7 @@ void Optimize_Br_Len_Serie(t_tree *tree)
         }
     }
 
-  if(tree->n_root)
+  if(tree->n_root && tree->ignore_root == NO)
     {
       Update_P_Lk(tree,tree->n_root->b[1],tree->n_root);
       Optimize_Br_Len_Serie_Post(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree);

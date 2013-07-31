@@ -7237,7 +7237,6 @@ void Best_Of_NNI_And_SPR(t_tree *tree)
       ori_lnL = tree->c_lnL; /* Record likelihood of the starting tree */
 
 
-
       Simu_Loop(tree); /* Perform simultaneous NNIs */
       best_lnL = tree->c_lnL; /* Record the likelihood */
       nni_lnL = tree->c_lnL;
@@ -9896,7 +9895,7 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
   int i;
   
 
-  if(!tree->n_root)
+  if(!tree->n_root || tree->ignore_root == YES)
     {
       if(d == b->left)
         {
@@ -10118,6 +10117,7 @@ void Optimum_Root_Position_IL_Model(t_tree *tree)
         {
           PhyML_Printf("\n. Positionning root node on edge %4d",tree->a_edges[i]->num);
           Add_Root(tree->a_edges[i],tree);
+          tree->ignore_root = NO;
           Set_Both_Sides(YES,tree);
           Lk(NULL,tree);
 
@@ -10143,6 +10143,7 @@ void Optimum_Root_Position_IL_Model(t_tree *tree)
       Br_Len_Brent(tree->mod->l_min,tree->mod->l_max,tree->n_root->b[1],tree);
       Update_P_Lk(tree,tree->n_root->b[2],tree->n_root);
       Br_Len_Brent(tree->mod->l_min,tree->mod->l_max,tree->n_root->b[2],tree);
+      tree->ignore_root = YES;
     }
 }
 

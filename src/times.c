@@ -103,11 +103,6 @@ int TIMES_main(int argc, char **argv)
   /* Integrated_Geometric_Brownian_Bridge_Mean(T,A,B,u,&mean); */
   /* printf("\n. mean = %f",mean*T); */
 
-
-  Exit("\n");
-
-
-
   io->r_seed = r_seed;
 
   srand(r_seed); rand();

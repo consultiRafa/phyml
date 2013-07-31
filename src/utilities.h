@@ -578,7 +578,9 @@ typedef struct __Tree{
   
   short int                  apply_lk_scaling; /*! Applying scaling of likelihoods. YES/NO */
 
-  phydbl                                   *K;//a vector of the norm.constants for the node times prior. 
+  phydbl                                   *K; /*! a vector of the norm.constants for the node times prior. */
+
+  short int                       ignore_root;
 
 }t_tree;
 

@@ -342,8 +342,15 @@ void Post_Order_Lk(t_node *a, t_node *d, t_tree *tree)
         Get_All_Partial_Lk_Scale(tree,d->b[dir],a,d);
       else
         {
-          if(d == tree->n_root->v[1]) Get_All_Partial_Lk_Scale(tree,tree->n_root->b[1],tree->n_root,d);
-          else                        Get_All_Partial_Lk_Scale(tree,tree->n_root->b[2],tree->n_root,d);
+          if(tree->ignore_root == NO)
+            {
+              if(d == tree->n_root->v[1]) Get_All_Partial_Lk_Scale(tree,tree->n_root->b[1],tree->n_root,d);
+              else                        Get_All_Partial_Lk_Scale(tree,tree->n_root->b[2],tree->n_root,d);
+            }
+          else
+            {
+              Get_All_Partial_Lk_Scale(tree,tree->e_root,a,d);
+            }
         }
     }
 }
@@ -417,7 +424,7 @@ phydbl Lk(t_edge *b, t_tree *tree)
       if(!b)
         {
           For(br,2*tree->n_otu-3) Update_PMat_At_Given_Edge(tree->a_edges[br],tree);
-          if(tree->n_root)
+          if(tree->n_root && tree->ignore_root == NO)
             {
               Update_PMat_At_Given_Edge(tree->n_root->b[1],tree);
               Update_PMat_At_Given_Edge(tree->n_root->b[2],tree);
@@ -430,7 +437,7 @@ phydbl Lk(t_edge *b, t_tree *tree)
       
       if(!b)
         {
-          if(tree->n_root)
+          if(tree->n_root && tree->ignore_root == NO)
             {
               Post_Order_Lk(tree->n_root,tree->n_root->v[1],tree);
               Post_Order_Lk(tree->n_root,tree->n_root->v[2],tree);
@@ -455,14 +462,14 @@ phydbl Lk(t_edge *b, t_tree *tree)
 
   if(!b) 
     {
-      if(tree->n_root) b = (tree->n_root->v[1]->tax == NO)?(tree->n_root->b[2]):(tree->n_root->b[1]);
-      else             b = tree->a_nodes[0]->b[0];
+      if(tree->n_root && tree->ignore_root == NO) b = (tree->n_root->v[1]->tax == NO)?(tree->n_root->b[2]):(tree->n_root->b[1]);
+      else                                        b = tree->a_nodes[0]->b[0];
     }
 
   tree->c_lnL             = .0;
   tree->sum_min_sum_scale = .0;
       
-      For(tree->curr_site,n_patterns)
+  For(tree->curr_site,n_patterns)
     {
       ambiguity_check = -1;
       state           = -1;
@@ -626,6 +633,7 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
           
               if(sum < .0)
                 {
+                  printf("\n. tree: %s\n",Write_Tree(tree,NO));
                   PhyML_Printf("\n== b->num = %d  sum = %G",sum,b->num);
                   PhyML_Printf("\n== Err. in file %s at line %d\n\n",__FILE__,__LINE__);
                   Exit("\n");
@@ -1292,7 +1300,6 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
   /* printf("\n. Update on edge %d node %d [%d %d] l: %f",b->num,d->num,n_v1?n_v1->num:-1,n_v2?n_v2->num:-1,b->l->v); */
   /* printf("\n. p_lk: %p p_lk_v1: %p p_lk_v2: %p",(void *)p_lk,(void *)p_lk_v1,(void *)p_lk_v2); */
   /* printf("\n. Pij1: %p Pij2: %p",(void *)Pij1,(void *)Pij2); */
-
 
   /* For every site in the alignment */
   For(site,n_patterns)
@@ -2565,7 +2572,7 @@ void Print_Lk_Given_Edge_Recurr(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 void Alias_Subpatt(t_tree *tree)
 {
   
-  if(tree->n_root)
+  if(tree->n_root && tree->ignore_root == NO)
     {
       Alias_Subpatt_Post(tree->n_root,tree->n_root->v[2],tree);
       Alias_Subpatt_Post(tree->n_root,tree->n_root->v[1],tree);
@@ -3420,7 +3427,7 @@ int Check_Lk_At_Given_Edge(int verbose, t_tree *tree)
                                       tree->a_edges[i]->l_var->v);
     }
 
-  if(tree->n_root)
+  if(tree->n_root && tree->ignore_root == NO)
     {
       Lk(tree->n_root->b[1],tree);
       if(verbose == YES) PhyML_Printf("\n. Edge %3d %13G %f %13G",

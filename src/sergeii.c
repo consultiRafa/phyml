@@ -21,6 +21,7 @@
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
 void PhyTime_XML(char *xml_file)
 {
 
@@ -98,15 +99,14 @@ void PhyTime_XML(char *xml_file)
 	}
       else
 	{
-	  PhyML_Printf("\n==Tree was not found. \n");
-	  PhyML_Printf("\n==Either specify tree file name or enter the whole tree. \n");
+	  PhyML_Printf("\n== No input tree was not found. \n");
+	  PhyML_Printf("\n== Please specify either a tree file name or enter the whole tree directly in the XML file (in Newick format). \n");
 	  Exit("\n");
 	}
     }
   else io -> tree  = Read_Tree(&n_t -> value);
   io -> n_otu = io -> tree -> n_otu;
   tree = io -> tree;
-
 
   //setting initial values to n_calib:
   For(i, 2 * tree -> n_otu - 2) 
@@ -204,16 +204,16 @@ void PhyTime_XML(char *xml_file)
 
   if(n_cur == NULL)
     {
-      PhyML_Printf("\n==There is no calibration information provided. \n");
-      PhyML_Printf("\n==Please check your data. \n");
+      PhyML_Printf("\n== There is no calibration information provided. \n");
+      PhyML_Printf("\n== Please check your data. \n");
       Exit("\n");
     }
   else
     {
       if(XML_Search_Node_Name("upper", NO, n_cur -> child) == NULL && XML_Search_Node_Name("lower", NO, n_cur -> child) == NULL)
 	{
-	  PhyML_Printf("\n==There is no calibration information provided. \n");
-	  PhyML_Printf("\n==Please check your data. \n");
+	  PhyML_Printf("\n== There is no calibration information provided. \n");
+	  PhyML_Printf("\n== Please check your data. \n");
 	  Exit("\n");
 	}
     }
@@ -236,8 +236,8 @@ void PhyTime_XML(char *xml_file)
 	{
 	  if(!n_r -> attr -> value)
 	  {
-		PhyML_Printf("\n==Not found sequence type (nt / aa). \n");
-		PhyML_Printf("\n==Please, include data to node <%s> attribute value. \n", n_r -> name);
+		PhyML_Printf("\n== Sequence type (nt / aa) must be provided. \n");
+		PhyML_Printf("\n== Please, include this information as an attribute of component <%s>. \n", n_r -> name);
 		Exit("\n");
 	  }	
 	  if(!strcmp(To_Upper_String(n_r -> attr -> value), "NT")) 
@@ -283,7 +283,7 @@ void PhyTime_XML(char *xml_file)
 	  i = 1;
 	  For(i, n_taxa) if(strlen(io -> data[0] -> state) != strlen(io -> data[i] -> state))
 	    {
-	      printf("\n. Sequences are of different length. Please check your data...\n");
+	      PhyML_Printf("\n== All the sequences should be of the same length. Please check your data...\n");
 	      Exit("\n");
 	      break;
 	    }  
@@ -295,7 +295,7 @@ void PhyTime_XML(char *xml_file)
 	  //check if a number of tips is equal to a number of taxa:
 	  if(n_taxa != io -> n_otu)
 	    {
-	      PhyML_Printf("\n==Number of taxa is not the same as a number of tips. Check your data...\n");
+	      PhyML_Printf("\n== The number of taxa is not the same as a number of tips. Check your data...\n");
 	      Exit("\n");
 	    }
 
@@ -360,8 +360,8 @@ void PhyTime_XML(char *xml_file)
                          }
                       else
                         {
-                          PhyML_Printf("==Calibration information on the clade [%s] was not found. \n", clade_name);
-                          PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+                          PhyML_Printf("\n== The calibration information for clade [%s] was not found.", clade_name);
+                          PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
                           Exit("\n");
                         }
                     }
@@ -377,12 +377,12 @@ void PhyTime_XML(char *xml_file)
                     {
                       tree -> rates -> calib -> proba[node_num] = String_To_Dbl(n_r -> child -> attr -> next -> value);
                       
-                      if(!n_r -> child -> attr -> next && n_r -> child -> next == NULL) tree -> rates -> calib -> proba[node_num] = 1.;
+                      if(!n_r -> child -> attr -> next && n_r -> child -> next ==  NULL) tree -> rates -> calib -> proba[node_num] = 1.;
                       if(!n_r -> child -> attr -> next && n_r -> child -> next)
                         {
-                          PhyML_Printf("==You either need to provide information about probability with which calibration \n");
-                          PhyML_Printf("==applies to a node or you need to apply calibartion only to one node. \n");
-                          PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+                          PhyML_Printf("\n== You either need to provide information about the probability with which calibration ");
+                          PhyML_Printf("\n== applies to a node or you need to apply calibration only to one node.");
+                          PhyML_Printf("\n. Err. in file %s at line %d\n",__FILE__,__LINE__);
                           Exit("\n");
                         }
                       
@@ -403,7 +403,7 @@ void PhyTime_XML(char *xml_file)
                       PhyML_Printf("\n. Calibration with:");
                       PhyML_Printf("\n. Lower bound set to: %15f time units.", low);
                       PhyML_Printf("\n. Upper bound set to: %15f time units.", up);
-                      PhyML_Printf("\n. DOES NOT apply with probability [%f]", String_To_Dbl(n_r -> child -> attr -> next -> value));
+                      PhyML_Printf("\n. does not apply to any node with probability [%f]", String_To_Dbl(n_r -> child -> attr -> next -> value));
                       PhyML_Printf("\n. .......................................................................");
                     }
        
@@ -481,13 +481,13 @@ void PhyTime_XML(char *xml_file)
           PhyML_Printf("\n. WARNING! The sum of the probabilities for the calibration with:");
           PhyML_Printf("\n. Lower bound set to: %15f time units.", tree -> rates -> calib -> lower);
           PhyML_Printf("\n. Upper bound set to: %15f time units.", tree -> rates -> calib -> upper);
-          PhyML_Printf("\n. IS NOT equal to 1.");
-          PhyML_Printf("\n. The probability of NOT applying this calibration will be set to [%f].", 1.0 - p);
+          PhyML_Printf("\n. is not equal to 1.");
+          PhyML_Printf("\n. The probability that this calibration does not apply to any node is set to [%f].", 1.0 - p);
           PhyML_Printf("\n. .......................................................................");
           tree -> rates -> calib -> proba[2 * tree -> n_otu - 1] = 1.0 - p;
           tree -> rates -> calib -> n_all_applies_to++;
           /* PhyML_Printf("\n==You need to provide proper probabilities for the calibration. \n"); */
-          /* PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__); */
+          /* PhyML_Printf("\n. Err. in file %s at line %d\n",__FILE__,__LINE__); */
           /* Exit("\n"); */
         } 
       if(tree -> rates -> calib -> next) tree -> rates -> calib = tree -> rates -> calib -> next;
@@ -513,6 +513,7 @@ void PhyTime_XML(char *xml_file)
       free(mon_list[i]);
     }
   free(mon_list);
+
 
   //Exit("\n");
   ////////////////////////////////////////////////////////////////////////////
@@ -555,6 +556,7 @@ void PhyTime_XML(char *xml_file)
   Set_Both_Sides(YES, tree);
   Prepare_Tree_For_Lk(tree);
 
+
   //calculate the probabilities of each combination of calibrations:
   TIMES_Calib_Partial_Proba(tree);
   int cal_numb = 0;
@@ -568,9 +570,8 @@ void PhyTime_XML(char *xml_file)
   Set_Current_Calibration(cal_numb, tree);
   int tot_num_comb;
   tot_num_comb = Number_Of_Comb(tree -> rates -> calib);														
-  PhyML_Printf("\n. The total number of calibration combinations is going to be considered is %d.\n", tot_num_comb);
+  PhyML_Printf("\n. The number of calibration combinations that is going to be considered is %d.\n", tot_num_comb);
   TIMES_Set_All_Node_Priors(tree);
-
 
   //set initial value for Hastings ratio for conditional jump:
   tree -> rates -> c_lnL_Hastings_ratio = 0.0;
@@ -578,9 +579,7 @@ void PhyTime_XML(char *xml_file)
   TIMES_Get_Number_Of_Time_Slices(tree);
   TIMES_Label_Edges_With_Calibration_Intervals(tree);
 
-
   tree -> write_br_lens = NO;	
-
 									
   PhyML_Printf("\n. Input tree with calibration information ('almost' compatible with MCMCtree).\n");
   PhyML_Printf("\n. %s \n", Write_Tree(tree, YES));
@@ -597,13 +596,14 @@ void PhyTime_XML(char *xml_file)
       user_lk_approx = tree -> io -> lk_approx;													
       tree -> io -> lk_approx = EXACT;
 		      
-      // MLE for branch lengths 																                      
+      /* MLE for branch lengths 																                       */
       /* printf("\n. %s",Write_Tree(tree,NO)); */
       /* printf("\n. alpha %f",tree->mod->ras->alpha->v); */
       /* printf("\n.  %f %f %f %f",tree->mod->e_frq->pi->v[0],tree->mod->e_frq->pi->v[1],tree->mod->e_frq->pi->v[2],tree->mod->e_frq->pi->v[3]); */
       /* Lk(NULL,tree); */
       /* printf("\n. %f",tree->c_lnL); */
       /* Exit("\n"); */
+
 
       PhyML_Printf("\n");
       Round_Optimize(tree, tree -> data, ROUND_MAX);
@@ -1840,7 +1840,7 @@ xml_node *XML_Search_Node_Attribute_Value_Clade(char *attr_name, char *value, in
   if(!node)
     {
       PhyML_Printf("\n== node: %p attr: %p",node,node?node->attr:NULL);
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Exit("\n");         
     }
   
@@ -1894,8 +1894,8 @@ char **XML_Reading_Clade(xml_node *n_clade, t_tree *tree)
     }
   else
     {
-      PhyML_Printf("==Clade is empty. \n");
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("== Clade is empty. \n");
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Exit("\n");
     }
 
@@ -1920,7 +1920,7 @@ int XML_Number_Of_Taxa_In_Clade(xml_node *n_clade)
   else
     {
       PhyML_Printf("==Clade is empty. \n");
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Exit("\n");
     }
   return(clade_size);
@@ -2020,7 +2020,7 @@ void TIMES_Set_All_Node_Priors_Bottom_Up_S(t_node *a, t_node *d, int *result, t_
 	    {
 	      /* PhyML_Printf("\n. prior_min=%f prior_max=%f",tree->rates->t_prior_min[d->num],tree->rates->t_prior_max[d->num]); */
 	      /* PhyML_Printf("\n. Inconsistency in the prior settings detected at t_node %d",d->num); */
-	      /* PhyML_Printf("\n. Err in file %s at line %d\n\n",__FILE__,__LINE__); */
+	      /* PhyML_Printf("\n. Err. in file %s at line %d\n\n",__FILE__,__LINE__); */
 	      /* Warn_And_Exit("\n"); */
               *result = FALSE;
               /* return; */
@@ -2054,7 +2054,7 @@ void TIMES_Set_All_Node_Priors_Top_Down_S(t_node *a, t_node *d, int *result, t_t
 	    {
 	      /* PhyML_Printf("\n. prior_min=%f prior_max=%f",tree->rates->t_prior_min[d->num],tree->rates->t_prior_max[d->num]); */
 	      /* PhyML_Printf("\n. Inconsistency in the prior settings detected at t_node %d",d->num); */
-	      /* PhyML_Printf("\n. Err in file %s at line %d\n\n",__FILE__,__LINE__); */
+	      /* PhyML_Printf("\n. Err. in file %s at line %d\n\n",__FILE__,__LINE__); */
 	      /* Warn_And_Exit("\n"); */
               *result = FALSE;
               /* return; */

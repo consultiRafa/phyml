@@ -623,7 +623,6 @@ char *Write_Tree(t_tree *tree, int custom)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *tree)
 {
   int i,p;
@@ -670,7 +669,7 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
       else
 	{
 	  PhyML_Printf("\n== Unknown tree format.");
-	  PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+	  PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
 	  PhyML_Printf("\n== s=%s\n",*s_tree);
 	}
 
@@ -718,7 +717,7 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
 	    }
 	  else
 	    {
-	      sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,tree->rates->cur_l[fils->num]));
+              if(tree->rates) sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,tree->rates->cur_l[fils->num]));
 	    }
 #endif
 	}
@@ -865,7 +864,7 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
 	    }
 	  else
 	    {
-	      sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,tree->rates->cur_l[fils->num]));
+	      if(tree->rates) sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,tree->rates->cur_l[fils->num]));
 	    }
 #endif	  
 	}

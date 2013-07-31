@@ -141,6 +141,7 @@ void Init_Tree(t_tree *tree, int n_otu)
   tree->max_spr_depth             = 0;
   tree->apply_lk_scaling          = YES;
   tree->dp                        = 0;
+  tree->ignore_root               = YES;
 }
 
 //////////////////////////////////////////////////////////////

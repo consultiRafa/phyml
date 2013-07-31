@@ -30,9 +30,6 @@ the GNU public licence. See http://www.opensource.org for details.
 #include "mpi_boot.h"
 #endif
 
-
-
-
 #if (defined PHYML || EVOLVE)
 
 int main(int argc, char **argv)
@@ -85,7 +82,7 @@ int main(int argc, char **argv)
 
   if(io->n_trees == 0 && io->in_tree == 2)
     {
-      PhyML_Printf("\n. The input tree file does not provide a tree in valid format.");
+      PhyML_Printf("\n== The input tree file does not provide a tree in valid format.");
       Exit("\n");
     }
 
@@ -160,7 +157,6 @@ int main(int argc, char **argv)
 		  tree->n_pattern    = tree->data->crunch_len;
                   tree->n_root       = NULL;
                   tree->e_root       = NULL;
-
                   
                   Set_Both_Sides(YES,tree);     
                   
@@ -182,8 +178,7 @@ int main(int argc, char **argv)
 		  Prepare_Tree_For_Lk(tree);
 		  Br_Len_Not_Involving_Invar(tree);
 		  Unscale_Br_Len_Multiplier_Tree(tree);
-                  
-		  
+                  		  
 #ifdef PHYML
 		  
 		  if(io->in_tree == 1) Spr_Pars(tree);
