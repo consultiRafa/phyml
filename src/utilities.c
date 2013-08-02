@@ -9860,7 +9860,6 @@ void Set_P_Lk_One_Side(phydbl **Pij, phydbl **p_lk,  int **sum_scale, t_node *d,
     }
   else
     {
-
       *p_lk        = NULL;
       *sum_scale   = NULL;
     }
@@ -9897,6 +9896,12 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
 
   if(!tree->n_root || tree->ignore_root == YES)
     {
+      if(tree->n_root && (b == tree->n_root->b[1] || b == tree->n_root->b[2]))
+        {
+          PhyML_Printf("\n== Err. in file %s at line %d.",__FILE__,__LINE__);
+          Warn_And_Exit("\n");
+        }
+
       if(d == b->left)
         {
           *p_lk      = b->p_lk_left;
@@ -9920,13 +9925,18 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
                   *n_v1 = d->v[i]; 
                   Set_P_Lk_One_Side(Pij1,p_lk_v1,sum_scale_v1,d,d->b[i],tree); 
                 }
-              else      
+              else if(!(*n_v2))      
                 { 
                   *n_v2 = d->v[i]; 
                   Set_P_Lk_One_Side(Pij2,p_lk_v2,sum_scale_v2,d,d->b[i],tree); 
                 }
+              else
+                {
+                  PhyML_Printf("\n== Err. in file %s at line %d.",__FILE__,__LINE__);
+                  Warn_And_Exit("\n");
+                }
             }
-        }      
+        }
     }
   else
     {

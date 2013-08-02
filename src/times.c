@@ -160,10 +160,10 @@ int TIMES_main(int argc, char **argv)
 
 		  if(!tree) continue;
 
-		  if(!tree->n_root) 
+		  if(!tree->n_root)
 		    {
-		      PhyML_Printf("\n. Sorry, PhyTime requires a rooted tree as input.");
-		      Exit("\n");      
+		      PhyML_Printf("\n== Sorry, PhyTime requires a rooted tree as input.");
+		      Exit("\n");
 		    }
 
 		  time(&t_beg);
@@ -172,7 +172,7 @@ int TIMES_main(int argc, char **argv)
 		  RATES_Init_Rate_Struct(tree->rates,io->rates,tree->n_otu);
 
 		  Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
-		  Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);		  
+		  Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
 
 		  RATES_Fill_Lca_Table(tree);
 
@@ -184,7 +184,7 @@ int TIMES_main(int argc, char **argv)
                   Set_Both_Sides(YES,tree);
 
 		  Prepare_Tree_For_Lk(tree);
-
+                  
 		  /* Read node age priors */
 		  Read_Clade_Priors(io->clade_list_file,tree);
 
@@ -229,13 +229,11 @@ int TIMES_main(int argc, char **argv)
 		      user_lk_approx = tree->io->lk_approx;
 		      tree->io->lk_approx = EXACT;
 		      
-                      /* printf("\n. %s",Write_Tree(tree,NO)); */
-                      /* Lk(NULL,tree); */
-                      /* printf("\n. %f",tree->c_lnL); */
+                      
+                      /* printf("\n. Lk: %f",Lk(NULL,tree)); */
                       /* Exit("\n"); */
 
 		      /* MLE for branch lengths */
-		      PhyML_Printf("\n");
 		      Round_Optimize(tree,tree->data,ROUND_MAX);
 		      
 		      /* Set vector of mean branch lengths for the Normal approximation
@@ -275,6 +273,9 @@ int TIMES_main(int argc, char **argv)
 		      PhyML_Printf("\n. p(data|model) [approx] ~ %.2f",tree->c_lnL);
 
 		      tree->io->lk_approx = user_lk_approx;
+
+
+
 		    }
 		  
 		      

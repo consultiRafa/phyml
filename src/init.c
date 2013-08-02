@@ -843,6 +843,7 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
 	  rates->t_jps[i]  =  -1;
 	  rates->mean_r[i] = 1.0;      
 	  rates->mean_l[i] = 0.0;      
+          rates->cur_l[i]  = 0.01;
 	}
       
       For(i,2*n_otu-1) 
