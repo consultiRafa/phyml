@@ -130,7 +130,7 @@ void PhyTime_XML(char *xml_file)
   //reading seed:
   if(XML_Search_Attribute(n_r, "seed")) io -> r_seed = String_To_Dbl(XML_Search_Attribute(n_r, "seed") -> value);
    
-  //TO DO: check that the tree has a root...
+  //TO DO: check that the tree has a root
   Update_Ancestors(io -> tree -> n_root, io -> tree -> n_root -> v[2], io -> tree);
   Update_Ancestors(io -> tree -> n_root, io -> tree -> n_root -> v[1], io -> tree);
 		  
@@ -548,6 +548,8 @@ void PhyTime_XML(char *xml_file)
   if(io -> mod -> use_m4mod) M4_Init_Model(mod -> m4mod, cdata, mod);
   time(&(t_beg));
 
+  RATES_Fill_Lca_Table(tree);
+
   tree -> mod         = mod;                                                                    
   tree -> io          = io;
   tree -> data        = cdata;
@@ -574,7 +576,7 @@ void PhyTime_XML(char *xml_file)
   TIMES_Set_All_Node_Priors(tree);
 
   //set initial value for Hastings ratio for conditional jump:
-  tree -> rates -> c_lnL_Hastings_ratio = 0.0;
+  /* tree -> rates -> c_lnL_Hastings_ratio = 0.0; */
  
   TIMES_Get_Number_Of_Time_Slices(tree);
   TIMES_Label_Edges_With_Calibration_Intervals(tree);
@@ -604,10 +606,7 @@ void PhyTime_XML(char *xml_file)
       /* printf("\n. %f",tree->c_lnL); */
       /* Exit("\n"); */
 
-
-      PhyML_Printf("\n");
-      Round_Optimize(tree, tree -> data, ROUND_MAX);
- 		      
+      Round_Optimize(tree, tree -> data, ROUND_MAX);		      
       // Set vector of mean branch lengths for the Normal approximation of the likelihood 
       RATES_Set_Mean_L(tree);
       
@@ -671,6 +670,7 @@ void PhyTime_XML(char *xml_file)
   //PhyML_Printf("\n. Computing Normalizing Constant(s) for the Node Times Prior Density...\n");
   /* tree -> K = Norm_Constant_Prior_Times(tree); */
   /* Exit("\n"); */
+
 
   MCMC(tree);   
                                          															
@@ -740,8 +740,8 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
           k = (i % Number_Of_Comb(calib)) / Number_Of_Comb(calib -> next);
           if(calib -> all_applies_to[k] -> num)
             {
-              t_prior_min[calib -> all_applies_to[k] -> num] = MAX(t_prior_min[calib -> all_applies_to[k] -> num], calib -> lower);
-              t_prior_max[calib -> all_applies_to[k] -> num] = MIN(t_prior_max[calib -> all_applies_to[k] -> num], calib -> upper);
+              t_prior_min[calib -> all_applies_to[k] -> num] = MAX(t_prior_min[calib -> all_applies_to[k] -> num], calib -> lower); //printf("min %f",  t_prior_min[calib -> all_applies_to[k] -> num]);
+              t_prior_max[calib -> all_applies_to[k] -> num] = MIN(t_prior_max[calib -> all_applies_to[k] -> num], calib -> upper); //printf("max %f",  t_prior_max[calib -> all_applies_to[k] -> num]);
               t_has_prior[calib -> all_applies_to[k] -> num] = YES;
               /* if((t_prior_min[calib -> all_applies_to[k] -> num] > t_prior_max[calib -> all_applies_to[k] -> num])) times_partial_proba[i] = 0.0;  */
               /* else times_partial_proba[i] *= calib -> proba[calib -> all_applies_to[k] -> num];  */
@@ -759,24 +759,29 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
       int result;
       result = TRUE;
       TIMES_Set_All_Node_Priors_S(&result, tree);
+      /* TIMES_Set_All_Node_Priors(tree); */
+      /* Check_Node_Time(tree -> n_root, tree -> n_root -> v[2], &result, tree); */
+      /* Check_Node_Time(tree -> n_root, tree -> n_root -> v[1], &result, tree); */
       /* printf("\n\n"); */
-      /* For(j, 2 * tree -> n_otu - 1) printf("\n. [1] Node [%d] min [%f] max [%f] node time [%f]\n", j, tree -> rates -> t_prior_min[j], tree -> rates -> t_prior_max[j], tree -> rates -> nd_t[j]); */
-      /* printf("\n. p[%i] = %f \n", i + 1, times_partial_proba[i]); */
+      /* for(j = tree -> n_otu; j < 2 * tree -> n_otu - 1; j++) printf("\n. [1] Node [%d] min [%f] max [%f] node time [%f]\n", j, tree -> rates -> t_prior_min[j], tree -> rates -> t_prior_max[j], tree -> rates -> nd_t[j]); */
+      /* printf("\n. result = [%d] \n", result); */
       /* printf("\n\n"); */
 
       /* tree -> rates -> birth_rate = 4.0; */
       times_lk = TIMES_Lk_Yule_Order(tree);
+      /* printf("\n. times_lk = [%f] \n", times_lk); */
+      /* printf("\n. result = [%d] \n", result); */
       /* if(result != FALSE) times_lk = TIMES_Lk_Yule_Order(tree); */
       /* else times_lk = 1.0; */
 
       constant = 1.0; 
-      if(times_lk > -INFINITY && result != FALSE) constant = Slicing_Calibrations(tree);     
+      if (tot_num_comb > 1) if(times_lk > -INFINITY && result != FALSE) constant = Slicing_Calibrations(tree);
       /* else */
       /*   { */
       /*     times_lk = 0.0; */
       /*     times_partial_proba[i] = 0.0; */
       /*   } */
-
+      /* printf("\n. p[%i] = %f \n", i + 1, times_partial_proba[i]); */
       /* printf("\n. K = [%f] \n", constant); */
       /* K = Norm_Constant_Prior_Times(tree); */
       /* Yule_val[i] = K[i] * TIMES_Lk_Yule_Order(tree); */
@@ -785,16 +790,16 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
  
       Yule_val[i] = LOG(constant) + times_lk;
 
-      /* printf("\n. Yule = %f \n", Yule_val[i]);   */
+      /* printf("\n. Yule = %f \n", Yule_val[i]); */
  
       while(calib -> prev) calib = calib -> prev;
     }
  
   /* min_value = 0.0; */
   /* For(i, tot_num_comb) if(Yule_val[i] < min_value && Yule_val[i] > -INFINITY) min_value = Yule_val[i]; */
-  /* c = -600. - min_value; */  
+  /* c = -600. - min_value;   */
 
-  
+  /* Exit("\n"); */
   c = .0;
   times_tot_proba = 0.0;
   For(i, tot_num_comb)
@@ -859,9 +864,9 @@ phydbl Slicing_Calibrations(t_tree *tree)
   if(tree -> rates -> nd_t[tree -> n_root -> num] > t_prior_min[tree -> n_root -> num]) chop_bound =  MIN(tree -> rates -> nd_t[tree -> n_root -> num], t_prior_max[tree -> n_root -> num]);
   else chop_bound = t_prior_min[tree -> n_root -> num];
   t_slice[2 * n_otu - 3] = chop_bound;
-  //printf("\n. Chop bound [%f] \n", chop_bound); 
+  /* printf("\n. Chop bound [%f] \n", chop_bound);  */
   //t_slice[2 * n_otu - 3] = -1.1; 
-  //For(j, 2 * n_otu - 2) printf("\n. Slice bound [%f] \n", t_slice[j]);
+  /* For(j, 2 * n_otu - 2) printf("\n. Slice bound [%f] \n", t_slice[j]); */
   ////////////////////////////////////////////////////////////////////////////
   //Get slices in increasing order. Excluding tips.
   do
@@ -879,10 +884,10 @@ phydbl Slicing_Calibrations(t_tree *tree)
         }
     }
   while(f);
-  //For(j, 2 * n_otu - 2) printf("\n. [1] Slice bound [%f] \n", t_slice[j]);
+  /* For(j, 2 * n_otu - 2) printf("\n. [1] Slice bound [%f] \n", t_slice[j]); */
   for(j = 1; j < 2 * n_otu - 2; j++) t_slice[j] = MAX(chop_bound, t_slice[j]);
   //for(j = 1; j < 2 * n_otu - 2; j++) t_slice[j] = MAX(-1.1, t_slice[j]);
-  //For(j, 2 * n_otu - 2) printf("\n. [2] Slice bound [%f] \n", t_slice[j]);
+  /* For(j, 2 * n_otu - 2) printf("\n. [2] Slice bound [%f] \n", t_slice[j]); */
   ////////////////////////////////////////////////////////////////////////////
   //Get the intervals with respect to slices. Total number of t_slice_min(max) - 2 * n_otu - 3. Excluding tips.
   i = 0;
@@ -893,7 +898,7 @@ phydbl Slicing_Calibrations(t_tree *tree)
       i++;
     }
 
-  //For(j, 2 * n_otu - 3) printf("\n. The interval number [%d] min [%f] max[%f] \n", j, t_slice_min[j], t_slice_max[j]);
+  /* For(j, 2 * n_otu - 3) printf("\n. The interval number [%d] min [%f] max[%f] \n", j, t_slice_min[j], t_slice_max[j]); */
 
   ////////////////////////////////////////////////////////////////////////////
   //Getting indicators for the node number [i + n_otu] to have slice. i = i + n_otu is the node number on the tree and j is the slice number, total 
@@ -958,7 +963,7 @@ phydbl Slicing_Calibrations(t_tree *tree)
               k++;
             }
         }
-      //printf(" Number of slices'%d' \n", n_slice[i]);
+      /* printf(" Number of slices'%d' \n", n_slice[i]); */
     }
   /*
   printf("\n");
@@ -981,27 +986,34 @@ phydbl Slicing_Calibrations(t_tree *tree)
 
   tot_num_comb = 1;
   P = 0.0; 
- 
 
+ 
   t_cur_slice_min    = (phydbl *)mCalloc(n_otu - 1, sizeof(phydbl));
   t_cur_slice_max    = (phydbl *)mCalloc(n_otu - 1, sizeof(phydbl));
   cur_slices         = (int *)mCalloc(n_otu - 1, sizeof(int)); //the vector of the current slices with repetition.
   cur_slices_shr     = (int *)mCalloc(n_otu - 1, sizeof(int)); //the vector of the current slices without repetition.
 
-  For(i, n_otu - 1) tot_num_comb = tot_num_comb * n_slice[i]; //printf("\n. Total number of combinations of slices [%d] \n", tot_num_comb);
+  For(i, n_otu - 1)  
+    {
+      /* printf("\n. [2] Number of slices'%d' \n", n_slice[i]); */
+      tot_num_comb = tot_num_comb * n_slice[i]; 
+      /* printf("\n. [2] Total number of combinations of slices [%d] \n", tot_num_comb); */
+    }
+
+  /* For(i, n_otu - 1) tot_num_comb = tot_num_comb * n_slice[i]; printf("\n. [3] Total number of combinations of slices [%d] \n", tot_num_comb); */
   
   For(k, tot_num_comb)
     {
       shr_num_slices = 0;
-      //printf("\n");
+      /* printf("\n"); */
       For(i, n_otu - 1) //node number i + n_otu
         {
-          //printf(" ['%d]' ", i + n_otu);
+          /* printf(" ['%d]' ", i + n_otu); */
           l = (k % Number_Of_Comb_Slices(i, n_otu - 1, n_slice)) / Number_Of_Comb_Slices(i+1, n_otu - 1, n_slice); //printf(" Slice number'%d' ", slice_numbers[i * (2 * n_otu - 3) + l]);
-          t_cur_slice_min[i] = t_slice_min[slice_numbers[i * (2 * n_otu - 3) + l]]; //printf(" '%f' ", t_cur_slice_min[i]);
-          t_cur_slice_max[i] = t_slice_max[slice_numbers[i * (2 * n_otu - 3) + l]]; //printf(" '%f' ", t_cur_slice_max[i]);
+          t_cur_slice_min[i] = t_slice_min[slice_numbers[i * (2 * n_otu - 3) + l]]; /* printf(" '%f' ", t_cur_slice_min[i]); */
+          t_cur_slice_max[i] = t_slice_max[slice_numbers[i * (2 * n_otu - 3) + l]]; /* printf(" '%f' ", t_cur_slice_max[i]); */
           cur_slices[i] = slice_numbers[i * (2 * n_otu - 3) + l];
-          //printf("\n"); 
+          /* printf("\n");  */
         }
       //printf("\n");
       //For(i, n_otu - 1) printf(" Slice number'%d' ", cur_slices[i]); 
@@ -1432,6 +1444,7 @@ void Check_Node_Time(t_node *a, t_node *d, int *result, t_tree *tree)
       if(nd_t[d -> num] < t_low || nd_t[d -> num] > t_up)
         {
           *result = FALSE; 
+          return;
         }
 
       int i;
@@ -1940,10 +1953,10 @@ void TIMES_Set_All_Node_Priors_S(int *result, t_tree *tree)
   TIMES_Set_All_Node_Priors_Bottom_Up_S(tree->n_root,tree->n_root->v[2], result, tree);
   TIMES_Set_All_Node_Priors_Bottom_Up_S(tree->n_root,tree->n_root->v[1], result, tree);
 
-  tree->rates->t_prior_max[tree->n_root->num] = 
+  tree->rates->t_prior_max[tree->n_root->num] =
     MIN(tree->rates->t_prior_max[tree->n_root->num],
-	MIN(tree->rates->t_prior_max[tree->n_root->v[2]->num],
-	    tree->rates->t_prior_max[tree->n_root->v[1]->num]));
+        MIN(tree->rates->t_prior_max[tree->n_root->v[2]->num],
+            tree->rates->t_prior_max[tree->n_root->v[1]->num]));
 
 
   /* Set all t_prior_min values */
@@ -1951,13 +1964,13 @@ void TIMES_Set_All_Node_Priors_S(int *result, t_tree *tree)
     {
       min_prior = 1.E+10;
       For(i,2*tree->n_otu-2)
-	{
-	  if(tree->rates->t_has_prior[i])
-	    {
-	      if(tree->rates->t_prior_min[i] < min_prior)
-		min_prior = tree->rates->t_prior_min[i];
-	    }
-	}
+        {
+          if(tree->rates->t_has_prior[i])
+            {
+              if(tree->rates->t_prior_min[i] < min_prior)
+        	min_prior = tree->rates->t_prior_min[i];
+            }
+        }
       tree->rates->t_prior_min[tree->n_root->num] = 2.0 * min_prior;
       /* tree->rates->t_prior_min[tree->n_root->num] = 10. * min_prior; */
     }
@@ -1969,6 +1982,7 @@ void TIMES_Set_All_Node_Priors_S(int *result, t_tree *tree)
       /* PhyML_Printf("\n== provides a lower bound."); */
       /* Exit("\n"); */
       *result = FALSE;
+      /* return; */
     }
 
 
@@ -2016,6 +2030,8 @@ void TIMES_Set_All_Node_Priors_Bottom_Up_S(t_node *a, t_node *d, int *result, t_
 
 	  tree->rates->t_prior_max[d->num] = t_sup;
 
+	  /* if(tree->rates->t_prior_max[d->num] < tree->rates->t_prior_min[d->num] || tree->rates->nd_t[d->num] < tree->rates->t_prior_min[d->num] */
+          /*    || tree->rates->nd_t[d->num] > tree->rates->t_prior_max[d->num]) */
 	  if(tree->rates->t_prior_max[d->num] < tree->rates->t_prior_min[d->num])
 	    {
 	      /* PhyML_Printf("\n. prior_min=%f prior_max=%f",tree->rates->t_prior_min[d->num],tree->rates->t_prior_max[d->num]); */
@@ -2050,6 +2066,8 @@ void TIMES_Set_All_Node_Priors_Top_Down_S(t_node *a, t_node *d, int *result, t_t
 	{
 	  tree->rates->t_prior_min[d->num] = MAX(tree->rates->t_prior_min[d->num],tree->rates->t_prior_min[a->num]);
 	  
+	  /* if(tree->rates->t_prior_max[d->num] < tree->rates->t_prior_min[d->num]  || tree->rates->nd_t[d->num] < tree->rates->t_prior_min[d->num] */
+          /*    || tree->rates->nd_t[d->num] > tree->rates->t_prior_max[d->num]) */
 	  if(tree->rates->t_prior_max[d->num] < tree->rates->t_prior_min[d->num])
 	    {
 	      /* PhyML_Printf("\n. prior_min=%f prior_max=%f",tree->rates->t_prior_min[d->num],tree->rates->t_prior_max[d->num]); */

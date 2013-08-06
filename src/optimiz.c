@@ -560,8 +560,9 @@ void Round_Optimize(t_tree *tree, calign *data, int n_round_max)
   lk_old = UNLIKELY;
   n_round = 0;
   each = 0;
-  
+
   Set_Both_Sides(YES,tree);
+
   Lk(NULL,tree);
 
   while(n_round < n_round_max)
