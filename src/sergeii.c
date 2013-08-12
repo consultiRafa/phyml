@@ -768,7 +768,8 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
       /* printf("\n\n"); */
 
       /* tree -> rates -> birth_rate = 4.0; */
-      times_lk = TIMES_Lk_Yule_Order(tree);
+      /* times_lk = TIMES_Lk_Yule_Order(tree); */
+      times_lk =  TIMES_Lk_Yule_Order_Root_Cond(tree);
       /* printf("\n. times_lk = [%f] \n", times_lk); */
       /* printf("\n. result = [%d] \n", result); */
       /* if(result != FALSE) times_lk = TIMES_Lk_Yule_Order(tree); */
@@ -864,6 +865,7 @@ phydbl Slicing_Calibrations(t_tree *tree)
   if(tree -> rates -> nd_t[tree -> n_root -> num] > t_prior_min[tree -> n_root -> num]) chop_bound =  MIN(tree -> rates -> nd_t[tree -> n_root -> num], t_prior_max[tree -> n_root -> num]);
   else chop_bound = t_prior_min[tree -> n_root -> num];
   t_slice[2 * n_otu - 3] = chop_bound;
+  /* For(i, 2 * n_otu - 2) if(Are_Equal(t_prior_min[tree -> n_root -> num], t_slice[i], 1.E-10)) */
   /* printf("\n. Chop bound [%f] \n", chop_bound);  */
   //t_slice[2 * n_otu - 3] = -1.1; 
   /* For(j, 2 * n_otu - 2) printf("\n. Slice bound [%f] \n", t_slice[j]); */
@@ -1001,19 +1003,19 @@ phydbl Slicing_Calibrations(t_tree *tree)
     }
 
   /* For(i, n_otu - 1) tot_num_comb = tot_num_comb * n_slice[i]; printf("\n. [3] Total number of combinations of slices [%d] \n", tot_num_comb); */
-  
+  /* printf("\n. Total number of combinations of slices [%d] \n", tot_num_comb); */
   For(k, tot_num_comb)
     {
       shr_num_slices = 0;
       /* printf("\n"); */
       For(i, n_otu - 1) //node number i + n_otu
         {
-          /* printf(" ['%d]' ", i + n_otu); */
+          /* printf(" [%d] ", i + n_otu); */
           l = (k % Number_Of_Comb_Slices(i, n_otu - 1, n_slice)) / Number_Of_Comb_Slices(i+1, n_otu - 1, n_slice); //printf(" Slice number'%d' ", slice_numbers[i * (2 * n_otu - 3) + l]);
           t_cur_slice_min[i] = t_slice_min[slice_numbers[i * (2 * n_otu - 3) + l]]; /* printf(" '%f' ", t_cur_slice_min[i]); */
           t_cur_slice_max[i] = t_slice_max[slice_numbers[i * (2 * n_otu - 3) + l]]; /* printf(" '%f' ", t_cur_slice_max[i]); */
           cur_slices[i] = slice_numbers[i * (2 * n_otu - 3) + l];
-          /* printf("\n");  */
+          /* printf("\n"); */
         }
       //printf("\n");
       //For(i, n_otu - 1) printf(" Slice number'%d' ", cur_slices[i]); 
@@ -1105,11 +1107,20 @@ phydbl Slicing_Calibrations(t_tree *tree)
           lmbd = tree -> rates -> birth_rate;
           num = 1;
           denom = 1;
-          lmbd = 4.0;
+          /* lmbd = 4.0; */
           /* For(j, n_otu - 1) num = num * (EXP(-lmbd * t_cur_slice_min[j]) - EXP(-lmbd * t_cur_slice_max[j]));  */
           /* for(j = n_otu; j < 2 * n_otu - 1; j++) denom = denom * (EXP(-lmbd * t_prior_min[j]) - EXP(-lmbd * t_prior_max[j]));  */
-          For(j, n_otu - 2) num = num * (EXP(lmbd * t_cur_slice_max[j]) - EXP(lmbd * t_cur_slice_min[j])); 
-          for(j = n_otu; j < 2 * n_otu - 2; j++) denom = denom * (EXP(lmbd * t_prior_max[j]) - EXP(lmbd * t_prior_min[j])); 
+          for(i = n_otu; i < 2 * n_otu - 2; i++) if(Are_Equal(t_prior_min[tree -> n_root -> num], t_prior_min[i], 1.E-10)) t_prior_min[i] = tree -> rates -> nd_t[tree -> n_root -> num];
+          For(j, n_otu - 2) 
+            {
+              /* printf("\n. j %d slice_min %f slice_max %f \n", j, t_cur_slice_min[j],  t_cur_slice_max[j]); */
+              num = num * (EXP(lmbd * t_cur_slice_max[j]) - EXP(lmbd * t_cur_slice_min[j])); 
+            }
+          for(j = n_otu; j < 2 * n_otu - 2; j++) 
+            {
+              /* printf("\n. j %d min %f max %f \n", j, t_prior_min[j],  t_prior_max[j]); */
+              denom = denom * (EXP(lmbd * t_prior_max[j]) - EXP(lmbd * t_prior_min[j])); 
+            }
           k_part = (k_part * num) / denom; 
           //printf("\n. [2] k_part of the tree for one combination of slices [%f] \n", k_part); 
         } 
@@ -1117,7 +1128,7 @@ phydbl Slicing_Calibrations(t_tree *tree)
     }
   //printf("\n. [P] of the tree for one combination of slices [%f] \n", P);
   K = 1 / P;
- /* printf("\n. [K] of the tree for one combination of slices [%f] \n", K); */
+  /* printf("\n. [K] of the tree for one combination of calibration [%f] \n", K); */
   ////////////////////////////////////////////////////////////////////////////
   free(t_cur_slice_min);
   free(t_cur_slice_max);
