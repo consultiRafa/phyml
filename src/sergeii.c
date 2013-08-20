@@ -954,7 +954,7 @@ phydbl Slicing_Calibrations(t_tree *tree)
 
   ////////////////////////////////////////////////////////////////////////////
   //Running through all of the combinations of slices
-  int l, tot_num_comb, *cur_slices, *cur_slices_shr, *cur_slices_cpy, *cur_slices_max, shr_num_slices;
+  int l, tot_num_comb, *cur_slices, *cur_slices_shr, *cur_slices_cpy, *slices_start_node, shr_num_slices;
   phydbl P, *t_cur_slice_min, *t_cur_slice_max;
   phydbl k_part;
   phydbl num, denom, lmbd;
@@ -969,7 +969,7 @@ phydbl Slicing_Calibrations(t_tree *tree)
   t_cur_slice_max    = (phydbl *)mCalloc(n_otu - 1, sizeof(phydbl));
   cur_slices         = (int *)mCalloc(n_otu - 1, sizeof(int)); //the vector of the current slices with repetition.
   cur_slices_cpy     = (int *)mCalloc(n_otu - 1, sizeof(int));
-  cur_slices_max     = (int *)mCalloc(n_otu - 1, sizeof(int)); 
+  slices_start_node  = (int *)mCalloc(n_otu - 1, sizeof(int)); 
   cur_slices_shr     = (int *)mCalloc(n_otu - 1, sizeof(int)); //the vector of the current slices without repetition.
 
 
@@ -1007,384 +1007,403 @@ phydbl Slicing_Calibrations(t_tree *tree)
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////CALCULATING THE MAXIMUM VALUE OF m_i * g_i FOR ONE COMBINATION OF SLICES:////////////////////////////////////////////////////////////////
-  /* /\* printf("\n"); *\/ */
-  /* phydbl max, K_total; */
-  /* phydbl *t_slice_min_f, *t_slice_max_f; */
+  /* printf("\n"); */
+  phydbl max, K_total;
+  phydbl *t_slice_min_f, *t_slice_max_f;
  
-  /* t_slice_min_f    = (phydbl *)mCalloc(n_otu - 1, sizeof(phydbl)); */
-  /* t_slice_max_f    = (phydbl *)mCalloc(n_otu - 1, sizeof(phydbl)); */
-  /* For(i, n_otu - 1) */
-  /*   { */
-  /*     max = 0.0; */
-  /*     /\* printf(" ['%d'] ", i + n_otu); *\/  /\* printf(" Max value '%f' ", max); *\/ */
-  /*     /\* printf("\n. Slice number '%d' Min '%f' Max '%f' \n", cur_slices[i], t_slice_min_f[i], t_slice_max_f[i]); *\/ */
-  /*     /\* printf("\n"); *\/ */
-  /*     For(j, 2 * n_otu - 3) */
-  /*       { */
-  /*         /\* t_slice_min_f[i] = t_slice_min[7]; *\/ */
-  /*         /\* t_slice_max_f[i] = t_slice_max[7]; *\/ */
-  /*         if(max < g_i_node[i * (2 * n_otu - 3) + j]) */
-  /*           { */
-  /*             t_slice_min_f[i] = t_slice_min[j]; */
-  /*             t_slice_max_f[i] = t_slice_max[j]; */
-  /*             /\* printf("\n. [1] Min '%f' Max '%f' \n", t_slice_min_f[i], t_slice_max_f[i]); *\/ */
-  /*             max = g_i_node[i * (2 * n_otu - 3) + j]; */
-  /*             /\* printf(". '%f' ", g_i_node[i * (2 * n_otu - 3) + j]); *\/ */
-  /*             cur_slices[i] = j; */
-  /*           } */
-  /*       } */
-  /*     /\* printf(" Max value '%f' ", max); *\/ */
-  /*     /\* printf(" Slice number '%d' Min '%f' Max '%f' \n", cur_slices[i], t_slice_min_f[i], t_slice_max_f[i]); *\/ */
-  /*     /\* printf("\n"); *\/ */
-  /*   } */
-  /* For(i, n_otu - 1) */
-  /*   { */
-  /*     cur_slices_cpy[i] = cur_slices[i]; */
-  /*     cur_slices_max[i] = cur_slices[i]; */
-  /*   } */
+  t_slice_min_f    = (phydbl *)mCalloc(n_otu - 1, sizeof(phydbl));
+  t_slice_max_f    = (phydbl *)mCalloc(n_otu - 1, sizeof(phydbl));
+  For(i, n_otu - 1)
+    {
+      max = 0.0;
+      /* printf(" ['%d'] ", i + n_otu);  /\* printf(" Max value '%f' ", max); *\/ */
+      /* printf("\n. Slice number '%d' Min '%f' Max '%f' \n", cur_slices[i], t_slice_min_f[i], t_slice_max_f[i]); */
+      /* printf("\n"); */
+      For(j, 2 * n_otu - 3)
+        {
+          /* t_slice_min_f[i] = t_slice_min[7]; */
+          /* t_slice_max_f[i] = t_slice_max[7]; */
+          if(max < g_i_node[i * (2 * n_otu - 3) + j])
+            {
+              t_slice_min_f[i] = t_slice_min[j];
+              t_slice_max_f[i] = t_slice_max[j];
+              /* printf("\n. [1] Min '%f' Max '%f' \n", t_slice_min_f[i], t_slice_max_f[i]); */
+              max = g_i_node[i * (2 * n_otu - 3) + j];
+              /* printf("\n. Max value '%f' \n", max); */
+              /* printf(". '%f' ", g_i_node[i * (2 * n_otu - 3) + j]); */
+              cur_slices[i] = j;
+            }
+        }
+      /* printf(" Max value '%f' ", max); */
+      /* printf(" Slice number '%d' Min '%f' Max '%f' \n", cur_slices[i], t_slice_min_f[i], t_slice_max_f[i]); */
+      /* printf("\n"); */
+    }
+  For(i, n_otu - 1)
+    {
+      cur_slices_cpy[i]    = cur_slices[i];
+      slices_start_node[i] = cur_slices[i];
+    }
 
-  /* For(i, n_otu - 1) */
-  /*   { */
-  /*     for(j = i + 1; j < n_otu - 1; j++) */
-  /*       { */
-  /*         if(cur_slices[i] == cur_slices[j]) cur_slices[j] = -1; */
-  /*       } */
-  /*   } */
-  /* //For(i, n_otu - 1) printf(" Slice number'%d' \n", cur_slices[i]); */
+  For(i, n_otu - 1)
+    {
+      for(j = i + 1; j < n_otu - 1; j++)
+        {
+          if(cur_slices[i] == cur_slices[j]) cur_slices[j] = -1;
+        }
+    }
+  //For(i, n_otu - 1) printf(" Slice number'%d' \n", cur_slices[i]);
   
-  /* shr_num_slices = 0; */
-  /* For(i, n_otu -1) */
-  /*   { */
-  /*     if(cur_slices[i] >= 0) */
-  /*       { */
-  /*         cur_slices_shr[shr_num_slices] = cur_slices[i]; */
-  /*         shr_num_slices++; */
-  /*       } */
-  /*   } */
-  /* /\* printf("\n");  *\/ */
-  /* /\* For(i, shr_num_slices) printf("\n. Slice number'%d' \n", cur_slices_shr[i]);  *\/ */
-  /* /\* printf("\n");  *\/ */
-  /* int result_1; */
+  shr_num_slices = 0;
+  For(i, n_otu -1)
+    {
+      if(cur_slices[i] >= 0)
+        {
+          cur_slices_shr[shr_num_slices] = cur_slices[i];
+          shr_num_slices++;
+        }
+    }
+  /* printf("\n");  */
+  /* For(i, shr_num_slices) printf("\n. Slice number'%d' \n", cur_slices_shr[i]);  */
+  /* printf("\n");  */
+  int result_1;
   
-  /* result_1 = TRUE; */
+  result_1 = TRUE;
   
-  /* Check_Time_Slices(tree -> n_root, tree -> n_root -> v[1], &result_1, t_slice_min_f, t_slice_max_f, tree); */
-  /* Check_Time_Slices(tree -> n_root, tree -> n_root -> v[2], &result_1, t_slice_min_f, t_slice_max_f, tree); */
+  Check_Time_Slices(tree -> n_root, tree -> n_root -> v[1], &result_1, t_slice_min_f, t_slice_max_f, tree);
+  Check_Time_Slices(tree -> n_root, tree -> n_root -> v[2], &result_1, t_slice_min_f, t_slice_max_f, tree);
   
-  /* /\* printf("\n. Result '%d' \n", result_1); *\/ */
+  /* printf("\n. Result '%d' \n", result_1); */
 
-  /* K_total = 1.0; */
+  K_total = 0.0;
   
-  /* if(result_1 != TRUE) K_total = 0.0; */
-  /* else */
-  /*   { */
-  /*     int n_1, n_2; */
-  /*     int *root_nodes; */
-  /*     int num_elem; */
+  if(result_1 != TRUE) K_total = 0.0;
+  else
+    {
+      int n_1, n_2;
+      int *root_nodes;
+      int num_elem;
       
-  /*     num_elem = 0; */
+      num_elem = 0;
       
-  /*     root_nodes = (int *)mCalloc(n_otu - 1, sizeof(int)); */
+      root_nodes = (int *)mCalloc(n_otu - 1, sizeof(int));
       
-  /*     For(i, shr_num_slices) */
-  /*       { */
-  /*         Search_Root_Node_In_Slice(tree -> n_root, tree -> n_root -> v[1], root_nodes, &num_elem, t_slice_min[cur_slices_shr[i]], t_slice_max[cur_slices_shr[i]], t_slice_min_f, t_slice_max_f, tree); */
-  /*         Search_Root_Node_In_Slice(tree -> n_root, tree -> n_root -> v[2], root_nodes, &num_elem, t_slice_min[cur_slices_shr[i]], t_slice_max[cur_slices_shr[i]], t_slice_min_f, t_slice_max_f, tree);   /\* printf(" Max value '%f' ", max); *\/ */
-  /*     /\* printf("\n. Slice number '%d' Min '%f' Max '%f' \n", cur_slices[i], t_slice_min_f[i], t_slice_max_f[i]); *\/ */
-  /*     /\* printf("\n"); *\/ */
-  /*       } */
+      For(i, shr_num_slices)
+        {
+          Search_Root_Node_In_Slice(tree -> n_root, tree -> n_root -> v[1], root_nodes, &num_elem, t_slice_min[cur_slices_shr[i]], t_slice_max[cur_slices_shr[i]], t_slice_min_f, t_slice_max_f, tree);
+          Search_Root_Node_In_Slice(tree -> n_root, tree -> n_root -> v[2], root_nodes, &num_elem, t_slice_min[cur_slices_shr[i]], t_slice_max[cur_slices_shr[i]], t_slice_min_f, t_slice_max_f, tree);   /* printf(" Max value '%f' ", max); */
+      /* printf("\n. Slice number '%d' Min '%f' Max '%f' \n", cur_slices[i], t_slice_min_f[i], t_slice_max_f[i]); */
+      /* printf("\n"); */
+        }
  
-  /*     For(j, num_elem) */
-  /*       { */
-  /*         n_1 = 0; */
-  /*         n_2 = 0; */
-  /*         Number_Of_Nodes_In_Slice(tree -> a_nodes[root_nodes[j] + n_otu], tree -> a_nodes[root_nodes[j] + n_otu] -> v[1], &n_1, t_slice_min_f, t_slice_max_f, tree); */
-  /*         Number_Of_Nodes_In_Slice(tree -> a_nodes[root_nodes[j] + n_otu], tree -> a_nodes[root_nodes[j] + n_otu] -> v[2], &n_2, t_slice_min_f, t_slice_max_f, tree); */
-  /*         //printf("\n. n_1 [%d] n_2 [%d]\n", n_1, n_2); */
-  /*         K_total = K_total * Factorial(n_1 + n_2) / ((phydbl)Factorial(n_1 + n_2 + 1) * Factorial(n_1) * Factorial(n_2)); */
-  /*       } */
-  /*     /\* printf("\n. K_total [%f] \n", k_part);      *\/ */
+      For(j, num_elem)
+        {
+          n_1 = 0;
+          n_2 = 0;
+          Number_Of_Nodes_In_Slice(tree -> a_nodes[root_nodes[j] + n_otu], tree -> a_nodes[root_nodes[j] + n_otu] -> v[1], &n_1, t_slice_min_f, t_slice_max_f, tree);
+          Number_Of_Nodes_In_Slice(tree -> a_nodes[root_nodes[j] + n_otu], tree -> a_nodes[root_nodes[j] + n_otu] -> v[2], &n_2, t_slice_min_f, t_slice_max_f, tree);
+          /* printf("\n. n_1 [%d] n_2 [%d]\n", n_1, n_2); */
+          /* printf("\n. n_1+n_2 [%f]  n_1+n_2+1 [%f]  n_1 [%f]  n_2 [%f]\n", LOG(Factorial(n_1 + n_2)), LOG(Factorial(n_1 + n_2 + 1)), LOG(Factorial(n_1)), LOG(Factorial(n_2))); */
+          K_total = K_total + LOG(Factorial(n_1 + n_2)) - LOG(n_1 + n_2 + 1) - LOG(Factorial(n_1 + n_2)) - LOG(Factorial(n_1)) - LOG(Factorial(n_2));
+          /* K_total = K_total * (phydbl)Factorial(n_1 + n_2) / ((phydbl)Factorial(n_1 + n_2 + 1) * (phydbl)Factorial(n_1) * Factorial(n_2)); */
+          /* printf("\n. K_total [%f] \n", K_total); */
+        }
+      /* printf("\n. K_total [%f] \n", K_total); */
  
-  /*     num = 1; */
-  /*     denom = 1; */
-  /*     lmbd = 4.0; */
+ 
+      /* num = 1; */
+      /* denom = 1; */
+      num = 0.0;
+      denom = 0.0;
+      lmbd = 4.0;
 
-  /*     for(i = n_otu; i < 2 * n_otu - 2; i++) if(Are_Equal(t_prior_min[tree -> n_root -> num], t_prior_min[i], 1.E-10)) t_prior_min[i] = tree -> rates -> nd_t[tree -> n_root -> num]; */
-  /*     For(j, n_otu - 2) */
-  /*       { */
-  /*         num = num * (EXP(lmbd * t_slice_max_f[j]) - EXP(lmbd * t_slice_min_f[j])); */
-  /*       } */
-  /*      for(j = n_otu; j < 2 * n_otu - 2; j++) */
-  /*       { */
-  /*         denom = denom * (EXP(lmbd * t_prior_max[j]) - EXP(lmbd * t_prior_min[j])); */
-  /*       } */
-  /*     K_total = (K_total * num) / denom; */
-  /*     /\* printf("\n. K of the tree for one combination of slices [%f] \n", K_total); *\/ */
-  /*   } */
+      for(i = n_otu; i < 2 * n_otu - 2; i++) if(Are_Equal(t_prior_min[tree -> n_root -> num], t_prior_min[i], 1.E-10)) t_prior_min[i] = tree -> rates -> nd_t[tree -> n_root -> num];
+      For(j, n_otu - 2)
+        {
+          num = num +  LOG(EXP(lmbd * t_slice_max_f[j]) - EXP(lmbd * t_slice_min_f[j]));
+          /* printf("\n. num [%f] \n", num); */
+        }
+       for(j = n_otu; j < 2 * n_otu - 2; j++)
+        {
+          denom = denom + LOG(EXP(lmbd * t_prior_max[j]) - EXP(lmbd * t_prior_min[j]));
+          /* printf("\n. denom [%f] \n", denom); */
+        }
+       /* K_total = (K_total * num) / denom; */
+       K_total = EXP(K_total + num -  denom);
+       /* printf("\n. K of the tree for starting combination of slices [%f] \n", K_total); */
+    }
+ 
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /* printf("\n. ____________________________________________________________________________________________ \n"); */
+  phydbl K_part, K_max;
+  int m, n, count; /* count = 0; */
 
-  /* ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
-  /* /\* printf("\n. ____________________________________________________________________________________________ \n"); *\/ */
-  /* phydbl K_part, K_max; */
-  /* int m, n, count; /\* count = 0; *\/ */
-
-  /* K_max = K_total; */
-  /* do */
-  /*   { */
-  /*     count = 0; */
-  /*     For(m, n_otu - 1) */
-  /*       { */
-  /*         /\* printf("\n. NODE NUMBER ['%d'] \n", m + n_otu); *\/ */
-  /*         For(n, 2 * n_otu - 3) */
-  /*           { */
-  /*             /\* printf("\n"); *\/ */
-  /*             K_part = 1.0; */
-  /*             if(g_i_node[m * (2 * n_otu - 3) + n] > 0) */
-  /*               { */
-  /*                 t_slice_min_f[m] = t_slice_min[n]; */
-  /*                 t_slice_max_f[m] = t_slice_max[n]; */
-  /*                 cur_slices_cpy[m] = n; */
-  /*                 /\* For(i, n_otu - 1) printf(" [%d] ", cur_slices_cpy[i]); *\/ */
-  /*                 /\* printf("\n"); *\/ */
-  /*                 For(i, n_otu - 1) if(!Are_Equal(cur_slices_cpy[i], cur_slices_max[i], 1.E-10)) */
-  /*                   { */
-  /*                     /\* For(i, n_otu - 1) printf(" [%d] ", cur_slices_cpy[i]); *\/ */
-  /*                     /\* printf("\n"); *\/ */
-  /*                     /\* For(i, n_otu - 2) printf("\n. [2] Node number [%d] Min '%f' Max '%f' \n", i + n_otu, t_slice_min_f[i], t_slice_max_f[i]); *\/ */
-  /*                     For(i, n_otu - 1) cur_slices[i] = cur_slices_cpy[i]; */
-  /*                     /\* For(i, n_otu) printf("\n. [1] Slice numbers [%d] \n", cur_slices[i]); *\/ */
-  /*                     For(i, n_otu - 1) */
-  /*                       { */
-  /*                         for(j = i + 1; j < n_otu - 1; j++) */
-  /*                           { */
-  /*                             if(cur_slices[i] == cur_slices[j]) cur_slices[j] = -1; */
-  /*                           } */
-  /*                       } */
+  K_max = K_total;
+  /* printf("\n. K_total [%f] \n", K_total); */
+  do
+    {
+      count = 0;
+      For(m, n_otu - 1)
+        {
+          /* printf("\n. NODE NUMBER ['%d'] \n", m + n_otu); */
+          For(n, 2 * n_otu - 3)
+            {
+              /* printf("\n"); */
+              /* K_part = 1; */
+              K_part = 0.0;
+              if(g_i_node[m * (2 * n_otu - 3) + n] > 0)
+                {
+                  t_slice_min_f[m] = t_slice_min[n];
+                  t_slice_max_f[m] = t_slice_max[n];
+                  cur_slices_cpy[m] = n;
+                  /* For(i, n_otu - 1) printf(" [%d] ", cur_slices_cpy[i]); */
+                  /* printf("\n"); */
+                  For(i, n_otu - 1) if(!Are_Equal(cur_slices_cpy[i], slices_start_node[i], 1.E-10))
+                    {
+                      /* For(i, n_otu - 1) printf(" [%d] ", cur_slices_cpy[i]); */
+                      /* printf("\n"); */
+                      /* For(i, n_otu - 2) printf("\n. [2] Node number [%d] Min '%f' Max '%f' \n", i + n_otu, t_slice_min_f[i], t_slice_max_f[i]); */
+                      For(i, n_otu - 1) cur_slices[i] = cur_slices_cpy[i];
+                      /* For(i, n_otu) printf("\n. [1] Slice numbers [%d] \n", cur_slices[i]); */
+                      For(i, n_otu - 1)
+                        {
+                          for(j = i + 1; j < n_otu - 1; j++)
+                            {
+                              if(cur_slices[i] == cur_slices[j]) cur_slices[j] = -1;
+                            }
+                        }
                       
-  /*                     shr_num_slices = 0; */
-  /*                     For(i, n_otu -1) */
-  /*                       { */
-  /*                         if(cur_slices[i] >= 0) */
-  /*                           { */
-  /*                             cur_slices_shr[shr_num_slices] = cur_slices[i]; */
-  /*                             shr_num_slices++; */
-  /*                           } */
-  /*                       } */
-  /*                     /\* For(i, shr_num_slices) printf("\n. [2] Slice numbers [%d] \n", cur_slices_shr[i]); *\/ */
+                      shr_num_slices = 0;
+                      For(i, n_otu -1)
+                        {
+                          if(cur_slices[i] >= 0)
+                            {
+                              cur_slices_shr[shr_num_slices] = cur_slices[i];
+                              shr_num_slices++;
+                            }
+                        }
+                      /* For(i, shr_num_slices) printf("\n. [2] Slice numbers [%d] \n", cur_slices_shr[i]); */
                       
-  /*                     result_1 = TRUE; */
+                      result_1 = TRUE;
                       
-  /*                     Check_Time_Slices(tree -> n_root, tree -> n_root -> v[1], &result_1, t_slice_min_f, t_slice_max_f, tree); */
-  /*                     Check_Time_Slices(tree -> n_root, tree -> n_root -> v[2], &result_1, t_slice_min_f, t_slice_max_f, tree); */
+                      Check_Time_Slices(tree -> n_root, tree -> n_root -> v[1], &result_1, t_slice_min_f, t_slice_max_f, tree);
+                      Check_Time_Slices(tree -> n_root, tree -> n_root -> v[2], &result_1, t_slice_min_f, t_slice_max_f, tree);
                       
-  /*                     /\* printf("\n. Result '%d' \n", result_1); *\/ */
+                      /* printf("\n. Result '%d' \n", result_1); */
                       
-  /*                     if(result_1 != TRUE) K_part = 0.0; */
-  /*                     else */
-  /*                       { */
-  /*                         int n_1, n_2; */
-  /*                         int *root_nodes; */
-  /*                         int num_elem; */
+                      if(result_1 != TRUE) K_part = 0.0;
+                      else
+                        {
+                          int n_1, n_2;
+                          int *root_nodes;
+                          int num_elem;
                           
-  /*                         num_elem = 0; */
+                          num_elem = 0;
                           
-  /*                         root_nodes = (int *)mCalloc(n_otu - 1, sizeof(int)); */
+                          root_nodes = (int *)mCalloc(n_otu - 1, sizeof(int));
                           
-  /*                         For(i, shr_num_slices) */
-  /*                           { */
-  /*                             Search_Root_Node_In_Slice(tree -> n_root, tree -> n_root -> v[1], root_nodes, &num_elem, t_slice_min[cur_slices_shr[i]], t_slice_max[cur_slices_shr[i]], t_slice_min_f, t_slice_max_f, tree); */
-  /*                             Search_Root_Node_In_Slice(tree -> n_root, tree -> n_root -> v[2], root_nodes, &num_elem, t_slice_min[cur_slices_shr[i]], t_slice_max[cur_slices_shr[i]], t_slice_min_f, t_slice_max_f, tree); */
-  /*                           } */
+                          For(i, shr_num_slices)
+                            {
+                              Search_Root_Node_In_Slice(tree -> n_root, tree -> n_root -> v[1], root_nodes, &num_elem, t_slice_min[cur_slices_shr[i]], t_slice_max[cur_slices_shr[i]], t_slice_min_f, t_slice_max_f, tree);
+                              Search_Root_Node_In_Slice(tree -> n_root, tree -> n_root -> v[2], root_nodes, &num_elem, t_slice_min[cur_slices_shr[i]], t_slice_max[cur_slices_shr[i]], t_slice_min_f, t_slice_max_f, tree);
+                            }
                           
-  /*                         For(j, num_elem) */
-  /*                           { */
-  /*                             n_1 = 0; */
-  /*                             n_2 = 0; */
-  /*                             Number_Of_Nodes_In_Slice(tree -> a_nodes[root_nodes[j] + n_otu], tree -> a_nodes[root_nodes[j] + n_otu] -> v[1], &n_1, t_slice_min_f, t_slice_max_f, tree); */
-  /*                             Number_Of_Nodes_In_Slice(tree -> a_nodes[root_nodes[j] + n_otu], tree -> a_nodes[root_nodes[j] + n_otu] -> v[2], &n_2, t_slice_min_f, t_slice_max_f, tree); */
-  /*                             /\* printf("\n. n_1 [%d] n_2 [%d]\n", n_1, n_2);   *\/ */
-  /*                             K_part = K_part * Factorial(n_1 + n_2) / ((phydbl)Factorial(n_1 + n_2 + 1) * Factorial(n_1) * Factorial(n_2)); */
-  /*                           } */
-  /*                         /\* printf("\n. K_part [%f] \n", K_part);   *\/ */
+                          For(j, num_elem)
+                            {
+                              n_1 = 0;
+                              n_2 = 0;
+                              Number_Of_Nodes_In_Slice(tree -> a_nodes[root_nodes[j] + n_otu], tree -> a_nodes[root_nodes[j] + n_otu] -> v[1], &n_1, t_slice_min_f, t_slice_max_f, tree);
+                              Number_Of_Nodes_In_Slice(tree -> a_nodes[root_nodes[j] + n_otu], tree -> a_nodes[root_nodes[j] + n_otu] -> v[2], &n_2, t_slice_min_f, t_slice_max_f, tree);
+                              /* printf("\n. n_1 [%d] n_2 [%d]\n", n_1, n_2);   */
+                              /* K_part = K_part * Factorial(n_1 + n_2) / ((phydbl)Factorial(n_1 + n_2 + 1) * Factorial(n_1) * Factorial(n_2)); */
+                              K_part = K_part + LOG(Factorial(n_1 + n_2)) - LOG(n_1 + n_2 + 1) - LOG(Factorial(n_1 + n_2)) - LOG(Factorial(n_1)) - LOG(Factorial(n_2));
+                            }
+                          /* printf("\n. K_part [%f] \n", K_part);   */
                           
-  /*                         num = 1; */
-  /*                         denom = 1; */
-  /*                         lmbd = 4.0; */
+                          num = 0.0;
+                          denom = 0.0;
+                          /* num = 1; */
+                          /* denom = 1; */
+                          lmbd = 4.0;
                           
-  /*                         for(i = n_otu; i < 2 * n_otu - 2; i++) if(Are_Equal(t_prior_min[tree -> n_root -> num], t_prior_min[i], 1.E-10)) t_prior_min[i] = tree -> rates -> nd_t[tree -> n_root -> num]; */
-  /*                         For(j, n_otu - 2) */
-  /*                           { */
-  /*                             num = num * (EXP(lmbd * t_slice_max_f[j]) - EXP(lmbd * t_slice_min_f[j])); */
-  /*                           } */
-  /*                         for(j = n_otu; j < 2 * n_otu - 2; j++) */
-  /*                           { */
-  /*                             denom = denom * (EXP(lmbd * t_prior_max[j]) - EXP(lmbd * t_prior_min[j])); */
-  /*                           } */
-  /*                         K_part = (K_part * num) / denom; */
-  /*                         K_total = K_total + K_part; */
-  /*                         /\* printf("\n. K_max [%f] K_part [%f] \n", K_max, K_part); *\/ */
-  /*                         if(K_max < K_part) */
-  /*                           { */
-  /*                             K_max = K_part; */
-  /*                             For(i, n_otu - 1) cur_slices_max[i] = cur_slices_cpy[i]; */
-  /*                             count++; */
-  /*                           } */
-  /*                         /\* printf("\n. K_part [%f] \n", K_part); *\/ */
-  /*                         /\* printf("\n. K_total [%f] \n", K_total); *\/ */
-  /*                         /\* printf("\n. [1] Normolizing constant [%f] \n", 1 / K_total); *\/ */
-  /*                         /\* count++; *\/ */
-  /*                         /\* printf("\n. Count [%d] \n", count); *\/ */
-  /*                       } */
-  /*                   } */
-  /*               } */
-  /*           } */
-  /*         /\* For(i, n_otu - 1) cur_slices_max[i] = cur_slices_cpy[i]; *\/ */
-  /*         /\* printf("\n. [2] Normolizing constant [%f] \n", 1 / (K_total)); *\/ */
-  /*         /\* printf("\n. ____________________________________________________________________________________________ \n");       *\/ */
-  /*         /\* Exit("\n"); *\/ */
-  /*       } */
-  /*     if(Are_Equal(count, 0, 1.E-10)) break; */
-  /*   } */
-  /* while(1); */
-  /* /\* printf("\n. [2] Normolizing constant [%f] \n", 1 / (K_total)); *\/ */
-  /* /\* Exit("\n"); *\/ */
-  /* /\* printf("\n. ____________________________________________________________________________________________ \n"); *\/ */
+                          for(i = n_otu; i < 2 * n_otu - 2; i++) if(Are_Equal(t_prior_min[tree -> n_root -> num], t_prior_min[i], 1.E-10)) t_prior_min[i] = tree -> rates -> nd_t[tree -> n_root -> num];
+                          For(j, n_otu - 2)
+                            {
+                              num = num + LOG(EXP(lmbd * t_slice_max_f[j]) - EXP(lmbd * t_slice_min_f[j]));
+                            }
+                          for(j = n_otu; j < 2 * n_otu - 2; j++)
+                            {
+                              denom = denom + LOG(EXP(lmbd * t_prior_max[j]) - EXP(lmbd * t_prior_min[j]));
+                            }
+                          /* K_part = (K_part * num) / denom; */
+                          K_part = EXP(K_part + num - denom);
+                          K_total = K_total + K_part;
+                          /* printf("\n. K_max [%f] K_part [%f] \n", K_max, K_part); */
+                          if(K_max < K_part)
+                            {
+                              K_max = K_part;
+                              /* For(i, n_otu - 1) slices_start_node[i] = cur_slices_cpy[i]; */
+                              count++;
+                            }
+                          /* printf("\n. K_part [%f] \n", K_part); */
+                          /* printf("\n. K_total [%f] \n", K_total); */
+                          /* printf("\n. [1] Normolizing constant [%f] \n", 1 / K_total); */
+                          /* count++; */
+                          /* printf("\n"); */
+                          /* printf("\n. Count [%d] \n", count); */
+                          /* printf("\n"); */
+                        }
+                    }
+                }
+            }
+          /* For(i, n_otu - 1) slices_start_node[i] = cur_slices_cpy[i]; */
+          /* printf("\n. [2] Normolizing constant [%f] \n", 1 / (K_total)); */
+          /* printf("\n. ____________________________________________________________________________________________ \n");       */
+          /* Exit("\n"); */
+          For(i, n_otu - 1) slices_start_node[i] = cur_slices_cpy[i];
+        }
+      if(Are_Equal(count, 0, 1.E-10)) break;
+    }
+  while(1);
+  /* printf("\n. [2] Normolizing constant [%f] \n", 1 / (K_total)); */
+  /* Exit("\n"); */
+  /* printf("\n. ____________________________________________________________________________________________ \n"); */
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   
-  For(i, n_otu - 1)
-    {
-      /* printf("\n. [2] Number of slices'%d' \n", n_slice[i]); */
-      tot_num_comb = tot_num_comb * n_slice[i];
-      /* printf("\n. [2] Total number of combinations of slices [%d] \n", tot_num_comb); */
-    }
+  /* For(i, n_otu - 1) */
+  /*   { */
+  /*     /\* printf("\n. [2] Number of slices'%d' \n", n_slice[i]); *\/ */
+  /*     tot_num_comb = tot_num_comb * n_slice[i]; */
+  /*     /\* printf("\n. [2] Total number of combinations of slices [%d] \n", tot_num_comb); *\/ */
+  /*   } */
 
-  For(k, tot_num_comb)
-    {
-      shr_num_slices = 0;
-      /* printf("\n"); */
-      For(i, n_otu - 1) //node number i + n_otu
-        {
-          /* printf(" [%d] ", i + n_otu); */
-          l = (k % Number_Of_Comb_Slices(i, n_otu - 1, n_slice)) / Number_Of_Comb_Slices(i+1, n_otu - 1, n_slice); //printf(" Slice number'%d' ", slice_numbers[i * (2 * n_otu - 3) + l]);
-          t_cur_slice_min[i] = t_slice_min[slice_numbers[i * (2 * n_otu - 3) + l]]; /* printf(" '%f' ", t_cur_slice_min[i]); */
-          t_cur_slice_max[i] = t_slice_max[slice_numbers[i * (2 * n_otu - 3) + l]]; /* printf(" '%f' ", t_cur_slice_max[i]); */
-          cur_slices[i] = slice_numbers[i * (2 * n_otu - 3) + l];
-          /* printf("\n"); */
-        }
-      //printf("\n");
-      //For(i, n_otu - 1) printf(" Slice number'%d' ", cur_slices[i]);
-      //printf("\n");
+  /* For(k, tot_num_comb) */
+  /*   { */
+  /*     shr_num_slices = 0; */
+  /*     /\* printf("\n"); *\/ */
+  /*     For(i, n_otu - 1) //node number i + n_otu */
+  /*       { */
+  /*         /\* printf(" [%d] ", i + n_otu); *\/ */
+  /*         l = (k % Number_Of_Comb_Slices(i, n_otu - 1, n_slice)) / Number_Of_Comb_Slices(i+1, n_otu - 1, n_slice); //printf(" Slice number'%d' ", slice_numbers[i * (2 * n_otu - 3) + l]); */
+  /*         t_cur_slice_min[i] = t_slice_min[slice_numbers[i * (2 * n_otu - 3) + l]]; /\* printf(" '%f' ", t_cur_slice_min[i]); *\/ */
+  /*         t_cur_slice_max[i] = t_slice_max[slice_numbers[i * (2 * n_otu - 3) + l]]; /\* printf(" '%f' ", t_cur_slice_max[i]); *\/ */
+  /*         cur_slices[i] = slice_numbers[i * (2 * n_otu - 3) + l]; */
+  /*         /\* printf("\n"); *\/ */
+  /*       } */
+  /*     //printf("\n"); */
+  /*     //For(i, n_otu - 1) printf(" Slice number'%d' ", cur_slices[i]); */
+  /*     //printf("\n"); */
 
-      ///////////////////////////////////////////////////////////////////////////
-      //Taking away duplicated slices
-      For(i, n_otu - 1)
-        {
-          for(j = i + 1; j < n_otu - 1; j++)
-            {
-              if(cur_slices[i] == cur_slices[j]) cur_slices[j] = -1;
-            }
-        }
-      //For(i, n_otu - 1) printf(" Slice number'%d' \n", cur_slices[i]);
+  /*     /////////////////////////////////////////////////////////////////////////// */
+  /*     //Taking away duplicated slices */
+  /*     For(i, n_otu - 1) */
+  /*       { */
+  /*         for(j = i + 1; j < n_otu - 1; j++) */
+  /*           { */
+  /*             if(cur_slices[i] == cur_slices[j]) cur_slices[j] = -1; */
+  /*           } */
+  /*       } */
+  /*     //For(i, n_otu - 1) printf(" Slice number'%d' \n", cur_slices[i]); */
 
-      ///////////////////////////////////////////////////////////////////////////
-      //Getting a vector of all of the slices without duplicates.
-      For(i, n_otu -1)
-        {
-          if(cur_slices[i] >= 0)
-            {
-              cur_slices_shr[shr_num_slices] = cur_slices[i];
-              shr_num_slices++;
-            }
-        }
-      //printf("\n");
-      //For(i, shr_num_slices) printf("\n. Slice number'%d' \n", cur_slices_shr[i]);
-      //printf("\n");
+  /*     /////////////////////////////////////////////////////////////////////////// */
+  /*     //Getting a vector of all of the slices without duplicates. */
+  /*     For(i, n_otu -1) */
+  /*       { */
+  /*         if(cur_slices[i] >= 0) */
+  /*           { */
+  /*             cur_slices_shr[shr_num_slices] = cur_slices[i]; */
+  /*             shr_num_slices++; */
+  /*           } */
+  /*       } */
+  /*     //printf("\n"); */
+  /*     //For(i, shr_num_slices) printf("\n. Slice number'%d' \n", cur_slices_shr[i]); */
+  /*     //printf("\n"); */
 
-      ////////////////////////////////////////////////////////////////////////////
-      //Check for the time slices to be set properly
-      int result;
+  /*     //////////////////////////////////////////////////////////////////////////// */
+  /*     //Check for the time slices to be set properly */
+  /*     int result; */
 
-      result = TRUE;
+  /*     result = TRUE; */
 
-      Check_Time_Slices(tree -> n_root, tree -> n_root -> v[1], &result, t_cur_slice_min, t_cur_slice_max, tree);
-      Check_Time_Slices(tree -> n_root, tree -> n_root -> v[2], &result, t_cur_slice_min, t_cur_slice_max, tree);
-      //printf("\n. '%d' \n", result);
+  /*     Check_Time_Slices(tree -> n_root, tree -> n_root -> v[1], &result, t_cur_slice_min, t_cur_slice_max, tree); */
+  /*     Check_Time_Slices(tree -> n_root, tree -> n_root -> v[2], &result, t_cur_slice_min, t_cur_slice_max, tree); */
+  /*     //printf("\n. '%d' \n", result); */
 
-      //For(i, n_otu - 1) printf("\n. Node [%d] min [%f] max [%f] \n", i + n_otu, t_cur_slice_min[i], t_cur_slice_max[i]);
+  /*     //For(i, n_otu - 1) printf("\n. Node [%d] min [%f] max [%f] \n", i + n_otu, t_cur_slice_min[i], t_cur_slice_max[i]); */
 
-      ////////////////////////////////////////////////////////////////////////////
-      //Calculating k_part
+  /*     //////////////////////////////////////////////////////////////////////////// */
+  /*     //Calculating k_part */
 
-      k_part = 1.0;
+  /*     k_part = 1.0; */
 
-      if(result != TRUE) k_part = 0.0;
-      else
-        {
-          int n_1, n_2;
+  /*     if(result != TRUE) k_part = 0.0; */
+  /*     else */
+  /*       { */
+  /*         int n_1, n_2; */
 
-          ////////////////////////////////////////////////////////////////////////////
-          //Getting the root node in a given slice
-          int *root_nodes;
-          int num_elem;
+  /*         //////////////////////////////////////////////////////////////////////////// */
+  /*         //Getting the root node in a given slice */
+  /*         int *root_nodes; */
+  /*         int num_elem; */
            
-          num_elem = 0;
+  /*         num_elem = 0; */
            
-          root_nodes = (int *)mCalloc(n_otu - 1, sizeof(int));
+  /*         root_nodes = (int *)mCalloc(n_otu - 1, sizeof(int)); */
           
-          //printf("\n. Number of slices shrinked [%d] \n", shr_num_slices);
+  /*         //printf("\n. Number of slices shrinked [%d] \n", shr_num_slices); */
           
-          For(i, shr_num_slices)
-            {
-              //printf("\n. The number of the shrinked interval [%d] min [%f] max [%f] \n", cur_slices_shr[i], t_slice_min[cur_slices_shr[i]], t_slice_max[cur_slices_shr[i]]);
-              Search_Root_Node_In_Slice(tree -> n_root, tree -> n_root -> v[1], root_nodes, &num_elem, t_slice_min[cur_slices_shr[i]], t_slice_max[cur_slices_shr[i]], t_cur_slice_min, t_cur_slice_max, tree);
-              Search_Root_Node_In_Slice(tree -> n_root, tree -> n_root -> v[2], root_nodes, &num_elem, t_slice_min[cur_slices_shr[i]], t_slice_max[cur_slices_shr[i]], t_cur_slice_min, t_cur_slice_max, tree);
-            }
-          //printf("\n. Number of elements in a vector of the nodes [%d] \n", num_elem);
-          //For(j, num_elem) printf("\n. Root node number [%d] \n", root_nodes[j] + n_otu);
-          For(j, num_elem)
-            {
-              //printf("\n. Root node number [%d] \n", tree -> a_nodes[root_nodes[j] + n_otu] -> num);
+  /*         For(i, shr_num_slices) */
+  /*           { */
+  /*             //printf("\n. The number of the shrinked interval [%d] min [%f] max [%f] \n", cur_slices_shr[i], t_slice_min[cur_slices_shr[i]], t_slice_max[cur_slices_shr[i]]); */
+  /*             Search_Root_Node_In_Slice(tree -> n_root, tree -> n_root -> v[1], root_nodes, &num_elem, t_slice_min[cur_slices_shr[i]], t_slice_max[cur_slices_shr[i]], t_cur_slice_min, t_cur_slice_max, tree); */
+  /*             Search_Root_Node_In_Slice(tree -> n_root, tree -> n_root -> v[2], root_nodes, &num_elem, t_slice_min[cur_slices_shr[i]], t_slice_max[cur_slices_shr[i]], t_cur_slice_min, t_cur_slice_max, tree); */
+  /*           } */
+  /*         //printf("\n. Number of elements in a vector of the nodes [%d] \n", num_elem); */
+  /*         //For(j, num_elem) printf("\n. Root node number [%d] \n", root_nodes[j] + n_otu); */
+  /*         For(j, num_elem) */
+  /*           { */
+  /*             //printf("\n. Root node number [%d] \n", tree -> a_nodes[root_nodes[j] + n_otu] -> num); */
               
-              n_1 = 0;
-              n_2 = 0;
-              Number_Of_Nodes_In_Slice(tree -> a_nodes[root_nodes[j] + n_otu], tree -> a_nodes[root_nodes[j] + n_otu] -> v[1], &n_1, t_cur_slice_min, t_cur_slice_max, tree);
-              Number_Of_Nodes_In_Slice(tree -> a_nodes[root_nodes[j] + n_otu], tree -> a_nodes[root_nodes[j] + n_otu] -> v[2], &n_2, t_cur_slice_min, t_cur_slice_max, tree);
-              //printf("\n. n_1 [%d] n_2 [%d]\n", n_1, n_2);
-              k_part = k_part * Factorial(n_1 + n_2) / ((phydbl)Factorial(n_1 + n_2 + 1) * Factorial(n_1) * Factorial(n_2));
-            }
-          /* printf("\n. k_part [%f] \n", k_part);      */
-          ////////////////////////////////////////////////////////////////////////////
-          //Calculating PRODUCT over all of the time slices k_part * (exp(-lmbd*l) - exp(-lmbd*u))/(exp(-lmbd*l) - exp(-lmbd*u))
+  /*             n_1 = 0; */
+  /*             n_2 = 0; */
+  /*             Number_Of_Nodes_In_Slice(tree -> a_nodes[root_nodes[j] + n_otu], tree -> a_nodes[root_nodes[j] + n_otu] -> v[1], &n_1, t_cur_slice_min, t_cur_slice_max, tree); */
+  /*             Number_Of_Nodes_In_Slice(tree -> a_nodes[root_nodes[j] + n_otu], tree -> a_nodes[root_nodes[j] + n_otu] -> v[2], &n_2, t_cur_slice_min, t_cur_slice_max, tree); */
+  /*             //printf("\n. n_1 [%d] n_2 [%d]\n", n_1, n_2); */
+  /*             k_part = k_part * Factorial(n_1 + n_2) / ((phydbl)Factorial(n_1 + n_2 + 1) * Factorial(n_1) * Factorial(n_2)); */
+  /*           } */
+  /*         /\* printf("\n. k_part [%f] \n", k_part);      *\/ */
+  /*         //////////////////////////////////////////////////////////////////////////// */
+  /*         //Calculating PRODUCT over all of the time slices k_part * (exp(-lmbd*l) - exp(-lmbd*u))/(exp(-lmbd*l) - exp(-lmbd*u)) */
          
-          /* lmbd = tree -> rates -> birth_rate; */
-          num = 1;
-          denom = 1;
-          lmbd = 4.0;
-          for(i = n_otu; i < 2 * n_otu - 2; i++) if(Are_Equal(t_prior_min[tree -> n_root -> num], t_prior_min[i], 1.E-10)) t_prior_min[i] = tree -> rates -> nd_t[tree -> n_root -> num];
-          For(j, n_otu - 2)
-            {
-              num = num * (EXP(lmbd * t_cur_slice_max[j]) - EXP(lmbd * t_cur_slice_min[j]));
-            }
-          for(j = n_otu; j < 2 * n_otu - 2; j++)
-            {
-              denom = denom * (EXP(lmbd * t_prior_max[j]) - EXP(lmbd * t_prior_min[j]));
-            }
-           k_part = (k_part * num) / denom;
-         }
-      P = P + k_part;
-    }
-  //printf("\n. [P] of the tree for one combination of slices [%f] \n", P);
-  K = 1 / P;
+  /*         /\* lmbd = tree -> rates -> birth_rate; *\/ */
+  /*         num = 1; */
+  /*         denom = 1; */
+  /*         lmbd = 4.0; */
+  /*         for(i = n_otu; i < 2 * n_otu - 2; i++) if(Are_Equal(t_prior_min[tree -> n_root -> num], t_prior_min[i], 1.E-10)) t_prior_min[i] = tree -> rates -> nd_t[tree -> n_root -> num]; */
+  /*         For(j, n_otu - 2) */
+  /*           { */
+  /*             num = num * (EXP(lmbd * t_cur_slice_max[j]) - EXP(lmbd * t_cur_slice_min[j])); */
+  /*           } */
+  /*         for(j = n_otu; j < 2 * n_otu - 2; j++) */
+  /*           { */
+  /*             denom = denom * (EXP(lmbd * t_prior_max[j]) - EXP(lmbd * t_prior_min[j])); */
+  /*           } */
+  /*          k_part = (k_part * num) / denom; */
+  /*        } */
+  /*     P = P + k_part; */
+  /*   } */
+  /* //printf("\n. [P] of the tree for one combination of slices [%f] \n", P); */
+  /* K = 1 / P; */
   /* printf("\n. [K] of the tree for one combination of calibration [%f] \n", K); */
-  /* Exit("\n"); */
+  /* /\* Exit("\n"); *\/ */
  
   ////////////////////////////////////////////////////////////////////////////
   free(t_cur_slice_min);
   free(t_cur_slice_max);
   free(cur_slices);
   free(cur_slices_cpy);
-  free(cur_slices_max);
+  free(slices_start_node);
   free(cur_slices_shr); 
   free(t_slice);        
   free(t_slice_min);    
@@ -1395,8 +1414,8 @@ phydbl Slicing_Calibrations(t_tree *tree)
   free(g_i_node);    
   //free(tree -> K);
  
-  return(K);
-  /* return(1 / K_total); */
+  /* return(K); */
+  return(1 / K_total);
 }
 
 ////////////////////////////////////////////////////////////////////////////
