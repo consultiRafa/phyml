@@ -1004,10 +1004,22 @@ phydbl Slicing_Calibrations(t_tree *tree)
   /*       } */
   /*     printf("\n"); */
   /*   } */
+
+  /* printf("\n"); */
+  /* For(i, n_otu - 1) */
+  /*   { */
+  /*     printf(" ['%d'] ", i + n_otu); */
+  /*     For(j, n_slice[i]) */
+  /*       { */
+  /*         printf(". '%d' ", slice_numbers[i * (2 * n_otu - 3) + j]); */
+  /*       } */
+  /*     printf("\n"); */
+  /*   } */
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////CALCULATING THE MAXIMUM VALUE OF m_i * g_i FOR ONE COMBINATION OF SLICES:////////////////////////////////////////////////////////////////
   /* printf("\n"); */
+  int r;
   phydbl max, K_total;
   phydbl *t_slice_min_f, *t_slice_max_f;
  
@@ -1015,25 +1027,28 @@ phydbl Slicing_Calibrations(t_tree *tree)
   t_slice_max_f    = (phydbl *)mCalloc(n_otu - 1, sizeof(phydbl));
   For(i, n_otu - 1)
     {
-      max = 0.0;
-      /* printf(" ['%d'] ", i + n_otu);  /\* printf(" Max value '%f' ", max); *\/ */
-      /* printf("\n. Slice number '%d' Min '%f' Max '%f' \n", cur_slices[i], t_slice_min_f[i], t_slice_max_f[i]); */
-      /* printf("\n"); */
-      For(j, 2 * n_otu - 3)
-        {
-          /* t_slice_min_f[i] = t_slice_min[7]; */
-          /* t_slice_max_f[i] = t_slice_max[7]; */
-          if(max < g_i_node[i * (2 * n_otu - 3) + j])
-            {
-              t_slice_min_f[i] = t_slice_min[j];
-              t_slice_max_f[i] = t_slice_max[j];
-              /* printf("\n. [1] Min '%f' Max '%f' \n", t_slice_min_f[i], t_slice_max_f[i]); */
-              max = g_i_node[i * (2 * n_otu - 3) + j];
-              /* printf("\n. Max value '%f' \n", max); */
-              /* printf(". '%f' ", g_i_node[i * (2 * n_otu - 3) + j]); */
-              cur_slices[i] = j;
-            }
-        }
+      r = rand()%(n_slice[i]);
+      /* printf("\n. node nmb [%d] r = %d \n", i + n_otu, slice_numbers[i * (2 * n_otu - 3) + r]); */
+      t_slice_min_f[i] = t_slice_min[slice_numbers[i * (2 * n_otu - 3) + r]];
+      t_slice_max_f[i] = t_slice_max[slice_numbers[i * (2 * n_otu - 3) + r]];
+      cur_slices[i] = slice_numbers[i * (2 * n_otu - 3) + r];
+      /* max = 0.0; */
+      /* /\* printf(" ['%d'] ", i + n_otu);  /\\* printf(" Max value '%f' ", max); *\\/ *\/ */
+      /* /\* printf("\n. Slice number '%d' Min '%f' Max '%f' \n", cur_slices[i], t_slice_min_f[i], t_slice_max_f[i]); *\/ */
+      /* /\* printf("\n"); *\/ */
+      /* For(j, 2 * n_otu - 3) */
+      /*   { */
+      /*     if(max < g_i_node[i * (2 * n_otu - 3) + j]) */
+      /*       { */
+      /*         t_slice_min_f[i] = t_slice_min[j]; */
+      /*         t_slice_max_f[i] = t_slice_max[j]; */
+      /*         /\* printf("\n. [1] Min '%f' Max '%f' \n", t_slice_min_f[i], t_slice_max_f[i]); *\/ */
+      /*         max = g_i_node[i * (2 * n_otu - 3) + j]; */
+      /*         /\* printf("\n. Max value '%f' \n", max); *\/ */
+      /*         /\* printf(". '%f' ", g_i_node[i * (2 * n_otu - 3) + j]); *\/ */
+      /*         cur_slices[i] = j; */
+      /*       } */
+      /*   } */
       /* printf(" Max value '%f' ", max); */
       /* printf(" Slice number '%d' Min '%f' Max '%f' \n", cur_slices[i], t_slice_min_f[i], t_slice_max_f[i]); */
       /* printf("\n"); */
@@ -1103,8 +1118,9 @@ phydbl Slicing_Calibrations(t_tree *tree)
           Number_Of_Nodes_In_Slice(tree -> a_nodes[root_nodes[j] + n_otu], tree -> a_nodes[root_nodes[j] + n_otu] -> v[2], &n_2, t_slice_min_f, t_slice_max_f, tree);
           /* printf("\n. n_1 [%d] n_2 [%d]\n", n_1, n_2); */
           /* printf("\n. n_1+n_2 [%f]  n_1+n_2+1 [%f]  n_1 [%f]  n_2 [%f]\n", LOG(Factorial(n_1 + n_2)), LOG(Factorial(n_1 + n_2 + 1)), LOG(Factorial(n_1)), LOG(Factorial(n_2))); */
-          K_total = K_total + LOG(Factorial(n_1 + n_2)) - LOG(n_1 + n_2 + 1) - LOG(Factorial(n_1 + n_2)) - LOG(Factorial(n_1)) - LOG(Factorial(n_2));
+          /* K_total = K_total + LOG(Factorial(n_1 + n_2)) - LOG(n_1 + n_2 + 1) - LOG(Factorial(n_1 + n_2)) - LOG(Factorial(n_1)) - LOG(Factorial(n_2)); */
           /* K_total = K_total * (phydbl)Factorial(n_1 + n_2) / ((phydbl)Factorial(n_1 + n_2 + 1) * (phydbl)Factorial(n_1) * Factorial(n_2)); */
+          K_total = K_total + LOG(1) - LOG(n_1 + n_2 + 1) - LOG(Factorial(n_1)) - LOG(Factorial(n_2));
           /* printf("\n. K_total [%f] \n", K_total); */
         }
       /* printf("\n. K_total [%f] \n", K_total); */
@@ -1215,7 +1231,8 @@ phydbl Slicing_Calibrations(t_tree *tree)
                               Number_Of_Nodes_In_Slice(tree -> a_nodes[root_nodes[j] + n_otu], tree -> a_nodes[root_nodes[j] + n_otu] -> v[2], &n_2, t_slice_min_f, t_slice_max_f, tree);
                               /* printf("\n. n_1 [%d] n_2 [%d]\n", n_1, n_2);   */
                               /* K_part = K_part * Factorial(n_1 + n_2) / ((phydbl)Factorial(n_1 + n_2 + 1) * Factorial(n_1) * Factorial(n_2)); */
-                              K_part = K_part + LOG(Factorial(n_1 + n_2)) - LOG(n_1 + n_2 + 1) - LOG(Factorial(n_1 + n_2)) - LOG(Factorial(n_1)) - LOG(Factorial(n_2));
+                              /* K_part = K_part + LOG(Factorial(n_1 + n_2)) - LOG(n_1 + n_2 + 1) - LOG(Factorial(n_1 + n_2)) - LOG(Factorial(n_1)) - LOG(Factorial(n_2)); */
+                              K_part = K_part + LOG(1) - LOG(n_1 + n_2 + 1) - LOG(Factorial(n_1)) - LOG(Factorial(n_2));
                             }
                           /* printf("\n. K_part [%f] \n", K_part);   */
                           
@@ -1264,6 +1281,7 @@ phydbl Slicing_Calibrations(t_tree *tree)
       if(Are_Equal(count, 0, 1.E-10)) break;
     }
   while(1);
+  
   /* printf("\n. [2] Normolizing constant [%f] \n", 1 / (K_total)); */
   /* Exit("\n"); */
   /* printf("\n. ____________________________________________________________________________________________ \n"); */
