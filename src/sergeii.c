@@ -87,7 +87,7 @@ void PhyTime_XML(char *xml_file)
   n_t = XML_Search_Node_Name("topology", YES, n_r);
 
   //setting tree:
-  tree        = (t_tree *)mCalloc(1,sizeof(t_tree));
+  /* tree        = (t_tree *)mCalloc(1,sizeof(t_tree)); */
   n_cur = XML_Search_Node_Name("instance", YES, n_t);
   if(n_cur != NULL)
     {
@@ -159,11 +159,11 @@ void PhyTime_XML(char *xml_file)
  
   //memory for clade:
   clade_name = (char *)mCalloc(T_MAX_NAME,sizeof(char));
-  clade = (char **)mCalloc(tree -> n_otu, sizeof(char *));
-  For(i, tree -> n_otu)
-    {
-      clade[i] = (char *)mCalloc(T_MAX_NAME,sizeof(char));
-    }
+  /* clade = (char **)mCalloc(tree -> n_otu, sizeof(char *)); */
+  /* For(i, tree -> n_otu) */
+  /*   { */
+  /*     clade[i] = (char *)mCalloc(T_MAX_NAME,sizeof(char)); */
+  /*   } */
 
   //memory for list of clades to be monitored
   mon_list = (char **)mCalloc(T_MAX_FILE,sizeof(char *));
@@ -240,17 +240,21 @@ void PhyTime_XML(char *xml_file)
 		PhyML_Printf("\n== Please, include this information as an attribute of component <%s>. \n", n_r -> name);
 		Exit("\n");
 	  }	
-	  if(!strcmp(To_Upper_String(n_r -> attr -> value), "NT")) 
+          char *s;
+          s = To_Upper_String(n_r -> attr -> value);
+	  /* if(!strcmp(To_Upper_String(n_r -> attr -> value), "NT")) */
+          if(!strcmp(s, "NT"))
 	    {
 	      io -> datatype = 0;
 	      io -> mod -> ns = 4;
 	    }
- 	  if(!strcmp(To_Upper_String(n_r -> attr -> value), "AA")) 
+ 	  /* if(!strcmp(To_Upper_String(n_r -> attr -> value), "AA")) */
+          if(!strcmp(s, "AA"))
 	    {
 	      io -> datatype = 1;
 	      io -> mod -> ns = 20;
 	    }
-
+          free(s);
 	  n_cur = XML_Search_Node_Name("instance", YES, n_r);
 	  if(n_cur != NULL)
 	    {
@@ -263,19 +267,23 @@ void PhyTime_XML(char *xml_file)
 		}
 	    }
 	  else
-	    {	
+	    {
+              char *s;	
 	      i = 0;
+              s = To_Upper_String(n_r -> child -> value);
 	      do
 		{
                   strcpy(io -> in_align_file, "sergeii"); 
 		  strcpy(io -> data[i] -> name, n_r -> child -> attr -> value);
-		  strcpy(io -> data[i] -> state, To_Upper_String(n_r -> child -> value));
+		  /* strcpy(io -> data[i] -> state, To_Upper_String(n_r -> child -> value)); */
+                  strcpy(io -> data[i] -> state, s);
 		  i++;
 		  if(n_r -> child -> next) n_r -> child = n_r -> child -> next;
 		  else break;
 		}
 	      while(n_r -> child);
 	      n_taxa = i;
+              free(s);
 	    }
 
 	  //checking if a sequences of the same lengths:
@@ -584,7 +592,11 @@ void PhyTime_XML(char *xml_file)
   tree -> write_br_lens = NO;	
 									
   PhyML_Printf("\n. Input tree with calibration information ('almost' compatible with MCMCtree).\n");
-  PhyML_Printf("\n. %s \n", Write_Tree(tree, YES));
+
+  char *t;
+  t =  Write_Tree(tree, YES);
+  PhyML_Printf("\n. %s \n", t);
+  free(t);
 
   tree -> write_br_lens = YES;
 
@@ -638,6 +650,7 @@ void PhyTime_XML(char *xml_file)
       tree -> io -> lk_approx = NORMAL;															
       For(i,2 * tree -> n_otu - 3) tree -> rates -> u_cur_l[i] = tree -> rates -> mean_l[i] ;				
       tree -> c_lnL = Lk(NULL,tree);
+
       PhyML_Printf("\n. p(data|model) [approx] ~ %.2f",tree -> c_lnL);
 
       tree -> io -> lk_approx = user_lk_approx;	
@@ -682,6 +695,7 @@ void PhyTime_XML(char *xml_file)
   Free_Tree_Lk(tree);
   Free_Tree(tree);
   Free_Cseq(cdata);
+  free(cdata);
   Free_Model(mod);
   if(io -> fp_in_align)   fclose(io -> fp_in_align);
   if(io -> fp_in_tree)    fclose(io -> fp_in_tree);
@@ -1083,6 +1097,8 @@ phydbl Slicing_Calibrations(t_tree *tree)
   /* For(i, shr_num_slices) printf("\n. Slice number'%d' \n", cur_slices_shr[i]);  */
   /* printf("\n");  */
   int result_1;
+  int *root_nodes;
+  root_nodes = (int *)mCalloc(n_otu - 1, sizeof(int));
   
   result_1 = TRUE;
   
@@ -1097,12 +1113,12 @@ phydbl Slicing_Calibrations(t_tree *tree)
   else
     {
       int n_1, n_2;
-      int *root_nodes;
+      /* int *root_nodes; */
       int num_elem;
       
       num_elem = 0;
       
-      root_nodes = (int *)mCalloc(n_otu - 1, sizeof(int));
+      /* root_nodes = (int *)mCalloc(n_otu - 1, sizeof(int)); */
       
       For(i, shr_num_slices)
         {
@@ -1212,12 +1228,12 @@ phydbl Slicing_Calibrations(t_tree *tree)
                       else
                         {
                           int n_1, n_2;
-                          int *root_nodes;
+                          /* int *root_nodes; */
                           int num_elem;
                           
                           num_elem = 0;
                           
-                          root_nodes = (int *)mCalloc(n_otu - 1, sizeof(int));
+                          /* root_nodes = (int *)mCalloc(n_otu - 1, sizeof(int)); */
                           
                           For(i, shr_num_slices)
                             {
@@ -1429,9 +1445,12 @@ phydbl Slicing_Calibrations(t_tree *tree)
   free(cur_slices_shr); 
   free(t_slice);        
   free(t_slice_min);    
-  free(t_slice_max);    
+  free(t_slice_max); 
+  free(t_slice_min_f);    
+  free(t_slice_max_f);     
   free(indic);          
-  free(slice_numbers);  
+  free(slice_numbers); 
+  free(root_nodes);   
   free(n_slice);
   free(g_i_node);    
   //free(tree -> K);
@@ -2193,13 +2212,18 @@ xml_node *XML_Search_Node_Attribute_Value_Clade(char *attr_name, char *value, in
 //////////////////////////////////////////////////////////////
 char **XML_Reading_Clade(xml_node *n_clade, t_tree *tree)
 {
-  int i, n_otu;
+  int i, /* j, */ n_otu;
   char **clade;
 
   i = 0;
   n_otu = tree -> n_otu;
 
   clade = (char **)mCalloc(n_otu, sizeof(char *));
+  /* For(j, n_otu) */
+  /*   { */
+  /*     clade[j] = (char *)mCalloc(T_MAX_NAME,sizeof(char)); */
+  /*   } */
+
   if(n_clade)
     {
       do
