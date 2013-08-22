@@ -1018,6 +1018,8 @@ phydbl Slicing_Calibrations(t_tree *tree)
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////CALCULATING THE MAXIMUM VALUE OF m_i * g_i FOR ONE COMBINATION OF SLICES:////////////////////////////////////////////////////////////////
+  /*   int q; */
+  /* For(q, 3){ */
   /* printf("\n"); */
   int r;
   phydbl max, K_total;
@@ -1130,7 +1132,7 @@ phydbl Slicing_Calibrations(t_tree *tree)
       /* denom = 1; */
       num = 0.0;
       denom = 0.0;
-      lmbd = 4.0;
+      /* lmbd = 4.0; */
 
       for(i = n_otu; i < 2 * n_otu - 2; i++) if(Are_Equal(t_prior_min[tree -> n_root -> num], t_prior_min[i], 1.E-10)) t_prior_min[i] = tree -> rates -> nd_t[tree -> n_root -> num];
       For(j, n_otu - 2)
@@ -1240,7 +1242,7 @@ phydbl Slicing_Calibrations(t_tree *tree)
                           denom = 0.0;
                           /* num = 1; */
                           /* denom = 1; */
-                          lmbd = 4.0;
+                          /* lmbd = 4.0; */
                           
                           for(i = n_otu; i < 2 * n_otu - 2; i++) if(Are_Equal(t_prior_min[tree -> n_root -> num], t_prior_min[i], 1.E-10)) t_prior_min[i] = tree -> rates -> nd_t[tree -> n_root -> num];
                           For(j, n_otu - 2)
@@ -1282,9 +1284,11 @@ phydbl Slicing_Calibrations(t_tree *tree)
     }
   while(1);
   
-  /* printf("\n. [2] Normolizing constant [%f] \n", 1 / (K_total)); */
+  /* printf("\n. [%d] Normolizing constant [%f] \n", q+1, 1 / (K_total)); */
+  /* printf("\n. Normolizing constant [%f] \n", 1 / (K_total)); */
   /* Exit("\n"); */
   /* printf("\n. ____________________________________________________________________________________________ \n"); */
+  /* } */
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1397,7 +1401,7 @@ phydbl Slicing_Calibrations(t_tree *tree)
   /*         /\* lmbd = tree -> rates -> birth_rate; *\/ */
   /*         num = 1; */
   /*         denom = 1; */
-  /*         lmbd = 4.0; */
+  /* //lmbd = 4.0;  */
   /*         for(i = n_otu; i < 2 * n_otu - 2; i++) if(Are_Equal(t_prior_min[tree -> n_root -> num], t_prior_min[i], 1.E-10)) t_prior_min[i] = tree -> rates -> nd_t[tree -> n_root -> num]; */
   /*         For(j, n_otu - 2) */
   /*           { */
