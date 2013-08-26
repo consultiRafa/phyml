@@ -815,7 +815,7 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
   /* For(i, tot_num_comb) if(Yule_val[i] < min_value && Yule_val[i] > -INFINITY) min_value = Yule_val[i]; */
   /* c = -600. - min_value;   */
 
-  Exit("\n");
+  /* Exit("\n"); */
   c = .0;
   times_tot_proba = 0.0;
   For(i, tot_num_comb)
@@ -1098,7 +1098,7 @@ phydbl Slicing_Calibrations(t_tree *tree)
   /* printf("\n");  */
   int result_1;
   int *root_nodes;
-  phydbl n1, n2;
+  /* phydbl n1, n2; */
 
   root_nodes = (int *)mCalloc(n_otu - 1, sizeof(int));
   
@@ -1134,8 +1134,8 @@ phydbl Slicing_Calibrations(t_tree *tree)
         {
           n_1 = 0;
           n_2 = 0;
-          n1 = 0.0;
-          n2 = 0.0;
+          /* n1 = 0.0; */
+          /* n2 = 0.0; */
           Number_Of_Nodes_In_Slice(tree -> a_nodes[root_nodes[j] + n_otu], tree -> a_nodes[root_nodes[j] + n_otu] -> v[1], &n_1, t_slice_min_f, t_slice_max_f, tree);
           Number_Of_Nodes_In_Slice(tree -> a_nodes[root_nodes[j] + n_otu], tree -> a_nodes[root_nodes[j] + n_otu] -> v[2], &n_2, t_slice_min_f, t_slice_max_f, tree);
           /* printf("\n. n_1 [%d] n_2 [%d]\n", n_1, n_2); */
@@ -1143,9 +1143,10 @@ phydbl Slicing_Calibrations(t_tree *tree)
           /* K_total = K_total + LOG(Factorial(n_1 + n_2)) - LOG(n_1 + n_2 + 1) - LOG(Factorial(n_1 + n_2)) - LOG(Factorial(n_1)) - LOG(Factorial(n_2)); */
           /* K_total = K_total * (phydbl)Factorial(n_1 + n_2) / ((phydbl)Factorial(n_1 + n_2 + 1) * (phydbl)Factorial(n_1) * Factorial(n_2)); */
           /* K_total = K_total + LOG(1) - LOG(n_1 + n_2 + 1) - LOG(Factorial(n_1)) - LOG(Factorial(n_2)); */
-          for(i = 1; i < n_1 +1; i++) n1 = n1 + LOG(i);
-          for(i = 1; i < n_2 +1; i++) n2 = n2 + LOG(i);
-          K_total = K_total + LOG(1) - LOG(n_1 + n_2 + 1) - n1 - n2;
+          K_total = K_total + LOG(1) - LOG(n_1 + n_2 + 1) - LnGamma(n_1 + 1) - LnGamma(n_2 + 1);
+          /* for(i = 1; i < n_1 +1; i++) n1 = n1 + LOG(i); */
+          /* for(i = 1; i < n_2 +1; i++) n2 = n2 + LOG(i); */
+          /* K_total = K_total + LOG(1) - LOG(n_1 + n_2 + 1) - n1 - n2; */
           /* printf("\n. K_total [%f] \n", K_total); */
         }
       /* printf("\n. K_total [%f] \n", K_total); */
@@ -1252,17 +1253,19 @@ phydbl Slicing_Calibrations(t_tree *tree)
                             {
                               n_1 = 0;
                               n_2 = 0;
-                              n1 = 0.0;
-                              n2 = 0.0;
+                              /* n1 = 0.0; */
+                              /* n2 = 0.0; */
                               Number_Of_Nodes_In_Slice(tree -> a_nodes[root_nodes[j] + n_otu], tree -> a_nodes[root_nodes[j] + n_otu] -> v[1], &n_1, t_slice_min_f, t_slice_max_f, tree);
                               Number_Of_Nodes_In_Slice(tree -> a_nodes[root_nodes[j] + n_otu], tree -> a_nodes[root_nodes[j] + n_otu] -> v[2], &n_2, t_slice_min_f, t_slice_max_f, tree);
                               /* printf("\n. n_1 [%d] n_2 [%d]\n", n_1, n_2); */
                               /* K_part = K_part * Factorial(n_1 + n_2) / ((phydbl)Factorial(n_1 + n_2 + 1) * Factorial(n_1) * Factorial(n_2)); */
                               /* K_part = K_part + LOG(Factorial(n_1 + n_2)) - LOG(n_1 + n_2 + 1) - LOG(Factorial(n_1 + n_2)) - LOG(Factorial(n_1)) - LOG(Factorial(n_2)); */
                               /* K_part = K_part + LOG(1) - LOG(n_1 + n_2 + 1) - LOG(Factorial(n_1)) - LOG(Factorial(n_2)); */
-                              for(i = 1; i < n_1 +1; i++) n1 = n1 + LOG(i);
-                              for(i = 1; i < n_2 +1; i++) n2 = n2 + LOG(i);
-                              K_total = K_total + LOG(1) - LOG(n_1 + n_2 + 1) - n1 - n2;
+                              K_part = K_part + LOG(1) - LOG(n_1 + n_2 + 1) - LnGamma(n_1 + 1) - LnGamma(n_2 + 1);
+                              /* for(i = 1; i < n_1 +1; i++) n1 = n1 + LOG(i); */
+                              /* for(i = 1; i < n_2 +1; i++) n2 = n2 + LOG(i); */
+                              /* K_total = K_total + LOG(1) - LOG(n_1 + n_2 + 1) - n1 - n2; */
+                              /* K_total = K_total + LOG(1) - LOG(n_1 + n_2 + 1) - LnGamma(n_1 + 1) - LnGamma(n_2 + 1); */
                             }
                           /* printf("\n. K_part [%f] \n", K_part);   */
                           
@@ -1313,10 +1316,13 @@ phydbl Slicing_Calibrations(t_tree *tree)
   while(1);
   
   /* printf("\n. [%d] Normolizing constant [%f] \n", q+1, 1 / (K_total)); */
-  printf("\n. Normolizing constant [%f] \n", 1 / (K_total));
+  /* printf("\n. Normolizing constant [%f] \n", 1 / (K_total)); */
   /* Exit("\n"); */
   /* printf("\n. ____________________________________________________________________________________________ \n"); */
   /* } */
+  /* n1 = 6; */
+  /* printf("\n. LogOfFact %f \n", LOG(Factorial(n1))); */
+  /* printf("\n. LnGamma %f \n", LnGamma(n1+1)); */
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
