@@ -3786,10 +3786,15 @@ int Set_Whichmodel(int select)
       }
     case 24:
       {
-	wm = CUSTOMAA;
+	wm = FLU;
 	break;
       }
     case 25:
+      {
+	wm = CUSTOMAA;
+	break;
+      }
+    case 26:
       {
 	wm = LG;
 	break;
@@ -5535,8 +5540,9 @@ void Make_Ratematrice_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
                                  "MTART",    //21
                                  "HIVW",     //22
                                  "HIVB",     //23
-                                 "CUSTOMAA", //24
-                                 "LG");      //25
+                                 "FLU",      //24
+                                 "CUSTOMAA", //25
+                                 "LG");      //26
   
   if(select < 9)
     {

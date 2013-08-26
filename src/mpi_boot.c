@@ -325,7 +325,7 @@ fflush(stderr);
 fflush(stdout);
 #endif
 
-      if(boot_tree->mat) Free_Mat(boot_tree->mat);
+      /* if(boot_tree->mat) Free_Mat(boot_tree->mat); */
       Free_Tree(boot_tree);      
       Free_Model(boot_mod);
 

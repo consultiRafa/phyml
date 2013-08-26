@@ -4602,6 +4602,22 @@ phydbl Weighted_Mean(phydbl *x, phydbl *w, int l)
   return(wm);
 }
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+int Sum_Bits(int value)
+{
+  int i;
+  int sum;
+
+  sum = 0;
+  For(i,8)
+    {
+      sum += (value >> i) & 1;
+    }
+
+  return(sum);
+}
 
 
 

@@ -190,6 +190,7 @@ int main(int argc, char **argv)
 		      MIXT_Set_Alias_Subpatt(NO,tree);
 		    }
 
+
 		  if(tree->mod->s_opt->opt_topo)
 		    {
 		      if(tree->mod->s_opt->topo_search      == NNI_MOVE) Simu_Loop(tree);
@@ -205,7 +206,12 @@ int main(int argc, char **argv)
 		      else                                               Lk(NULL,tree);
 		    }
 
+
+                  /* Build_Distrib_Number_Of_Diff_States_Under_Model(tree); */
+                  /* Exit("\n"); */
+
                   if(tree->mod->gamma_mgf_bl) Optimum_Root_Position_IL_Model(tree);
+
 
                   Set_Both_Sides(YES,tree);
 		  Lk(NULL,tree);

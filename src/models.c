@@ -761,7 +761,7 @@ void Update_RAS(t_mod *mod)
   else
     {
 
-#if (!defined PHYML)
+#if (defined PHYTIME)
 
       Qksort(mod->ras->gamma_r_proba_unscaled->v,NULL,0,mod->ras->n_catg-1); // Unscaled class frequencies sorted in increasing order
 
@@ -813,7 +813,8 @@ void Update_RAS(t_mod *mod)
 
       /* printf("\n"); */
       /* For(i,mod->ras->n_catg) */
-      /*   printf("\nx %12f %12f xx %12f %12f", */
+      /*   printf("\nx %3d %12f %12f xx %12f %12f", */
+      /*          mod->ras->normalise_rr, */
       /*          mod->ras->gamma_r_proba->v[i], */
       /*          mod->ras->gamma_rr->v[i], */
       /*          mod->ras->gamma_r_proba_unscaled->v[i], */
@@ -829,6 +830,7 @@ void Update_Efrq(t_mod *mod)
 {
   phydbl sum;
   int i;
+  
 
   if((mod->io->datatype == NT) && (mod->s_opt->opt_state_freq))
     {
@@ -849,9 +851,6 @@ void Update_Efrq(t_mod *mod)
 	}
       while((sum > 1.01) || (sum < 0.99));
     }
-  
-  
-
 }
 
 //////////////////////////////////////////////////////////////

@@ -207,8 +207,9 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define MTART     21
 #define HIVW      22
 #define HIVB      23
-#define CUSTOMAA  24
-#define LG        25
+#define FLU       24
+#define CUSTOMAA  25
+#define LG        26
 
 // Amino acid ordering:
 // Ala Arg Asn Asp Cys Gln Glu Gly His Ile Leu Lys Met Phe Pro Ser Thr Trp Tyr Val
@@ -471,7 +472,9 @@ typedef struct __Edge {
   char                           **labels; /*! string of characters that labels the corresponding t_edge */
   int                            n_labels; /*! number of labels */
   int                             n_jumps; /*! number of jumps of substitution rates */
-
+  
+  int                    *n_diff_states_l; /*! Number of different states found in the subtree on the left of this edge */
+  int                    *n_diff_states_r; /*! Number of different states found in the subtree on the right of this edge */
 
   phydbl                      bin_cod_num;
 }t_edge;
@@ -1748,6 +1751,12 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
 void Optimum_Root_Position_IL_Model(t_tree *tree);
 void Set_Br_Len_Var(t_tree *tree);
 void Check_Br_Lens(t_tree *tree);
+void Calculate_Number_Of_Diff_States_Post(t_node *a, t_node *d, t_edge *b, t_tree *tree);
+void Calculate_Number_Of_Diff_States_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree);
+void Calculate_Number_Of_Diff_States_Core(t_node *a, t_node *d, t_edge *b, t_tree *tree);
+void Calculate_Number_Of_Diff_States(t_tree *tree);
+void Build_Distrib_Number_Of_Diff_States_Under_Model(t_tree *tree);
+
 
 #include "xml.h"
 #include "free.h"

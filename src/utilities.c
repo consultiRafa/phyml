@@ -2756,7 +2756,6 @@ void Clean_Tree_Connections(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Bootstrap(t_tree *tree)
 {
   int *site_num, n_site;
@@ -3374,13 +3373,14 @@ void Record_Model(t_mod *ori, t_mod *cpy)
 {
   int i;
   
-  cpy->ns          = ori->ns;
-  cpy->ras->n_catg = ori->ras->n_catg;
+  cpy->ns                   = ori->ns;
+  cpy->ras->n_catg          = ori->ras->n_catg;
+  cpy->ras->normalise_rr    = ori->ras->normalise_rr;
   
   cpy->kappa->v             = ori->kappa->v;
   cpy->ras->alpha->v        = ori->ras->alpha->v;
   cpy->lambda->v            = ori->lambda->v;
-  cpy->ras->pinvar->v            = ori->ras->pinvar->v;
+  cpy->ras->pinvar->v       = ori->ras->pinvar->v;
   cpy->br_len_multiplier->v = ori->br_len_multiplier->v;
 
   strcpy(cpy->modelname->s,ori->modelname->s);
@@ -6759,7 +6759,7 @@ void Evolve(calign *data, t_mod *mod, t_tree *tree)
   int root_state, root_rate_class;
   int site,i;
   phydbl *orig_l;
-  phydbl shape,scale,var,mean;
+  /* phydbl shape,scale,var,mean; */
 
   orig_l = (phydbl *)mCalloc(2*tree->n_otu-3,sizeof(phydbl));
   For(i,2*tree->n_otu-3) orig_l[i] = tree->a_edges[i]->l->v;
@@ -6771,36 +6771,39 @@ void Evolve(calign *data, t_mod *mod, t_tree *tree)
 
   For(site,data->init_len)
     {
-      /* Get the change probability matrices */
-      For(i,2*tree->n_otu-3)        
-        {
-          /* var   = mod->l_var ; */
 
-          /* shape = POW(MAX(orig_l[i],1.E-6),2) / var; */
-          /* scale = var / MAX(orig_l[i],1.E-6); */
+      /* /\* Get the change probability matrices *\/ */
+      /* For(i,2*tree->n_otu-3)         */
+      /*   { */
+      /*     /\* var   = mod->l_var ; *\/ */
 
-          /* tree->a_edges[i]->l->v = Rgamma(shape,scale); */
+      /*     /\* shape = POW(MAX(orig_l[i],1.E-6),2) / var; *\/ */
+      /*     /\* scale = var / MAX(orig_l[i],1.E-6); *\/ */
 
-          var   = mod->l_var_sigma;
-          mean  = 1.0;
+      /*     /\* tree->a_edges[i]->l->v = Rgamma(shape,scale); *\/ */
+
+      /*     var   = mod->l_var_sigma; */
+      /*     mean  = 1.0; */
           
-          shape = mean * mean / var;
-          scale = var / mean;
+      /*     shape = mean * mean / var; */
+      /*     scale = var / mean; */
           
-          tree->a_edges[i]->l->v = orig_l[i] * Rgamma(shape,scale);
-        }
-
+      /*     tree->a_edges[i]->l->v = orig_l[i] * Rgamma(shape,scale); */
+      /*   } */
+      
       Set_Model_Parameters(mod);      
       For(i,2*tree->n_otu-3) Update_PMat_At_Given_Edge(tree->a_edges[i],tree);
-
+      
       root_state = root_rate_class = -1;
 
       /* Pick the root nucleotide/aa */
       root_state = Pick_State(mod->ns,mod->e_frq->pi->v);
       data->c_seq[0]->state[site] = Reciproc_Assign_State(root_state,tree->io->datatype);
 
+
       /* Pick the rate class */
       root_rate_class = Pick_State(mod->ras->n_catg,mod->ras->gamma_r_proba->v);
+
 
       /* tree->a_nodes[0] is considered as the root t_node */
       Evolve_Recur(tree->a_nodes[0],
@@ -6818,12 +6821,11 @@ void Evolve(calign *data, t_mod *mod, t_tree *tree)
       data->wght[site] = 1;
     }
   data->crunch_len = data->init_len;
-  Print_CSeq(stdout,NO,data);
+  /* Print_CSeq(stdout,NO,data); */
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 int Pick_State(int n, phydbl *prob)
 {
@@ -6856,8 +6858,14 @@ void Evolve_Recur(t_node *a, t_node *d, t_edge *b, int a_state, int r_class, int
   dim2 = tree->mod->ns;
 
   d_state = Pick_State(mod->ns,b->Pij_rr+r_class*dim1+a_state*dim2);
+
+  /* printf("\n. %f %f %f %f", */
+  /*        b->Pij_rr[r_class*dim1+a_state*dim2+0], */
+  /*        b->Pij_rr[r_class*dim1+a_state*dim2+1], */
+  /*        b->Pij_rr[r_class*dim1+a_state*dim2+2], */
+  /*        b->Pij_rr[r_class*dim1+a_state*dim2+3]); */
   
-/*   PhyML_Printf("\n>> %c (%d,%d)",Reciproc_Assign_State(d_state,mod->io->datatype),d_state,(int)d_state/mod->m4mod->n_o); */
+  /* PhyML_Printf("\n>> %c (%d,%d)",Reciproc_Assign_State(d_state,mod->io->datatype),d_state,(int)d_state/mod->m4mod->n_o); */
 
   if(mod->use_m4mod) 
     {
@@ -7508,7 +7516,6 @@ char *Bootstrap_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
   Make_Spr_List(tree);
   Make_Best_Spr(tree);
 
-
   Set_Both_Sides(YES,tree);
   Lk(NULL,tree);
 
@@ -7662,7 +7669,7 @@ void Dist_To_Root_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
   int i;
 
   if(b) d->dist_to_root = a->dist_to_root + b->l->v;
-  /* if(b) d->dist_to_root = a->dist_to_root + tree->rates->cur_l[d->num]; */
+
 
   if(d->tax) return;
   else
@@ -10208,14 +10215,252 @@ void Check_Br_Lens(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
+void Build_Distrib_Number_Of_Diff_States_Under_Model(t_tree *tree)
+{
+  calign *orig_data;
+  t_mod *orig_mod;
+  int iter,n_iter_tot,i,j;
+  phydbl *n_diff_states_all_l,*n_diff_states_all_r;
+
+
+  Calculate_Number_Of_Diff_States(tree);
+  
+  printf("\n TRUE     edge    side    states val");
+  For(i,2*tree->n_otu-3)
+    {
+      if(tree->a_edges[i]->left->tax == NO && tree->a_edges[i]->rght->tax == NO)
+        {
+          For(j,tree->mod->ns)
+            {
+              printf("\n TRUE %3d 0 %3d %d",
+                     i,
+                     j+1,
+                     tree->a_edges[i]->n_diff_states_l[j]);
+
+              printf("\n TRUE %3d 1 %3d %d",
+                     i,
+                     j+1,
+                     tree->a_edges[i]->n_diff_states_r[j]);
+            }
+        }
+    }
+
+
+
+  n_iter_tot = 100;
+
+  n_diff_states_all_l = (phydbl *)mCalloc((n_iter_tot) * (tree->mod->ns) * (2*tree->n_otu-3) * 2, sizeof(phydbl));
+  n_diff_states_all_r = (phydbl *)mCalloc((n_iter_tot) * (tree->mod->ns) * (2*tree->n_otu-3) * 2, sizeof(phydbl));
+
+  orig_mod  = Copy_Model(tree->mod);
+  orig_data = Copy_Cseq(tree->data,tree->io);
+
+  orig_mod->io = tree->io;
+  orig_mod->s_opt = tree->mod->s_opt;
+
+  iter = 0;
+
+  do
+    {
+      Evolve(tree->data,tree->mod,tree);
+
+      Calculate_Number_Of_Diff_States(tree);
+
+
+      For(i,2*tree->n_otu-3)
+        {
+          For(j,tree->mod->ns)
+            {
+              n_diff_states_all_l[j*(2*tree->n_otu-3)*(n_iter_tot) + i*(n_iter_tot) + iter] = tree->a_edges[i]->n_diff_states_l[j];
+              n_diff_states_all_r[j*(2*tree->n_otu-3)*(n_iter_tot) + i*(n_iter_tot) + iter] = tree->a_edges[i]->n_diff_states_r[j];
+            }
+        }
+
+
+      Free_Cseq(tree->data);
+      Free_Model_Complete(tree->mod);
+      Free_Model_Basic(tree->mod);
+      
+      tree->mod  = Copy_Model(orig_mod);
+      tree->data = Copy_Cseq(orig_data,tree->io);
+
+      tree->mod->io    = orig_mod->io;
+      tree->mod->s_opt = orig_mod->s_opt;
+
+      Connect_CSeqs_To_Nodes(tree->data,tree);
+
+      iter++;
+    }
+  while(iter < n_iter_tot);
+
+
+  printf("\n SIM     edge    side    states low      up");
+  For(i,2*tree->n_otu-3)
+    {
+      if(tree->a_edges[i]->left->tax == NO && tree->a_edges[i]->rght->tax == NO)
+        {
+          For(j,tree->mod->ns)
+            {              
+              printf("\n SIM %3d 0 %3d %.0f %.0f",
+                     i,
+                     j+1,
+                     Quantile(n_diff_states_all_l + j*(2*tree->n_otu-3)*(n_iter_tot) + i*(n_iter_tot), n_iter_tot, 0.10),
+                     Quantile(n_diff_states_all_l + j*(2*tree->n_otu-3)*(n_iter_tot) + i*(n_iter_tot), n_iter_tot, 0.90));
+              
+              printf("\n SIM %3d 1 %3d %.0f %.0f",
+                     i,
+                     j+1,
+                     Quantile(n_diff_states_all_r + j*(2*tree->n_otu-3)*(n_iter_tot) + i*(n_iter_tot), n_iter_tot, 0.10),
+                     Quantile(n_diff_states_all_r + j*(2*tree->n_otu-3)*(n_iter_tot) + i*(n_iter_tot), n_iter_tot, 0.90));
+            }
+        }
+    }
+
+
+  Add_Root(tree->a_edges[0],tree);
+  DR_Draw_Tree("treefile",tree);
+
+   
+  Free(n_diff_states_all_l);
+  Free(n_diff_states_all_r);
+  
+}
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+/* Calculate the number of sites at which 1,...,n states (n: 4 or 20) */
+/* are observed, for every subtree */
+ 
+void Calculate_Number_Of_Diff_States(t_tree *tree)
+{  
+  Init_Ui_Tips(tree);
+  Calculate_Number_Of_Diff_States_Post(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree->a_nodes[0]->b[0],tree);
+  Calculate_Number_Of_Diff_States_Pre(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree->a_nodes[0]->b[0],tree);
+
+  /* int i; */
+
+  /* For(i,2*tree->n_otu-3) */
+  /*   { */
+  /*     if(tree->a_edges[i]->left->tax == NO && tree->a_edges[i]->rght->tax == NO) */
+        /* printf("\n. Edge %d left : %d %d %d %d right: %d %d %d %d", */
+        /*        i, */
+        /*        tree->a_edges[i]->n_diff_states_l[0], */
+        /*        tree->a_edges[i]->n_diff_states_l[1], */
+        /*        tree->a_edges[i]->n_diff_states_l[2], */
+        /*        tree->a_edges[i]->n_diff_states_l[3], */
+        /*        tree->a_edges[i]->n_diff_states_r[0], */
+        /*        tree->a_edges[i]->n_diff_states_r[1], */
+        /*        tree->a_edges[i]->n_diff_states_r[2], */
+        /*        tree->a_edges[i]->n_diff_states_r[3]); */
+    /* } */
+}
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void Calculate_Number_Of_Diff_States_Post(t_node *a, t_node *d, t_edge *b, t_tree *tree)
+{
+  if(d->tax) return;
+  else
+    {
+      int i;
+
+
+      For(i,3)
+        if(d->v[i] != a)
+          Calculate_Number_Of_Diff_States_Post(d,d->v[i],d->b[i],tree);
+
+      Calculate_Number_Of_Diff_States_Core(a,d,b,tree);
+    }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Calculate_Number_Of_Diff_States_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
+{
+
+  if(d->tax) return;
+  else
+    {
+      int i;
+
+
+      For(i,3)
+        if(d->v[i] != a)
+          {
+            Calculate_Number_Of_Diff_States_Core(d->v[i],d,d->b[i],tree);
+            Calculate_Number_Of_Diff_States_Pre(d,d->v[i],d->b[i],tree);
+          }
+    }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Calculate_Number_Of_Diff_States_Core(t_node *a, t_node *d, t_edge *b, t_tree *tree)
+{
+
+  unsigned int *ui, *ui_v1, *ui_v2;
+  int sum,site,state;
+  int *diff;
+
+  ui = ui_v1 = ui_v2 = NULL;
+
+  if(d == b->left)
+    {	     
+      ui = b->ui_l;
+      diff = b->n_diff_states_l;
+
+      ui_v1 = 
+      (d == d->b[b->l_v1]->left)?
+      (d->b[b->l_v1]->ui_r):
+      (d->b[b->l_v1]->ui_l);
+
+      ui_v2 = 
+      (d == d->b[b->l_v2]->left)?
+      (d->b[b->l_v2]->ui_r):
+      (d->b[b->l_v2]->ui_l);
+
+    }
+  else
+    {
+      ui = b->ui_r;
+      diff = b->n_diff_states_r;
+      
+      ui_v1 = 
+        (d == d->b[b->r_v1]->left)?
+        (d->b[b->r_v1]->ui_r):
+        (d->b[b->r_v1]->ui_l);
+      
+      ui_v2 = 
+      (d == d->b[b->r_v2]->left)?
+      (d->b[b->r_v2]->ui_r):
+      (d->b[b->r_v2]->ui_l);
+
+    }
+
+  For(state,tree->mod->ns) diff[state] = 0;
+  
+  For(site,tree->n_pattern)
+    {
+      ui[site] = ui_v1[site] | ui_v2[site];
+      
+      sum = Sum_Bits(ui[site]);
+
+      /* printf("\n. ui_v1: %d ui_v2: %d ui: %d sum: %d",ui_v1[site],ui_v2[site],ui[site],sum); fflush(NULL); */
+
+      if(sum-1 > tree->mod->ns-1)
+        {
+          PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);      
+          Exit("\n");
+        }
+
+
+      diff[sum-1]++;
+    }
+}
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
