@@ -1098,6 +1098,8 @@ phydbl Slicing_Calibrations(t_tree *tree)
   /* printf("\n");  */
   int result_1;
   int *root_nodes;
+  phydbl n1, n2;
+
   root_nodes = (int *)mCalloc(n_otu - 1, sizeof(int));
   
   result_1 = TRUE;
@@ -1132,6 +1134,8 @@ phydbl Slicing_Calibrations(t_tree *tree)
         {
           n_1 = 0;
           n_2 = 0;
+          n1 = 0.0;
+          n2 = 0.0;
           Number_Of_Nodes_In_Slice(tree -> a_nodes[root_nodes[j] + n_otu], tree -> a_nodes[root_nodes[j] + n_otu] -> v[1], &n_1, t_slice_min_f, t_slice_max_f, tree);
           Number_Of_Nodes_In_Slice(tree -> a_nodes[root_nodes[j] + n_otu], tree -> a_nodes[root_nodes[j] + n_otu] -> v[2], &n_2, t_slice_min_f, t_slice_max_f, tree);
           /* printf("\n. n_1 [%d] n_2 [%d]\n", n_1, n_2); */
@@ -1139,6 +1143,9 @@ phydbl Slicing_Calibrations(t_tree *tree)
           /* K_total = K_total + LOG(Factorial(n_1 + n_2)) - LOG(n_1 + n_2 + 1) - LOG(Factorial(n_1 + n_2)) - LOG(Factorial(n_1)) - LOG(Factorial(n_2)); */
           /* K_total = K_total * (phydbl)Factorial(n_1 + n_2) / ((phydbl)Factorial(n_1 + n_2 + 1) * (phydbl)Factorial(n_1) * Factorial(n_2)); */
           K_total = K_total + LOG(1) - LOG(n_1 + n_2 + 1) - LOG(Factorial(n_1)) - LOG(Factorial(n_2));
+          for(i = 1; i < n_1 +1; i++) n1 = n1 + LOG(i);
+          for(i = 1; i < n_2 +1; i++) n2 = n2 + LOG(i);
+          /* K_total = K_total + LOG(1) - LOG(n_1 + n_2 + 1) - n1 - n2; */
           /* printf("\n. K_total [%f] \n", K_total); */
         }
       /* printf("\n. K_total [%f] \n", K_total); */
@@ -1153,7 +1160,7 @@ phydbl Slicing_Calibrations(t_tree *tree)
       for(i = n_otu; i < 2 * n_otu - 2; i++) if(Are_Equal(t_prior_min[tree -> n_root -> num], t_prior_min[i], 1.E-10)) t_prior_min[i] = tree -> rates -> nd_t[tree -> n_root -> num];
       For(j, n_otu - 2)
         {
-          num = num +  LOG(EXP(lmbd * t_slice_max_f[j]) - EXP(lmbd * t_slice_min_f[j]));
+          num = num + LOG(EXP(lmbd * t_slice_max_f[j]) - EXP(lmbd * t_slice_min_f[j]));
           /* printf("\n. num [%f] \n", num); */
         }
        for(j = n_otu; j < 2 * n_otu - 2; j++)
@@ -1245,12 +1252,17 @@ phydbl Slicing_Calibrations(t_tree *tree)
                             {
                               n_1 = 0;
                               n_2 = 0;
+                              n1 = 0.0;
+                              n2 = 0.0;
                               Number_Of_Nodes_In_Slice(tree -> a_nodes[root_nodes[j] + n_otu], tree -> a_nodes[root_nodes[j] + n_otu] -> v[1], &n_1, t_slice_min_f, t_slice_max_f, tree);
                               Number_Of_Nodes_In_Slice(tree -> a_nodes[root_nodes[j] + n_otu], tree -> a_nodes[root_nodes[j] + n_otu] -> v[2], &n_2, t_slice_min_f, t_slice_max_f, tree);
-                              /* printf("\n. n_1 [%d] n_2 [%d]\n", n_1, n_2);   */
+                              /* printf("\n. n_1 [%d] n_2 [%d]\n", n_1, n_2); */
                               /* K_part = K_part * Factorial(n_1 + n_2) / ((phydbl)Factorial(n_1 + n_2 + 1) * Factorial(n_1) * Factorial(n_2)); */
                               /* K_part = K_part + LOG(Factorial(n_1 + n_2)) - LOG(n_1 + n_2 + 1) - LOG(Factorial(n_1 + n_2)) - LOG(Factorial(n_1)) - LOG(Factorial(n_2)); */
                               K_part = K_part + LOG(1) - LOG(n_1 + n_2 + 1) - LOG(Factorial(n_1)) - LOG(Factorial(n_2));
+                              for(i = 1; i < n_1 +1; i++) n1 = n1 + LOG(i);
+                              for(i = 1; i < n_2 +1; i++) n2 = n2 + LOG(i);
+                              /* K_total = K_total + LOG(1) - LOG(n_1 + n_2 + 1) - n1 - n2; */
                             }
                           /* printf("\n. K_part [%f] \n", K_part);   */
                           
@@ -1417,7 +1429,7 @@ phydbl Slicing_Calibrations(t_tree *tree)
   /*         /\* lmbd = tree -> rates -> birth_rate; *\/ */
   /*         num = 1; */
   /*         denom = 1; */
-  /* //lmbd = 4.0;  */
+  /* //lmbd = 4.0; */
   /*         for(i = n_otu; i < 2 * n_otu - 2; i++) if(Are_Equal(t_prior_min[tree -> n_root -> num], t_prior_min[i], 1.E-10)) t_prior_min[i] = tree -> rates -> nd_t[tree -> n_root -> num]; */
   /*         For(j, n_otu - 2) */
   /*           { */
@@ -1435,6 +1447,7 @@ phydbl Slicing_Calibrations(t_tree *tree)
   /* K = 1 / P; */
   /* printf("\n. [K] of the tree for one combination of calibration [%f] \n", K); */
   /* /\* Exit("\n"); *\/ */
+  /* printf("\n. ____________________________________________________________________________________________ \n"); */
  
   ////////////////////////////////////////////////////////////////////////////
   free(t_cur_slice_min);
