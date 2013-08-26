@@ -792,7 +792,8 @@ void Optimiz_All_Free_Param(t_tree *tree, int verbose)
   init_both_sides  = tree->both_sides;
 
   Set_Both_Sides(NO,tree);
-  
+  Lk(NULL,tree);
+
   Optimize_RR_Params(tree,verbose);
   Optimize_TsTv(tree,verbose);
   Optimize_Lambda(tree,verbose);

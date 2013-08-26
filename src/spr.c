@@ -4642,6 +4642,7 @@ void SPR_Shuffle(t_tree *mixt_tree)
   mixt_tree->mod->s_opt->max_delta_lnL_spr = 0.;
   mixt_tree->mod->s_opt->max_depth_path    = 2*mixt_tree->n_otu-3;
   mixt_tree->mod->s_opt->spr_lnL           = NO;
+  
 
   do
     {
@@ -4663,7 +4664,7 @@ void SPR_Shuffle(t_tree *mixt_tree)
       Optimize_Br_Len_Serie(mixt_tree);
       
       if(mixt_tree->n_improvements < 20 || mixt_tree->max_spr_depth  < 5 ||
-	 (FABS(lk_old-mixt_tree->c_lnL) < 1.)) break;
+         (FABS(lk_old-mixt_tree->c_lnL) < 1.)) break;
     }
   while(1);
 
