@@ -1171,6 +1171,14 @@ phydbl Slicing_Calibrations(t_tree *tree)
         }
        /* K_total = (K_total * num) / denom; */
        K_total = EXP(K_total + num -  denom);
+       if(isinf(K_total) || isnan(K_total)) 
+         {
+           PhyML_Printf("\n. K_total=%f \n", K_total);
+           PhyML_Printf("\n. n_1=%d n_2=%d \n", n_1, n_2);
+           PhyML_Printf("\n. num=%f denom=%f \n", num, denom);
+           PhyML_Printf("\n. Err. in file %s at line %d\n\n",__FILE__,__LINE__);
+           Warn_And_Exit("\n");
+         }
        /* printf("\n. K of the tree for starting combination of slices [%f] \n", K_total); */
     }
  
@@ -1286,6 +1294,14 @@ phydbl Slicing_Calibrations(t_tree *tree)
                             }
                           /* K_part = (K_part * num) / denom; */
                           K_part = EXP(K_part + num - denom);
+                          if(isinf(K_part) || isnan(K_part)) 
+                            {
+                              PhyML_Printf("\n. K_part=%f \n", K_part);
+                              PhyML_Printf("\n. n_1=%d n_2=%d \n", n_1, n_2);
+                              PhyML_Printf("\n. num=%f denom=%f \n", num, denom);
+                              PhyML_Printf("\n. Err. in file %s at line %d\n\n",__FILE__,__LINE__);
+                              Warn_And_Exit("\n");
+                            }
                           K_total = K_total + K_part;
                           /* printf("\n. K_max [%f] K_part [%f] \n", K_max, K_part); */
                           if(K_max < K_part)
