@@ -1173,6 +1173,9 @@ phydbl Slicing_Calibrations(t_tree *tree)
        K_total = EXP(K_total + num -  denom);
        if(isinf(K_total) || isnan(K_total)) 
          {
+           printf("\n. [1] LMBD %f \n", lmbd);
+           For(j, n_otu - 2) printf("\n. [1] EXPdif %f LOG(ESPdif) %f t_slice_min %f t_slice_max %f \n", EXP(lmbd * t_slice_max_f[j]) - EXP(lmbd * t_slice_min_f[j]), LOG(EXP(lmbd * t_slice_max_f[j]) - EXP(lmbd * t_slice_min_f[j])), t_slice_min_f[j], t_slice_max_f[j]);
+           for(j = n_otu; j < 2 * n_otu - 2; j++)  printf("\n. [2] EXPdif %f LOG(ESPdif) %f t_prior_min %f t_prior_max %f \n", EXP(lmbd * t_prior_max[j]) - EXP(lmbd * t_prior_min[j]), LOG(EXP(lmbd * t_prior_max[j]) - EXP(lmbd * t_prior_min[j])), t_prior_min[j], t_prior_max[j]);
            PhyML_Printf("\n. K_total=%f \n", K_total);
            PhyML_Printf("\n. n_1=%d n_2=%d \n", n_1, n_2);
            PhyML_Printf("\n. num=%f denom=%f \n", num, denom);
@@ -1296,6 +1299,9 @@ phydbl Slicing_Calibrations(t_tree *tree)
                           K_part = EXP(K_part + num - denom);
                           if(isinf(K_part) || isnan(K_part)) 
                             {
+                              printf("\n. [2] LMBD %f \n", lmbd);
+                              For(j, n_otu - 2) printf("\n. [1] EXPdif %f LOG(ESPdif) %f t_slice_min %f t_slice_max %f \n", EXP(lmbd * t_slice_max_f[j]) - EXP(lmbd * t_slice_min_f[j]), LOG(EXP(lmbd * t_slice_max_f[j]) - EXP(lmbd * t_slice_min_f[j])), t_slice_min_f[j], t_slice_max_f[j]);
+                              for(j = n_otu; j < 2 * n_otu - 2; j++)  printf("\n. [2] EXPdif %f LOG(ESPdif) %f t_prior_min %f t_prior_max %f \n", EXP(lmbd * t_prior_max[j]) - EXP(lmbd * t_prior_min[j]), LOG(EXP(lmbd * t_prior_max[j]) - EXP(lmbd * t_prior_min[j])), t_prior_min[j], t_prior_max[j]);
                               PhyML_Printf("\n. K_part=%f \n", K_part);
                               PhyML_Printf("\n. n_1=%d n_2=%d \n", n_1, n_2);
                               PhyML_Printf("\n. num=%f denom=%f \n", num, denom);
