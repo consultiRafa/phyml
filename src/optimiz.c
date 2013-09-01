@@ -261,7 +261,7 @@ phydbl Generic_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol,
     }
     }
 
-  Exit("\n. Too many iterations in BRENT !");
+  Exit("\n. Too many iterations in Generic_Brent !");
   return(-1);
   /* Not Reached ??  *xmin=x;   */
   /* Not Reached ??  return fx; */
@@ -510,9 +510,7 @@ phydbl Br_Len_Brent(phydbl prop_min, phydbl prop_max, t_edge *b_fcus, t_tree *tr
   if(isinf(prop_min) || isnan(prop_min)) prop_min = 1.E-04;
   if(isinf(prop_max) || isnan(prop_max)) prop_max = 1.E+04;
 
-
-  lk_begin = Lk(b_fcus,tree); /*! We can't assume that the log-lk value is up-to-date */
-
+  lk_begin = Lk(loc_b,loc_tree); /*! We can't assume that the log-lk value is up-to-date */
 
   Generic_Brent_Lk(&(b_fcus->l->v),
                    MAX(tree->mod->l_min,MIN(tree->mod->l_max,b_fcus->l->v))*MAX(1.E-04,prop_min),
@@ -537,7 +535,7 @@ phydbl Br_Len_Brent(phydbl prop_min, phydbl prop_max, t_edge *b_fcus, t_tree *tr
   /*       } */
   /*   } */
 
-  lk_end = tree->c_lnL;
+  lk_end = loc_tree->c_lnL;
 
   if(lk_end < lk_begin - tree->mod->s_opt->min_diff_lk_local)
     {
@@ -598,7 +596,9 @@ void Round_Optimize(t_tree *tree, calign *data, int n_round_max)
       n_round++;
       each--;
     }
+
   Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->mod->s_opt->print));
+
 }
 
 //////////////////////////////////////////////////////////////
@@ -685,7 +685,8 @@ void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tr
       PhyML_Printf("\n== %f %f %G",l_infa,l_infb,b_fcus->l->v);
       PhyML_Printf("\n== %f -- %f",lk_init,tree->c_lnL);
       PhyML_Printf("\n== Edge: %d",b_fcus->num);
-      Warn_And_Exit("\n== Err. in Optimize_Br_Len_Serie_Post\n");
+      PhyML_Printf("\n== is_mixt_tree: %d",tree->is_mixt_tree);
+      Exit("\n== Err. in Optimize_Br_Len_Serie_Post\n");
     }
 
   if(d->tax) return;
@@ -1067,7 +1068,6 @@ void BFGS(t_tree *tree,
       free(dg);
           free(init);
           free(sign);
-
       return;
     }
 
@@ -1100,6 +1100,7 @@ void BFGS(t_tree *tree,
       free(hdg);
       free(g);
       free(dg);
+          free(init);
           free(sign);
       return;
     }
@@ -1305,6 +1306,7 @@ void BFGS_Nonaligned(t_tree *tree,
       free(hdg);
       free(g);
       free(dg);
+          free(init);
           free(sign);
       return;
     }
@@ -1757,7 +1759,7 @@ phydbl Dist_F_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol, int n_iter_max,
         }
     }
     }
-  Exit("\n. Too many iterations in BRENT !");
+  Exit("\n. Too many iterations in Dist_F_Brent !");
   return(-1);
 }
 
@@ -1946,7 +1948,7 @@ phydbl Missing_Dist_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol, int n_ite
         }
     }
     }
-  Exit("\n. Too many iterations in BRENT !");
+  Exit("\n. Too many iterations in Missing_Dist_Brent !");
   return(-1);
 }
 
@@ -2133,7 +2135,11 @@ int Optimiz_Alpha_And_Pinv(t_tree *mixt_tree, int verbose)
               Optimize_Br_Len_Serie(mixt_tree);
               fa = mixt_tree->c_lnL;
               /* PhyML_Printf("\n1 a=%f, b=%f, c=%f, fa=%f, fb=%f, fc=%f",a,b,c,fa,fb,fc); */
-              if(iter++ > 10) return 0;
+              if(iter++ > 10)
+                            {
+                              if(alpha) Free(alpha);
+                              return 0;
+                            }
             }
             }
           else
@@ -2168,7 +2174,11 @@ int Optimiz_Alpha_And_Pinv(t_tree *mixt_tree, int verbose)
               Optimize_Br_Len_Serie(mixt_tree);
               fc = mixt_tree->c_lnL;
               /* PhyML_Printf("\n2 a=%f, b=%f, c=%f, fa=%f, fb=%f, fc=%f",a,b,c,fa,fb,fc); */
-              if(iter++ > 10) return 0;
+              if(iter++ > 10)
+                            {
+                              if(alpha) Free(alpha);
+                              return 0;
+                            }
             }
             }
 
@@ -2421,7 +2431,7 @@ phydbl Generic_Brent_Lk(phydbl *param, phydbl ax, phydbl cx, phydbl tol,
         }
     }
 
-  Exit("\n. Too many iterations in BRENT !");
+  Exit("\n. Too many iterations in Generic_Brent_Lk !");
   return(-1);
   /* Not Reached ??  *param=x;   */
   /* Not Reached ??  return fx; */
@@ -2775,7 +2785,7 @@ void Optimize_Alpha(t_tree *mixt_tree, int verbose)
                   if(tree->mod->ras->n_catg > 1)
                     {
                       Generic_Brent_Lk(&(tree->mod->ras->alpha->v),
-                                       tree->mod->ras->alpha->v/2.,tree->mod->ras->alpha->v*2.,
+                                       tree->mod->ras->alpha->v/2.,100.,
                                        tree->mod->s_opt->min_diff_lk_local,
                                        tree->mod->s_opt->brent_it_max,
                                        tree->mod->s_opt->quickdirty,
@@ -2812,7 +2822,7 @@ void Optimize_Free_Rate(t_tree *mixt_tree, int verbose)
 
   do
     {
-      if((tree->mod->s_opt->opt_free_mixt_rates) && (tree->mod->ras->free_mixt_rates == YES))
+      if((tree->mod->s_opt->opt_free_mixt_rates) && (tree->mod->ras->free_mixt_rates == YES) && (tree->mod->ras->n_catg > 1))
         {
           if(tree->mod->s_opt->serial_free_rates == YES)
             {

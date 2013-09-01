@@ -287,6 +287,7 @@ typedef	double phydbl;
 /* #define P_LK_LIM_SUP 2.037035976e+90 /\* R: format(2^(+300),digits=10) *\/ */
 #define  P_LK_LIM_INF   3.054936e-151 /* 2^-500 */
 #define  P_LK_LIM_SUP   3.273391e+150 /* 2^500 */
+//#define  P_LK_LIM_INF   4.656612873e-10 /*2^-31 */
 
 #define T_MAX_XML_TAG 64
 
@@ -306,9 +307,11 @@ typedef	double phydbl;
 #define DUMP_EACH_INT(v)     fprintf(stderr,"\n\t\tDEBUG:%s:\t\t%s--->%i",__PRETTY_FUNCTION__,#v,(v));fflush(stderr);
 #define DUMP_EACH_STRING(v)  fprintf(stderr,"\n\t\tDEBUG:%s:\t\t%s--->%s",__PRETTY_FUNCTION__,#v,(v));fflush(stderr);
 #define DUMP_EACH_DECIMAL(v) fprintf(stderr,"\n\t\tDEBUG:%s:\t\t%s--->%f",__PRETTY_FUNCTION__,#v,(v));fflush(stderr);
+#define DUMP_EACH_SCI(v)     fprintf(stderr,"\n\t\tDEBUG:%s:\t\t%s--->%e",__PRETTY_FUNCTION__,#v,(v));fflush(stderr);
 #define DUMP_I(...) FOR_EACH(DUMP_EACH_INT, __VA_ARGS__)
 #define DUMP_S(...) FOR_EACH(DUMP_EACH_STRING, __VA_ARGS__)
 #define DUMP_D(...) FOR_EACH(DUMP_EACH_DECIMAL, __VA_ARGS__)
+#define DUMP_E(...) FOR_EACH(DUMP_EACH_SCI, __VA_ARGS__)
 
 /*!********************************************************/
 
@@ -447,14 +450,11 @@ typedef struct __Edge {
                           bip_score = 1 iif the branch is found in both trees to be compared,
                           bip_score = 0 otherwise. */
 
-  phydbl            *p_lk_left,*p_lk_rght; /*! likelihoods of the subtree on the left and
-                          right side (for each site and each relative rate category) */
+  phydbl            *p_lk_left,*p_lk_rght; /*! likelihoods of the subtree on the left and right side (for each site and each relative rate category) */
   short int      *p_lk_tip_r, *p_lk_tip_l;
-
 #ifdef BEAGLE
   int        p_lk_left_idx, p_lk_rght_idx;
   int                        p_lk_tip_idx;
-  int                          Pij_rr_idx;
 #endif
 
   short int           *div_post_pred_left; /*! posterior prediction of nucleotide/aa diversity (left-hand subtree) */
@@ -468,7 +468,10 @@ typedef struct __Edge {
   int                      *p_lk_loc_rght;
 
 
-  phydbl                          *Pij_rr; /*! matrix of change probabilities and its first and secnd derivates */
+  phydbl                          *Pij_rr; /*! matrix of change probabilities and its first and secnd derivates (rate*state*state) */
+#ifdef BEAGLE
+  int                          Pij_rr_idx;
+#endif
   int                     *pars_l,*pars_r; /*! parsimony of the subtree on the left and right sides (for each site) */
   unsigned int               *ui_l, *ui_r; /*! union - intersection vectors used in Fitch's parsimony algorithm */
   int                *p_pars_l, *p_pars_r; /*! conditional parsimony vectors */
@@ -878,14 +881,17 @@ typedef struct __Model {
 
   scalar_dbl        *r_mat_weight;
   scalar_dbl        *e_frq_weight;
+#ifdef BEAGLE
+  int                      b_inst;
+#endif
 
 }t_mod;
 
 /*!********************************************************/
 
 typedef struct __Eigen{
-  int              size;
-  phydbl             *q; /*! matrix which eigen values and vectors are computed */
+  int              size; /*! matrix is size * size */
+  phydbl             *q; /*! matrix for which eigen values and vectors are computed */
   phydbl         *space;
   int        *space_int;
   phydbl         *e_val; /*! eigen values (vector), real part. */

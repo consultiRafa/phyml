@@ -30,7 +30,7 @@ void MIXT_Update_P_Lk(t_tree *mixt_tree,t_edge *mixt_b,t_node *mixt_d);
 void MIXT_Update_PMat_At_Given_Edge(t_edge *mixt_b,t_tree *mixt_tree);
 int *MIXT_Get_Number_Of_Classes_In_All_Mixtures(t_tree *mixt_tree);
 t_tree **MIXT_Record_All_Mixtures(t_tree *mixt_tree);
-void MIXT_Break_All_Mixtures(int c_max,t_tree *mixt_tree);
+void MIXT_Break_All_Mixtures(int *c_max,t_tree *mixt_tree);
 void MIXT_Reconnect_All_Mixtures(t_tree **tree_list,t_tree *mixt_tree);
 int *MIXT_Record_Has_Invariants(t_tree *mixt_tree);
 void MIXT_Reset_Has_Invariants(int *has_invariants,t_tree *mixt_tree);
@@ -70,5 +70,6 @@ phydbl MIXT_Get_Mean_Edge_Len(t_edge *mixt_b, t_tree *tree);
 phydbl MIXT_Get_Sum_Chained_Scalar_Dbl(scalar_dbl *s);
 phydbl MIXT_Get_Sum_Of_Probas_Across_Mixtures(phydbl r_mat_weight_sum, phydbl e_frq_weight_sum, t_tree *mixt_tree);
 phydbl MIXT_Rescale_Free_Rate_Tree(t_tree *mixt_tree);
+void MIXT_Set_Br_Len_Var(t_tree *mixt_tree);
 
 #endif

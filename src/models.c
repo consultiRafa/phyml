@@ -217,7 +217,7 @@ phydbl Get_Lambda_F84(phydbl *pi, phydbl *kappa)
 /* and one specific branch length                                   */
 /*                                                                  */
 /* input : l , branch length                                        */
-/* input : mod , choosen model parameters, qmat and pi             */
+/* input : mod , choosen model parameters, qmat and pi              */
 /* ouput : Pij , substitution probability matrix                    */
 /*                                                                  */
 /* matrix P(l) is computed as follows :                             */
@@ -267,6 +267,7 @@ void PMat_Empirical(phydbl l, t_mod *mod, int pos, phydbl *Pij)
   V     = mod->eigen->l_e_vect;
   R     = mod->eigen->e_val; /* exponential of the eigen value matrix */
 
+  //Initialize a rate-specific N*N matrix
   For(i,n) For(k,n) Pij[pos+mod->ns*i+k] = .0;
 
   /* compute POW(EXP(D/mr),l) into mat_eDmrl */
@@ -432,7 +433,15 @@ void PMat_Zero_Br_Len(t_mod *mod, int pos, phydbl *Pij)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
+/*
+ *Update a rate specific Transition Prob matrix for a given branch-length(already adjusted
+ *with the rate prior to this function being called)
+ *
+ *  Pij: the P-matrix that will be adjusted
+ *  l  : branch length * rate
+ *  pos: offset into a specific rate-category
+ *
+ */
 void PMat(phydbl l, t_mod *mod, int pos, phydbl *Pij)
 {
   /* Warning: l is never the log of branch length here */
@@ -455,7 +464,7 @@ void PMat(phydbl l, t_mod *mod, int pos, phydbl *Pij)
                 if((mod->whichmodel == JC69) ||
                    (mod->whichmodel == K80))
                   {
-        /* 		    PMat_JC69(l,pos,Pij,mod); */
+                    /* 		    PMat_JC69(l,pos,Pij,mod); */
                     PMat_K80(l,mod->kappa->v,pos,Pij);
                   }
                 else
@@ -470,14 +479,42 @@ void PMat(phydbl l, t_mod *mod, int pos, phydbl *Pij)
                       }
                     else
                       {
+#ifdef BEAGLE
+                        //Update P-Mat without Beagle only if there is no active instance
+                        if(UNINITIALIZED == mod->b_inst)
+                            PMat_Empirical(l,mod,pos,Pij);
+                        else
+                        {
+                            int ret = beagleSetCategoryRates(mod->b_inst, mod->ras->gamma_rr->v);
+                            if(ret<0){
+                                fprintf(stderr, "beagleSetCategoryRates() on instance %i failed:%i\n\n",mod->b_inst,ret);
+                                Exit("");
+                            }
+                        }
+#else
                         PMat_Empirical(l,mod,pos,Pij);
+#endif
                       }
                   }
                 break;
               }
           case AA :
             {
-              PMat_Empirical(l,mod,pos,Pij);
+#ifdef BEAGLE
+                //Update P-Mat without Beagle only if there is no active instance
+                if(UNINITIALIZED == mod->b_inst)
+                    PMat_Empirical(l,mod,pos,Pij);
+                else
+                {
+                    int ret = beagleSetCategoryRates(mod->b_inst, mod->ras->gamma_rr->v);
+                    if(ret<0){
+                        fprintf(stderr, "beagleSetCategoryRates() on instance %i failed:%i\n\n",mod->b_inst,ret);
+                        Exit("");
+                    }
+                }
+#else
+                PMat_Empirical(l,mod,pos,Pij);
+#endif
               break;
             }
           default:
@@ -617,13 +654,14 @@ void Update_Qmat_GTR(phydbl *rr, phydbl *rr_val, int *rr_num, phydbl *pi, phydbl
   phydbl mr;
 
   For(i,6) rr[i] = rr_val[rr_num[i]];
-  For(i,6) 
-    if(rr[i] < 0.0) 
+  For(i,6)
+    if(rr[i] < 0.0)
       {
         PhyML_Printf("\n. rr%d: %f",i,rr[i]);
         PhyML_Printf("\n. Err. in file %s at line %d\n\n",__FILE__,__LINE__);
         Exit("");
       }
+
 
   For(i,6) rr[i] /= rr[5];
 
@@ -809,10 +847,10 @@ void Update_RAS(t_mod *mod)
       For(i,mod->ras->n_catg) sum += mod->ras->gamma_r_proba->v[i] * mod->ras->gamma_rr_unscaled->v[i];
 
       if(mod->ras->normalise_rr == YES)
-        For(i,mod->ras->n_catg) 
+        For(i,mod->ras->n_catg)
           mod->ras->gamma_rr->v[i] = mod->ras->gamma_rr_unscaled->v[i]/sum;
       else
-        For(i,mod->ras->n_catg) 
+        For(i,mod->ras->n_catg)
           mod->ras->gamma_rr->v[i] = mod->ras->gamma_rr_unscaled->v[i] * mod->ras->free_rate_mr->v;
 
       /* printf("\n"); */
@@ -820,8 +858,8 @@ void Update_RAS(t_mod *mod)
       /*   printf("\nx %12f %12f xx %12f %12f", */
       /*          mod->ras->gamma_r_proba->v[i], */
       /*          mod->ras->gamma_rr->v[i], */
-      /*          LOG(mod->ras->gamma_r_proba_unscaled->v[i]), */
-      /*          LOG(mod->ras->gamma_rr_unscaled->v[i])); */
+      /*          mod->ras->gamma_r_proba_unscaled->v[i], */
+      /*          mod->ras->gamma_rr_unscaled->v[i]); */
     }
 
 }
@@ -910,14 +948,14 @@ void Update_Eigen(t_mod *mod)
       scalar   = 1.0;
       n_iter   = 0;
       result   = 0;
-            
+
       For(i,mod->ns*mod->ns) mod->r_mat->qmat_buff->v[i] = mod->r_mat->qmat->v[i];
 
       /* compute eigenvectors/values */
       /*       if(!EigenRealGeneral(mod->eigen->size,mod->r_mat->qmat,mod->eigen->e_val, */
       /* 			  mod->eigen->e_val_im, mod->eigen->r_e_vect, */
       /* 			  mod->eigen->space_int,mod->eigen->space)) */
-      
+
       if(!Eigen(1,mod->r_mat->qmat_buff->v,mod->eigen->size,mod->eigen->e_val,
         mod->eigen->e_val_im,mod->eigen->r_e_vect,
         mod->eigen->r_e_vect_im,mod->eigen->space))
@@ -948,34 +986,62 @@ void Update_Eigen(t_mod *mod)
           For(i,mod->ns) mod->eigen->e_val[i] = (phydbl)EXP(mod->eigen->e_val[i]);
 
 
-	  /* int j; */
-	  /* double *U,*V,*R; */
-	  /* double *expt; */
-	  /* double *uexpt; */
-	  /* int n; */
+      /* int j; */
+      /* double *U,*V,*R; */
+      /* double *expt; */
+      /* double *uexpt; */
+      /* int n; */
 
-	  /* expt  = mod->eigen->e_val_im; */
-	  /* uexpt = mod->eigen->r_e_vect_im; */
-	  /* U     = mod->eigen->r_e_vect; */
-	  /* V     = mod->eigen->l_e_vect; */
-	  /* R     = mod->eigen->e_val; /\* exponential of the eigen value matrix *\/ */
-	  /* n     = mod->ns; */
+      /* expt  = mod->eigen->e_val_im; */
+      /* uexpt = mod->eigen->r_e_vect_im; */
+      /* U     = mod->eigen->r_e_vect; */
+      /* V     = mod->eigen->l_e_vect; */
+      /* R     = mod->eigen->e_val; /\* exponential of the eigen value matrix *\/ */
+      /* n     = mod->ns; */
 
-	  /* PhyML_Printf("\n"); */
-	  /* PhyML_Printf("\n. Q\n"); */
-	  /* For(i,n) { For(j,n) PhyML_Printf("%7.3f ",mod->eigen->q[i*n+j]); PhyML_Printf("\n"); } */
-	  /* PhyML_Printf("\n. U\n"); */
-	  /* For(i,n) { For(j,n) PhyML_Printf("%7.3f ",U[i*n+j]); PhyML_Printf("\n"); } */
-	  /* PhyML_Printf("\n"); */
-	  /* PhyML_Printf("\n. V\n"); */
-	  /* For(i,n) { For(j,n) PhyML_Printf("%7.3f ",V[i*n+j]); PhyML_Printf("\n"); } */
-	  /* PhyML_Printf("\n"); */
-	  /* PhyML_Printf("\n. Eigen\n"); */
-	  /* For(i,n)  PhyML_Printf("%E ",mod->eigen->e_val[i]); */
-	  /* PhyML_Printf("\n"); */
-	  
+      /* PhyML_Printf("\n"); */
+      /* PhyML_Printf("\n. Q\n"); */
+      /* For(i,n) { For(j,n) PhyML_Printf("%7.3f ",mod->eigen->q[i*n+j]); PhyML_Printf("\n"); } */
+      /* PhyML_Printf("\n. U\n"); */
+      /* For(i,n) { For(j,n) PhyML_Printf("%7.3f ",U[i*n+j]); PhyML_Printf("\n"); } */
+      /* PhyML_Printf("\n"); */
+      /* PhyML_Printf("\n. V\n"); */
+      /* For(i,n) { For(j,n) PhyML_Printf("%7.3f ",V[i*n+j]); PhyML_Printf("\n"); } */
+      /* PhyML_Printf("\n"); */
+      /* PhyML_Printf("\n. Eigen\n"); */
+      /* For(i,n)  PhyML_Printf("%E ",mod->eigen->e_val[i]); */
+      /* PhyML_Printf("\n"); */
+
 /* 	  Exit("\n"); */
-
+#ifdef BEAGLE
+          //Recall that BEAGLE is initialized *after* all the model parameters are set
+          //IOW, UpdateEigen() can be called before BEAGLE is initialized ("chicken-egg")
+          if(UNINITIALIZED != mod->b_inst)
+          {
+              int whichmodel = mod->whichmodel;
+              if((mod->io->datatype == AA || whichmodel==GTR || whichmodel==CUSTOM) && mod->use_m4mod == NO)
+              {
+                  int ret=-1;
+                  if((sizeof(float)==sizeof(phydbl)))//Need to convert to doubles?
+                  {
+                      double* eigen_vects     = float_to_double(mod->eigen->r_e_vect, mod->eigen->size*mod->eigen->size);
+                      double* eigen_vects_inv = float_to_double(mod->eigen->l_e_vect, mod->eigen->size*mod->eigen->size);
+                      double* eigen_vals      = float_to_double(mod->eigen->e_val,mod->eigen->size);
+                      ret = beagleSetEigenDecomposition(mod->b_inst,0,eigen_vects,eigen_vects_inv,eigen_vals);
+                      Free(eigen_vects);Free(eigen_vects_inv);Free(eigen_vals);
+                  }
+                  else
+                  {
+                      DUMP_I(mod->b_inst);
+                      ret = beagleSetEigenDecomposition(mod->b_inst,0,mod->eigen->r_e_vect,mod->eigen->l_e_vect,mod->eigen->e_val);
+                  }
+                  if(ret<0){
+                    fprintf(stderr, "beagleSetEigenDecomposition() on instance %i failed:%i\n\n",mod->b_inst,ret);
+                    Exit("");
+                  }
+              }
+          }
+#endif
         }
       else
         {

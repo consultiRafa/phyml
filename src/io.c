@@ -582,8 +582,7 @@ char *Write_Tree(t_tree *tree, int custom)
           i = 0;
           while((!tree->a_nodes[tree->n_otu+i]->v[0]) ||
                 (!tree->a_nodes[tree->n_otu+i]->v[1]) ||
-                (!tree->a_nodes[tree->n_otu+i]->v[2]))
-              i++;
+		(!tree->a_nodes[tree->n_otu+i]->v[2])) i++;
 
           R_wtree(tree->a_nodes[tree->n_otu+i],tree->a_nodes[tree->n_otu+i]->v[0],&available,&s,tree);
           R_wtree(tree->a_nodes[tree->n_otu+i],tree->a_nodes[tree->n_otu+i]->v[1],&available,&s,tree);
@@ -606,8 +605,7 @@ char *Write_Tree(t_tree *tree, int custom)
           i = 0;
           while((!tree->a_nodes[tree->n_otu+i]->v[0]) ||
                 (!tree->a_nodes[tree->n_otu+i]->v[1]) ||
-                (!tree->a_nodes[tree->n_otu+i]->v[2]))
-              i++;
+		(!tree->a_nodes[tree->n_otu+i]->v[2])) i++;
 
           R_wtree_Custom(tree->a_nodes[tree->n_otu+i],tree->a_nodes[tree->n_otu+i]->v[0],&available,&s,&pos,tree);
           R_wtree_Custom(tree->a_nodes[tree->n_otu+i],tree->a_nodes[tree->n_otu+i]->v[1],&available,&s,&pos,tree);
@@ -862,17 +860,17 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
                       mean_len = fils->b[p]->l->v;
                     }
                   else mean_len = MIXT_Get_Mean_Edge_Len(fils->b[p],tree);
-                  sprintf(*s_tree+(int)strlen(*s_tree),format,mean_len);
+                  sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,mean_len));
         }
         }
 #else
       if(!tree->n_root)
         {
-          sprintf(*s_tree+(int)strlen(*s_tree),format,fils->b[p]->num);
+	      sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,fils->b[p]->l->v));
         }
       else
         {
-          sprintf(*s_tree+(int)strlen(*s_tree),format,tree->rates->cur_l[fils->num]);
+	      sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,tree->rates->cur_l[fils->num]));
         }
 #endif
     }
@@ -2626,7 +2624,8 @@ void Print_Fp_Out(FILE *fp_out, time_t t_beg, time_t t_end, t_tree *tree, option
 
   PhyML_Fprintf(fp_out,"\n. Tree size: \t\t\t\t%.5f",Get_Tree_Size(tree));
 
-  if(tree->mod->ras->n_catg > 1 && tree->mod->ras->free_mixt_rates == NO)
+  /* if(tree->mod->ras->n_catg > 1 && tree->mod->ras->free_mixt_rates == NO) */
+  if(tree->mod->ras->free_mixt_rates == NO)
     {
       PhyML_Fprintf(fp_out,"\n. Discrete gamma model: \t\t%s","Yes");
       PhyML_Fprintf(fp_out,"\n  - Number of classes: \t\t\t%d",tree->mod->ras->n_catg);
@@ -3458,26 +3457,28 @@ void Print_All_Edge_PMats(t_tree* tree)
         Print_Edge_PMats(tree, tree->a_edges[i]);
 }
 
-void Print_Edge_Likelihoods(t_tree* tree, t_edge* b)
+void Print_Edge_Likelihoods(t_tree* tree, t_edge* b, bool scientific/*Print in scientific notation?*/)
 {
+    char* fmt = scientific ? "[%d,%d,%d]%e ":"[%d,%d,%d]%f "; //rate category, site, state, likelilihood
+
     phydbl* lk_left = b->p_lk_left;
     phydbl* lk_right = b->p_lk_rght;
 
     fprintf(stdout,"\n");fflush(stdout);
-    if(NULL!=lk_left)
+    if(NULL!=lk_left)//not a tip?
     {
         fprintf(stdout,"Partial Likelihoods on LEFT subtree of Branch %d [rate,site,state]:\n",b->num);
         for(int catg=0;catg<tree->mod->ras->n_catg;++catg)
             for(int site=0;site<tree->n_pattern;++site)
                 for(int j=0;j<tree->mod->ns;++j)
 #ifdef BEAGLE
-                    fprintf(stdout,"[%d,%d,%d]%f ",catg,site,j,lk_left[catg*tree->n_pattern*tree->mod->ns + site*tree->mod->ns + j]);
+                    fprintf(stdout,fmt,catg,site,j,lk_left[catg*tree->n_pattern*tree->mod->ns + site*tree->mod->ns + j]);
 #else
-                    fprintf(stdout,"[%d,%d,%d]%f ",catg,site,j,lk_left[catg*tree->mod->ns + site*tree->mod->ras->n_catg*tree->mod->ns + j]);
+                    fprintf(stdout,fmt,catg,site,j,lk_left[catg*tree->mod->ns + site*tree->mod->ras->n_catg*tree->mod->ns + j]);
 #endif
         fflush(stdout);
     }
-    else
+    else //is a tip
     {
         fprintf(stdout,"Likelihoods on LEFT tip of Branch %d [site,state]:\n",b->num);
         for(int site=0;site<tree->n_pattern;++site)
@@ -3486,20 +3487,20 @@ void Print_Edge_Likelihoods(t_tree* tree, t_edge* b)
         fflush(stdout);
     }
     fprintf(stdout,"\n");fflush(stdout);
-    if(NULL!=lk_right)
+    if(NULL!=lk_right)//not a tip?
     {
         fprintf(stdout,"Partial Likelihoods on RIGHT subtree of Branch %d [rate,site,state]:\n",b->num);
         for(int catg=0;catg<tree->mod->ras->n_catg;++catg)
             for(int site=0;site<tree->n_pattern;++site)
                 for(int j=0;j<tree->mod->ns;++j)
 #ifdef BEAGLE
-                    fprintf(stdout,"[%d,%d,%d]%f ",catg,site,j,lk_right[catg*tree->n_pattern*tree->mod->ns + site*tree->mod->ns + j]);
+                    fprintf(stdout,fmt,catg,site,j,lk_right[catg*tree->n_pattern*tree->mod->ns + site*tree->mod->ns + j]);
 #else
-                    fprintf(stdout,"[%d,%d,%d]%f ",catg,site,j,lk_right[catg*tree->mod->ns + site*tree->mod->ras->n_catg*tree->mod->ns + j]);
+                    fprintf(stdout,fmt,catg,site,j,lk_right[catg*tree->mod->ns + site*tree->mod->ras->n_catg*tree->mod->ns + j]);
 #endif
         fflush(stdout);
     }
-    else
+    else //is a tip
     {
         fprintf(stdout,"Likelihoods on RIGHT tip of Branch %d [site,state]:\n",b->num);
         for(int site=0;site<tree->n_pattern;++site)
@@ -3513,7 +3514,7 @@ void Print_Edge_Likelihoods(t_tree* tree, t_edge* b)
 void Print_All_Edge_Likelihoods(t_tree* tree)
 {
     for(int i=0;i < 2*tree->n_otu-3; ++i)
-        Print_Edge_Likelihoods(tree, tree->a_edges[i]);
+        Print_Edge_Likelihoods(tree, tree->a_edges[i],false);
     fflush(stdout);
 
 #ifdef BEAGLE
@@ -4332,7 +4333,8 @@ void Print_Data_Structure(int final, FILE *fp, t_tree *mixt_tree)
                 {
                   if(tree->is_mixt_tree) tree = tree->next;
 
-                  if(mixt_tree->mod->whichmodel == tree->mod->whichmodel &&
+                  if(mixt_tree->mod->r_mat == tree->mod->r_mat &&
+                     mixt_tree->mod->whichmodel == tree->mod->whichmodel &&
                      !strcmp(mixt_tree->mod->custom_mod_string->s,
                              tree->mod->custom_mod_string->s) &&
                      !strcmp(mixt_tree->mod->aa_rate_mat_file->s,
@@ -4760,7 +4762,7 @@ void PhyML_XML(char *xml_filename)
       mixt_tree->n_pattern = io->cdata->crunch_len;
 
       /*! Remove branch lengths from mixt_tree */
-      For(i,2*mixt_tree->n_otu-2)
+      For(i,2*mixt_tree->n_otu-1)
         {
           Free_Scalar_Dbl(mixt_tree->a_edges[i]->l);
           Free_Scalar_Dbl(mixt_tree->a_edges[i]->l_old);
@@ -5205,8 +5207,8 @@ void PhyML_XML(char *xml_filename)
                                 ori_lens         = (scalar_dbl **)mRealloc(ori_lens,2*tree->n_otu-1+lens_size,sizeof(scalar_dbl *));
                                 ori_lens_old     = (scalar_dbl **)mRealloc(ori_lens_old,2*tree->n_otu-1+lens_size,sizeof(scalar_dbl *));
 
-                                ori_lens_var     = (scalar_dbl **)mRealloc(ori_lens,2*tree->n_otu-1+lens_size,sizeof(scalar_dbl *));
-                                ori_lens_var_old = (scalar_dbl **)mRealloc(ori_lens_old,2*tree->n_otu-1+lens_size,sizeof(scalar_dbl *));
+                                ori_lens_var     = (scalar_dbl **)mRealloc(ori_lens_var,2*tree->n_otu-1+lens_size,sizeof(scalar_dbl *));
+                                ori_lens_var_old = (scalar_dbl **)mRealloc(ori_lens_var_old,2*tree->n_otu-1+lens_size,sizeof(scalar_dbl *));
 
                                 lens     = ori_lens     + lens_size;;
                                 lens_old = ori_lens_old + lens_size;;
@@ -5271,6 +5273,14 @@ void PhyML_XML(char *xml_filename)
                             ds            = ds->next;
                 ds->obj       = (scalar_dbl **)lens_old;
 
+			    ds->next      = (t_ds *)mCalloc(1,sizeof(t_ds));                            
+                            ds            = ds->next;
+			    ds->obj       = (scalar_dbl **)lens_var;
+
+			    ds->next      = (t_ds *)mCalloc(1,sizeof(t_ds));                            
+                            ds            = ds->next;
+			    ds->obj       = (scalar_dbl **)lens_var_old;
+
                 ds->next      = (t_ds *)mCalloc(1,sizeof(t_ds));
                             ds            = ds->next;
                 ds->obj       = (int *)(&iomod->s_opt->opt_bl);
@@ -5290,7 +5300,13 @@ void PhyML_XML(char *xml_filename)
                 lens     = (scalar_dbl **)ds->obj;
 
                             ds = ds->next;
-                lens_old = (scalar_dbl **)instance->ds->next->obj;
+			    lens_old = (scalar_dbl **)ds->obj;
+
+                            ds = ds->next;
+			    lens_var = (scalar_dbl **)ds->obj;
+
+                            ds = ds->next;
+			    lens_var_old = (scalar_dbl **)ds->obj;
 
                             ds = ds->next;
                             iomod->s_opt->opt_bl = *((int *)ds->obj);
@@ -5303,7 +5319,7 @@ void PhyML_XML(char *xml_filename)
                 Exit("\n");
               }
 
-            For(i,2*tree->n_otu-2)
+			For(i,2*tree->n_otu-1) 
                           {
                             tree->a_edges[i]->l          = lens[i];
                             mixt_tree->a_edges[i]->l     = lens[i];
@@ -5493,9 +5509,6 @@ void PhyML_XML(char *xml_filename)
         }
       while(tree);
 
-      /*! Check that all edge lengths are non-negative */
-      Check_Br_Lens(mixt_tree);
-
       /* TO DO
 
          1) REMOVE ROOT
@@ -5537,13 +5550,7 @@ void PhyML_XML(char *xml_filename)
       MIXT_Check_Invar_Struct_In_Each_Partition_Elem(mixt_tree);
       MIXT_Check_RAS_Struct_In_Each_Partition_Elem(mixt_tree);
 
-      tree = mixt_tree;
-      do
-        {
-          Set_Both_Sides(YES,tree);
-          tree = tree->next;
-        }
-      while(tree);
+      Set_Both_Sides(YES,mixt_tree);      
 
       if(mixt_tree->mod->s_opt->opt_topo)
         {
@@ -5641,6 +5648,7 @@ void PhyML_XML(char *xml_filename)
   Free_Model_Complete(mixt_tree->mod);
   Free_Model_Basic(mixt_tree->mod);
   Free_Tree(mixt_tree);
+
   if(io->fp_out_trees) fclose(io->fp_out_trees);
   if(io->fp_out_tree)  fclose(io->fp_out_tree);
   if(io->fp_out_stats) fclose(io->fp_out_stats);

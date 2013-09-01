@@ -3369,6 +3369,10 @@ t_mod *Copy_Model(t_mod *ori)
   Record_Model(ori,cpy);
   cpy->m4mod = M4_Copy_M4_Model(ori, ori->m4mod);
 
+#ifdef BEAGLE
+  cpy->b_inst      = ori->b_inst;
+#endif
+
   return cpy;
 }
 
@@ -7274,7 +7278,18 @@ void Best_Of_NNI_And_SPR(t_tree *tree)
       best_mod  = Copy_Model(tree->mod);
 
       ori_tree = Make_Tree_From_Scratch(tree->n_otu,tree->data);
+
+/*       ori_tree = Make_Tree(tree->n_otu); */
+/*       Init_Tree(ori_tree,ori_tree->n_otu); */
+/*       Make_All_Tree_Nodes(ori_tree); */
+/*       Make_All_Tree_Edges(ori_tree); */
+
       best_tree = Make_Tree_From_Scratch(tree->n_otu,tree->data);
+
+/*       best_tree = Make_Tree(tree->n_otu); */
+/*       Init_Tree(best_tree,best_tree->n_otu); */
+/*       Make_All_Tree_Nodes(best_tree); */
+/*       Make_All_Tree_Edges(best_tree); */
 
       Copy_Tree(tree,ori_tree);
       Record_Br_Len(tree);
@@ -10036,10 +10051,8 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
     {
       if(b == tree->e_root)
         {
-          if(d == tree->n_root->v[1])
-              b = tree->n_root->b[1];
-          else if(d == tree->n_root->v[2])
-              b = tree->n_root->b[2];
+          if(d == tree->n_root->v[1])      b = tree->n_root->b[1];
+          else if(d == tree->n_root->v[2]) b = tree->n_root->b[2];
           else
             {
               PhyML_Printf("\n== Err. in file %s at line %d.",__FILE__,__LINE__);
@@ -10315,6 +10328,12 @@ void Optimum_Root_Position_IL_Model(t_tree *tree)
 
 void Set_Br_Len_Var(t_tree *tree)
 {
+  if(tree->is_mixt_tree)
+    {
+      MIXT_Set_Br_Len_Var(tree);
+      return;
+    }
+
   if(!tree->rates)
     {
       int i;

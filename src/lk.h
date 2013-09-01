@@ -1,7 +1,7 @@
 /*
 
 PHYML :  a program that  computes maximum likelihood  phylogenies from
-DNA or AA homologous sequences 
+DNA or AA homologous sequences
 
 Copyright (C) Stephane Guindon. Oct 2003 onward
 
@@ -36,9 +36,9 @@ matrix *ML_Dist(calign *data, t_mod *mod);
 phydbl Lk_Given_Two_Seq(calign *data, int numseq1, int numseq2, phydbl dist, t_mod *mod, phydbl *loglk);
 void Unconstraint_Lk(t_tree *tree);
 void Update_P_Lk(t_tree *tree,t_edge *b_fcus,t_node *n);
-void Update_P_Lk_Generic(t_tree *tree,t_edge *b_fcus,t_node *n);
-void Update_P_Lk_AA(t_tree *tree,t_edge *b_fcus,t_node *n);
-void Update_P_Lk_Nucl(t_tree *tree,t_edge *b_fcus,t_node *n);
+void Update_P_Lk_Generic(t_tree *tree,t_edge *b_fcus,t_node *n,bool scale);
+void Update_P_Lk_AA(t_tree *tree,t_edge *b_fcus,t_node *n,bool scale);
+void Update_P_Lk_Nucl(t_tree *tree,t_edge *b_fcus,t_node *n,bool scale);
 void Init_P_Lk_Tips_Double(t_tree *tree);
 void Init_P_Lk_Tips_Int(t_tree *tree);
 void Init_P_Lk_At_One_Node(t_node *a, t_tree *tree);
@@ -78,10 +78,10 @@ phydbl Wrap_Lk_Rates(t_edge *b, t_tree *tree, supert_tree *stree);
 phydbl Wrap_Lk_Linreg(t_edge *b, t_tree *tree, supert_tree *stree);
 void Sample_Ancestral_Seq(int mutmap, int fromprior, t_tree *tree);
 void Map_Mutations(t_node *a, t_node *d, int sa, int sd, t_edge *b, int site, int rate_cat, int *muttype, phydbl *muttime, int *n_mut, t_tree *tree);
-void Sample_Ancestral_Seq_Pre(t_node *a, t_node *d, t_edge *b, 
-			      int site, int rate_cat, 
-			      int *muttype, phydbl *muttime, int *n_mut, 
-			      int mutmap, int fromprior, t_tree *tree);
+void Sample_Ancestral_Seq_Pre(t_node *a, t_node *d, t_edge *b,
+                  int site, int rate_cat,
+                  int *muttype, phydbl *muttime, int *n_mut,
+                  int mutmap, int fromprior, t_tree *tree);
 phydbl Wrap_Lk_Times(t_edge *b, t_tree *tree, supert_tree *stree);
 phydbl Lk_LastFirst(t_tree *tree);
 phydbl Invariant_Lk(int *fact_sum_scale, int site, int *num_prec_issue, t_tree *tree);

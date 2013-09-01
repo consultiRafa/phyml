@@ -1103,69 +1103,90 @@ t_cal *Make_Calib(int n_otu)
 
 void Make_Rmat_Weight(t_tree *mixt_tree)
 {
-  t_tree *curr_mixt_tree, *tree, *buff_tree;
-  t_rmat *curr_r_mat;
-  scalar_dbl *match_weight;
-  scalar_dbl **all_r_mats;
-  int i,n_mats;
+  t_tree *tree, *buff_tree;
 
-  all_r_mats = (scalar_dbl **)mCalloc(1,sizeof(scalar_dbl *));
 
-  buff_tree = tree = curr_mixt_tree = mixt_tree;
-  do // For each mixt_tree
+  tree = mixt_tree;
+  do
     {
-      n_mats = 0;
-      tree = curr_mixt_tree->next; // First tree in the mixture
-      do // For each tree in curr_mixt_tree
-        {
-          curr_r_mat = tree->mod->r_mat;
-          all_r_mats[n_mats] = tree->mod->r_mat_weight;
-          n_mats += 1;
-          all_r_mats = (scalar_dbl **)realloc(all_r_mats,(n_mats+1)*sizeof(scalar_dbl *));
+      if(tree->is_mixt_tree == YES) tree = tree->next;
 
-          if(tree != curr_mixt_tree->next)
+      buff_tree = mixt_tree->next;
+      do
+        {
+          if(buff_tree->mod->r_mat_weight == tree->mod->r_mat_weight) break;
+          buff_tree = buff_tree->next;
+        }
+      while(buff_tree != tree);
+
+      if(buff_tree == tree) Free(tree->mod->r_mat_weight);          
+      
+      tree = tree->next;
+    }
+  while(tree);
+
+
+  tree = mixt_tree;
+  do
             {
-              // Find out whether curr_r_mat was found previously
-              buff_tree = curr_mixt_tree->next;  // Start from first tree in the mixture
-              match_weight = NULL;
-              while(buff_tree != tree) // Stop when you have reached the current tree
+      if(tree->is_mixt_tree == YES) tree = tree->next;
+      tree->mod->r_mat_weight = NULL;
+      tree = tree->next;
+    }
+  while(tree);
+
+
+  tree = mixt_tree->next;
+  tree->mod->r_mat_weight = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
+  Init_Scalar_Dbl(tree->mod->r_mat_weight);
+  tree->mod->r_mat_weight->v = 1.0;
+ 
+  buff_tree = tree = mixt_tree;
+  do // For each mixt_tree
                 {
-                  if(buff_tree->mod->r_mat == curr_r_mat)
+      if(tree->is_mixt_tree == YES) tree = tree->next;
+
+      buff_tree = mixt_tree->next;
+      do
                     {
-                      match_weight = buff_tree->mod->r_mat_weight;
+          if(buff_tree->mod->r_mat == tree->mod->r_mat)
+            {
+              tree->mod->r_mat_weight = buff_tree->mod->r_mat_weight;
                       break;
                     }
                   buff_tree = buff_tree->next;
                 }
+      while(buff_tree != tree);
 
-              if(match_weight)
+      if(!tree->mod->r_mat_weight)
                 {
-                  Free(tree->mod->r_mat_weight);
-                  tree->mod->r_mat_weight = match_weight;
-                  n_mats -= 1;
+          tree->mod->r_mat_weight = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
+          Init_Scalar_Dbl(tree->mod->r_mat_weight);
+          tree->mod->r_mat_weight->v = 1.0;
                 }
-            }
+
           tree = tree->next;
-        }
-      while(tree && tree->is_mixt_tree == NO);
 
-      For(i,n_mats-1)
+        }
+  while(tree);
+
+  tree = mixt_tree;
+  do
         {
-          all_r_mats[i]->next = all_r_mats[i+1];
-          all_r_mats[i+1]->prev = all_r_mats[i];
+      if(tree->next) 
+        {
+          tree->mod->r_mat_weight->next = tree->next->mod->r_mat_weight;
+          tree->next->mod->r_mat_weight->prev = tree->mod->r_mat_weight;
         }
-
-      /* For(i,n_mats)  */
-      /*   { */
-      /*     printf("\n.M %p %p %p",all_r_mats[i],all_r_mats[i]->next,all_r_mats[i]->prev); */
-      /*   } */
-      /* printf("\n"); */
-
-      curr_mixt_tree = curr_mixt_tree->next_mixt;
+      else
+        {
+          tree->mod->r_mat_weight->next = NULL;
+        }
+      tree = tree->next;
     }
-  while(curr_mixt_tree);
+  while(tree);
 
-  Free(all_r_mats);
+
 }
 
 //////////////////////////////////////////////////////////////
@@ -1173,69 +1194,94 @@ void Make_Rmat_Weight(t_tree *mixt_tree)
 
 void Make_Efrq_Weight(t_tree *mixt_tree)
 {
-  t_tree *curr_mixt_tree, *tree, *buff_tree;
-  t_efrq *curr_e_frq;
-  scalar_dbl *match_weight;
-  scalar_dbl **all_e_frqs;
-  int i,n_frqs;
+  t_tree *tree, *buff_tree;
 
-  all_e_frqs = (scalar_dbl **)mCalloc(1,sizeof(scalar_dbl *));
 
-  buff_tree = tree = curr_mixt_tree = mixt_tree;
-  do // For each mixt_tree
+  tree = mixt_tree;
+  do
     {
-      n_frqs = 0;
-      tree = curr_mixt_tree->next; // First tree in the mixture
-      do // For each tree in curr_mixt_tree
-        {
-          curr_e_frq = tree->mod->e_frq;
-          all_e_frqs[n_frqs] = tree->mod->e_frq_weight;
-          n_frqs += 1;
-          all_e_frqs = (scalar_dbl **)realloc(all_e_frqs,(n_frqs+1)*sizeof(scalar_dbl *));
+      if(tree->is_mixt_tree == YES) tree = tree->next;
 
-          if(tree != curr_mixt_tree->next)
+      buff_tree = mixt_tree->next;
+      do
+        {
+          if(buff_tree->mod->e_frq_weight == tree->mod->e_frq_weight) break;
+          buff_tree = buff_tree->next;
+        }
+      while(buff_tree != tree);
+
+      if(buff_tree == tree)
             {
-              // Find out whether curr_e_frq was found previously
-              buff_tree = curr_mixt_tree->next;  // Start from first tree in the mixture
-              match_weight = NULL;
-              while(buff_tree != tree) // Stop when you have reached the current tree
+          Free(tree->mod->e_frq_weight);          
+        }
+      
+      tree = tree->next;
+    }
+  while(tree);
+
+
+  tree = mixt_tree;
+  do
                 {
-                  if(buff_tree->mod->e_frq == curr_e_frq)
+      if(tree->is_mixt_tree == YES) tree = tree->next;
+      tree->mod->e_frq_weight = NULL;
+      tree = tree->next;
+    }
+  while(tree);
+
+
+
+  tree = mixt_tree->next;
+  tree->mod->e_frq_weight = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
+  Init_Scalar_Dbl(tree->mod->e_frq_weight);
+  tree->mod->e_frq_weight->v = 1.0;
+
+ 
+  buff_tree = tree = mixt_tree;
+  do // For each mixt_tree
                     {
-                      match_weight = buff_tree->mod->e_frq_weight;
+      if(tree->is_mixt_tree == YES) tree = tree->next;
+
+      buff_tree = mixt_tree->next;
+      do
+        {
+          if(buff_tree->mod->e_frq == tree->mod->e_frq)
+            {
+              tree->mod->e_frq_weight = buff_tree->mod->e_frq_weight;
                       break;
                     }
                   buff_tree = buff_tree->next;
                 }
+      while(buff_tree != tree);
 
-              if(match_weight)
+      if(!tree->mod->e_frq_weight)
                 {
-                  Free(tree->mod->e_frq_weight);
-                  tree->mod->e_frq_weight = match_weight;
-                  n_frqs -= 1;
+          tree->mod->e_frq_weight = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
+          Init_Scalar_Dbl(tree->mod->e_frq_weight);
+          tree->mod->e_frq_weight->v = 1.0;
                 }
-            }
+
           tree = tree->next;
-        }
-      while(tree && tree->is_mixt_tree == NO);
 
-      For(i,n_frqs-1)
+        }
+  while(tree);
+
+
+  tree = mixt_tree;
+  do
+    {
+      if(tree->next) 
         {
-          all_e_frqs[i]->next = all_e_frqs[i+1];
-          all_e_frqs[i+1]->prev = all_e_frqs[i];
-        }
-
-      /* For(i,n_frqs)  */
-      /*   { */
-      /*     printf("\n.F %p %p %p",all_e_frqs[i],all_e_frqs[i]->next,all_e_frqs[i]->prev); */
-      /*   } */
-      /* printf("\n"); */
-
-      curr_mixt_tree = curr_mixt_tree->next_mixt;
+          tree->mod->e_frq_weight->next = tree->next->mod->e_frq_weight;
+          tree->next->mod->e_frq_weight->prev = tree->mod->e_frq_weight;
     }
-  while(curr_mixt_tree);
-
-  Free(all_e_frqs);
+      else
+        {
+          tree->mod->e_frq_weight->next = NULL;
+        }
+      tree = tree->next;
+    }
+  while(tree);
 }
 
 //////////////////////////////////////////////////////////////

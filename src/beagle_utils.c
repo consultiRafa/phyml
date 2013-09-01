@@ -24,50 +24,12 @@ double* short_to_double(const short* src, int num_elems)
     return dest;
 }
 
-
-double* tips_to_partials_nucl(const char *sequence) {
-    int n = strlen(sequence);
-    double *partials = (double*)malloc(sizeof(double) * n * 4);
-
-    int k = 0;
-    for (int i = 0; i < n; i++) {
-        switch (sequence[i]) {
-            case 'A':
-                partials[k++] = 1;
-                partials[k++] = 0;
-                partials[k++] = 0;
-                partials[k++] = 0;
-                break;
-            case 'C':
-                partials[k++] = 0;
-                partials[k++] = 1;
-                partials[k++] = 0;
-                partials[k++] = 0;
-                break;
-            case 'G':
-                partials[k++] = 0;
-                partials[k++] = 0;
-                partials[k++] = 1;
-                partials[k++] = 0;
-                break;
-            case 'T':
-                partials[k++] = 0;
-                partials[k++] = 0;
-                partials[k++] = 0;
-                partials[k++] = 1;
-                break;
-            case 'X':
-                partials[k++] = -1;
-                partials[k++] = -1;
-                partials[k++] = -1;
-                partials[k++] = -1;
-                break;
-            default:
-                Free(partials);
-                Warn_And_Exit("TODO: Add other states");
-        }
-    }
-    return partials;
+double* float_to_double(const phydbl* src, int num_elems)
+{
+    double* dest = (double*)malloc(num_elems*sizeof(double)); if (NULL==dest) Warn_And_Exit("Couldn't allocate memory");
+    for(int i=0; i<num_elems;++i)
+        dest[i] = (double)src[i];
+    return dest;
 }
 
 void print_beagle_flags(long inFlags) {
@@ -117,7 +79,7 @@ void print_beagle_instance_details(BeagleInstanceDetails *inst)
 {
     int rNumber = inst->resourceNumber;
     fprintf(stdout, "\tUsing resource %i:\n", rNumber);
-    fprintf(stdout, "\t\tRsrc Name : %s\n",inst->resourceName);
+    fprintf(stdout, "\t\tRsrc Name : %s\n", inst->resourceName);
     fprintf(stdout, "\t\tImpl Name : %s\n", inst->implName);
     fprintf(stdout, "\t\tImpl Desc : %s\n", inst->implDescription);
     fprintf(stdout, "\t\tFlags:");
@@ -137,7 +99,7 @@ int create_beagle_instance(t_tree *tree, int quiet)
     BeagleInstanceDetails inst_d;
     int num_rate_catg = tree->mod->ras->n_catg;
     int num_branches  = 2*tree->n_otu-1; //rooted tree
-    //Recall that in PhyML, each edge has two "left" and "right" partial vectors. Therefore,
+    //Recall that in PhyML, each edge has a "left" and "right" partial vectors. Therefore,
     //in BEAGLE we have 2*num_branches number of partials.
     //BEAGLE's partials buffer = [ tax1, tax2, ..., taxN, b1Left, b2Left, b3Left,...,bMLeft, b1Rght, b2Rght, b3Rght,...,bMRght] (N taxa, M branches)
     int num_partials  = tree->n_otu + (2*num_branches);
@@ -149,13 +111,13 @@ int create_beagle_instance(t_tree *tree, int quiet)
                                   tree->n_otu,                /**< Number of compact state representation buffers to create (input) */
                                   tree->mod->ns,              /**< Number of states in the continuous-time Markov chain (input) */
                                   tree->n_pattern,            /**< Number of site patterns to be handled by the instance (input) */
-                                  1,                          /**< Number of rate matrix eigen-decomposition buffers. We supply BEAGLE the P matrix directly */
+                                  1,                          /**< Number of rate matrix eigen-decomposition buffers */
                                   num_branches,               /**< Number of rate matrix buffers (input) */
                                   num_rate_catg,              /**< Number of rate categories (input) */
                                   num_scales,                 /**< Number of scaling buffers */
                                   NULL,                       /**< List of potential resource on which this instance is allowed (input, NULL implies no restriction */
                                   0,			    /**< Length of resourceList list (input) */
-                                  BEAGLE_FLAG_FRAMEWORK_CPU | BEAGLE_FLAG_PROCESSOR_CPU | BEAGLE_FLAG_SCALING_MANUAL | ((sizeof(float)==sizeof(phydbl)) ? BEAGLE_FLAG_PRECISION_SINGLE:BEAGLE_FLAG_PRECISION_DOUBLE),
+                                  BEAGLE_FLAG_FRAMEWORK_CPU | BEAGLE_FLAG_PROCESSOR_CPU | BEAGLE_FLAG_SCALING_MANUAL | BEAGLE_FLAG_EIGEN_COMPLEX | ((sizeof(float)==sizeof(phydbl)) ? BEAGLE_FLAG_PRECISION_SINGLE:BEAGLE_FLAG_PRECISION_DOUBLE),
                                   0,                /**< Bit-flags indicating required implementation characteristics, see BeagleFlags (input) */
                                   &inst_d);
     if (beagle_inst < 0){
@@ -202,25 +164,57 @@ int create_beagle_instance(t_tree *tree, int quiet)
 //        return ret;
 //    }
 
-//    //Set initial substitution rates (weighted)
-//    ret = beagleSetCategoryRates(beagle_inst, tree->mod->ras->gamma_rr->v);
-//    if(ret<0){
-//        fprintf(stderr, "beagleSetCategoryRates() on instance %i failed:%i\n\n",beagle_inst,ret);
-//        return ret;
-//    }
-//    ret = beagleSetCategoryWeights(beagle_inst, 0, /*TODO*/);
-//    if(ret<0){
-//        fprintf(stderr, "beagleSetCategoryWeights() on instance %i failed:%i\n\n",beagle_inst,ret);
-//        return ret;
-//    }
+    //Computing P-matrix directly in BEAGLE? IOW, doing matrix mult in BEAGLE?
+    int whichmodel = tree->mod->whichmodel;
+    if((tree->mod->io->datatype == AA || whichmodel==GTR || whichmodel==CUSTOM) && tree->mod->use_m4mod == NO)
+    {
+        int ret=-1;
+        double* eigen_vects     = NULL;
+        double* eigen_vects_inv = NULL;
+        double* eigen_vals      = NULL;
+        double* catg_rates      = NULL;
+        //Need to convert to doubles?
+        if((sizeof(float)==sizeof(phydbl)))
+        {
+            eigen_vects     = float_to_double(tree->mod->eigen->r_e_vect, tree->mod->eigen->size*tree->mod->eigen->size);
+            eigen_vects_inv = float_to_double(tree->mod->eigen->l_e_vect, tree->mod->eigen->size*tree->mod->eigen->size);
+            eigen_vals      = float_to_double(tree->mod->eigen->e_val,tree->mod->eigen->size);
+            catg_rates      = float_to_double(tree->mod->ras->gamma_rr->v, num_rate_catg);
+        }
+        else
+        {
+            eigen_vects     = tree->mod->eigen->r_e_vect;
+            eigen_vects_inv = tree->mod->eigen->l_e_vect;
+            eigen_vals      = tree->mod->eigen->e_val;
+            catg_rates      = tree->mod->ras->gamma_rr->v;
+        }
 
+        //Set the Eigen Decomposition of the Q-matrix
+        ret = beagleSetEigenDecomposition(beagle_inst,0,eigen_vects,eigen_vects_inv,eigen_vals);
+        if(ret<0){
+          fprintf(stderr, "beagleSetEigenDecomposition() on instance %i failed:%i\n\n",beagle_inst,ret);
+          Free(eigen_vects);Free(eigen_vects_inv);Free(eigen_vals);Free(catg_rates);
+          return ret;
+        }
+
+        //Set initial substitution rates (weighted)
+        ret = beagleSetCategoryRates(beagle_inst, catg_rates);
+        if(ret<0){
+            fprintf(stderr, "beagleSetCategoryRates() on instance %i failed:%i\n\n",beagle_inst,ret);
+            Free(eigen_vects);Free(eigen_vects_inv);Free(eigen_vals);Free(catg_rates);
+            return ret;
+        }
+        Free(eigen_vects);Free(eigen_vects_inv);Free(eigen_vals);Free(catg_rates);
+    }
+
+    tree->mod->b_inst = beagle_inst;
     return beagle_inst;
 }
 
 /* Update partial likelihood on edge b on the side of b where
    node d lies.
 */
-void update_beagle_partials(t_tree* tree, t_edge* b, t_node* d)
+void update_beagle_partials(t_tree* tree, t_edge* b, t_node* d, bool scale)
 {
     /*
                |
@@ -277,90 +271,93 @@ void update_beagle_partials(t_tree* tree, t_edge* b, t_node* d)
 
     //Create the corresponding BEAGLE operation
     BeagleOperation operations[1] = {{dest_p_idx, BEAGLE_OP_NONE, BEAGLE_OP_NONE, child1_p_idx, Pij1_idx, child2_p_idx, Pij2_idx}};
-    int ret = beagleResetScaleFactors(tree->b_inst, 0);
-    if(ret<0){
-        fprintf(stderr, "beagleResetScaleFactors() on instance %i failed:%i\n\n",tree->b_inst,ret);
-        Exit("");
-    }
-    ret = beagleUpdatePartials(tree->b_inst, operations, 1, BEAGLE_OP_NONE);
+    //Compute the partials
+    int ret = beagleUpdatePartials(tree->b_inst, operations, 1, BEAGLE_OP_NONE);
     if(ret<0){
         fprintf(stderr, "beagleUpdatePartials() on instance %i failed:%i\n\n",tree->b_inst,ret);
         Exit("");
     }
-
-    //Fetch and Set the updated partial likelihoods
+    //Load the computed/updated partial partials
     ret = beagleGetPartials(tree->b_inst, dest_p_idx, BEAGLE_OP_NONE, (double*)p_lk);
     if(ret<0){
         fprintf(stderr, "beagleGetPartials() on instance %i failed:%i\n\n",tree->b_inst,ret);
         Exit("");
     }
 
+    if(scale)
+    {
+        //Scaling. (btw, the p_lk vector (which is returned by BEAGLE) is indexed based on the memory layout rates * patterns * state)
+        int n_patterns = tree->n_pattern;
+        phydbl p_lk_lim_inf = (phydbl)P_LK_LIM_INF;
+        int dim1 = n_patterns * tree->mod->ns;
+        int dim2 = tree->mod->ns;
+        int sum_scale_v1_val = 0;
+        int sum_scale_v2_val = 0;
+        phydbl curr_scaler;
+        phydbl smallest_p_lk;
+        int curr_scaler_pow, piecewise_scaler_pow;
+        curr_scaler = .0;
+        curr_scaler_pow = piecewise_scaler_pow = 0;
+        for(int site=0;site<n_patterns;++site)
+        {
+            for(int catg=0;catg<tree->mod->ras->n_catg;++catg)
+            {
+                smallest_p_lk  =  BIG;
+
+                for(int i=0;i<tree->mod->ns;++i)
+                {
+                    if(p_lk[catg*dim1+site*dim2+i] < smallest_p_lk)
+                        smallest_p_lk = p_lk[catg*dim1+site*dim2+i];
+                }
+                /* Current scaling values at that site */
+                sum_scale_v1_val = (sum_scale_v1)?(sum_scale_v1[catg*n_patterns+site]):(0);
+                sum_scale_v2_val = (sum_scale_v2)?(sum_scale_v2[catg*n_patterns+site]):(0);
+
+                sum_scale[catg*n_patterns+site] = sum_scale_v1_val + sum_scale_v2_val;
+//                fprintf(stderr,"\n%f,%f,%d",smallest_p_lk,curr_scaler,curr_scaler_pow);
+
+                /* Scaling */
+                if(smallest_p_lk < p_lk_lim_inf) //do we need to scale?
+                  {
+                    curr_scaler_pow = (int)(LOG(p_lk_lim_inf)-LOG(smallest_p_lk))/LOG2;
+                    curr_scaler     = (phydbl)((unsigned long long)(1) << curr_scaler_pow);
+
+                    sum_scale[catg*n_patterns+site] += curr_scaler_pow;
+//                    fprintf(stderr,"\n%d",sum_scale[catg*n_patterns+site]);
+
+                    do
+                      {
+                        piecewise_scaler_pow = MIN(curr_scaler_pow,63);
+                        curr_scaler = (phydbl)((unsigned long long)(1) << piecewise_scaler_pow);
+                        for(int j=0;j<tree->mod->ns;++j)
+                          {
+                            p_lk[catg*dim1+site*dim2+j] *= curr_scaler;
+
+                            if(p_lk[catg*dim1+site*dim2+j] > BIG)
+                              {
+                                PhyML_Printf("\n. p_lk_lim_inf = %G smallest_p_lk = %G",p_lk_lim_inf,smallest_p_lk);
+                                PhyML_Printf("\n. curr_scaler_pow = %d",curr_scaler_pow);
+                                PhyML_Printf("\n. Err in file %s at line %d.",__FILE__,__LINE__);
+                                Warn_And_Exit("\n");
+                              }
+//                            fprintf(stderr,"\n%e",p_lk[catg*dim1+site*dim2+j]);
+                          }
+                        curr_scaler_pow -= piecewise_scaler_pow;
+                      }
+                    while(curr_scaler_pow != 0);
+                    //Store the scaled partials back into BEAGLE
+                    ret = beagleSetPartials(tree->b_inst, dest_p_idx, p_lk);
+                    if(ret<0){
+                        fprintf(stderr, "beagleSetPartials() on instance %i failed:%i\n\n",tree->b_inst,ret);
+                        Exit("");
+                    }
+                  }
+            }
+        }
+    }
+
 //    fprintf(stdout, "Updated partials:");fflush(stdout);
 //    Dump_Arr_D(p_lk, tree->mod->ras->n_catg*tree->mod->ns*tree->n_pattern);
-
-
-    //Scaling (BEAGLE specific). That is, the p_lk vector (which is returned by BEAGLE) is indexed based on the memory layout rates * patterns * state
-//    int n_patterns = tree->n_pattern;
-//    phydbl p_lk_lim_inf = (phydbl)P_LK_LIM_INF;
-//    int dim1 = n_patterns * tree->mod->ns;
-//    int dim2 = tree->mod->ns;
-//    int sum_scale_v1_val = 0;
-//    int sum_scale_v2_val = 0;
-//    phydbl curr_scaler;
-//    phydbl smallest_p_lk;
-//    int curr_scaler_pow, piecewise_scaler_pow;
-//    curr_scaler = .0;
-//    curr_scaler_pow = piecewise_scaler_pow = 0;
-//    for(int site=0;site<n_patterns;++site)
-//    {
-//        for(int catg=0;catg<tree->mod->ras->n_catg;++catg)
-//        {
-//            smallest_p_lk  =  BIG;
-
-//            for(int i=0;i<tree->mod->ns;++i)
-//            {
-//                if(p_lk[catg*dim1+site*dim2+i] < smallest_p_lk)
-//                    smallest_p_lk = p_lk[catg*dim1+site*dim2+i];
-//            }
-
-//            sum_scale_v1_val = (sum_scale_v1)?(sum_scale_v1[catg*n_patterns+site]):(0);
-//            sum_scale_v2_val = (sum_scale_v2)?(sum_scale_v2[catg*n_patterns+site]):(0);
-
-//            sum_scale[catg*n_patterns+site] = sum_scale_v1_val + sum_scale_v2_val;
-////            DUMP_D(smallest_p_lk, curr_scaler);
-////            DUMP_I(curr_scaler_pow);
-////            fprintf(stderr,"\n%d",sum_scale[catg*n_patterns+site]);
-
-//            /* Scaling */
-//            if(smallest_p_lk < p_lk_lim_inf)
-//              {
-//                curr_scaler_pow = (int)(LOG(p_lk_lim_inf)-LOG(smallest_p_lk))/LOG2;
-//                curr_scaler     = (phydbl)((unsigned long long)(1) << curr_scaler_pow);
-
-//                sum_scale[catg*n_patterns+site] += curr_scaler_pow;
-
-//                do
-//                  {
-//                    piecewise_scaler_pow = MIN(curr_scaler_pow,63);
-//                    curr_scaler = (phydbl)((unsigned long long)(1) << piecewise_scaler_pow);
-//                    for(int j=0;j<tree->mod->ns;++j)
-//                      {
-//                        p_lk[catg*dim1+site*dim2+j] *= curr_scaler;
-
-//                        if(p_lk[catg*dim1+site*dim2+j] > BIG)
-//                          {
-//                            PhyML_Printf("\n. p_lk_lim_inf = %G smallest_p_lk = %G",p_lk_lim_inf,smallest_p_lk);
-//                            PhyML_Printf("\n. curr_scaler_pow = %d",curr_scaler_pow);
-//                            PhyML_Printf("\n. Err in file %s at line %d.",__FILE__,__LINE__);
-//                            Warn_And_Exit("\n");
-//                          }
-//                      }
-//                    curr_scaler_pow -= piecewise_scaler_pow;
-//                  }
-//                while(curr_scaler_pow != 0);
-//              }
-//        }
-//    }
 
 //    int parent_nodes[2] = {d->num, d->num};//The child nodes share the same parent
 //    int child_nodes[2] = {n_v1->num, n_v2->num};

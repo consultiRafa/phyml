@@ -445,7 +445,6 @@ void Free_Edge_Lk_Left(t_edge *b)
 {
 
   Free(b->div_post_pred_left);
-//  Free(b->div_post_pred_rght);
 
   if(b->p_lk_left)
     {
@@ -655,9 +654,9 @@ void Free_RAS(t_ras *ras)
   Free(ras->gamma_r_proba_unscaled);
   Free(ras->gamma_rr);
   Free(ras->gamma_rr_unscaled);
-  Free(ras->pinvar);
-  Free(ras->alpha);
-  Free(ras->free_rate_mr);
+  Free_Scalar_Dbl(ras->pinvar);
+  Free_Scalar_Dbl(ras->alpha);
+  Free_Scalar_Dbl(ras->free_rate_mr);
 
   if(ras->next) Free_RAS(ras->next);
 

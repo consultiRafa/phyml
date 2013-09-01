@@ -24,7 +24,7 @@ void Bootstrap_MPI(t_tree *tree)
 
   calign *boot_data;
   t_tree *boot_tree;
-  model *boot_mod;
+  t_mod *boot_mod;
   matrix *boot_mat;
   char *s;
 
@@ -236,7 +236,7 @@ fflush(stderr);
           if(boot_tree->mod->s_opt->opt_subst_param || boot_tree->mod->s_opt->opt_bl)
             Round_Optimize(boot_tree,boot_tree->data,ROUND_MAX);
           else
-            Lk(boot_tree);
+            Lk(NULL,boot_tree);
         }
 
       Free_Bip(boot_tree);
@@ -469,7 +469,7 @@ void Print_Fp_Out_Lines_MPI(t_tree *tree, option *io, int n_data_set, char *boot
       snprintf(tmp, T_MAX_LINE, "%.3f    \t",tree->mod->ras->alpha->v); strncat (s, tmp, T_MAX_LINE);
     }
   
-  snprintf(tmp, T_MAX_LINE, "%.3f    \t",tree->mod->pinvar->v); strncat (s, tmp, T_MAX_LINE);
+  snprintf(tmp, T_MAX_LINE, "%.3f    \t",tree->mod->ras->pinvar->v); strncat (s, tmp, T_MAX_LINE);
   
   if(tree->mod->whichmodel <= 5)
     {
@@ -487,10 +487,10 @@ void Print_Fp_Out_Lines_MPI(t_tree *tree, option *io, int n_data_set, char *boot
 
   if(tree->mod->io->datatype == NT)
     {
-      snprintf(tmp, T_MAX_LINE, "%8.5f  ",tree->mod->pi->v[0]); strncat (s, tmp, T_MAX_LINE);
-      snprintf(tmp, T_MAX_LINE, "%8.5f  ",tree->mod->pi->v[1]); strncat (s, tmp, T_MAX_LINE);
-      snprintf(tmp, T_MAX_LINE, "%8.5f  ",tree->mod->pi->v[2]); strncat (s, tmp, T_MAX_LINE);
-      snprintf(tmp, T_MAX_LINE, "%8.5f\t",tree->mod->pi->v[3]); strncat (s, tmp, T_MAX_LINE);
+      snprintf(tmp, T_MAX_LINE, "%8.5f  ",tree->mod->e_frq->pi->v[0]); strncat (s, tmp, T_MAX_LINE);
+      snprintf(tmp, T_MAX_LINE, "%8.5f  ",tree->mod->e_frq->pi->v[1]); strncat (s, tmp, T_MAX_LINE);
+      snprintf(tmp, T_MAX_LINE, "%8.5f  ",tree->mod->e_frq->pi->v[2]); strncat (s, tmp, T_MAX_LINE);
+      snprintf(tmp, T_MAX_LINE, "%8.5f\t",tree->mod->e_frq->pi->v[3]); strncat (s, tmp, T_MAX_LINE);
     }
     
   if((tree->mod->whichmodel == GTR) || (tree->mod->whichmodel == CUSTOM))
@@ -511,7 +511,7 @@ void Print_Fp_Out_Lines_MPI(t_tree *tree, option *io, int n_data_set, char *boot
             strncat (s, tmp, T_MAX_LINE);
           }
           For(j,4) {
-            snprintf(tmp, T_MAX_LINE, "%8.5f  ",tree->mod->qmat->v[i*4+j]);
+            snprintf(tmp, T_MAX_LINE, "%8.5f  ",tree->mod->r_mat->qmat->v[i*4+j]);
             strncat (s, tmp, T_MAX_LINE);
           }
           if (i<3) {

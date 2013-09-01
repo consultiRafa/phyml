@@ -224,9 +224,12 @@ int main(int argc, char **argv)
                       }
                     }
 
+                  if(tree->mod->gamma_mgf_bl) Optimum_Root_Position_IL_Model(tree);
+
                   Set_Both_Sides(YES,tree);
                   Lk(NULL,tree);
-//                  Print_All_Edge_Likelihoods(tree);
+//                  Print_Model(tree->mod);
+                  Print_All_Edge_Likelihoods(tree);
                   Pars(NULL,tree);
                   Get_Tree_Size(tree);
                   PhyML_Printf("\n\n. Log likelihood of the current tree: %f.",tree->c_lnL);

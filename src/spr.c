@@ -3345,7 +3345,7 @@ int Test_All_Spr_Targets(t_edge *b_pulled, t_node *n_link, t_tree *tree)
                 b_pulled,n_link,b_residual,&best_found,tree);
 
 
-      Graft_Subtree(b_target,n_link,b_residual,tree);//XXX
+      Graft_Subtree(b_target,n_link,b_residual,tree);
 
 
       if((n_link->v[dir1] != n_v1) || (n_link->v[dir2] != n_v2))
@@ -3816,7 +3816,7 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
 
   if(tree->mixt_tree != NULL)
     {
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Exit("\n");
     }
 
@@ -3829,7 +3829,7 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
   if(!list_size && !tree->io->fp_in_constraint_tree)
     {
       PhyML_Printf("\n== List size is 0 !");
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Exit("\n");
     }
 
@@ -3841,7 +3841,7 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
       if(!move)
         {
           PhyML_Printf("\n== move is NULL\n");
-          PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+	      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
           Exit("\n");
         }
 
@@ -4602,18 +4602,14 @@ void Spr_Pars(t_tree *tree)
 void SPR_Shuffle(t_tree *mixt_tree)
 {
   phydbl lk_old;
-  int *orig_catg,*orig_inv,n;
+  int *orig_catg,n;
   t_tree *tree,**tree_list;
 
   if(mixt_tree->mod->s_opt->print) PhyML_Printf("\n\n. Refining the tree...\n");
 
-
   /*! Get the number of classes in each mixture */
   orig_catg = MIXT_Get_Number_Of_Classes_In_All_Mixtures(mixt_tree);
 
-  /*! Record values of mod->invar in every tree
-   */
-  orig_inv  = MIXT_Record_Has_Invariants(mixt_tree);
 
   /*! Set the number of rate classes to (at most) 2.
     ! Propagate this to every mixture tree in the analysis
@@ -4639,6 +4635,7 @@ void SPR_Shuffle(t_tree *mixt_tree)
       }
 #endif
       tree->mod->ras->n_catg = MIN(2,orig_catg[n]);
+      if(tree->mod->ras->invar == YES) tree->mod->ras->n_catg--;
       tree = tree->next_mixt;
       n++;
     }
@@ -4648,18 +4645,7 @@ void SPR_Shuffle(t_tree *mixt_tree)
   /*! Make sure the number of trees in each mixture is at most 2
    */
   tree_list = MIXT_Record_All_Mixtures(mixt_tree);
-  MIXT_Break_All_Mixtures(mixt_tree->mod->ras->n_catg,mixt_tree);
-
-  /*! Set mod->ras->invar to NO for all the trees.
-  */
-  /* orig_tree_list = tree_list; */
-  /* do */
-  /*   { */
-  /*     (*tree_list)->mod->ras->invar = NO; */
-  /*     tree_list++; */
-  /*   } */
-  /* while(*tree_list); */
-  /* tree_list = orig_tree_list; */
+  MIXT_Break_All_Mixtures(orig_catg,mixt_tree);
 
   Set_Both_Sides(YES,mixt_tree);
   Lk(NULL,mixt_tree);
@@ -4698,6 +4684,7 @@ void SPR_Shuffle(t_tree *mixt_tree)
     }
   while(1);
 
+
   if(mixt_tree->mod->s_opt->print && (!mixt_tree->io->quiet))
     PhyML_Printf("\n\n. End of refining stage...\n. The log-likelihood might now decrease and then increase again...\n");
 
@@ -4728,6 +4715,7 @@ void SPR_Shuffle(t_tree *mixt_tree)
           if(ret<0) {fprintf(stderr, "beagleSetCategoryWeights() on instance %i failed:%i\n\n",tree->b_inst,ret);Exit(""); }
       }
 #endif
+	  if(tree->mod->ras->invar == YES) tree->mod->ras->n_catg--;
       tree = tree->next_mixt;
       n++;
     }
@@ -4746,13 +4734,6 @@ void SPR_Shuffle(t_tree *mixt_tree)
       tree = tree->next;
     }
   while(tree);
-
-
-  /*! Reset the mod->invar to their original values
-   */
-  MIXT_Reset_Has_Invariants(orig_inv,mixt_tree);
-  Free(orig_inv);
-
 }
 
 
