@@ -571,8 +571,8 @@ phydbl Dnorm_Trunc(phydbl x, phydbl mean, phydbl sd, phydbl lo, phydbl up)
 
   if(isnan(dens) || isinf(FABS(dens)))
     {
-      PhyML_Printf("\n. mean=%f sd=%f lo=%f up=%f cdf_lo=%G CDF_up=%G",mean,sd,lo,up,cdf_lo,cdf_up);
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== mean=%f sd=%f lo=%f up=%f cdf_lo=%G CDF_up=%G",mean,sd,lo,up,cdf_lo,cdf_up);
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Exit("\n");
     }
 
@@ -4395,6 +4395,7 @@ phydbl t1354 = 0.1000000e7 * t1250 - 0.2889000000e10 * t94 - 0.600000e6 * t1235 
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+// Inverse method to sample from X where P(X=xi)=pi[i]
 
 int Sample_i_With_Proba_pi(phydbl *pi, int len)
 {
@@ -4409,7 +4410,7 @@ int Sample_i_With_Proba_pi(phydbl *pi, int len)
 
   if((cum_pi[i-1] > 1. + 1.E-10) || (cum_pi[i-1] < 1. - 1.E-10))
     {
-      PhyML_Printf("\n== Sum of probabilities is different from 1.0.");
+      PhyML_Printf("\n== Sum of probabilities is different from 1.0 (%f).",cum_pi[i-1]);
       PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Exit("\n");
     }
@@ -4605,13 +4606,19 @@ phydbl Weighted_Mean(phydbl *x, phydbl *w, int l)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-int Sum_Bits(int value)
+int Sum_Bits(int value, int range)
 {
   int i;
   int sum;
 
+  if(range > 8*(int)sizeof(int))
+    {
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+      Exit("\n");
+    }
+
   sum = 0;
-  For(i,8)
+  For(i,range)
     {
       sum += (value >> i) & 1;
     }

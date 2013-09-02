@@ -160,6 +160,7 @@ int main(int argc, char **argv)
                   
                   Set_Both_Sides(YES,tree);     
                   
+
 		  if(mod->s_opt->random_input_tree) 
                     {
                       PhyML_Printf("\n");

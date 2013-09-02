@@ -3376,7 +3376,8 @@ void Record_Model(t_mod *ori, t_mod *cpy)
   cpy->ns                   = ori->ns;
   cpy->ras->n_catg          = ori->ras->n_catg;
   cpy->ras->normalise_rr    = ori->ras->normalise_rr;
-  
+  cpy->l_var_sigma          = ori->l_var_sigma;
+
   cpy->kappa->v             = ori->kappa->v;
   cpy->ras->alpha->v        = ori->ras->alpha->v;
   cpy->lambda->v            = ori->lambda->v;
@@ -6760,6 +6761,8 @@ void Evolve(calign *data, t_mod *mod, t_tree *tree)
   int site,i;
   phydbl *orig_l;
   /* phydbl shape,scale,var,mean; */
+  int switch_to_yes;
+
 
   orig_l = (phydbl *)mCalloc(2*tree->n_otu-3,sizeof(phydbl));
   For(i,2*tree->n_otu-3) orig_l[i] = tree->a_edges[i]->l->v;
@@ -6769,40 +6772,44 @@ void Evolve(calign *data, t_mod *mod, t_tree *tree)
   if(mod->use_m4mod) tree->write_labels = YES;
   
 
+  Set_Br_Len_Var(tree);
+
+  switch_to_yes = NO;
+  if(tree->mod->gamma_mgf_bl == YES) 
+    {
+      switch_to_yes = YES;
+      /* tree->mod->gamma_mgf_bl = NO; */
+    }
+
   For(site,data->init_len)
     {
 
+      /* Pick the rate class */
+      root_state = root_rate_class = -1;
+      root_rate_class = Pick_State(mod->ras->n_catg,mod->ras->gamma_r_proba->v);
+
+
       /* /\* Get the change probability matrices *\/ */
-      /* For(i,2*tree->n_otu-3)         */
+      /* For(i,2*tree->n_otu-3) */
       /*   { */
-      /*     /\* var   = mod->l_var ; *\/ */
-
-      /*     /\* shape = POW(MAX(orig_l[i],1.E-6),2) / var; *\/ */
-      /*     /\* scale = var / MAX(orig_l[i],1.E-6); *\/ */
-
-      /*     /\* tree->a_edges[i]->l->v = Rgamma(shape,scale); *\/ */
-
-      /*     var   = mod->l_var_sigma; */
-      /*     mean  = 1.0; */
+      /*     var   = MAX(0.0,tree->a_edges[i]->l_var->v) * POW(tree->mod->ras->gamma_rr->v[root_rate_class],2); */
+      /*     mean  = orig_l[i]; */
           
       /*     shape = mean * mean / var; */
       /*     scale = var / mean; */
           
-      /*     tree->a_edges[i]->l->v = orig_l[i] * Rgamma(shape,scale); */
+      /*     tree->a_edges[i]->l->v = Rgamma(shape,scale); */
+
       /*   } */
-      
+
       Set_Model_Parameters(mod);      
+
       For(i,2*tree->n_otu-3) Update_PMat_At_Given_Edge(tree->a_edges[i],tree);
-      
-      root_state = root_rate_class = -1;
+
 
       /* Pick the root nucleotide/aa */
       root_state = Pick_State(mod->ns,mod->e_frq->pi->v);
       data->c_seq[0]->state[site] = Reciproc_Assign_State(root_state,tree->io->datatype);
-
-
-      /* Pick the rate class */
-      root_rate_class = Pick_State(mod->ras->n_catg,mod->ras->gamma_r_proba->v);
 
 
       /* tree->a_nodes[0] is considered as the root t_node */
@@ -6822,6 +6829,10 @@ void Evolve(calign *data, t_mod *mod, t_tree *tree)
     }
   data->crunch_len = data->init_len;
   /* Print_CSeq(stdout,NO,data); */
+  For(i,2*tree->n_otu-3) tree->a_edges[i]->l->v = orig_l[i];
+  Free(orig_l);
+
+  if(switch_to_yes == YES) tree->mod->gamma_mgf_bl = YES;
 }
 
 //////////////////////////////////////////////////////////////
@@ -6857,7 +6868,7 @@ void Evolve_Recur(t_node *a, t_node *d, t_edge *b, int a_state, int r_class, int
   dim1 = tree->mod->ns * tree->mod->ns;
   dim2 = tree->mod->ns;
 
-  d_state = Pick_State(mod->ns,b->Pij_rr+r_class*dim1+a_state*dim2);
+  d_state = Sample_i_With_Proba_pi(b->Pij_rr+r_class*dim1+a_state*dim2,mod->ns);
 
   /* printf("\n. %f %f %f %f", */
   /*        b->Pij_rr[r_class*dim1+a_state*dim2+0], */
@@ -10266,7 +10277,6 @@ void Build_Distrib_Number_Of_Diff_States_Under_Model(t_tree *tree)
 
       Calculate_Number_Of_Diff_States(tree);
 
-
       For(i,2*tree->n_otu-3)
         {
           For(j,tree->mod->ns)
@@ -10281,8 +10291,10 @@ void Build_Distrib_Number_Of_Diff_States_Under_Model(t_tree *tree)
       Free_Model_Complete(tree->mod);
       Free_Model_Basic(tree->mod);
       
+
       tree->mod  = Copy_Model(orig_mod);
       tree->data = Copy_Cseq(orig_data,tree->io);
+
 
       tree->mod->io    = orig_mod->io;
       tree->mod->s_opt = orig_mod->s_opt;
@@ -10366,7 +10378,6 @@ void Calculate_Number_Of_Diff_States_Post(t_node *a, t_node *d, t_edge *b, t_tre
     {
       int i;
 
-
       For(i,3)
         if(d->v[i] != a)
           Calculate_Number_Of_Diff_States_Post(d,d->v[i],d->b[i],tree);
@@ -10386,7 +10397,6 @@ void Calculate_Number_Of_Diff_States_Pre(t_node *a, t_node *d, t_edge *b, t_tree
     {
       int i;
 
-
       For(i,3)
         if(d->v[i] != a)
           {
@@ -10405,11 +10415,21 @@ void Calculate_Number_Of_Diff_States_Core(t_node *a, t_node *d, t_edge *b, t_tre
   unsigned int *ui, *ui_v1, *ui_v2;
   int sum,site,state;
   int *diff;
+  t_node *v1, *v2;
 
   ui = ui_v1 = ui_v2 = NULL;
+  v1 = v2 = NULL;
 
   if(d == b->left)
-    {	     
+    {
+      v1 = (d == d->b[b->l_v1]->left)?
+        (d->b[b->l_v1]->rght):
+        (d->b[b->l_v1]->left);
+
+      v2 = (d == d->b[b->l_v2]->left)?
+        (d->b[b->l_v2]->rght):
+        (d->b[b->l_v2]->left);
+       
       ui = b->ui_l;
       diff = b->n_diff_states_l;
 
@@ -10426,6 +10446,14 @@ void Calculate_Number_Of_Diff_States_Core(t_node *a, t_node *d, t_edge *b, t_tre
     }
   else
     {
+      v1 = (d == d->b[b->r_v1]->left)?
+        (d->b[b->r_v1]->rght):
+        (d->b[b->r_v1]->left);
+
+      v2 = (d == d->b[b->r_v2]->left)?
+        (d->b[b->r_v2]->rght):
+        (d->b[b->r_v2]->left);
+
       ui = b->ui_r;
       diff = b->n_diff_states_r;
       
@@ -10445,9 +10473,66 @@ void Calculate_Number_Of_Diff_States_Core(t_node *a, t_node *d, t_edge *b, t_tre
   
   For(site,tree->n_pattern)
     {
+      if(v1->tax == YES)
+        {
+          int sum;
+          sum = Sum_Bits(ui_v1[site],tree->mod->ns);
+          if(sum > 1)
+            {
+              int val = ui_v1[site];
+              int pos, iter;
+              phydbl u = Uni();
+
+              iter = 0;
+              do
+                {
+                  pos = Rand_Int(0,tree->mod->ns-1);
+                  if(((val >> pos) & 1) && (u > 1./sum)) break;
+                }
+              while(iter++ < 1000);
+
+
+              if(iter == 1000) 
+                {
+                  PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);      
+                  Exit("\n");
+                }
+
+              ui_v1[site] = POW(2,pos);
+            }
+        }
+
+      if(v2->tax == YES)
+        {
+          int sum;
+          sum = Sum_Bits(ui_v2[site],tree->mod->ns);
+          if(sum > 1)
+            {
+              int val = ui_v2[site];
+              int pos, iter;
+              phydbl u = Uni();
+              
+              iter = 0;
+              do
+                {
+                  pos = Rand_Int(0,tree->mod->ns-1);
+                  if(((val >> pos) & 1) && (u > 1./sum)) break;
+                }
+              while(iter++ < 1000);
+
+              if(iter == 1000)
+                {
+                  PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);      
+                  Exit("\n");
+                }
+
+              ui_v2[site] = POW(2,pos);
+            }
+        }
+
       ui[site] = ui_v1[site] | ui_v2[site];
       
-      sum = Sum_Bits(ui[site]);
+      sum = Sum_Bits(ui[site],tree->mod->ns);
 
       /* printf("\n. ui_v1: %d ui_v2: %d ui: %d sum: %d",ui_v1[site],ui_v2[site],ui[site],sum); fflush(NULL); */
 

@@ -2070,13 +2070,13 @@ void Print_Site_Lk(t_tree *tree, FILE *fp)
       
       sprintf(s,"Site");
       PhyML_Fprintf(fp, "%-7s",s);
-
-      sprintf(s,"Pattern");
-      PhyML_Fprintf(fp, "%-9s",s);
       
       sprintf(s,"P(D|M)");
-      PhyML_Fprintf(fp,"%-16s",s);
+      PhyML_Fprintf(fp,"%-15s",s);
       
+      sprintf(s,"Pattern");
+      PhyML_Fprintf(fp, "%-9s",s);
+
       if(tree->mod->ras->n_catg > 1)
 	{
 	  For(catg,tree->mod->ras->n_catg)
@@ -2102,9 +2102,11 @@ void Print_Site_Lk(t_tree *tree, FILE *fp)
           
 
 	  PhyML_Fprintf(fp,"%-7d",site+1);
+
+	  PhyML_Fprintf(fp,"%-15g",tree->cur_site_lk[tree->data->sitepatt[site]]);      
+
 	  PhyML_Fprintf(fp,"%-9d",tree->data->sitepatt[site]);
 
-	  PhyML_Fprintf(fp,"%-16g",tree->cur_site_lk[tree->data->sitepatt[site]]);      
 	  if(tree->mod->ras->n_catg > 1)
 	    {
 	      For(catg,tree->mod->ras->n_catg)
