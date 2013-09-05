@@ -773,7 +773,10 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
           while(exponent != 0);
         }
      
-      /* tree->cur_site_lk[site] = EXP(log_site_lk); */
+      if(isinf(site_lk) || isnan(site_lk))
+        {
+          tree->cur_site_lk[site] = EXP(log_site_lk);
+        }
 
       For(catg,tree->mod->ras->n_catg) tree->log_site_lk_cat[catg][site] = LOG(tree->site_lk_cat[catg]) - (phydbl)LOG2 * fact_sum_scale;
   
