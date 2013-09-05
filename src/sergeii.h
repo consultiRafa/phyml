@@ -34,6 +34,6 @@ void TIMES_Set_All_Node_Priors_S(int *result, t_tree *tree);
 void TIMES_Set_All_Node_Priors_Bottom_Up_S(t_node *a, t_node *d, int *result, t_tree *tree);
 void TIMES_Set_All_Node_Priors_Top_Down_S(t_node *a, t_node *d, int *result, t_tree *tree);
 phydbl LOG_g_i(phydbl lmbd, phydbl t_slice_max, phydbl t_slice_min, phydbl t_prior_max, phydbl t_prior_min);
-
+int CombineInt(int int1, int int2);
 #endif
 
