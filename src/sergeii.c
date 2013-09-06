@@ -809,7 +809,7 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
       /* printf("\n. Yule = %f \n", Yule_val[i]); */
  
       while(calib -> prev) calib = calib -> prev;
-      Exit("\n");
+      /* Exit("\n"); */
     }
  
   /* min_value = 0.0; */
@@ -1139,11 +1139,11 @@ phydbl Slicing_Calibrations(t_tree *tree)
 
       For(i, n_otu - 1) combinations[comb_numb*(n_otu - 1) + i] = cur_slices_cpy[i];
 
-      printf("\n");
-      printf(" [1][CUR SLICES PROPOSED] ");
-      printf(" [%d] - ", comb_numb);
-      For(i, n_otu - 1) printf(". [%d] .", combinations[comb_numb*(n_otu - 1) + i]);
-      printf("\n");
+      /* printf("\n"); */
+      /* printf(" [1][CUR SLICES PROPOSED] "); */
+      /* printf(" [%d] - ", comb_numb); */
+      /* For(i, n_otu - 1) printf(". [%d] .", combinations[comb_numb*(n_otu - 1) + i]); */
+      /* printf("\n"); */
 
 
       /* For(i, n_otu - 1) combinations[comb_numb][i] = cur_slices_cpy[i]; */
@@ -1324,11 +1324,11 @@ phydbl Slicing_Calibrations(t_tree *tree)
                          if(!f) 
                            {
                              For(i, n_otu - 1) combinations[comb_numb*(n_otu-1) + i] = cur_slices_cpy[i];
-                             printf("\n");
-                             printf(" [2][CUR SLICES PROPOSED][COMB] ");
-                             printf(" [COMB NUMBER] = [%d] --- ", comb_numb);
-                             For(i, n_otu - 1) printf(". [%d] .", combinations[comb_numb*(n_otu-1) + i]);
-                             printf("\n");
+                             /* printf("\n"); */
+                             /* printf(" [2][CUR SLICES PROPOSED][COMB] "); */
+                             /* printf(" [COMB NUMBER] = [%d] --- ", comb_numb); */
+                             /* For(i, n_otu - 1) printf(". [%d] .", combinations[comb_numb*(n_otu-1) + i]); */
+                             /* printf("\n"); */
                              /* For(i, n_otu - 1) combinations[comb_numb][i] = cur_slices_cpy[i]; */
                              /* printf("\n"); */
                              /* printf(" [2][CUR SLICES PROPOSED][COMB] "); */
@@ -1406,6 +1406,12 @@ phydbl Slicing_Calibrations(t_tree *tree)
                              /* printf("\n. Count [%d] \n", count); */
                              /* printf("\n"); */
                              comb_numb++;
+                             if(comb_numb > max_size)
+                               {
+                                 combinations = (int *)mRealloc(combinations, max_size*(n_otu - 1) + (n_otu - 1),sizeof(char));
+                                 max_size = max_size + 1;
+                               }
+
                            }
                        }                     
                 }                         
