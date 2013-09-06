@@ -809,7 +809,7 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
       /* printf("\n. Yule = %f \n", Yule_val[i]); */
  
       while(calib -> prev) calib = calib -> prev;
-      /* Exit("\n"); */
+      Exit("\n");
     }
  
   /* min_value = 0.0; */
@@ -1039,16 +1039,17 @@ phydbl Slicing_Calibrations(t_tree *tree)
   /*   int q; */
   /* For(q, 3){ */
   /* printf("\n"); */
-  int r, max_size, comb_numb, **combinations;
+  int r, max_size, comb_numb, *combinations; /* **combinations; */
   phydbl max, K_total;
   phydbl *t_slice_min_f, *t_slice_max_f;
 
   max_size = 1000;
   comb_numb = 0;
 
-  combinations    = (int **)mCalloc(max_size, sizeof(int *));
-  For(i, max_size)
-    combinations[i] = (int *)mCalloc(n_otu - 1, sizeof(int)); 
+  combinations    = (int *)mCalloc(max_size*(n_otu-1), sizeof(int));
+  /* combinations    = (int **)mCalloc(max_size, sizeof(int *)); */
+  /* For(i, max_size) */
+  /*   combinations[i] = (int *)mCalloc(n_otu - 1, sizeof(int));  */
  
   t_slice_min_f    = (phydbl *)mCalloc(n_otu - 1, sizeof(phydbl));
   t_slice_max_f    = (phydbl *)mCalloc(n_otu - 1, sizeof(phydbl));
@@ -1136,7 +1137,16 @@ phydbl Slicing_Calibrations(t_tree *tree)
       
       /* root_nodes = (int *)mCalloc(n_otu - 1, sizeof(int)); */
 
-      For(i, n_otu - 1) combinations[comb_numb][i] = cur_slices_cpy[i];
+      For(i, n_otu - 1) combinations[comb_numb*(n_otu - 1) + i] = cur_slices_cpy[i];
+
+      printf("\n");
+      printf(" [1][CUR SLICES PROPOSED] ");
+      printf(" [%d] - ", comb_numb);
+      For(i, n_otu - 1) printf(". [%d] .", combinations[comb_numb*(n_otu - 1) + i]);
+      printf("\n");
+
+
+      /* For(i, n_otu - 1) combinations[comb_numb][i] = cur_slices_cpy[i]; */
       
       /* printf("\n"); */
       /* printf(" [1][CUR SLICES PROPOSED] "); */
@@ -1301,7 +1311,8 @@ phydbl Slicing_Calibrations(t_tree *tree)
                                  For(j, n_otu - 1)
                                    {
                                      
-                                     dif[j] = combinations[i][j] - cur_slices_cpy[j];
+                                     dif[j] = combinations[i*(n_otu-1) + j] - cur_slices_cpy[j];
+                                     /* dif[j] = combinations[i][j] - cur_slices_cpy[j]; */
                                      if(dif[j] == 0) x++;
                                      /* printf(". [%d] ", dif[j]); */
                                    }
@@ -1312,7 +1323,13 @@ phydbl Slicing_Calibrations(t_tree *tree)
                          
                          if(!f) 
                            {
-                             For(i, n_otu - 1) combinations[comb_numb][i] = cur_slices_cpy[i];
+                             For(i, n_otu - 1) combinations[comb_numb*(n_otu-1) + i] = cur_slices_cpy[i];
+                             printf("\n");
+                             printf(" [2][CUR SLICES PROPOSED][COMB] ");
+                             printf(" [COMB NUMBER] = [%d] --- ", comb_numb);
+                             For(i, n_otu - 1) printf(". [%d] .", combinations[comb_numb*(n_otu-1) + i]);
+                             printf("\n");
+                             /* For(i, n_otu - 1) combinations[comb_numb][i] = cur_slices_cpy[i]; */
                              /* printf("\n"); */
                              /* printf(" [2][CUR SLICES PROPOSED][COMB] "); */
                              /* printf(" [COMB NUMBER] = [%d] --- ", comb_numb); */
@@ -1726,8 +1743,8 @@ phydbl Slicing_Calibrations(t_tree *tree)
   /* printf("\n. ____________________________________________________________________________________________ \n"); */
  
   ////////////////////////////////////////////////////////////////////////////
-  For(i, max_size)
-    free(combinations[i]);
+  /* For(i, max_size) */
+  /*   free(combinations[i]); */
   free(combinations);
  
   free(t_cur_slice_min);
