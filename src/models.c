@@ -217,7 +217,7 @@ phydbl Get_Lambda_F84(phydbl *pi, phydbl *kappa)
 /* and one specific branch length                                   */
 /*                                                                  */
 /* input : l , branch length                                        */
-/* input : mod , choosen model parameters, qmat and pi              */
+/* input : mod , choosen model parameters, qmat and pi             */
 /* ouput : Pij , substitution probability matrix                    */
 /*                                                                  */
 /* matrix P(l) is computed as follows :                             */
@@ -267,7 +267,6 @@ void PMat_Empirical(phydbl l, t_mod *mod, int pos, phydbl *Pij)
   V     = mod->eigen->l_e_vect;
   R     = mod->eigen->e_val; /* exponential of the eigen value matrix */
 
-  //Initialize a rate-specific N*N matrix
   For(i,n) For(k,n) Pij[pos+mod->ns*i+k] = .0;
 
   /* compute POW(EXP(D/mr),l) into mat_eDmrl */
@@ -433,15 +432,7 @@ void PMat_Zero_Br_Len(t_mod *mod, int pos, phydbl *Pij)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-/*
- *Update a rate specific Transition Prob matrix for a given branch-length(already adjusted
- *with the rate prior to this function being called)
- *
- *  Pij: the P-matrix that will be adjusted
- *  l  : branch length * rate
- *  pos: offset into a specific rate-category
- *
- */
+
 void PMat(phydbl l, t_mod *mod, int pos, phydbl *Pij)
 {
   /* Warning: l is never the log of branch length here */
@@ -464,7 +455,7 @@ void PMat(phydbl l, t_mod *mod, int pos, phydbl *Pij)
                 if((mod->whichmodel == JC69) ||
                    (mod->whichmodel == K80))
                   {
-                    /* 		    PMat_JC69(l,pos,Pij,mod); */
+        /* 		    PMat_JC69(l,pos,Pij,mod); */
                     PMat_K80(l,mod->kappa->v,pos,Pij);
                   }
                 else
@@ -479,42 +470,14 @@ void PMat(phydbl l, t_mod *mod, int pos, phydbl *Pij)
                       }
                     else
                       {
-#ifdef BEAGLE
-                        //Update P-Mat without Beagle only if there is no active instance
-                        if(UNINITIALIZED == mod->b_inst)
-                            PMat_Empirical(l,mod,pos,Pij);
-                        else
-                        {
-                            int ret = beagleSetCategoryRates(mod->b_inst, mod->ras->gamma_rr->v);
-                            if(ret<0){
-                                fprintf(stderr, "beagleSetCategoryRates() on instance %i failed:%i\n\n",mod->b_inst,ret);
-                                Exit("");
-                            }
-                        }
-#else
                         PMat_Empirical(l,mod,pos,Pij);
-#endif
                       }
                   }
                 break;
               }
           case AA :
             {
-#ifdef BEAGLE
-                //Update P-Mat without Beagle only if there is no active instance
-                if(UNINITIALIZED == mod->b_inst)
-                    PMat_Empirical(l,mod,pos,Pij);
-                else
-                {
-                    int ret = beagleSetCategoryRates(mod->b_inst, mod->ras->gamma_rr->v);
-                    if(ret<0){
-                        fprintf(stderr, "beagleSetCategoryRates() on instance %i failed:%i\n\n",mod->b_inst,ret);
-                        Exit("");
-                    }
-                }
-#else
-                PMat_Empirical(l,mod,pos,Pij);
-#endif
+              PMat_Empirical(l,mod,pos,Pij);
               break;
             }
           default:
@@ -861,6 +824,10 @@ void Update_RAS(t_mod *mod)
       /*          mod->ras->gamma_r_proba_unscaled->v[i], */
       /*          mod->ras->gamma_rr_unscaled->v[i]); */
     }
+#ifdef BEAGLE
+  if(UNINITIALIZED != mod->b_inst)
+      update_beagle_ras(mod);
+#endif
 
 }
 
@@ -879,17 +846,22 @@ void Update_Efrq(t_mod *mod)
       For(i,mod->ns) mod->e_frq->pi->v[i] = FABS(mod->e_frq->pi_unscaled->v[i])/sum;
 
       do
-    {
-      sum = .0;
-      For(i,mod->ns)
         {
-          if(mod->e_frq->pi->v[i] < 0.01) mod->e_frq->pi->v[i]=0.01;
-          if(mod->e_frq->pi->v[i] > 0.99) mod->e_frq->pi->v[i]=0.99;
-          sum += mod->e_frq->pi->v[i];
+          sum = .0;
+          For(i,mod->ns)
+            {
+              if(mod->e_frq->pi->v[i] < 0.01) mod->e_frq->pi->v[i]=0.01;
+              if(mod->e_frq->pi->v[i] > 0.99) mod->e_frq->pi->v[i]=0.99;
+              sum += mod->e_frq->pi->v[i];
+            }
+          For(i,mod->ns) mod->e_frq->pi->v[i]/=sum;
         }
-      For(i,mod->ns) mod->e_frq->pi->v[i]/=sum;
-    }
       while((sum > 1.01) || (sum < 0.99));
+
+#ifdef BEAGLE
+      if(UNINITIALIZED != mod->b_inst)
+        update_beagle_efrqs(mod);
+#endif
     }
 
 
@@ -1013,35 +985,7 @@ void Update_Eigen(t_mod *mod)
       /* PhyML_Printf("\n"); */
 
 /* 	  Exit("\n"); */
-#ifdef BEAGLE
-          //Recall that BEAGLE is initialized *after* all the model parameters are set
-          //IOW, UpdateEigen() can be called before BEAGLE is initialized ("chicken-egg")
-          if(UNINITIALIZED != mod->b_inst)
-          {
-              int whichmodel = mod->whichmodel;
-              if((mod->io->datatype == AA || whichmodel==GTR || whichmodel==CUSTOM) && mod->use_m4mod == NO)
-              {
-                  int ret=-1;
-                  if((sizeof(float)==sizeof(phydbl)))//Need to convert to doubles?
-                  {
-                      double* eigen_vects     = float_to_double(mod->eigen->r_e_vect, mod->eigen->size*mod->eigen->size);
-                      double* eigen_vects_inv = float_to_double(mod->eigen->l_e_vect, mod->eigen->size*mod->eigen->size);
-                      double* eigen_vals      = float_to_double(mod->eigen->e_val,mod->eigen->size);
-                      ret = beagleSetEigenDecomposition(mod->b_inst,0,eigen_vects,eigen_vects_inv,eigen_vals);
-                      Free(eigen_vects);Free(eigen_vects_inv);Free(eigen_vals);
-                  }
-                  else
-                  {
-                      DUMP_I(mod->b_inst);
-                      ret = beagleSetEigenDecomposition(mod->b_inst,0,mod->eigen->r_e_vect,mod->eigen->l_e_vect,mod->eigen->e_val);
-                  }
-                  if(ret<0){
-                    fprintf(stderr, "beagleSetEigenDecomposition() on instance %i failed:%i\n\n",mod->b_inst,ret);
-                    Exit("");
-                  }
-              }
-          }
-#endif
+
         }
       else
         {

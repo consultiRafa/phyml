@@ -11,6 +11,9 @@ the GNU public licence. See http://www.opensource.org for details.
 */
 
 #include "make.h"
+#ifdef BEAGLE
+#include "beagle_utils.h" //For the UNINITIALIZED constant
+#endif
 
 //////////////////////////////////////////////////////////////
 
@@ -422,14 +425,21 @@ t_tree *Make_Tree_From_Scratch(int n_otu, calign *data)
       tree->data = data;
     }
 #ifdef BEAGLE
-  //offset the branch indices because BEAGLE insists on first storing
-  //the tips/taxa
+  //1) offset the partial indices because BEAGLE insists on first storing the tips/taxa
+  //2) set the right scaling index for each branch
+  int num_branches = 2*tree->n_otu-1;
   for(int i=0;i<2*tree->n_otu-1;++i)
   {
+      //offset partials
+      assert(tree->a_edges[i]->p_lk_left_idx != UNINITIALIZED); //the left_idx should've been set earlier as it doesn't require us to know num_branches
       //For edgeX, its "left" partial lies at index `num_tax + edgeX->num"
       tree->a_edges[i]->p_lk_left_idx = tree->n_otu + tree->a_edges[i]->p_lk_left_idx;
       //For edgeX, its "right" partial lies at index `num_tax + edgeX->num + num_branches"
-      tree->a_edges[i]->p_lk_rght_idx = tree->n_otu + tree->a_edges[i]->p_lk_left_idx + (2*tree->n_otu-1);
+      tree->a_edges[i]->p_lk_rght_idx = tree->n_otu + tree->a_edges[i]->p_lk_left_idx + num_branches;
+
+      //set right scaling idx
+      assert(tree->a_edges[i]->sum_scale_left_idx != UNINITIALIZED); //the left_idx should've been set earlier as it doesn't require us to know num_branches
+      tree->a_edges[i]->sum_scale_rght_idx = tree->a_edges[i]->sum_scale_left_idx + num_branches;
   }
 #endif
 
@@ -1119,8 +1129,8 @@ void Make_Rmat_Weight(t_tree *mixt_tree)
         }
       while(buff_tree != tree);
 
-      if(buff_tree == tree) Free(tree->mod->r_mat_weight);          
-      
+      if(buff_tree == tree) Free(tree->mod->r_mat_weight);
+
       tree = tree->next;
     }
   while(tree);
@@ -1140,7 +1150,7 @@ void Make_Rmat_Weight(t_tree *mixt_tree)
   tree->mod->r_mat_weight = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
   Init_Scalar_Dbl(tree->mod->r_mat_weight);
   tree->mod->r_mat_weight->v = 1.0;
- 
+
   buff_tree = tree = mixt_tree;
   do // For each mixt_tree
                 {
@@ -1173,7 +1183,7 @@ void Make_Rmat_Weight(t_tree *mixt_tree)
   tree = mixt_tree;
   do
         {
-      if(tree->next) 
+      if(tree->next)
         {
           tree->mod->r_mat_weight->next = tree->next->mod->r_mat_weight;
           tree->next->mod->r_mat_weight->prev = tree->mod->r_mat_weight;
@@ -1212,9 +1222,9 @@ void Make_Efrq_Weight(t_tree *mixt_tree)
 
       if(buff_tree == tree)
             {
-          Free(tree->mod->e_frq_weight);          
+          Free(tree->mod->e_frq_weight);
         }
-      
+
       tree = tree->next;
     }
   while(tree);
@@ -1236,7 +1246,7 @@ void Make_Efrq_Weight(t_tree *mixt_tree)
   Init_Scalar_Dbl(tree->mod->e_frq_weight);
   tree->mod->e_frq_weight->v = 1.0;
 
- 
+
   buff_tree = tree = mixt_tree;
   do // For each mixt_tree
                     {
@@ -1270,7 +1280,7 @@ void Make_Efrq_Weight(t_tree *mixt_tree)
   tree = mixt_tree;
   do
     {
-      if(tree->next) 
+      if(tree->next)
         {
           tree->mod->e_frq_weight->next = tree->next->mod->e_frq_weight;
           tree->next->mod->e_frq_weight->prev = tree->mod->e_frq_weight;

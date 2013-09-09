@@ -433,8 +433,6 @@ phydbl Lk(t_edge *b, t_tree *tree)
       else//Update the PMat for a specific edge
         {
           Update_PMat_At_Given_Edge(b,tree);
-    //      Print_Edge_PMats(tree, b);//These PMats are fine here...
-    //      Print_Edge_Likelihoods(tree, b);
         }
 
       if(!b)
@@ -471,6 +469,9 @@ phydbl Lk(t_edge *b, t_tree *tree)
   tree->c_lnL             = .0;
   tree->sum_min_sum_scale = .0;
 
+#ifdef BEAGLE
+  calc_edgelks_beagle(b, tree);
+#else
   For(tree->curr_site,n_patterns)
     {
       ambiguity_check = -1;
@@ -492,6 +493,7 @@ phydbl Lk(t_edge *b, t_tree *tree)
           Lk_Core(state,ambiguity_check,b,tree);
         }
     }
+#endif
 
 /*   Qksort(tree->c_lnL_sorted,NULL,0,n_patterns-1); */
 
@@ -506,6 +508,7 @@ phydbl Lk(t_edge *b, t_tree *tree)
 
 //  Print_All_Edge_PMats(tree);
 //  Print_All_Edge_Likelihoods(tree);
+//  DUMP_D(tree->c_lnL);
 
   return tree->c_lnL;
 }
@@ -728,7 +731,7 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
         }
     }
 
-  log_site_lk = LOG(site_lk) - (phydbl)LOG2 * fact_sum_scale;
+  log_site_lk = LOG(site_lk) - (phydbl)LOG2 * fact_sum_scale; // log_site_lk =  log(site_lk_scaled / 2^(left_subtree+right_subtree))
 
   int piecewise_exponent;
   phydbl multiplier;
@@ -995,13 +998,13 @@ void Update_P_Lk(t_tree *tree, t_edge *b, t_node *d)
   if(d->tax) return;
 
 #ifdef BEAGLE
-  update_beagle_partials(tree, b, d, false);
+  update_beagle_partials(tree, b, d, true);
 #else
   if(tree->mod->use_m4mod == NO)
     {
       if(tree->io->datatype == NT)
         {
-          Update_P_Lk_Nucl(tree,b,d, false);
+          Update_P_Lk_Nucl(tree,b,d, true);
         }
       else if(tree->io->datatype == AA)
         {
@@ -2317,7 +2320,6 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
       //Update the branch length
       if(b_fcus->has_zero_br_len == YES)
         {
-          fprintf(stderr,"\nzerobrlen");
           len = -1.0;
           mean = -1.0;
           var  = -1.0;
@@ -2350,46 +2352,15 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
 
             PMat_MGF_Gamma(b_fcus->Pij_rr+tree->mod->ns*tree->mod->ns*i, shape,scale,1.0,tree->mod);
           }
-#ifndef BEAGLE
-      fprintf(stderr,"\n%f:%f",len,tree->mod->ras->gamma_rr->v[i]);
-#endif
     }
-
+  if(tree->mod->log_l == YES) b_fcus->l->v = LOG(b_fcus->l->v);
 #ifdef BEAGLE
-  int whichmodel = tree->mod->whichmodel;
-  //Only for some models we use Beagle to compute/update the P-matrices, for other models
-  //we compute them in PhyML and explicitly set the P-matrices in BEAGLE
-  if((tree->mod->io->datatype == AA || whichmodel==GTR || whichmodel==CUSTOM) && tree->mod->use_m4mod == NO)
-  {
-      if(b_fcus->has_zero_br_len == YES)
-          Warn_And_Exit("This case needs to be handled");
-
-      len = MAX(0.0, b_fcus->l->v) * tree->mod->br_len_multiplier->v;
-      int p_matrices[1]     = {b_fcus->Pij_rr_idx};
-      double branch_lens[1] = {len};
-      int ret = beagleUpdateTransitionMatrices(tree->b_inst,0,p_matrices,NULL,NULL,branch_lens,1);
+      int ret = beagleSetTransitionMatrix(tree->b_inst, b_fcus->Pij_rr_idx, b_fcus->Pij_rr, -1);
       if(ret<0){
-          fprintf(stderr, "beagleUpdateTransitionMatrices() on instance %i failed:%i\n\n",tree->b_inst,ret);
+          fprintf(stderr, "beagleSetTransitionMatrix() on instance %i failed:%i\n\n",tree->b_inst,ret);
           Exit("");
       }
-  }
-  else
-  {
-      //The P-matrices are explicitly set in BEAGLE only for some models (eg: JC68, K80, etc).
-      //In case of other models (for ex: GTR or AA models), we instead set the EigenDecomposition
-      //of the Q-matrix and thus there is no need to explicitly set the P-matrix
-      if(FALSE == ((tree->mod->io->datatype == AA || whichmodel==GTR || whichmodel==CUSTOM) && tree->mod->use_m4mod == NO))
-      {
-          int ret = beagleSetTransitionMatrix(tree->b_inst, b_fcus->Pij_rr_idx, b_fcus->Pij_rr, -1);
-          if(ret<0){
-              fprintf(stderr, "beagleSetTransitionMatrix() on instance %i failed:%i\n\n",tree->b_inst,ret);
-              Exit("");
-          }
-      }
-  }
 #endif
-    if(tree->mod->log_l == YES) b_fcus->l->v = LOG(b_fcus->l->v);
-
 //      DUMP_I(b_fcus->num);
 //      Print_Edge_PMats(tree, b_fcus);
 //      Print_Edge_Likelihoods(tree,b_fcus);

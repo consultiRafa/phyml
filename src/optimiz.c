@@ -261,7 +261,7 @@ phydbl Generic_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol,
     }
     }
 
-  Exit("\n. Too many iterations in Generic_Brent !");
+  Exit("\n. Too many iterations in BRENT !");
   return(-1);
   /* Not Reached ??  *xmin=x;   */
   /* Not Reached ??  return fx; */
@@ -596,7 +596,7 @@ void Round_Optimize(t_tree *tree, calign *data, int n_round_max)
       n_round++;
       each--;
     }
-
+    
   Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->mod->s_opt->print));
 
 }
@@ -1759,7 +1759,7 @@ phydbl Dist_F_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol, int n_iter_max,
         }
     }
     }
-  Exit("\n. Too many iterations in Dist_F_Brent !");
+  Exit("\n. Too many iterations in BRENT !");
   return(-1);
 }
 
@@ -1948,7 +1948,7 @@ phydbl Missing_Dist_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol, int n_ite
         }
     }
     }
-  Exit("\n. Too many iterations in Missing_Dist_Brent !");
+  Exit("\n. Too many iterations in BRENT !");
   return(-1);
 }
 
@@ -2135,7 +2135,7 @@ int Optimiz_Alpha_And_Pinv(t_tree *mixt_tree, int verbose)
               Optimize_Br_Len_Serie(mixt_tree);
               fa = mixt_tree->c_lnL;
               /* PhyML_Printf("\n1 a=%f, b=%f, c=%f, fa=%f, fb=%f, fc=%f",a,b,c,fa,fb,fc); */
-              if(iter++ > 10)
+			  if(iter++ > 10) 
                             {
                               if(alpha) Free(alpha);
                               return 0;
@@ -2174,7 +2174,7 @@ int Optimiz_Alpha_And_Pinv(t_tree *mixt_tree, int verbose)
               Optimize_Br_Len_Serie(mixt_tree);
               fc = mixt_tree->c_lnL;
               /* PhyML_Printf("\n2 a=%f, b=%f, c=%f, fa=%f, fb=%f, fc=%f",a,b,c,fa,fb,fc); */
-              if(iter++ > 10)
+			  if(iter++ > 10) 
                             {
                               if(alpha) Free(alpha);
                               return 0;
@@ -2431,7 +2431,7 @@ phydbl Generic_Brent_Lk(phydbl *param, phydbl ax, phydbl cx, phydbl tol,
         }
     }
 
-  Exit("\n. Too many iterations in Generic_Brent_Lk !");
+  Exit("\n. Too many iterations in BRENT !");
   return(-1);
   /* Not Reached ??  *param=x;   */
   /* Not Reached ??  return fx; */

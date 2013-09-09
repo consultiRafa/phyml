@@ -184,6 +184,8 @@ void Init_Edge_Light(t_edge *b, int num)
   b->p_lk_rght_idx         = UNINITIALIZED; //Will be initialized later when the total number of branches is known (i.e. in Make_Tree_From_Scratch())
   b->Pij_rr_idx            = num;
   b->p_lk_tip_idx          = UNINITIALIZED; //Will be initialized later only if this branch is connected to a tip
+  b->sum_scale_left_idx    = num;
+  b->sum_scale_rght_idx    = UNINITIALIZED;  //Will be initialized later when the total number of branches is known (i.e. in Make_Tree_From_Scratch())
 #endif
 
 }
@@ -937,7 +939,7 @@ void Init_Model(calign *data, t_mod *mod, option *io)
   phydbl *dr, *di, *space;
 
 #ifdef BEAGLE
-  mod->b_inst = UNINITIALIZED; //prevent Update_Eigen() from calling an uninitialized BEAGLE instance
+  mod->b_inst = UNINITIALIZED; //prevents calling an uninitialized BEAGLE instance (for ex: prevents Update_Eigen(), Update_RAS(), from calling BEAGLE)
 #endif
 
   mod->ns = io->mod->ns;
@@ -1264,23 +1266,23 @@ void Init_Model(calign *data, t_mod *mod, option *io)
       if(!Eigen(1,mod->r_mat->qmat_buff->v,mod->eigen->size,mod->eigen->e_val,
         mod->eigen->e_val_im,mod->eigen->r_e_vect,
         mod->eigen->r_e_vect_im,mod->eigen->space))
+    {
+      /* compute inverse(Vr) into Vi */
+      For (i,mod->ns*mod->ns) mod->eigen->l_e_vect[i] = mod->eigen->r_e_vect[i];
+      if(!Matinv(mod->eigen->l_e_vect,mod->eigen->size,mod->eigen->size,YES))
         {
-          /* compute inverse(Vr) into Vi */
-          For (i,mod->ns*mod->ns) mod->eigen->l_e_vect[i] = mod->eigen->r_e_vect[i];
-          if(!Matinv(mod->eigen->l_e_vect,mod->eigen->size,mod->eigen->size,YES))
-            {
-              PhyML_Printf("\n== Err in file %s at line %d.",__FILE__,__LINE__);
-              Exit("\n");
-            }
+          PhyML_Printf("\n== Err in file %s at line %d.",__FILE__,__LINE__);
+          Exit("\n");
+        }
 
-          /* compute the diagonal terms of EXP(D) */
-          For(i,mod->ns) mod->eigen->e_val[i] = (phydbl)EXP(mod->eigen->e_val[i]);
-        }
+      /* compute the diagonal terms of EXP(D) */
+      For(i,mod->ns) mod->eigen->e_val[i] = (phydbl)EXP(mod->eigen->e_val[i]);
+    }
       else
-        {
-          if (result==-1) PhyML_Printf("\n== Eigenvalues/vectors computation does not converge : computation cancelled");
-          else if (result==1) PhyML_Printf("\n== Complex eigenvalues/vectors : computation cancelled");
-        }
+    {
+      if (result==-1) PhyML_Printf("\n== Eigenvalues/vectors computation does not converge : computation cancelled");
+      else if (result==1) PhyML_Printf("\n== Complex eigenvalues/vectors : computation cancelled");
+    }
     }
   else if(mod->io->datatype == GENERIC)
     {

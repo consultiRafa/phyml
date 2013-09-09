@@ -582,7 +582,7 @@ char *Write_Tree(t_tree *tree, int custom)
           i = 0;
           while((!tree->a_nodes[tree->n_otu+i]->v[0]) ||
                 (!tree->a_nodes[tree->n_otu+i]->v[1]) ||
-		(!tree->a_nodes[tree->n_otu+i]->v[2])) i++;
+        (!tree->a_nodes[tree->n_otu+i]->v[2])) i++;
 
           R_wtree(tree->a_nodes[tree->n_otu+i],tree->a_nodes[tree->n_otu+i]->v[0],&available,&s,tree);
           R_wtree(tree->a_nodes[tree->n_otu+i],tree->a_nodes[tree->n_otu+i]->v[1],&available,&s,tree);
@@ -605,7 +605,7 @@ char *Write_Tree(t_tree *tree, int custom)
           i = 0;
           while((!tree->a_nodes[tree->n_otu+i]->v[0]) ||
                 (!tree->a_nodes[tree->n_otu+i]->v[1]) ||
-		(!tree->a_nodes[tree->n_otu+i]->v[2])) i++;
+        (!tree->a_nodes[tree->n_otu+i]->v[2])) i++;
 
           R_wtree_Custom(tree->a_nodes[tree->n_otu+i],tree->a_nodes[tree->n_otu+i]->v[0],&available,&s,&pos,tree);
           R_wtree_Custom(tree->a_nodes[tree->n_otu+i],tree->a_nodes[tree->n_otu+i]->v[1],&available,&s,&pos,tree);
@@ -866,11 +866,11 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
 #else
       if(!tree->n_root)
         {
-	      sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,fils->b[p]->l->v));
+          sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,fils->b[p]->l->v));
         }
       else
         {
-	      sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,tree->rates->cur_l[fils->num]));
+          sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,tree->rates->cur_l[fils->num]));
         }
 #endif
     }
@@ -5273,13 +5273,13 @@ void PhyML_XML(char *xml_filename)
                             ds            = ds->next;
                 ds->obj       = (scalar_dbl **)lens_old;
 
-			    ds->next      = (t_ds *)mCalloc(1,sizeof(t_ds));                            
+                ds->next      = (t_ds *)mCalloc(1,sizeof(t_ds));
                             ds            = ds->next;
-			    ds->obj       = (scalar_dbl **)lens_var;
+                ds->obj       = (scalar_dbl **)lens_var;
 
-			    ds->next      = (t_ds *)mCalloc(1,sizeof(t_ds));                            
+                ds->next      = (t_ds *)mCalloc(1,sizeof(t_ds));
                             ds            = ds->next;
-			    ds->obj       = (scalar_dbl **)lens_var_old;
+                ds->obj       = (scalar_dbl **)lens_var_old;
 
                 ds->next      = (t_ds *)mCalloc(1,sizeof(t_ds));
                             ds            = ds->next;
@@ -5300,13 +5300,13 @@ void PhyML_XML(char *xml_filename)
                 lens     = (scalar_dbl **)ds->obj;
 
                             ds = ds->next;
-			    lens_old = (scalar_dbl **)ds->obj;
+                lens_old = (scalar_dbl **)ds->obj;
 
                             ds = ds->next;
-			    lens_var = (scalar_dbl **)ds->obj;
+                lens_var = (scalar_dbl **)ds->obj;
 
                             ds = ds->next;
-			    lens_var_old = (scalar_dbl **)ds->obj;
+                lens_var_old = (scalar_dbl **)ds->obj;
 
                             ds = ds->next;
                             iomod->s_opt->opt_bl = *((int *)ds->obj);
@@ -5319,7 +5319,7 @@ void PhyML_XML(char *xml_filename)
                 Exit("\n");
               }
 
-			For(i,2*tree->n_otu-1) 
+            For(i,2*tree->n_otu-1)
                           {
                             tree->a_edges[i]->l          = lens[i];
                             mixt_tree->a_edges[i]->l     = lens[i];
@@ -5550,7 +5550,7 @@ void PhyML_XML(char *xml_filename)
       MIXT_Check_Invar_Struct_In_Each_Partition_Elem(mixt_tree);
       MIXT_Check_RAS_Struct_In_Each_Partition_Elem(mixt_tree);
 
-      Set_Both_Sides(YES,mixt_tree);      
+      Set_Both_Sides(YES,mixt_tree);
 
       if(mixt_tree->mod->s_opt->opt_topo)
         {
