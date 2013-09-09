@@ -847,7 +847,7 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
 phydbl Slicing_Calibrations(t_tree *tree)
 {
   int i, j, k, f, n_otu, *indic, *n_slice, *slice_numbers;
-  phydbl K, buf, chop_bound, *t_prior_min, *t_prior_max, *t_slice, *t_slice_min, *t_slice_max, *g_i_node;
+  phydbl /* K,  */buf, chop_bound, *t_prior_min, *t_prior_max, *t_slice, *t_slice_min, *t_slice_max, *g_i_node;
 
 
   t_prior_min = tree -> rates -> t_prior_min;
@@ -863,7 +863,7 @@ phydbl Slicing_Calibrations(t_tree *tree)
   g_i_node       = (phydbl *)mCalloc((n_otu - 1) * (2 * n_otu - 3), sizeof(phydbl));  //vector of the values of the function g evaluated for each node.
   
   i = 0;
-  K = 0;
+  /* K = 0; */
   j = n_otu;
   ////////////////////////////////////////////////////////////////////////////
   //Put prior bounds in one vector t_slice. Excluding tips.
@@ -1189,7 +1189,7 @@ phydbl Slicing_Calibrations(t_tree *tree)
           
                   num = 0.0;
                   denom = 0.0;
-                  lmbd = .5;
+                  /* lmbd = .5; */
                   
                   for(i = n_otu; i < 2 * n_otu - 2; i++) if(Are_Equal(t_prior_min[tree -> n_root -> num], t_prior_min[i], 1.E-10)) t_prior_min[i] = tree -> rates -> nd_t[tree -> n_root -> num];
                   For(j, n_otu - 2)
@@ -1341,7 +1341,7 @@ phydbl Slicing_Calibrations(t_tree *tree)
                                   
                                   num = 0.0;
                                   denom = 0.0;
-                                  lmbd = .5;
+                                  /* lmbd = .5; */
                                   
                                   
                                   
@@ -1492,7 +1492,7 @@ phydbl Slicing_Calibrations(t_tree *tree)
                                   
                                   num = 0.0;
                                   denom = 0.0;
-                                  lmbd = .5;                                  
+                                  /* lmbd = .5;     */                              
                                   
                                   
                                   for(i = n_otu; i < 2 * n_otu - 2; i++) if(Are_Equal(t_prior_min[tree -> n_root -> num], t_prior_min[i], 1.E-10)) t_prior_min[i] = tree -> rates -> nd_t[tree -> n_root -> num];
@@ -1674,7 +1674,7 @@ phydbl Slicing_Calibrations(t_tree *tree)
               /* lmbd = tree -> rates -> birth_rate; */
               num = 1;
               denom = 1;
-              lmbd = .5;
+              /* lmbd = .5; */
               for(i = n_otu; i < 2 * n_otu - 2; i++) if(Are_Equal(t_prior_min[tree -> n_root -> num], t_prior_min[i], 1.E-10)) t_prior_min[i] = tree -> rates -> nd_t[tree -> n_root -> num];
               For(j, n_otu - 2)
                 {
@@ -1694,7 +1694,7 @@ phydbl Slicing_Calibrations(t_tree *tree)
           /* printf("\n. [EXACT] sum(m_i * g_i) [%f] \n", P);    */
         }
       //printf("\n. [P] of the tree for one combination of slices [%f] \n", P);
-      K = 1 / P;
+      /* K = 1 / P; */
       K_total = P;
       /* printf("\n. [EXACT] Total number of TRUE comb of slices [%d] \n", p); */
       /* printf("\n. [EXACT] Exact constant [%f] \n", K); */
