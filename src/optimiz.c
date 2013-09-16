@@ -536,6 +536,7 @@ phydbl Br_Len_Brent(phydbl prop_min, phydbl prop_max, t_edge *b_fcus, t_tree *tr
 
   lk_end = loc_tree->c_lnL;
 
+
   if(lk_end < lk_begin - tree->mod->s_opt->min_diff_lk_local)
     {
       PhyML_Printf("\n== prop_min: %f prop_max: %f l: %f var:%f",prop_min,prop_max,b_fcus->l->v,b_fcus->l_var->v);
@@ -687,6 +688,8 @@ void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tr
 
   l_infa = tree->mod->l_max/b_fcus->l->v;
   l_infb = tree->mod->l_min/b_fcus->l->v;
+
+  Set_Both_Sides(YES,tree);
 
   if(tree->io->mod->s_opt->opt_bl == YES) Br_Len_Brent(l_infb,l_infa,b_fcus,tree);
 

@@ -724,7 +724,6 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
           site_lk += 
             tree->site_lk_cat[catg] * 
             tree->mod->ras->gamma_r_proba->v[catg];
-      
         }
 
       if(tree->mod->ras->invar == YES)
@@ -785,11 +784,11 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
           PhyML_Printf("\n== Site = %d",site);
           PhyML_Printf("\n== Invar = %d",tree->data->invar[site]);
           PhyML_Printf("\n== Mixt = %d",tree->is_mixt_tree);
-          PhyML_Printf("\n== Lk = %G LOG(Lk) = %f < %G",site_lk,log_site_lk,-BIG);
+          PhyML_Printf("\n== Lk = %G log(Lk) = %f < %G",site_lk,log_site_lk,-BIG);
           For(catg,tree->mod->ras->n_catg) PhyML_Printf("\n== rr=%f p=%f",tree->mod->ras->gamma_rr->v[catg],tree->mod->ras->gamma_r_proba->v[catg]);
           PhyML_Printf("\n== Pinv = %G",tree->mod->ras->pinvar->v);
           PhyML_Printf("\n== Bl mult = %G",tree->mod->br_len_multiplier->v);
-
+          PhyML_Printf("\n== fact_sum_scale = %d",fact_sum_scale);
           /* int i; */
           /* For(i,2*tree->n_otu-3) */
           /* 	{ */

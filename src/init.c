@@ -1012,6 +1012,7 @@ void Init_Model(calign *data, t_mod *mod, option *io)
       mod->lambda->v    = 1.;
       /* mod->update_eigen = YES; */
       
+
       if(mod->whichmodel == JC69)
 	{
 	  mod->e_frq->pi->v[0] = mod->e_frq->pi->v[1] = mod->e_frq->pi->v[2] = mod->e_frq->pi->v[3] = .25;
@@ -1074,7 +1075,7 @@ void Init_Model(calign *data, t_mod *mod, option *io)
 	  Translate_Custom_Mod_String(mod);
 	}
       
-      if(mod->s_opt->user_state_freq == YES) 
+      if(mod->s_opt->user_state_freq == YES && mod->whichmodel != JC69) 
 	{
           For(i,4) 
             {
@@ -1293,6 +1294,8 @@ void Init_Model(calign *data, t_mod *mod, option *io)
   if(!mod->use_m4mod) Set_Model_Parameters(mod);      
 		  
   Init_Eigen_Struct(mod->eigen);
+
+
   
   free(dr);free(di);free(space);
 }

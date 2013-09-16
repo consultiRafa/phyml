@@ -831,13 +831,13 @@ void Update_Efrq(t_mod *mod)
   phydbl sum;
   int i;
   
-
   if((mod->io->datatype == NT) && (mod->s_opt->opt_state_freq))
     {
       sum = .0;
       For(i,mod->ns) sum += FABS(mod->e_frq->pi_unscaled->v[i]);
       For(i,mod->ns) mod->e_frq->pi->v[i] = FABS(mod->e_frq->pi_unscaled->v[i])/sum;
       
+
       do
 	{
 	  sum = .0;
@@ -919,7 +919,7 @@ void Update_Eigen(t_mod *mod)
 	  For (i,mod->ns*mod->ns) mod->eigen->l_e_vect[i] = mod->eigen->r_e_vect[i];
 	  while(!Matinv(mod->eigen->l_e_vect, mod->eigen->size, mod->eigen->size,YES))
 	    {
-	      PhyML_Printf("\n. Trying Q<-Q*scalar and then Root<-Root/scalar to fix this...\n");
+	      PhyML_Printf("\n== Trying Q<-Q*scalar and then Root<-Root/scalar to fix this...\n");
 	      scalar += scalar / 3.;
 	      For(i,mod->eigen->size*mod->eigen->size) mod->r_mat->qmat_buff->v[i]  = mod->r_mat->qmat->v[i];
 	      For(i,mod->eigen->size*mod->eigen->size) mod->r_mat->qmat_buff->v[i] *= scalar;
@@ -927,13 +927,13 @@ void Update_Eigen(t_mod *mod)
 			     mod->eigen->e_val_im,mod->eigen->r_e_vect,
 			     mod->eigen->r_e_vect_im,mod->eigen->space);
 	      if (result == -1)
-		Exit("\n. Eigenvalues/vectors computation did not converge: computation cancelled\n");
+		Exit("\n== Eigenvalues/vectors computation did not converge: computation cancelled\n");
 	      else if (result == 1)
-		Exit("\n. Complex eigenvalues/vectors: computation cancelled\n");
+		Exit("\n== Complex eigenvalues/vectors: computation cancelled\n");
 	      
 	      For (i,mod->eigen->size*mod->eigen->size) mod->eigen->l_e_vect[i] = mod->eigen->r_e_vect[i];
 	      n_iter++;
-	      if(n_iter > 100) Exit("\n. Cannot work out eigen vectors\n");
+	      if(n_iter > 100) Exit("\n== Cannot work out eigen vectors\n");
 	    };
 	  For(i,mod->eigen->size) mod->eigen->e_val[i] /= scalar;
 

@@ -1134,6 +1134,7 @@ int *MIXT_Get_Number_Of_Classes_In_All_Mixtures(t_tree *mixt_tree)
     {
       n_catg = (int *)mCalloc(1,sizeof(int));
       n_catg[0] = mixt_tree->mod->ras->n_catg;
+      if(mixt_tree->mod->ras->invar == YES) n_catg[0]++;
     }
   return(n_catg);
 }

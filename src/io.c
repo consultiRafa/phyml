@@ -5418,9 +5418,9 @@ void PhyML_XML(char *xml_filename)
       Print_Data_Structure(YES,mixt_tree->io->fp_out_stats,mixt_tree);
       
       Free_Spr_List(mixt_tree);
+      Free_Triplet(mixt_tree->triplet_struct);
       Free_Tree_Pars(mixt_tree);
       Free_Tree_Lk(mixt_tree);
-      Free_Triplet(mixt_tree->triplet_struct);
     }
 
   /*! Print the most likely tree in the output file */

@@ -4705,8 +4705,6 @@ void SPR_Shuffle(t_tree *mixt_tree)
       tree = tree->next;
     }
   while(tree);
-  
-
 }
 
 /*
