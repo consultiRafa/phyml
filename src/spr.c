@@ -3634,6 +3634,8 @@ void Speed_Spr_Loop(t_tree *tree)
   if((tree->mod->s_opt->print) && (!tree->io->quiet)) PhyML_Printf("\n\n. Maximizing likelihood (using SPR moves)...\n");
 
   SPR_Shuffle(tree);
+  Set_Both_Sides(YES,tree);
+  Lk(NULL,tree);
 
   Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->mod->s_opt->print));
   tree->best_lnL = tree->c_lnL;
@@ -3841,7 +3843,7 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
       if(!move)
         {
           PhyML_Printf("\n== move is NULL\n");
-	      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+          PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
           Exit("\n");
         }
 
@@ -4625,13 +4627,15 @@ void SPR_Shuffle(t_tree *mixt_tree)
       if(orig_catg[n] > 2) //should we even bother?
       {
           double cat_wghts[orig_catg[n]];
-          cat_wghts[0] = 0.5; //Give the first two categories equal weights
+          //Give the first two categories equal weights
+          cat_wghts[0] = 0.5;
           cat_wghts[1] = 0.5;
           for(int i=2;i<orig_catg[n];++i){
               cat_wghts[i] = 0.0;
           }
           int ret = beagleSetCategoryWeights(tree->b_inst,0,cat_wghts);
           if(ret<0) {fprintf(stderr, "beagleSetCategoryWeights() on instance %i failed:%i\n\n",tree->b_inst,ret);Exit(""); }
+          tree->mod->optimizing_topology = true;
       }
 #endif
       tree->mod->ras->n_catg = MIN(2,orig_catg[n]);
@@ -4703,19 +4707,13 @@ void SPR_Shuffle(t_tree *mixt_tree)
     {
       tree->mod->ras->n_catg = orig_catg[n];
 #ifdef BEAGLE
-      //Reset the rate categories to have equal weights
-      if(orig_catg[n] > 2)
-      {
-          double cat_wghts[orig_catg[n]];
-          double equal_wgt = 1.0/orig_catg[n];
-          for(int i=0;i<orig_catg[n];++i){
-              cat_wghts[i]=equal_wgt;
-          }
-          int ret = beagleSetCategoryWeights(tree->b_inst,0,cat_wghts);
-          if(ret<0) {fprintf(stderr, "beagleSetCategoryWeights() on instance %i failed:%i\n\n",tree->b_inst,ret);Exit(""); }
+      tree->mod->optimizing_topology = false;
+      //Reset the rate categories to their original weights
+      if(orig_catg[n] > 2){
+          update_beagle_ras(tree->mod);
       }
 #endif
-	  if(tree->mod->ras->invar == YES) tree->mod->ras->n_catg--;
+      if(tree->mod->ras->invar == YES) tree->mod->ras->n_catg--;
       tree = tree->next_mixt;
       n++;
     }

@@ -261,7 +261,7 @@ phydbl Generic_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol,
     }
     }
 
-  Exit("\n. Too many iterations in BRENT !");
+  Exit("\n. Too many iterations in Generic_Brent !");
   return(-1);
   /* Not Reached ??  *xmin=x;   */
   /* Not Reached ??  return fx; */
@@ -591,12 +591,18 @@ void Round_Optimize(t_tree *tree, calign *data, int n_round_max)
           PhyML_Printf("\n== lk_new = %f lk_old = %f diff = %f",lk_new,lk_old,lk_new-lk_old);
           Exit("\n== Optimisation failed ! (Round_Optimize)\n");
         }
-      if(FABS(lk_new - lk_old) < tree->mod->s_opt->min_diff_lk_local)  break;
-      else lk_old  = lk_new;
+      if(FABS(lk_new - lk_old) < tree->mod->s_opt->min_diff_lk_local) {
+//          DUMP_D(FABS(lk_new - lk_old));
+//          DUMP_I(n_round);
+          break;
+      }
+      else {
+          lk_old  = lk_new;
+      }
       n_round++;
       each--;
     }
-    
+
   Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->mod->s_opt->print));
 
 }
@@ -772,6 +778,7 @@ void Optimiz_All_Free_Param(t_tree *tree, int verbose)
   init_both_sides  = tree->both_sides;
 
   Set_Both_Sides(NO,tree);
+  Lk(NULL,tree);
 
   Optimize_RR_Params(tree,verbose);
   Optimize_TsTv(tree,verbose);
@@ -1759,7 +1766,7 @@ phydbl Dist_F_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol, int n_iter_max,
         }
     }
     }
-  Exit("\n. Too many iterations in BRENT !");
+  Exit("\n. Too many iterations in Dist_F_Brent !");
   return(-1);
 }
 
@@ -1948,7 +1955,7 @@ phydbl Missing_Dist_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol, int n_ite
         }
     }
     }
-  Exit("\n. Too many iterations in BRENT !");
+  Exit("\n. Too many iterations in Missing_Dist_Brent !");
   return(-1);
 }
 
@@ -2135,7 +2142,7 @@ int Optimiz_Alpha_And_Pinv(t_tree *mixt_tree, int verbose)
               Optimize_Br_Len_Serie(mixt_tree);
               fa = mixt_tree->c_lnL;
               /* PhyML_Printf("\n1 a=%f, b=%f, c=%f, fa=%f, fb=%f, fc=%f",a,b,c,fa,fb,fc); */
-			  if(iter++ > 10) 
+              if(iter++ > 10)
                             {
                               if(alpha) Free(alpha);
                               return 0;
@@ -2174,7 +2181,7 @@ int Optimiz_Alpha_And_Pinv(t_tree *mixt_tree, int verbose)
               Optimize_Br_Len_Serie(mixt_tree);
               fc = mixt_tree->c_lnL;
               /* PhyML_Printf("\n2 a=%f, b=%f, c=%f, fa=%f, fb=%f, fc=%f",a,b,c,fa,fb,fc); */
-			  if(iter++ > 10) 
+              if(iter++ > 10)
                             {
                               if(alpha) Free(alpha);
                               return 0;
@@ -2431,7 +2438,7 @@ phydbl Generic_Brent_Lk(phydbl *param, phydbl ax, phydbl cx, phydbl tol,
         }
     }
 
-  Exit("\n. Too many iterations in BRENT !");
+  Exit("\n. Too many iterations in Generic_Brent_Lk !");
   return(-1);
   /* Not Reached ??  *param=x;   */
   /* Not Reached ??  return fx; */

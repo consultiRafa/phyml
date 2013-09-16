@@ -285,9 +285,9 @@ typedef	double phydbl;
 /* #define P_LK_LIM_MAX 1.267650600e+30 */
 /* #define P_LK_LIM_INF 4.909093465e-91 /\* R: format(2^(-300),digits=10) *\/ */
 /* #define P_LK_LIM_SUP 2.037035976e+90 /\* R: format(2^(+300),digits=10) *\/ */
-//#define  P_LK_LIM_INF   3.054936e-151 /* 2^-500 */
+#define  P_LK_LIM_INF   3.054936e-151 /* 2^-500 */
 #define  P_LK_LIM_SUP   3.273391e+150 /* 2^500 */
-#define  P_LK_LIM_INF   4.656612873e-10 /*2^-31 */
+//#define  P_LK_LIM_INF   4.656612873e-10 /*2^-31 */
 
 #define T_MAX_XML_TAG 64
 
@@ -486,10 +486,6 @@ typedef struct __Edge {
   int                 *sum_scale_rght_cat;
   int                     *sum_scale_left;
   int                     *sum_scale_rght;
-#ifdef BEAGLE
-  int                  sum_scale_left_idx;
-  int                  sum_scale_rght_idx;
-#endif
 
   phydbl                          bootval; /*! bootstrap value (if exists) */
 
@@ -887,6 +883,7 @@ typedef struct __Model {
   scalar_dbl        *e_frq_weight;
 #ifdef BEAGLE
   int                      b_inst;
+  bool        optimizing_topology;
 #endif
 
 }t_mod;
@@ -1782,7 +1779,7 @@ void Random_SPRs_On_Rooted_Tree(t_tree *tree);
 
 void Set_P_Lk_One_Side(phydbl **Pij, phydbl **p_lk,  int **sum_scale, t_node *d, t_edge *b, t_tree *tree
 #ifdef BEAGLE
-                       , int* child_p_idx, int* Pij_idx, int* scale_idx, int* child_scale_idx
+                       , int* child_p_idx, int* Pij_idx
 #endif
                        );
 
@@ -1793,7 +1790,7 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
                   phydbl **Pij2, phydbl **p_lk2, int **sum_scale2,
                   t_node *d, t_edge *b, t_tree *tree
 #ifdef BEAGLE
-                  , int *dest_p_idx, int *child1_p_idx, int* child2_p_idx, int* Pij1_idx, int* Pij2_idx, int* scale_idx, int* child1_scale_idx, int* child2_scale_idx
+                  , int *dest_p_idx, int *child1_p_idx, int* child2_p_idx, int* Pij1_idx, int* Pij2_idx
 #endif
                   );
 

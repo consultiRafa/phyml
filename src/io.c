@@ -2424,8 +2424,6 @@ void Print_Model(t_mod *mod)
   PhyML_Printf("\n");
   For(i,mod->ns*mod->ns) PhyML_Printf(" %f ",mod->eigen->r_e_vect[i]);
   PhyML_Printf("\n");
-  For(i,mod->ns*mod->ns) PhyML_Printf(" %f ",mod->eigen->r_e_vect[i]);
-  PhyML_Printf("\n");
   For(i,mod->ns*mod->ns) PhyML_Printf(" %f ",mod->eigen->r_e_vect_im[i]);
   PhyML_Printf("\n");
   For(i,mod->ns*mod->ns) PhyML_Printf(" %f ",mod->eigen->l_e_vect[i]);
@@ -3565,7 +3563,7 @@ void Dump_Arr_D(phydbl* arr, int num)
     fprintf(stdout,"[");
     for(int i=0;i<num;++i)
     {
-        fprintf(stdout,"%f,",arr[i]);
+        fprintf(stdout,"%g,",arr[i]);
         fflush(stdout);
     }
     fprintf(stdout,"]\n");fflush(stdout);

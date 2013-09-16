@@ -217,7 +217,7 @@ phydbl Get_Lambda_F84(phydbl *pi, phydbl *kappa)
 /* and one specific branch length                                   */
 /*                                                                  */
 /* input : l , branch length                                        */
-/* input : mod , choosen model parameters, qmat and pi             */
+/* input : mod , choosen model parameters, qmat and pi              */
 /* ouput : Pij , substitution probability matrix                    */
 /*                                                                  */
 /* matrix P(l) is computed as follows :                             */
@@ -267,6 +267,7 @@ void PMat_Empirical(phydbl l, t_mod *mod, int pos, phydbl *Pij)
   V     = mod->eigen->l_e_vect;
   R     = mod->eigen->e_val; /* exponential of the eigen value matrix */
 
+  //Initialize a rate-specific N*N matrix
   For(i,n) For(k,n) Pij[pos+mod->ns*i+k] = .0;
 
   /* compute POW(EXP(D/mr),l) into mat_eDmrl */
@@ -432,12 +433,21 @@ void PMat_Zero_Br_Len(t_mod *mod, int pos, phydbl *Pij)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
+/*
+ *Update a rate specific Transition Prob matrix for a given branch-length(already adjusted
+ *with the rate prior to this function being called)
+ *
+ *  Pij: the P-matrix that will be adjusted
+ *  l  : branch length * rate
+ *  pos: offset into a specific rate-category
+ *
+ */
 void PMat(phydbl l, t_mod *mod, int pos, phydbl *Pij)
 {
   /* Warning: l is never the log of branch length here */
   if(l < 0.0)
     {
+      Warn_And_Exit("PMatZeroLen");
       PMat_Zero_Br_Len(mod,pos,Pij);
     }
   else
@@ -455,7 +465,7 @@ void PMat(phydbl l, t_mod *mod, int pos, phydbl *Pij)
                 if((mod->whichmodel == JC69) ||
                    (mod->whichmodel == K80))
                   {
-        /* 		    PMat_JC69(l,pos,Pij,mod); */
+                    /* 		    PMat_JC69(l,pos,Pij,mod); */
                     PMat_K80(l,mod->kappa->v,pos,Pij);
                   }
                 else
@@ -470,14 +480,31 @@ void PMat(phydbl l, t_mod *mod, int pos, phydbl *Pij)
                       }
                     else
                       {
+#ifdef BEAGLE
+                        //Update P-Mat without Beagle only if there is no active instance (i.e. when
+                        //we are building the initial tree)
+                        if(UNINITIALIZED == mod->b_inst)
+                        {
+//                            fprintf(stderr,"here3\n");fflush(stderr);
+                            PMat_Empirical(l,mod,pos,Pij);
+                        }
+#else
                         PMat_Empirical(l,mod,pos,Pij);
+#endif
                       }
                   }
                 break;
               }
           case AA :
             {
-              PMat_Empirical(l,mod,pos,Pij);
+#ifdef BEAGLE
+                //Update P-Mat without Beagle only if there is no active instance (i.e. when
+                //we are building the initial tree)
+                if(UNINITIALIZED == mod->b_inst)
+                    PMat_Empirical(l,mod,pos,Pij);
+#else
+                PMat_Empirical(l,mod,pos,Pij);
+#endif
               break;
             }
           default:
@@ -985,7 +1012,12 @@ void Update_Eigen(t_mod *mod)
       /* PhyML_Printf("\n"); */
 
 /* 	  Exit("\n"); */
-
+#ifdef BEAGLE
+          //Recall that BEAGLE is initialized *after* all the model parameters are set
+          //IOW, this function may be called before BEAGLE is initialized ("chicken-egg")
+          if(UNINITIALIZED != mod->b_inst)
+              update_beagle_eigen(mod);
+#endif
         }
       else
         {
@@ -993,7 +1025,6 @@ void Update_Eigen(t_mod *mod)
           Warn_And_Exit("\n");
         }
     }
-
 }
 
 //////////////////////////////////////////////////////////////

@@ -10,8 +10,8 @@ the GNU public licence. See http://www.opensource.org for details.
 
 */
 
+#include "assert.h"
 #include "lk.h"
-
 #ifdef BEAGLE
 #include "beagle_utils.h"
 #endif
@@ -407,6 +407,7 @@ phydbl Lk(t_edge *b, t_tree *tree)
 
   if(tree->rates && tree->io->lk_approx == NORMAL)
     {
+      Warn_And_Exit("TODO");
       tree->c_lnL = Lk_Normal_Approx(tree);
       return tree->c_lnL;
     }
@@ -423,7 +424,9 @@ phydbl Lk(t_edge *b, t_tree *tree)
       if(!b)//Update the PMat for all edges
         {
           For(br,2*tree->n_otu-3)
+          {
               Update_PMat_At_Given_Edge(tree->a_edges[br],tree);
+          }
           if(tree->n_root)
             {
               Update_PMat_At_Given_Edge(tree->n_root->b[1],tree);
@@ -491,6 +494,7 @@ phydbl Lk(t_edge *b, t_tree *tree)
           if(tree->mod->use_m4mod) ambiguity_check = YES;
 
           Lk_Core(state,ambiguity_check,b,tree);
+//          fprintf(stdout,",%g:%d\n",tree->c_lnL,tree->data->wght[tree->curr_site]);fflush(stdout);
         }
     }
 #endif
@@ -639,8 +643,15 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
             }
         }
 
+#ifdef BEAGLE
+      if(0.0==site_lk_cat)
+          site_lk_cat=SMALL_PIJ;//oterwhise the forthcoming calculations get thrown off
+#endif
+
+      assert(site_lk_cat>0.0);
       tree->site_lk_cat[catg] = site_lk_cat;
-//      fprintf(stdout,"[%d,%d,%d]site_lk_cat:%f,e.frq:%f,edge:%d,tax:%d\n",catg,site,state,site_lk_cat,tree->mod->e_frq->pi->v[state],b->num,b->rght->tax);fflush(stderr);
+
+//      fprintf(stdout,"[%d,%d,%d]site_lk_cat:%e,e.frq:%f,edge:%d,tax:%d\n",catg,site,state,site_lk_cat,tree->mod->e_frq->pi->v[state],b->num,b->rght->tax);fflush(stdout);
 
     }//site likelihood for all rate classes
 
@@ -771,7 +782,7 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
       PhyML_Printf("\n== Site = %d",site);
       PhyML_Printf("\n== Invar = %d",tree->data->invar[site]);
       PhyML_Printf("\n== Mixt = %d",tree->is_mixt_tree);
-      PhyML_Printf("\n== Lk = %G LOG(Lk) = %f < %G",site_lk,log_site_lk,-BIG);
+      PhyML_Printf("\n== Lk = %e LOG(Lk) = %e < %e",site_lk,log_site_lk,-BIG);
       For(catg,tree->mod->ras->n_catg) PhyML_Printf("\n== rr=%f p=%f",tree->mod->ras->gamma_rr->v[catg],tree->mod->ras->gamma_r_proba->v[catg]);
       PhyML_Printf("\n== Pinv = %G",tree->mod->ras->pinvar->v);
       PhyML_Printf("\n== Bl mult = %G",tree->mod->br_len_multiplier->v);
@@ -998,26 +1009,26 @@ void Update_P_Lk(t_tree *tree, t_edge *b, t_node *d)
   if(d->tax) return;
 
 #ifdef BEAGLE
-  update_beagle_partials(tree, b, d, true);
+  update_beagle_partials(tree, b, d);
 #else
   if(tree->mod->use_m4mod == NO)
     {
       if(tree->io->datatype == NT)
         {
-          Update_P_Lk_Nucl(tree,b,d, true);
+          Update_P_Lk_Nucl(tree,b,d);
         }
       else if(tree->io->datatype == AA)
         {
-          Update_P_Lk_AA(tree,b,d,false);
+          Update_P_Lk_AA(tree,b,d);
         }
       else
         {
-      Update_P_Lk_Generic(tree,b,d,false);
+      Update_P_Lk_Generic(tree,b,d);
         }
     }
   else
     {
-      Update_P_Lk_Generic(tree,b,d,false);
+      Update_P_Lk_Generic(tree,b,d);
     }
 #endif
 //  Print_Edge_Likelihoods(tree, b, false);
@@ -1027,7 +1038,7 @@ void Update_P_Lk(t_tree *tree, t_edge *b, t_node *d)
 //////////////////////////////////////////////////////////////
 
 #ifndef BEAGLE
-void Update_P_Lk_Generic(t_tree *tree, t_edge *b, t_node *d ,bool scale)
+void Update_P_Lk_Generic(t_tree *tree, t_edge *b, t_node *d)
 {
 /*
            |
@@ -1219,53 +1230,50 @@ void Update_P_Lk_Generic(t_tree *tree, t_edge *b, t_node *d ,bool scale)
                   if(p_lk[site*NsNg+catg*Ns+i] < smallest_p_lk) smallest_p_lk = p_lk[site*NsNg+catg*Ns+i] ;
                 }
 
-              if(scale)
-              {
-                  /* Current scaling values at that site */
-                  sum_scale_v1_val = (sum_scale_v1)?(sum_scale_v1[catg*n_patterns+site]):(0);
-                  sum_scale_v2_val = (sum_scale_v2)?(sum_scale_v2[catg*n_patterns+site]):(0);
+              /* Current scaling values at that site */
+              sum_scale_v1_val = (sum_scale_v1)?(sum_scale_v1[catg*n_patterns+site]):(0);
+              sum_scale_v2_val = (sum_scale_v2)?(sum_scale_v2[catg*n_patterns+site]):(0);
 
-                  sum_scale[catg*n_patterns+site] = sum_scale_v1_val + sum_scale_v2_val;
+              sum_scale[catg*n_patterns+site] = sum_scale_v1_val + sum_scale_v2_val;
 
-                  /* 	  PhyML_Printf("\n@ %d",sum_scale[catg*n_patterns+site]); */
+              /* 	  PhyML_Printf("\n@ %d",sum_scale[catg*n_patterns+site]); */
 
-                  /* Scaling */
-                  if(smallest_p_lk < p_lk_lim_inf)
+              /* Scaling */
+              if(smallest_p_lk < p_lk_lim_inf)
+                {
+                  curr_scaler_pow = (int)(LOG(p_lk_lim_inf)-LOG(smallest_p_lk))/LOG2;
+                  curr_scaler     = (phydbl)((unsigned long long)(1) << curr_scaler_pow);
+
+                  /* 	      if(fabs(curr_scaler_pow) > 63 || fabs(curr_scaler_pow) > 63) */
+                  /* 		{ */
+                  /* 		  PhyML_Printf("\n. p_lk_lim_inf = %G smallest_p_lk = %G",p_lk_lim_inf,smallest_p_lk); */
+                  /* 		  PhyML_Printf("\n. curr_scaler_pow = %d",curr_scaler_pow); */
+                  /* 		  PhyML_Printf("\n. Err in file %s at line %d.",__FILE__,__LINE__); */
+                  /* 		  Warn_And_Exit("\n"); */
+                  /* 		} */
+
+                  sum_scale[catg*n_patterns+site] += curr_scaler_pow;
+
+                  do
                     {
-                      curr_scaler_pow = (int)(LOG(p_lk_lim_inf)-LOG(smallest_p_lk))/LOG2;
-                      curr_scaler     = (phydbl)((unsigned long long)(1) << curr_scaler_pow);
-
-                      /* 	      if(fabs(curr_scaler_pow) > 63 || fabs(curr_scaler_pow) > 63) */
-                      /* 		{ */
-                      /* 		  PhyML_Printf("\n. p_lk_lim_inf = %G smallest_p_lk = %G",p_lk_lim_inf,smallest_p_lk); */
-                      /* 		  PhyML_Printf("\n. curr_scaler_pow = %d",curr_scaler_pow); */
-                      /* 		  PhyML_Printf("\n. Err in file %s at line %d.",__FILE__,__LINE__); */
-                      /* 		  Warn_And_Exit("\n"); */
-                      /* 		} */
-
-                      sum_scale[catg*n_patterns+site] += curr_scaler_pow;
-
-                      do
+                      piecewise_scaler_pow = MIN(curr_scaler_pow,63);
+                      curr_scaler = (phydbl)((unsigned long long)(1) << piecewise_scaler_pow);
+                      For(i,tree->mod->ns)
                         {
-                          piecewise_scaler_pow = MIN(curr_scaler_pow,63);
-                          curr_scaler = (phydbl)((unsigned long long)(1) << piecewise_scaler_pow);
-                          For(i,tree->mod->ns)
-                            {
-                              p_lk[site*NsNg+catg*Ns+i] *= curr_scaler;
+                          p_lk[site*NsNg+catg*Ns+i] *= curr_scaler;
 
-                              if(p_lk[site*NsNg+catg*Ns+i] > BIG)
-                                {
-                                  PhyML_Printf("\n. p_lk_lim_inf = %G smallest_p_lk = %G",p_lk_lim_inf,smallest_p_lk);
-                                  PhyML_Printf("\n. curr_scaler_pow = %d",curr_scaler_pow);
-                                  PhyML_Printf("\n. Err in file %s at line %d.",__FILE__,__LINE__);
-                                  Warn_And_Exit("\n");
-                                }
+                          if(p_lk[site*NsNg+catg*Ns+i] > BIG)
+                            {
+                              PhyML_Printf("\n. p_lk_lim_inf = %G smallest_p_lk = %G",p_lk_lim_inf,smallest_p_lk);
+                              PhyML_Printf("\n. curr_scaler_pow = %d",curr_scaler_pow);
+                              PhyML_Printf("\n. Err in file %s at line %d.",__FILE__,__LINE__);
+                              Warn_And_Exit("\n");
                             }
-                          curr_scaler_pow -= piecewise_scaler_pow;
                         }
-                      while(curr_scaler_pow != 0);
+                      curr_scaler_pow -= piecewise_scaler_pow;
                     }
-              }
+                  while(curr_scaler_pow != 0);
+                }
             }
         }
     }
@@ -1275,7 +1283,7 @@ void Update_P_Lk_Generic(t_tree *tree, t_edge *b, t_node *d ,bool scale)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d, bool scale)
+void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
 {
 /*
            |
@@ -1519,46 +1527,43 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d, bool scale)
                   if(p_lk[site*dim1+catg*dim2+i] < smallest_p_lk) smallest_p_lk = p_lk[site*dim1+catg*dim2+i] ;
                 }
 
-              if(scale)
-              {
-                  /* Current scaling values at that site */
-                  sum_scale_v1_val = (sum_scale_v1)?(sum_scale_v1[catg*n_patterns+site]):(0);
-                  sum_scale_v2_val = (sum_scale_v2)?(sum_scale_v2[catg*n_patterns+site]):(0);
+              /* Current scaling values at that site */
+              sum_scale_v1_val = (sum_scale_v1)?(sum_scale_v1[catg*n_patterns+site]):(0);
+              sum_scale_v2_val = (sum_scale_v2)?(sum_scale_v2[catg*n_patterns+site]):(0);
 
-                  sum_scale[catg*n_patterns+site] = sum_scale_v1_val + sum_scale_v2_val;
+              sum_scale[catg*n_patterns+site] = sum_scale_v1_val + sum_scale_v2_val;
 //                  fprintf(stderr,"\n%f,%f,%d",smallest_p_lk,curr_scaler,curr_scaler_pow);
 
-                  /* Scaling */
-                  if(smallest_p_lk < p_lk_lim_inf)
+              /* Scaling */
+              if(smallest_p_lk < p_lk_lim_inf)
+                {
+                  curr_scaler_pow = (int)(LOG(p_lk_lim_inf)-LOG(smallest_p_lk))/LOG2;
+                  curr_scaler     = (phydbl)((unsigned long long)(1) << curr_scaler_pow);
+
+                  sum_scale[catg*n_patterns+site] += curr_scaler_pow;
+//                  fprintf(stderr,"\n%d",sum_scale[catg*n_patterns+site]);
+
+                  do
                     {
-                      curr_scaler_pow = (int)(LOG(p_lk_lim_inf)-LOG(smallest_p_lk))/LOG2;
-                      curr_scaler     = (phydbl)((unsigned long long)(1) << curr_scaler_pow);
-
-                      sum_scale[catg*n_patterns+site] += curr_scaler_pow;
-//                      fprintf(stderr,"\n%d",sum_scale[catg*n_patterns+site]);
-
-                      do
+                      piecewise_scaler_pow = MIN(curr_scaler_pow,63);
+                      curr_scaler = (phydbl)((unsigned long long)(1) << piecewise_scaler_pow);
+                      For(i,tree->mod->ns)
                         {
-                          piecewise_scaler_pow = MIN(curr_scaler_pow,63);
-                          curr_scaler = (phydbl)((unsigned long long)(1) << piecewise_scaler_pow);
-                          For(i,tree->mod->ns)
-                            {
-                              p_lk[site*dim1+catg*dim2+i] *= curr_scaler;
+                          p_lk[site*dim1+catg*dim2+i] *= curr_scaler;
 
-                              if(p_lk[site*dim1+catg*dim2+i] > BIG)
-                                {
-                                  PhyML_Printf("\n. p_lk_lim_inf = %G smallest_p_lk = %G",p_lk_lim_inf,smallest_p_lk);
-                                  PhyML_Printf("\n. curr_scaler_pow = %d",curr_scaler_pow);
-                                  PhyML_Printf("\n. Err in file %s at line %d.",__FILE__,__LINE__);
-                                  Warn_And_Exit("\n");
-                                }
-//                              fprintf(stderr,"\n%e",p_lk[site*dim1+catg*dim2+i]);
+                          if(p_lk[site*dim1+catg*dim2+i] > BIG)
+                            {
+                              PhyML_Printf("\n. p_lk_lim_inf = %G smallest_p_lk = %G",p_lk_lim_inf,smallest_p_lk);
+                              PhyML_Printf("\n. curr_scaler_pow = %d",curr_scaler_pow);
+                              PhyML_Printf("\n. Err in file %s at line %d.",__FILE__,__LINE__);
+                              Warn_And_Exit("\n");
                             }
-                          curr_scaler_pow -= piecewise_scaler_pow;
+//                              fprintf(stderr,"\n%e",p_lk[site*dim1+catg*dim2+i]);
                         }
-                      while(curr_scaler_pow != 0);
+                      curr_scaler_pow -= piecewise_scaler_pow;
                     }
-              }
+                  while(curr_scaler_pow != 0);
+                }
             }
         }
     }
@@ -1570,7 +1575,7 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d, bool scale)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d, bool scale)
+void Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
 {
 /*
            |
@@ -1828,51 +1833,48 @@ void Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d, bool scale)
           if(p_lk[site*dim1+catg*dim2+i] < smallest_p_lk) smallest_p_lk = p_lk[site*dim1+catg*dim2+i] ;
         }
 
-          if(scale)
-          {
-              /* Current scaling values at that site */
-              sum_scale_v1_val = (sum_scale_v1)?(sum_scale_v1[catg*n_patterns+site]):(0);
-              sum_scale_v2_val = (sum_scale_v2)?(sum_scale_v2[catg*n_patterns+site]):(0);
+          /* Current scaling values at that site */
+          sum_scale_v1_val = (sum_scale_v1)?(sum_scale_v1[catg*n_patterns+site]):(0);
+          sum_scale_v2_val = (sum_scale_v2)?(sum_scale_v2[catg*n_patterns+site]):(0);
 
-              sum_scale[catg*n_patterns+site] = sum_scale_v1_val + sum_scale_v2_val;
+          sum_scale[catg*n_patterns+site] = sum_scale_v1_val + sum_scale_v2_val;
 
-              /* Scaling */
-              if(smallest_p_lk < p_lk_lim_inf)
+          /* Scaling */
+          if(smallest_p_lk < p_lk_lim_inf)
+            {
+              curr_scaler_pow = (int)(LOG(p_lk_lim_inf)-LOG(smallest_p_lk))/LOG2;
+              curr_scaler     = (phydbl)((unsigned long long)(1) << curr_scaler_pow);
+
+              /* 	      if(fabs(curr_scaler_pow) > 63 || fabs(curr_scaler_pow) > 63) */
+              /* 		{ */
+              /* 		  PhyML_Printf("\n. p_lk_lim_inf = %G smallest_p_lk = %G",p_lk_lim_inf,smallest_p_lk); */
+              /* 		  PhyML_Printf("\n. curr_scaler_pow = %d",curr_scaler_pow); */
+              /* 		  PhyML_Printf("\n. Err in file %s at line %d.",__FILE__,__LINE__); */
+              /* 		  Warn_And_Exit("\n"); */
+              /* 		} */
+
+              sum_scale[catg*n_patterns+site] += curr_scaler_pow;
+
+              do
                 {
-                  curr_scaler_pow = (int)(LOG(p_lk_lim_inf)-LOG(smallest_p_lk))/LOG2;
-                  curr_scaler     = (phydbl)((unsigned long long)(1) << curr_scaler_pow);
+                  piecewise_scaler_pow = MIN(curr_scaler_pow,63);
+                  curr_scaler = (phydbl)((unsigned long long)(1) << piecewise_scaler_pow);
+                  For(i,tree->mod->ns)
+                {
+                  p_lk[site*dim1+catg*dim2+i] *= curr_scaler;
 
-                  /* 	      if(fabs(curr_scaler_pow) > 63 || fabs(curr_scaler_pow) > 63) */
-                  /* 		{ */
-                  /* 		  PhyML_Printf("\n. p_lk_lim_inf = %G smallest_p_lk = %G",p_lk_lim_inf,smallest_p_lk); */
-                  /* 		  PhyML_Printf("\n. curr_scaler_pow = %d",curr_scaler_pow); */
-                  /* 		  PhyML_Printf("\n. Err in file %s at line %d.",__FILE__,__LINE__); */
-                  /* 		  Warn_And_Exit("\n"); */
-                  /* 		} */
-
-                  sum_scale[catg*n_patterns+site] += curr_scaler_pow;
-
-                  do
+                  if(p_lk[site*dim1+catg*dim2+i] > BIG)
                     {
-                      piecewise_scaler_pow = MIN(curr_scaler_pow,63);
-                      curr_scaler = (phydbl)((unsigned long long)(1) << piecewise_scaler_pow);
-                      For(i,tree->mod->ns)
-                    {
-                      p_lk[site*dim1+catg*dim2+i] *= curr_scaler;
-
-                      if(p_lk[site*dim1+catg*dim2+i] > BIG)
-                        {
-                          PhyML_Printf("\n. p_lk_lim_inf = %G smallest_p_lk = %G",p_lk_lim_inf,smallest_p_lk);
-                          PhyML_Printf("\n. curr_scaler_pow = %d",curr_scaler_pow);
-                          PhyML_Printf("\n. Err in file %s at line %d.",__FILE__,__LINE__);
-                          Warn_And_Exit("\n");
-                        }
+                      PhyML_Printf("\n. p_lk_lim_inf = %G smallest_p_lk = %G",p_lk_lim_inf,smallest_p_lk);
+                      PhyML_Printf("\n. curr_scaler_pow = %d",curr_scaler_pow);
+                      PhyML_Printf("\n. Err in file %s at line %d.",__FILE__,__LINE__);
+                      Warn_And_Exit("\n");
                     }
-                      curr_scaler_pow -= piecewise_scaler_pow;
-                    }
-                  while(curr_scaler_pow != 0);
                 }
-          }
+                  curr_scaler_pow -= piecewise_scaler_pow;
+                }
+              while(curr_scaler_pow != 0);
+            }
         }
     }
     }
@@ -2311,7 +2313,7 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
 
   len = -1.0;
 
-  if(tree->mod->log_l == YES) b_fcus->l->v = EXP(b_fcus->l->v);
+  if(tree->mod->log_l == YES) {Warn_And_Exit("here");b_fcus->l->v = EXP(b_fcus->l->v);}
 
   For(i,tree->mod->ras->n_catg)
     {
@@ -2320,6 +2322,7 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
       //Update the branch length
       if(b_fcus->has_zero_br_len == YES)
         {
+          Warn_And_Exit("\nzerobrlen");
           len = -1.0;
           mean = -1.0;
           var  = -1.0;
@@ -2343,27 +2346,66 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
       //Update the transition prob. matrix
       if(tree->mod->gamma_mgf_bl == NO)
           {
+#ifdef BEAGLE
+            assert(UNINITIALIZED != tree->mod->b_inst);
+#endif
             PMat(len,tree->mod,i*tree->mod->ns*tree->mod->ns,b_fcus->Pij_rr);
           }
       else
           {
+            Warn_And_Exit("This case needs to be handled");
             shape = mean*mean/var;
             scale = var/mean;
 
             PMat_MGF_Gamma(b_fcus->Pij_rr+tree->mod->ns*tree->mod->ns*i, shape,scale,1.0,tree->mod);
           }
     }
-  if(tree->mod->log_l == YES) b_fcus->l->v = LOG(b_fcus->l->v);
+
 #ifdef BEAGLE
+  int whichmodel = tree->mod->whichmodel;
+  //Only for some models we use Beagle to compute/update the P-matrices, for other models
+  //we compute them in PhyML and explicitly set the P-matrices in BEAGLE
+  if((tree->mod->io->datatype == AA || whichmodel==GTR || whichmodel==CUSTOM) && tree->mod->use_m4mod == NO)
+  {
+//      fprintf(stderr,"here1\n");
+      if(b_fcus->has_zero_br_len == YES)
+          Warn_And_Exit("This case needs to be handled");
+
+      //
+      update_beagle_eigen(tree->mod);
+      update_beagle_ras(tree->mod);
+
+      //
+      len = MAX(0.0, b_fcus->l->v) * tree->mod->br_len_multiplier->v;
+      int p_matrices[1]     = {b_fcus->Pij_rr_idx};
+      double branch_lens[1] = {len};
+      int ret = beagleUpdateTransitionMatrices(tree->b_inst,0,p_matrices,NULL,NULL,branch_lens,1);
+      if(ret<0){
+          fprintf(stderr, "beagleUpdateTransitionMatrices() on instance %i failed:%i\n\n",tree->b_inst,ret);
+          Exit("");
+      }
+      //Retrieve a "local" copy of the P-matrix
+      ret = beagleGetTransitionMatrix(tree->b_inst, b_fcus->Pij_rr_idx, b_fcus->Pij_rr);
+      if(ret<0){
+          fprintf(stderr, "beagleGetTransitionMatrix() on instance %i failed:%i\n\n",tree->b_inst,ret);
+          Exit("");
+      }
+  }
+  else
+  {
       int ret = beagleSetTransitionMatrix(tree->b_inst, b_fcus->Pij_rr_idx, b_fcus->Pij_rr, -1);
       if(ret<0){
           fprintf(stderr, "beagleSetTransitionMatrix() on instance %i failed:%i\n\n",tree->b_inst,ret);
           Exit("");
       }
+  }
 #endif
-//      DUMP_I(b_fcus->num);
+    if(tree->mod->log_l == YES) {Warn_And_Exit("here");b_fcus->l->v = LOG(b_fcus->l->v);}
+
+//      Print_Model(tree->mod);
+//      Dump_Arr_D(tree->cur_site_lk, tree->n_pattern);
 //      Print_Edge_PMats(tree, b_fcus);
-//      Print_Edge_Likelihoods(tree,b_fcus);
+//      Print_Edge_Likelihoods(tree,b_fcus,true);
 }
 
 //////////////////////////////////////////////////////////////

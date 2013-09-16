@@ -11,9 +11,6 @@ the GNU public licence. See http://www.opensource.org for details.
 */
 
 #include "make.h"
-#ifdef BEAGLE
-#include "beagle_utils.h" //For the UNINITIALIZED constant
-#endif
 
 //////////////////////////////////////////////////////////////
 
@@ -425,21 +422,14 @@ t_tree *Make_Tree_From_Scratch(int n_otu, calign *data)
       tree->data = data;
     }
 #ifdef BEAGLE
-  //1) offset the partial indices because BEAGLE insists on first storing the tips/taxa
-  //2) set the right scaling index for each branch
+  //offset the branch's partial indices because BEAGLE insists on first storing the tips/taxa
   int num_branches = 2*tree->n_otu-1;
   for(int i=0;i<2*tree->n_otu-1;++i)
   {
-      //offset partials
-      assert(tree->a_edges[i]->p_lk_left_idx != UNINITIALIZED); //the left_idx should've been set earlier as it doesn't require us to know num_branches
       //For edgeX, its "left" partial lies at index `num_tax + edgeX->num"
       tree->a_edges[i]->p_lk_left_idx = tree->n_otu + tree->a_edges[i]->p_lk_left_idx;
       //For edgeX, its "right" partial lies at index `num_tax + edgeX->num + num_branches"
       tree->a_edges[i]->p_lk_rght_idx = tree->n_otu + tree->a_edges[i]->p_lk_left_idx + num_branches;
-
-      //set right scaling idx
-      assert(tree->a_edges[i]->sum_scale_left_idx != UNINITIALIZED); //the left_idx should've been set earlier as it doesn't require us to know num_branches
-      tree->a_edges[i]->sum_scale_rght_idx = tree->a_edges[i]->sum_scale_left_idx + num_branches;
   }
 #endif
 

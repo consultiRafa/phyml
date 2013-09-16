@@ -25,7 +25,7 @@ void Simu_Loop(t_tree *mixt_tree)
   int *orig_catg;
   int n;
   t_tree *tree,**tree_list;
-  
+
 
   if((mixt_tree->mod->s_opt->print) &&
      (!mixt_tree->io->quiet)) PhyML_Printf("\n\n. Refining the tree...\n");
@@ -48,13 +48,15 @@ void Simu_Loop(t_tree *mixt_tree)
       if(orig_catg[n] > 2) //should we even bother?
       {
           double cat_wghts[orig_catg[n]];
-          cat_wghts[0] = 0.5; //Give the first two categories equal weights
+          //Give the first two rate categories equal weight
+          cat_wghts[0] = 0.5;
           cat_wghts[1] = 0.5;
           for(int i=2;i<orig_catg[n];++i){
               cat_wghts[i] = 0.0;
           }
           int ret = beagleSetCategoryWeights(tree->b_inst,0,cat_wghts);
           if(ret<0) {fprintf(stderr, "beagleSetCategoryWeights() on instance %i failed:%i\n\n",tree->b_inst,ret);Exit(""); }
+          tree->mod->optimizing_topology = true;
       }
 #endif
       tree->mod->ras->n_catg = MIN(2,orig_catg[n]);
@@ -119,20 +121,14 @@ void Simu_Loop(t_tree *mixt_tree)
   n = 0;
   do
     {
+      tree->mod->ras->n_catg = orig_catg[n];
 #ifdef BEAGLE
-      //Reset the rate categories to have equal weights
-      if(orig_catg[n] > 2)
-      {
-          double cat_wghts[orig_catg[n]];
-          double equal_wgt = 1.0/orig_catg[n];
-          for(int i=0;i<orig_catg[n];++i){
-              cat_wghts[i]=equal_wgt;
-          }
-          int ret = beagleSetCategoryWeights(tree->b_inst,0,cat_wghts);
-          if(ret<0) {fprintf(stderr, "beagleSetCategoryWeights() on instance %i failed:%i\n\n",tree->b_inst,ret);Exit(""); }
+      //Reset the rate categories to their original weights
+      tree->mod->optimizing_topology = false;
+      if(orig_catg[n] > 2){
+          update_beagle_ras(tree->mod);
       }
 #endif
-      tree->mod->ras->n_catg = orig_catg[n];
       if(tree->mod->ras->invar == YES) tree->mod->ras->n_catg--;
       tree = tree->next_mixt;
       n++;

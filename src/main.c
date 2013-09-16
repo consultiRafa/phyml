@@ -228,6 +228,7 @@ int main(int argc, char **argv)
 
                   Set_Both_Sides(YES,tree);
                   Lk(NULL,tree);
+//                  Print_Model(tree->mod);
 //                  Print_All_Edge_Likelihoods(tree);
                   Pars(NULL,tree);
                   Get_Tree_Size(tree);

@@ -79,7 +79,7 @@ void print_beagle_instance_details(BeagleInstanceDetails *inst)
 {
     int rNumber = inst->resourceNumber;
     fprintf(stdout, "\tUsing resource %i:\n", rNumber);
-    fprintf(stdout, "\t\tRsrc Name : %s\n",inst->resourceName);
+    fprintf(stdout, "\t\tRsrc Name : %s\n", inst->resourceName);
     fprintf(stdout, "\t\tImpl Name : %s\n", inst->implName);
     fprintf(stdout, "\t\tImpl Desc : %s\n", inst->implDescription);
     fprintf(stdout, "\t\tFlags:");
@@ -94,7 +94,7 @@ int create_beagle_instance(t_tree *tree, int quiet)
         fprintf(stdout,"\n\tWARNING: Creating a BEAGLE instance on a tree with an pre-existing BEAGLE instance:%d\n",tree->b_inst);
     }
     if(!quiet){
-        print_beagle_resource_list();
+//        print_beagle_resource_list();
     }
     BeagleInstanceDetails inst_d;
     int num_rate_catg = tree->mod->ras->n_catg;
@@ -103,8 +103,7 @@ int create_beagle_instance(t_tree *tree, int quiet)
     //in BEAGLE we have 2*num_branches number of partials.
     //BEAGLE's partials buffer = [ tax1, tax2, ..., taxN, b1Left, b2Left, b3Left,...,bMLeft, b1Rght, b2Rght, b3Rght,...,bMRght] (N taxa, M branches)
     int num_partials  = tree->n_otu + (2*num_branches);
-    int num_scalers   = (2 * num_branches)+1;
-//    DUMP_I(tree->n_otu, num_rate_catg, num_partials, num_branches, num_scalers, tree->mod->ns, tree->n_pattern, tree->mod->whichmodel);
+//    DUMP_I(tree->n_otu, num_rate_catg, num_partials, num_branches, tree->mod->ns, tree->n_pattern, tree->mod->whichmodel);
     int beagle_inst = beagleCreateInstance(
                                   tree->n_otu,                /**< Number of tip data elements (input) */
                                   num_partials,               /**< Number of partial buffer (input) */
@@ -114,10 +113,10 @@ int create_beagle_instance(t_tree *tree, int quiet)
                                   1,                          /**< Number of rate matrix eigen-decomposition,state freqs, and category weight buffers*/
                                   num_branches,               /**< Number of rate matrix buffers (input) */
                                   num_rate_catg,              /**< Number of rate categories (input) */
-                                  num_scalers,                /**< Number of scaling buffers */
+                                  -1,                         /**< Number of scaling buffers. Unused because we use SCALING_ALWAYS */
                                   NULL,                       /**< List of potential resource on which this instance is allowed (input, NULL implies no restriction */
                                   0,			    /**< Length of resourceList list (input) */
-                                  BEAGLE_FLAG_FRAMEWORK_CPU | BEAGLE_FLAG_PROCESSOR_CPU | BEAGLE_FLAG_SCALING_MANUAL | ((sizeof(float)==sizeof(phydbl)) ? BEAGLE_FLAG_PRECISION_SINGLE:BEAGLE_FLAG_PRECISION_DOUBLE),
+                                  BEAGLE_FLAG_FRAMEWORK_CPU | BEAGLE_FLAG_PROCESSOR_CPU | BEAGLE_FLAG_SCALING_ALWAYS | BEAGLE_FLAG_EIGEN_REAL | ((sizeof(float)==sizeof(phydbl)) ? BEAGLE_FLAG_PRECISION_SINGLE:BEAGLE_FLAG_PRECISION_DOUBLE),
                                   0,                /**< Bit-flags indicating required implementation characteristics, see BeagleFlags (input) */
                                   &inst_d);
     if (beagle_inst < 0){
@@ -168,7 +167,7 @@ int create_beagle_instance(t_tree *tree, int quiet)
 /* Update partial likelihood on edge b on the side of b where
    node d lies.
 */
-void update_beagle_partials(t_tree* tree, t_edge* b, t_node* d, bool scale)
+void update_beagle_partials(t_tree* tree, t_edge* b, t_node* d)
 {
     /*
                |
@@ -194,34 +193,26 @@ void update_beagle_partials(t_tree* tree, t_edge* b, t_node* d, bool scale)
     phydbl *Pij1,*Pij2;
     int *sum_scale, *sum_scale_v1, *sum_scale_v2;
     int *p_lk_loc;
-    int dest_p_idx, child1_p_idx, child2_p_idx, Pij1_idx, Pij2_idx, scale_idx, child1_scale_idx, child2_scale_idx;
+    int dest_p_idx, child1_p_idx, child2_p_idx, Pij1_idx, Pij2_idx;
     n_v1 = n_v2                 = NULL;
     p_lk = p_lk_v1 = p_lk_v2    = NULL;
     Pij1 = Pij2                 = NULL;
     sum_scale_v1 = sum_scale_v2 = NULL;
     p_lk_loc                    = NULL;
-    dest_p_idx = child1_p_idx = child2_p_idx = Pij1_idx = Pij2_idx = scale_idx = child1_scale_idx = child2_scale_idx = UNINITIALIZED;
+    dest_p_idx = child1_p_idx = child2_p_idx = Pij1_idx = Pij2_idx = UNINITIALIZED;
     Set_All_P_Lk(&n_v1,&n_v2,
                  &p_lk,&sum_scale,&p_lk_loc,
                  &Pij1,&p_lk_v1,&sum_scale_v1,
                  &Pij2,&p_lk_v2,&sum_scale_v2,
                  d,b,tree,
-                 &dest_p_idx, &child1_p_idx, &child2_p_idx, &Pij1_idx, &Pij2_idx, &scale_idx, &child1_scale_idx, &child2_scale_idx);
+                 &dest_p_idx, &child1_p_idx, &child2_p_idx, &Pij1_idx, &Pij2_idx);
 
-    int cs_idx = (4*tree->n_otu-2);
-    assert(scale_idx != UNINITIALIZED);
-    assert(cs_idx!=b->sum_scale_left_idx);
-    assert(cs_idx!=child1_scale_idx);
-    assert(cs_idx!=child2_scale_idx);
-//    if(UNINITIALIZED!=child1_scale_idx)
-//        assert(child1_scale_idx == child1_p_idx);
-//    if(UNINITIALIZED!=child2_scale_idx)
-//        assert(child2_scale_idx == child2_p_idx);
+
 //    fprintf(stdout, "\nUpdating partials on Branch %d (on the side where Node %d lies)\n",b->num,d->num);fflush(stdout);
 //    double* p_lk_v1_b = (double*)malloc(tree->mod->ras->n_catg*tree->mod->ns*tree->n_pattern*sizeof(double));if(NULL==p_lk_v1_b) Warn_And_Exit("Couldnt allocate memory");
-//    beagleGetPartials(tree->b_inst, child1_p_idx, scale_idx, (double*)p_lk_v1_b);
+//    beagleGetPartials(tree->b_inst, child1_p_idx, BEAGLE_OP_NONE, (double*)p_lk_v1_b);
 //    double* p_lk_v2_b = (double*)malloc(tree->mod->ras->n_catg*tree->mod->ns*tree->n_pattern*sizeof(double));if(NULL==p_lk_v2_b) Warn_And_Exit("Couldnt allocate memory");
-//    beagleGetPartials(tree->b_inst, child2_p_idx, scale_idx, (double*)p_lk_v2_b);
+//    beagleGetPartials(tree->b_inst, child2_p_idx, BEAGLE_OP_NONE, (double*)p_lk_v2_b);
 
 //    fprintf(stdout, "Left partials :");fflush(stdout);
 //    Dump_Arr_D(p_lk_v1_b,   tree->mod->ras->n_catg*tree->mod->ns*tree->n_pattern);
@@ -230,49 +221,20 @@ void update_beagle_partials(t_tree* tree, t_edge* b, t_node* d, bool scale)
 //    Free(p_lk_v1_b);
 //    Free(p_lk_v2_b);
 
-    //
-    int ret = UNINITIALIZED;
 
     //Create the corresponding BEAGLE operation
-    BeagleOperation operations[1] = {{dest_p_idx, scale_idx, BEAGLE_OP_NONE, child1_p_idx, Pij1_idx, child2_p_idx, Pij2_idx}};
+    BeagleOperation operations[1] = {{dest_p_idx, BEAGLE_OP_NONE, BEAGLE_OP_NONE, child1_p_idx, Pij1_idx, child2_p_idx, Pij2_idx}};
     //Compute the partials
-    ret = beagleUpdatePartials(tree->b_inst, operations, 1, BEAGLE_OP_NONE);
+    int ret = beagleUpdatePartials(tree->b_inst, operations, 1, BEAGLE_OP_NONE);
     if(ret<0){
         fprintf(stderr, "beagleUpdatePartials() on instance %i failed:%i\n\n",tree->b_inst,ret);
         Exit("");
     }
     //Load the computed/updated partial partials
-//    ret = beagleGetPartials(tree->b_inst, dest_p_idx, scale_idx, (double*)p_lk);
-//    if(ret<0){
-//        fprintf(stderr, "beagleGetPartials() on instance %i failed:%i\n\n",tree->b_inst,ret);
-//        Exit("");
-//    }
-
-    if(child1_scale_idx==UNINITIALIZED && child2_scale_idx==UNINITIALIZED)
-    {
-
-    }
-    else
-    {
-        if(UNINITIALIZED!=child1_scale_idx && UNINITIALIZED!=child2_scale_idx){
-            int scaling_indxs[2] = {child1_scale_idx, child2_scale_idx};
-            ret = beagleAccumulateScaleFactors(tree->b_inst, scaling_indxs, 2, scale_idx);
-        } else if(child1_scale_idx!=UNINITIALIZED) {
-            int scaling_indxs[1] = {child1_scale_idx};
-            ret = beagleAccumulateScaleFactors(tree->b_inst, scaling_indxs, 1, scale_idx);
-        } else {
-            int scaling_indxs[1] = {child2_scale_idx};
-            ret = beagleAccumulateScaleFactors(tree->b_inst, scaling_indxs, 1, scale_idx);
-        }
-        if(ret<0){
-            fprintf(stderr, "beagleAccumulateScaleFactors() on instance %i failed:%i\n\n",tree->b_inst,ret);
-            Exit("");
-        }
-    }
-
-    if(scale)
-    {
-
+    ret = beagleGetPartials(tree->b_inst, dest_p_idx, BEAGLE_OP_NONE, (double*)p_lk);
+    if(ret<0){
+        fprintf(stderr, "beagleGetPartials() on instance %i failed:%i\n\n",tree->b_inst,ret);
+        Exit("");
     }
 
 //    fprintf(stdout, "Updated partials:");fflush(stdout);
@@ -305,11 +267,13 @@ void update_beagle_ras(t_mod* mod)
             Exit("");
         }
         double* catg_wts = float_to_double(mod->ras->gamma_r_proba->v, mod->ras->n_catg);
-        ret = beagleSetCategoryWeights(mod->b_inst, 0, catg_wts);
-        Free(catg_wts);
-        if(ret<0){
-            fprintf(stderr, "beagleSetCategoryWeights() on instance %i failed:%i\n\n",mod->b_inst,ret);
-            Exit("");
+        if(!mod->optimizing_topology) {
+            ret = beagleSetCategoryWeights(mod->b_inst, 0, catg_wts);
+            Free(catg_wts);
+            if(ret<0){
+                fprintf(stderr, "beagleSetCategoryWeights() on instance %i failed:%i\n\n",mod->b_inst,ret);
+                Exit("");
+            }
         }
     }
     else
@@ -319,10 +283,13 @@ void update_beagle_ras(t_mod* mod)
             fprintf(stderr, "beagleSetCategoryRates() on instance %i failed:%i\n\n",mod->b_inst,ret);
             Exit("");
         }
-        ret = beagleSetCategoryWeights(mod->b_inst, 0, mod->ras->gamma_r_proba->v);
-        if(ret<0){
-            fprintf(stderr, "beagleSetCategoryWeights() on instance %i failed:%i\n\n",mod->b_inst,ret);
-            Exit("");
+        if(!mod->optimizing_topology) {
+            ret = beagleSetCategoryWeights(mod->b_inst, 0, mod->ras->gamma_r_proba->v);
+            if(ret<0){
+                fprintf(stderr, "beagleSetCategoryWeights() on instance %i failed:%i\n\n",mod->b_inst,ret);
+                Exit("");
+            }
+
         }
     }
 }
@@ -348,82 +315,15 @@ void update_beagle_efrqs(t_mod* mod)
 void calc_edgelks_beagle(t_edge *b, t_tree *tree)
 {
     assert(UNINITIALIZED != tree->b_inst);
-//    if (kFlags & BEAGLE_FLAG_SCALING_ALWAYS) {
-//                cumulativeScalingFactorIndex = kInternalPartialsBufferCount;
-//                int child1ScalingIndex = parentBufferIndices[0] - kTipCount;
-//                int child2ScalingIndex = childBufferIndices[0] - kTipCount;
-//                resetScaleFactors(cumulativeScalingFactorIndex);
-//                if (child1ScalingIndex >= 0 && child2ScalingIndex >= 0) {
-//                    int scalingIndices[2] = {child1ScalingIndex, child2ScalingIndex};
-//                    accumulateScaleFactors(scalingIndices, 2, cumulativeScalingFactorIndex);
-//                } else if (child1ScalingIndex >= 0) {
-//                    int scalingIndices[1] = {child1ScalingIndex};
-//                    accumulateScaleFactors(scalingIndices, 1, cumulativeScalingFactorIndex);
-//                } else if (child2ScalingIndex >= 0) {
-//                    int scalingIndices[1] = {child2ScalingIndex};
-//                    accumulateScaleFactors(scalingIndices, 1, cumulativeScalingFactorIndex);
-//                }
-//            }
 
-    int ret=UNINITIALIZED;
-    //
-    int cs_idx = (4*tree->n_otu-2);
-    ret=beagleResetScaleFactors(tree->b_inst, cs_idx);
-    assert(b->sum_scale_left_idx!=cs_idx);
-
-//    int child1_scale_idx = b->sum_scale_left_idx;
-//    int child2_scale_idx = UNINITIALIZED;
-//    t_node* d = b->rght;
-//    if(!d->tax)
-//    for(int i=0;i<3;++i) {
-//        if(d->b[i]!=b) {
-//            child2_scale_idx=d->b[i]->sum_scale_left_idx;
-//            break;
-//        }
-//    }
-    t_node *n_v1, *n_v2;//d's "left" and "right" neighbor nodes
-    phydbl *p_lk,*p_lk_v1,*p_lk_v2;
-    phydbl *Pij1,*Pij2;
-    int *sum_scale, *sum_scale_v1, *sum_scale_v2;
-    int *p_lk_loc;
-    int dest_p_idx, child1_p_idx, child2_p_idx, Pij1_idx, Pij2_idx, scale_idx, child1_scale_idx, child2_scale_idx;
-    n_v1 = n_v2                 = NULL;
-    p_lk = p_lk_v1 = p_lk_v2    = NULL;
-    Pij1 = Pij2                 = NULL;
-    sum_scale_v1 = sum_scale_v2 = NULL;
-    p_lk_loc                    = NULL;
-    dest_p_idx = child1_p_idx = child2_p_idx = Pij1_idx = Pij2_idx = scale_idx = child1_scale_idx = child2_scale_idx = UNINITIALIZED;
-    Set_All_P_Lk(&n_v1,&n_v2,
-                 &p_lk,&sum_scale,&p_lk_loc,
-                 &Pij1,&p_lk_v1,&sum_scale_v1,
-                 &Pij2,&p_lk_v2,&sum_scale_v2,
-                 b->left,b,tree,
-                 &dest_p_idx, &child1_p_idx, &child2_p_idx, &Pij1_idx, &Pij2_idx, &scale_idx, &child1_scale_idx, &child2_scale_idx);
-
-//    child1_scale_idx=b->sum_scale_left_idx;
-    if(UNINITIALIZED!=child1_scale_idx && UNINITIALIZED!=child2_scale_idx){
-        int scaling_indxs[2] = {child1_scale_idx, child2_scale_idx};
-        ret = beagleAccumulateScaleFactors(tree->b_inst, scaling_indxs, 2, cs_idx);
-    } else if(child1_scale_idx!=UNINITIALIZED) {
-        int scaling_indxs[1] = {child1_scale_idx};
-        ret = beagleAccumulateScaleFactors(tree->b_inst, scaling_indxs, 1, cs_idx);
-    } else {
-        int scaling_indxs[1] = {child2_scale_idx};
-        ret = beagleAccumulateScaleFactors(tree->b_inst, scaling_indxs, 1, cs_idx);
-    }
-    if(ret<0){
-        fprintf(stderr, "beagleAccumulateScaleFactors() on instance %i failed:%i\n\n",tree->b_inst,ret);
-        Exit("");
-    }
     //Compute the edge likelihood
     int parents[1]  = {b->p_lk_left_idx};
     int children[1] = {b->rght->tax?b->p_lk_tip_idx:b->p_lk_rght_idx};
     int pmats[1]    = {b->Pij_rr_idx};
     int other[1]    = {0};//Category Weights and State Frequencies both have a single buffer, hence they are both indexed at 0
-    int scalers[1]  = {cs_idx};
     double lnL[1]   = {UNINITIALIZED};
 //    DUMP_I(parents[0], children[0], pmats[0], b->num, b->rght->tax);
-    ret=beagleCalculateEdgeLogLikelihoods(tree->b_inst, parents, children, pmats, NULL, NULL, other, other, scalers, 1, lnL, NULL, NULL);
+    int ret=beagleCalculateEdgeLogLikelihoods(tree->b_inst, parents, children, pmats, NULL, NULL, other, other, NULL, 1, lnL, NULL, NULL);
     if(ret<0){
         fprintf(stderr, "beagleCalculateEdgeLogLikelihoods() on instance %i failed:%i\n\n",tree->b_inst,ret);
         Exit("");
@@ -436,6 +336,36 @@ void calc_edgelks_beagle(t_edge *b, t_tree *tree)
     if(ret<0){
         fprintf(stderr, "beagleGetSiteLogLikelihoods() on instance %i failed:%i\n\n",tree->b_inst,ret);
         Exit("");
+    }
+    for(int i=0;i<tree->n_pattern;++i)
+        tree->cur_site_lk[i]=EXP(tree->cur_site_lk[i]);
+}
+
+void update_beagle_eigen(t_mod* mod)
+{
+    assert(UNINITIALIZED != mod->b_inst);
+
+    int whichmodel = mod->whichmodel;
+    if((mod->io->datatype == AA || whichmodel==GTR || whichmodel==CUSTOM) && mod->use_m4mod == NO)
+    {
+        //Beagle expects untransformed eigen-values (i.e. recall e_val is EXP() scaled, so we undo that)
+        phydbl* evals = (phydbl*)malloc(mod->ns * sizeof(phydbl));
+        for(int i=0;i<mod->ns;++i)  evals[i]=LOG(mod->eigen->e_val[i]);
+        int ret=-1;
+        if((sizeof(float)==sizeof(phydbl)))//Need to convert to doubles?
+        {
+            double* eigen_vects     = float_to_double(mod->eigen->r_e_vect, mod->eigen->size*mod->eigen->size);
+            double* eigen_vects_inv = float_to_double(mod->eigen->l_e_vect, mod->eigen->size*mod->eigen->size);
+            double* eigen_vals      = float_to_double(evals,mod->eigen->size);
+            ret = beagleSetEigenDecomposition(mod->b_inst,0,eigen_vects,eigen_vects_inv,eigen_vals);
+            Free(eigen_vects);Free(eigen_vects_inv);Free(eigen_vals);
+        } else {
+            ret = beagleSetEigenDecomposition(mod->b_inst,0,mod->eigen->r_e_vect,mod->eigen->l_e_vect,evals);
+        }
+        if(ret<0){
+          fprintf(stderr, "beagleSetEigenDecomposition() on instance %i failed:%i\n\n",mod->b_inst,ret);
+          Exit("");
+        }
     }
 }
 
