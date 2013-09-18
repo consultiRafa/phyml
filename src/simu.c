@@ -234,7 +234,7 @@ int Simu(t_tree *tree, int n_step_max)
 
       /* For(i,2*tree->n_otu-3) tree->a_edges[i]->l_old->v = tree->a_edges[i]->l->v;	     */
       Record_Br_Len(tree);
-          Set_Both_Sides(YES,tree);
+      Set_Both_Sides(YES,tree);
       Lk(NULL,tree);
     }
 
@@ -352,7 +352,7 @@ void Simu_Pars(t_tree *tree, int n_step_max)
       if(!tree->n_swap) n_neg = 0;
 
 
-          Set_Both_Sides(YES,tree);
+      Set_Both_Sides(YES,tree);
       Pars(NULL,tree);
     }
       else

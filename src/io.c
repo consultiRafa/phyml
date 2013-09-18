@@ -3457,7 +3457,7 @@ void Print_All_Edge_PMats(t_tree* tree)
 
 void Print_Edge_Likelihoods(t_tree* tree, t_edge* b, bool scientific/*Print in scientific notation?*/)
 {
-    char* fmt = scientific ? "[%d,%d,%d]%e ":"[%d,%d,%d]%f "; //rate category, site, state, likelilihood
+    char* fmt = scientific ? "[%d,%d,%d]%e ":"[%d,%d,%d]%f "; //rate category, site, state, likelihood
 
     phydbl* lk_left = b->p_lk_left;
     phydbl* lk_right = b->p_lk_rght;
@@ -3514,26 +3514,6 @@ void Print_All_Edge_Likelihoods(t_tree* tree)
     for(int i=0;i < 2*tree->n_otu-3; ++i)
         Print_Edge_Likelihoods(tree, tree->a_edges[i],false);
     fflush(stdout);
-
-#ifdef BEAGLE
-//    for(int i=0;i <= (tree->n_otu + (tree->n_otu-2));++i)
-//    {
-//        if(tree->a_nodes[i]->tax)
-//            continue;
-//        phydbl *p_lk = (phydbl*)malloc(tree->mod->ns * tree->n_pattern * tree->mod->ras->n_catg*sizeof(phydbl)); if (NULL==p_lk) Warn_And_Exit(__PRETTY_FUNCTION__);
-//        int ret = beagleGetPartials(tree->b_inst, tree->a_nodes[i]->num, BEAGLE_OP_NONE, (double*)p_lk);
-//        if(ret<0){
-//            fprintf(stderr, "beagleGetPartials() on instance %i failed:%i\n\n",tree->b_inst,ret);
-//            Free(p_lk);
-//            Exit("");
-//        }
-//        fprintf(stdout,"Likelihoods on internal Node %d:\n",tree->a_nodes[i]->num);
-//        int j;
-//        for(j=0;j<tree->mod->ns * tree->n_pattern * tree->mod->ras->n_catg;++j)
-//            fprintf(stdout,"[%d]%f\n",j,p_lk[j]);
-//        Free(p_lk);
-//    }
-#endif
 }
 
 

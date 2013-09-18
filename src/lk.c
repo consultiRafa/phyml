@@ -386,7 +386,6 @@ void Pre_Order_Lk(t_node *a, t_node *d, t_tree *tree)
 phydbl Lk(t_edge *b, t_tree *tree)
 {
   int br;
-  int n_patterns,ambiguity_check,state;
 
   if(b == NULL && tree->mod->s_opt->curr_opt_free_rates == YES)
     {
@@ -407,12 +406,12 @@ phydbl Lk(t_edge *b, t_tree *tree)
 
   if(tree->rates && tree->io->lk_approx == NORMAL)
     {
-      Warn_And_Exit("TODO");
+#ifdef BEAGLE
+      Warn_And_Exit(TODO_BEAGLE);
+#endif
       tree->c_lnL = Lk_Normal_Approx(tree);
       return tree->c_lnL;
     }
-
-  n_patterns = tree->n_pattern;
 
   if(!b){
     Set_Model_Parameters(tree->mod);
@@ -475,6 +474,8 @@ phydbl Lk(t_edge *b, t_tree *tree)
 #ifdef BEAGLE
   calc_edgelks_beagle(b, tree);
 #else
+  int n_patterns,ambiguity_check,state;
+  n_patterns = tree->n_pattern;
   For(tree->curr_site,n_patterns)
     {
       ambiguity_check = -1;
@@ -761,6 +762,10 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
     }
   else
     {
+      //In some cases fact_sum_scale can be negative. If you rescale the partials of two independent subtrees and make some of
+      //these numbers large in order to avoid underflow, then there is a chance that when multiplied them together you will
+      //get an overflow, in which case fact_sum_scale can become negative.
+
       tree->cur_site_lk[site] = site_lk;
       exponent = fact_sum_scale;
       do
@@ -1238,7 +1243,7 @@ void Update_P_Lk_Generic(t_tree *tree, t_edge *b, t_node *d)
 
               /* 	  PhyML_Printf("\n@ %d",sum_scale[catg*n_patterns+site]); */
 
-              /* Scaling */
+              /* Scaling. For details read utilities.h */
               if(smallest_p_lk < p_lk_lim_inf)
                 {
                   curr_scaler_pow = (int)(LOG(p_lk_lim_inf)-LOG(smallest_p_lk))/LOG2;
@@ -2313,7 +2318,7 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
 
   len = -1.0;
 
-  if(tree->mod->log_l == YES) {Warn_And_Exit("here");b_fcus->l->v = EXP(b_fcus->l->v);}
+  if(tree->mod->log_l == YES) {b_fcus->l->v = EXP(b_fcus->l->v);}
 
   For(i,tree->mod->ras->n_catg)
     {
@@ -2322,7 +2327,9 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
       //Update the branch length
       if(b_fcus->has_zero_br_len == YES)
         {
-          Warn_And_Exit("\nzerobrlen");
+#ifdef BEAGLE
+          Warn_And_Exit(TODO_BEAGLE);
+#endif
           len = -1.0;
           mean = -1.0;
           var  = -1.0;
@@ -2353,7 +2360,9 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
           }
       else
           {
-            Warn_And_Exit("This case needs to be handled");
+#ifdef BEAGLE
+            Warn_And_Exit(TODO_BEAGLE);
+#endif
             shape = mean*mean/var;
             scale = var/mean;
 
@@ -2367,9 +2376,8 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
   //we compute them in PhyML and explicitly set the P-matrices in BEAGLE
   if((tree->mod->io->datatype == AA || whichmodel==GTR || whichmodel==CUSTOM) && tree->mod->use_m4mod == NO)
   {
-//      fprintf(stderr,"here1\n");
       if(b_fcus->has_zero_br_len == YES)
-          Warn_And_Exit("This case needs to be handled");
+        Warn_And_Exit(TODO_BEAGLE);
 
       //
       update_beagle_eigen(tree->mod);
@@ -2400,7 +2408,7 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
       }
   }
 #endif
-    if(tree->mod->log_l == YES) {Warn_And_Exit("here");b_fcus->l->v = LOG(b_fcus->l->v);}
+    if(tree->mod->log_l == YES) {b_fcus->l->v = LOG(b_fcus->l->v);}
 
 //      Print_Model(tree->mod);
 //      Dump_Arr_D(tree->cur_site_lk, tree->n_pattern);

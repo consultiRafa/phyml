@@ -9966,7 +9966,7 @@ void Set_P_Lk_One_Side(phydbl **Pij, phydbl **p_lk,  int **sum_scale, t_node *d,
   else
     {
 #ifdef BEAGLE
-      Warn_And_Exit("You havent handled this case");
+      Warn_And_Exit(TODO_BEAGLE);
 #endif
       *p_lk        = NULL;
       *sum_scale   = NULL;

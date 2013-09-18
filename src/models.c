@@ -481,11 +481,8 @@ void PMat(phydbl l, t_mod *mod, int pos, phydbl *Pij)
                     else
                       {
 #ifdef BEAGLE
-                        //Update P-Mat without Beagle only if there is no active instance (i.e. when
-                        //we are building the initial tree)
-                        if(UNINITIALIZED == mod->b_inst)
-                        {
-//                            fprintf(stderr,"here3\n");fflush(stderr);
+                        //when there is no active instance (i.e. when we are building the initial tree)
+                        if(UNINITIALIZED == mod->b_inst) {
                             PMat_Empirical(l,mod,pos,Pij);
                         }
 #else
@@ -498,10 +495,10 @@ void PMat(phydbl l, t_mod *mod, int pos, phydbl *Pij)
           case AA :
             {
 #ifdef BEAGLE
-                //Update P-Mat without Beagle only if there is no active instance (i.e. when
-                //we are building the initial tree)
-                if(UNINITIALIZED == mod->b_inst)
+                //when there is no active instance (i.e. when we are building the initial tree)
+                if(UNINITIALIZED == mod->b_inst) {
                     PMat_Empirical(l,mod,pos,Pij);
+                }
 #else
                 PMat_Empirical(l,mod,pos,Pij);
 #endif

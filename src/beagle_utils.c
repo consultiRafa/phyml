@@ -91,7 +91,7 @@ void print_beagle_instance_details(BeagleInstanceDetails *inst)
 int create_beagle_instance(t_tree *tree, int quiet)
 {
     if(UNINITIALIZED != tree->b_inst){
-        fprintf(stdout,"\n\tWARNING: Creating a BEAGLE instance on a tree with an pre-existing BEAGLE instance:%d\n",tree->b_inst);
+//        fprintf(stdout,"\n\tWARNING: Creating a BEAGLE instance on a tree with an existing BEAGLE instance:%d\n",tree->b_inst);
     }
     if(!quiet){
 //        print_beagle_resource_list();
@@ -159,8 +159,10 @@ int create_beagle_instance(t_tree *tree, int quiet)
     Free(pwts);
 
     tree->mod->b_inst=beagle_inst;
+
     update_beagle_ras(tree->mod);
     update_beagle_efrqs(tree->mod);
+
     return beagle_inst;
 }
 
@@ -243,8 +245,7 @@ void update_beagle_partials(t_tree* tree, t_edge* b, t_node* d)
 
 int finalize_beagle_instance(t_tree *tree)
 {
-    if(tree->b_inst >= 0)
-    {
+    if(tree->b_inst >= 0) {
         int ret = beagleFinalizeInstance(tree->b_inst);
         if(ret<0) fprintf(stderr, "\nFailed to finalize BEAGLE instance %i: %i\n\n", tree->b_inst, ret);
         return ret;
@@ -337,6 +338,7 @@ void calc_edgelks_beagle(t_edge *b, t_tree *tree)
         fprintf(stderr, "beagleGetSiteLogLikelihoods() on instance %i failed:%i\n\n",tree->b_inst,ret);
         Exit("");
     }
+    //Transform
     for(int i=0;i<tree->n_pattern;++i)
         tree->cur_site_lk[i]=EXP(tree->cur_site_lk[i]);
 }
@@ -346,6 +348,7 @@ void update_beagle_eigen(t_mod* mod)
     assert(UNINITIALIZED != mod->b_inst);
 
     int whichmodel = mod->whichmodel;
+    //We use Eigen Decomposition only for GTR models and AA datasets
     if((mod->io->datatype == AA || whichmodel==GTR || whichmodel==CUSTOM) && mod->use_m4mod == NO)
     {
         //Beagle expects untransformed eigen-values (i.e. recall e_val is EXP() scaled, so we undo that)
@@ -364,8 +367,10 @@ void update_beagle_eigen(t_mod* mod)
         }
         if(ret<0){
           fprintf(stderr, "beagleSetEigenDecomposition() on instance %i failed:%i\n\n",mod->b_inst,ret);
+          Free(evals);
           Exit("");
         }
+        Free(evals);
     }
 }
 

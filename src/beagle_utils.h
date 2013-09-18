@@ -10,6 +10,8 @@
 #include "utilities.h"
 #define UNINITIALIZED -42
 
+#define TODO_BEAGLE "TODO. This codepath has not been implemented in PhyML-X, please post your usecase on the PhyML discussion list"
+
 int  create_beagle_instance(t_tree* tree, int quiet);
 int  finalize_beagle_instance(t_tree* tree);
 void update_beagle_partials(t_tree* tree, t_edge* b, t_node* d);

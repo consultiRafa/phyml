@@ -481,7 +481,23 @@ typedef struct __Edge {
 
 
   /*! Below are the likelihood scaling factors (used in functions
-     `Get_All_Partial_Lk_Scale' in lk.c */
+     `Get_All_Partial_Lk_Scale' in lk.c. */
+  /*
+For every site, every subtree and every rate class, PhyML maintains a`sum_scale_pow' value
+where sum_scale_pow = sum_scale_pow_v1 + sum_scale_pow_v2 + curr_scale_pow'
+sum_scale_pow_v1 and sum_scale_pow_v2 are sum_scale_pow of the left and
+right subtrees. curr_scale_pow is an integer greater than one.
+The smaller the partials, the larger curr_scale_pow.
+
+Now the partials for this subtree are scaled by *multiplying* each of
+them by 2^curr_scale_pow. The reason for doing the scaling this way is
+that multiplications by 2^x (x an integer) can be done in an 'exact'
+manner (i.e., there is no loss of numerical precision)
+
+At the root edge, the log-likelihood is then
+    logL = logL' - (sum_scale_pow_left + sum_scale_pow_right)log(2),
+where L' is the scaled likelihood.
+*/
   int                 *sum_scale_left_cat;
   int                 *sum_scale_rght_cat;
   int                     *sum_scale_left;
@@ -612,7 +628,7 @@ typedef struct __Tree{
   phydbl                                   *K;//a vector of the norm.constants for the node times prior.
 
 #ifdef BEAGLE
-  int                                  b_inst; /*! The BEAGLE instance id associated with this tree. If <0, then no valid instance and thus shouldnt use BEAGLE */
+  int                                  b_inst; /*! The BEAGLE instance id associated with this tree. */
 #endif
 
 }t_tree;
@@ -807,7 +823,13 @@ typedef struct __RAS {
   short int           init_r_proba;
   short int           normalise_rr;
 
-  short int         *skip_rate_cat;
+  short int         *skip_rate_cat; /*! indicates whether of not the the likelihood for a given rate class shall be calculated.
+                                        The default model in PhyML has four rate classes and the likelihood at a given site is
+                                        then \sum_{i=1}^{4} \Pr(D|R=i) \Pr(R=i). Now, when optimising
+                                        the rate for say the first rate class (i=1) one does not need to
+                                        re-compute \Pr(D|R=2), \Pr(D|R=3) and \Pr(D|R=4) (which is the time
+                                        consuming part of the likelihood calculation). This is where
+                                        'skip_rate_category' comes in handy. */
 
   struct __RAS               *next;
   struct __RAS               *prev;
@@ -862,7 +884,7 @@ typedef struct __Model {
 
   scalar_dbl                *kappa; /*! transition/transversion rate */
   scalar_dbl               *lambda; /*! parameter used to define the ts/tv ratios in the F84 and TN93 models */
-  scalar_dbl    *br_len_multiplier;
+  scalar_dbl    *br_len_multiplier; /*! when users want to fix the relative length of edges and simply estimate the total length of the tree. This multiplier does the trick */
 
   vect_dbl                 *Pij_rr; /*! matrix of change probabilities */
   scalar_dbl                   *mr; /*! mean rate = branch length/time interval  mr = -sum(i)(vct_pi[i].mat_Q[ii]) */
@@ -883,10 +905,18 @@ typedef struct __Model {
   scalar_dbl        *e_frq_weight;
 #ifdef BEAGLE
   int                      b_inst;
-  bool        optimizing_topology;
+  bool        optimizing_topology; /*! This is a flag that prevents the resetting of category weights. Why? Read */
+                                   /*  Recall that while optimizing the toplogy, PhyML temporarily only uses 2
+                                    *  rate categories. Recall also that a BEAGLE instance is created with all the
+                                    *  required categories, but we temporarily assign 0 weight to the other categories
+                                    *  thus effectively using only 2 categories. However, subsequent calls to
+                                    *  update the rates (i.e. update_beagle_ras()) will reset the weights. This flag
+                                    *  prevents this resetting from happening                                    */
 #endif
 
 }t_mod;
+
+
 
 /*!********************************************************/
 
