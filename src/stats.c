@@ -2111,7 +2111,7 @@ phydbl *Hessian_Seo(t_tree *tree)
   lnL1 = lnL2 = UNLIKELY;
   
   For(i,dim) ori_bl[i] = tree->a_edges[i]->l->v;
-
+  
   Set_Both_Sides(YES,tree);
   Lk(NULL,tree);
   ori_lnL = tree->c_lnL;
@@ -2135,8 +2135,8 @@ phydbl *Hessian_Seo(t_tree *tree)
 	  inc_plus[i]  = FABS(0.2 * MAX(tree->mod->l_min,tree->a_edges[i]->l->v));
 	  inc_minus[i] = FABS(0.2 * MAX(tree->mod->l_min,tree->a_edges[i]->l->v));
 	  is_ok[i]     = NO;
-	}
-      
+    }
+
 
     }
 
@@ -2162,7 +2162,7 @@ phydbl *Hessian_Seo(t_tree *tree)
 	  tree->a_edges[i]->l->v = ori_bl[i];
 	  inc_minus[i] *= 1.1;
 	}while((FABS(lnL1 - ori_lnL) < 1.E-1) && 
-	       (tree->a_edges[i]->l->v - inc_minus[i] > tree->mod->l_min));
+	       (tree->a_edges[i]->l->v -inc_minus[i] > tree->mod->l_min));
       inc_minus[i] /= 1.1;
     }
 

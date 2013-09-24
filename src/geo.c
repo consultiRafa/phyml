@@ -1773,7 +1773,7 @@ void GEO_Read_In_Landscape(char *file_name, t_geo *t, phydbl **ldscape, int **lo
   fp = Openfile(file_name,0);
 
   tax = loc = -1;
-
+  
   t->ldscape_sz = 0;
 
   do
@@ -1824,19 +1824,19 @@ void GEO_Read_In_Landscape(char *file_name, t_geo *t, phydbl **ldscape, int **lo
 
       if(loc == t->ldscape_sz)
         {
-          t->ldscape_sz++;
+      t->ldscape_sz++;
           (*ldscape)[(t->ldscape_sz-1)*t->n_dim+0] = longitude;
           (*ldscape)[(t->ldscape_sz-1)*t->n_dim+1] = lattitude;
 
           printf("\n. new loc: %f %f",longitude,lattitude);
-          if(!(t->ldscape_sz%10))
-            {
-              (*ldscape)  = (phydbl *)mRealloc((*ldscape),(t->ldscape_sz+10)*t->n_dim,sizeof(phydbl));
+      if(!(t->ldscape_sz%10))
+        {
+          (*ldscape)  = (phydbl *)mRealloc((*ldscape),(t->ldscape_sz+10)*t->n_dim,sizeof(phydbl));
             }
         }
 
       (*loc_hash)[tax] = loc;
-      
+
     }
   while(1);
 

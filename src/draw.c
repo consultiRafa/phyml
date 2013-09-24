@@ -165,7 +165,7 @@ void DR_Print_Tree_Postscript_Pre(t_node *a, t_node *d, t_edge *b, int render_na
 {
   int i;
   phydbl R, G, B;
-
+  
   R = G = B = 0.0;
 
   PhyML_Fprintf(fp,"gs\n");
@@ -392,7 +392,7 @@ void DR_Get_Y_Coord_Post(t_node *a, t_node *d, t_edge *b, int *next_y_slot, int 
     {
       if(!fixed_tips)
 	{
-	  /* w->ycoord[d->num] = *next_y_slot + (int)(w->page_height / (2.*tree->n_otu)); */
+/* 	  w->ycoord[d->num] = *next_y_slot + (int)(w->page_height / (2.*tree->n_otu)); */
 	  w->ycoord[d->num] = *next_y_slot + 20;
 	  (*next_y_slot) += (int)(w->page_height / (tree->n_otu-1));
           printf("\n. %s %f",d->name,w->ycoord[d->num]);

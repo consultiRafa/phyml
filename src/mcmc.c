@@ -1031,7 +1031,7 @@ void MCMC_One_Time(t_node *a, t_node *d, int traversal, t_tree *tree)
       PhyML_Printf("\n. prior_min = %f prior_max = %f",tree->rates->t_prior_min[d->num],tree->rates->t_prior_max[d->num]);
       PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
       /* Exit("\n"); */
-    }     
+    }
  
   MCMC_Make_Move(&t1_cur,&t1_new,t_min,t_max,&ratio,K,tree->mcmc->move_type[move_num]);
   
@@ -1320,7 +1320,7 @@ void MCMC_Jump_Calibration(t_tree *tree)
       if(tree->mcmc->use_data) ratio += (new_lnL_data - cur_lnL_data);
       
       /* Prior ratio */
-      ratio += (new_lnL_rate - cur_lnL_rate); 
+      ratio += (new_lnL_rate - cur_lnL_rate);
       ratio += (new_lnL_time - cur_lnL_time);
       ratio += (cur_lnL_Hastings_ratio - new_lnL_Hastings_ratio); //Hastings ratio
       
