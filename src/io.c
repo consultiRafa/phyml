@@ -628,7 +628,6 @@ char *Write_Tree(t_tree *tree, int custom)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *tree)
 {
   int i,p;
@@ -675,7 +674,7 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
       else
         {
           PhyML_Printf("\n== Unknown tree format.");
-          PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+	  PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
           PhyML_Printf("\n== s=%s\n",*s_tree);
         }
 
@@ -723,7 +722,7 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
         }
       else
         {
-          sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,tree->rates->cur_l[fils->num]));
+              if(tree->rates) sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,tree->rates->cur_l[fils->num]));
         }
 #endif
     }
@@ -870,7 +869,7 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
         }
       else
         {
-          sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,tree->rates->cur_l[fils->num]));
+	      if(tree->rates) sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,tree->rates->cur_l[fils->num]));
         }
 #endif
     }
@@ -2076,12 +2075,12 @@ void Print_Site_Lk(t_tree *tree, FILE *fp)
 
       sprintf(s,"Site");
       PhyML_Fprintf(fp, "%-7s",s);
+      
+      sprintf(s,"P(D|M)");
+      PhyML_Fprintf(fp,"%-15s",s);
 
       sprintf(s,"Pattern");
       PhyML_Fprintf(fp, "%-9s",s);
-
-      sprintf(s,"P(D|M)");
-      PhyML_Fprintf(fp,"%-16s",s);
 
       if(tree->mod->ras->n_catg > 1)
     {
@@ -2108,9 +2107,11 @@ void Print_Site_Lk(t_tree *tree, FILE *fp)
 
 
       PhyML_Fprintf(fp,"%-7d",site+1);
+
+	  PhyML_Fprintf(fp,"%-15g",tree->cur_site_lk[tree->data->sitepatt[site]]);      
+
       PhyML_Fprintf(fp,"%-9d",tree->data->sitepatt[site]);
 
-      PhyML_Fprintf(fp,"%-16g",tree->cur_site_lk[tree->data->sitepatt[site]]);
       if(tree->mod->ras->n_catg > 1)
         {
           For(catg,tree->mod->ras->n_catg)
@@ -3964,10 +3965,15 @@ int Set_Whichmodel(int select)
       }
     case 24:
       {
-    wm = CUSTOMAA;
+	wm = FLU;
     break;
       }
     case 25:
+      {
+	wm = CUSTOMAA;
+	break;
+      }
+    case 26:
       {
     wm = LG;
     break;
@@ -5148,7 +5154,6 @@ void PhyML_XML(char *xml_filename)
                                 iomod->ras->init_r_proba = NO;
                   }
                   }
-
               }
 
             //////////////////////////////////////////////
@@ -5590,9 +5595,9 @@ void PhyML_XML(char *xml_filename)
       Print_Data_Structure(YES,mixt_tree->io->fp_out_stats,mixt_tree);
 
       Free_Spr_List(mixt_tree);
+      Free_Triplet(mixt_tree->triplet_struct);
       Free_Tree_Pars(mixt_tree);
       Free_Tree_Lk(mixt_tree);
-      Free_Triplet(mixt_tree->triplet_struct);
     }
 
   /*! Print the most likely tree in the output file */
@@ -5714,8 +5719,9 @@ void Make_Ratematrice_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
                                  "MTART",    //21
                                  "HIVW",     //22
                                  "HIVB",     //23
-                                 "CUSTOMAA", //24
-                                 "LG");      //25
+                                 "FLU",      //24
+                                 "CUSTOMAA", //25
+                                 "LG");      //26
 
   if(select < 9)
     {

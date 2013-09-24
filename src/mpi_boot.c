@@ -325,7 +325,7 @@ fflush(stderr);
 fflush(stdout);
 #endif
 
-      if(boot_tree->mat) Free_Mat(boot_tree->mat);
+      /* if(boot_tree->mat) Free_Mat(boot_tree->mat); */
       Free_Tree(boot_tree);      
       Free_Model(boot_mod);
 
@@ -374,8 +374,8 @@ void Print_Fp_Out_Lines_MPI(t_tree *tree, option *io, int n_data_set, char *boot
     snprintf(tmp, T_MAX_LINE, ". Sequence file : [%s]\n\n", Basename(io->in_align_file)); strncat (s, tmp, T_MAX_LINE);
     
     (tree->mod->io->datatype == NT)?
-        (snprintf(tmp, T_MAX_LINE, ". Model of nucleotides substitution : %s\n\n", io->mod->modelname)):
-        (snprintf(tmp, T_MAX_LINE, ". Model of amino acids substitution : %s\n\n", io->mod->modelname));
+      (snprintf(tmp, T_MAX_LINE, ". Model of nucleotides substitution : %s\n\n", io->mod->modelname->s)):
+      (snprintf(tmp, T_MAX_LINE, ". Model of amino acids substitution : %s\n\n", io->mod->modelname->s));
     strncat (s, tmp, T_MAX_LINE);
     
     switch(io->in_tree)

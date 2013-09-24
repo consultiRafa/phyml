@@ -163,6 +163,7 @@ void Make_Edge_Pars_Left(t_edge *b, t_tree *tree)
   b->pars_l = (int *)mCalloc(tree->data->crunch_len,sizeof(int));
   b->ui_l = (unsigned int *)mCalloc(tree->data->crunch_len,sizeof(unsigned int));
   b->p_pars_l = (int *)mCalloc(tree->data->crunch_len*tree->mod->ns,sizeof(int ));
+  b->n_diff_states_l = (int *)mCalloc(tree->mod->ns,sizeof(int ));
 }
 
 //////////////////////////////////////////////////////////////
@@ -173,6 +174,7 @@ void Make_Edge_Pars_Rght(t_edge *b, t_tree *tree)
   b->pars_r = (int *)mCalloc(tree->data->crunch_len,sizeof(int));
   b->ui_r = (unsigned int *)mCalloc(tree->data->crunch_len,sizeof(unsigned int));
   b->p_pars_r = (int *)mCalloc(tree->data->crunch_len*tree->mod->ns,sizeof(int ));
+  b->n_diff_states_r = (int *)mCalloc(tree->mod->ns,sizeof(int ));
 }
 
 //////////////////////////////////////////////////////////////
@@ -1076,7 +1078,7 @@ t_rate *RATES_Make_Rate_Struct(int n_otu)
       rates->curr_nd_for_cal      = (int *)mCalloc(2*n_otu-1,sizeof(int));
       rates->t_prior_min_buff     = (phydbl *)mCalloc(2*n_otu-1,sizeof(phydbl));
       rates->t_prior_max_buff     = (phydbl *)mCalloc(2*n_otu-1,sizeof(phydbl));
-      rates->times_partial_proba  = (phydbl *)mCalloc(2*n_otu-1,sizeof(phydbl));
+      rates->times_partial_proba  = (phydbl *)mCalloc(n_otu*n_otu,sizeof(phydbl));
     }
 
   return rates;

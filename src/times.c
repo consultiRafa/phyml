@@ -103,11 +103,6 @@ int TIMES_main(int argc, char **argv)
   /* Integrated_Geometric_Brownian_Bridge_Mean(T,A,B,u,&mean); */
   /* printf("\n. mean = %f",mean*T); */
 
-
-  Exit("\n");
-
-
-
   io->r_seed = r_seed;
 
   srand(r_seed); rand();
@@ -167,7 +162,7 @@ int TIMES_main(int argc, char **argv)
 
 		  if(!tree->n_root) 
 		    {
-		      PhyML_Printf("\n. Sorry, PhyTime requires a rooted tree as input.");
+		      PhyML_Printf("\n== Sorry, PhyTime requires a rooted tree as input.");
 		      Exit("\n");      
 		    }
 
@@ -234,13 +229,11 @@ int TIMES_main(int argc, char **argv)
 		      user_lk_approx = tree->io->lk_approx;
 		      tree->io->lk_approx = EXACT;
 		      
-                      /* printf("\n. %s",Write_Tree(tree,NO)); */
-                      /* Lk(NULL,tree); */
-                      /* printf("\n. %f",tree->c_lnL); */
+                      
+                      /* printf("\n. Lk: %f",Lk(NULL,tree)); */
                       /* Exit("\n"); */
 
 		      /* MLE for branch lengths */
-		      PhyML_Printf("\n");
 		      Round_Optimize(tree,tree->data,ROUND_MAX);
 		      
 		      /* Set vector of mean branch lengths for the Normal approximation
@@ -280,6 +273,9 @@ int TIMES_main(int argc, char **argv)
 		      PhyML_Printf("\n. p(data|model) [approx] ~ %.2f",tree->c_lnL);
 
 		      tree->io->lk_approx = user_lk_approx;
+
+
+
 		    }
 		  
 		      
@@ -1023,7 +1019,7 @@ phydbl TIMES_Lk_Times(t_tree *tree)
   tree->rates->c_lnL_times =  TIMES_Lk_Yule_Order(tree);
   #elif SERGEII
   tree->rates->c_lnL_times = TIMES_Calib_Cond_Prob(tree);
-  //tree->rates->c_lnL_times =  TIMES_Lk_Yule_Order(tree);
+  /* tree->rates->c_lnL_times =  TIMES_Lk_Yule_Order(tree); */
   #endif
 
 
@@ -1599,6 +1595,81 @@ void TIMES_Reset_Prior_Times(t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+// Returns the conditional density of internal node heights 
+// given the tree height under the Yule model. Uses the order
+// statistics 'simplification' as described in Yang and Rannala, 2005. 
+phydbl TIMES_Lk_Yule_Order_Root_Cond(t_tree *tree)
+{
+
+  int j;
+  phydbl *t,*tf;
+  t_node *n;
+  phydbl loglk;
+  phydbl loglbda;
+  phydbl lbda;
+  phydbl *tp_min,*tp_max;
+  phydbl lower_bound,upper_bound;
+
+  tp_min = tree->rates->t_prior_min;
+  tp_max = tree->rates->t_prior_max;
+  tf = tree->rates->t_floor;
+  t  = tree->rates->nd_t;
+  n = NULL;
+  loglbda = LOG(tree->rates->birth_rate);
+  lbda = tree->rates->birth_rate;
+  lower_bound = -1.;
+  upper_bound = -1.;
+
+  /*! Adapted from  Equation (6) in T. Stadler's Systematic Biology, 2012 paper with
+      sampling fraction set to 1 and death rate set to 0. Dropped the 1/(n-1) scaling 
+      factor. */
+
+  /* loglk = 0.0; */
+  /* For(j,2*tree->n_otu-2) */
+  /*   { */
+  /*     n = tree->a_nodes[j]; */
+  /*     lower_bound = MAX(FABS(tf[j]),FABS(tp_max[j])); */
+  /*     upper_bound = MIN(FABS(t[tree->n_root->num]),FABS(tp_min[j])); */
+
+  /*     if(n->tax == NO) */
+  /*       { */
+  /*         loglk  += (loglbda - lbda * FABS(t[j])); */
+  /*         /\* loglk -= LOG(EXP(-lbda*lower_bound) - EXP(-lbda*upper_bound)); // incorporate calibration boundaries here. *\/ */
+  /*       } */
+  /*   } */
+
+  
+  /*! Adapted from  Equation (7) in T. Stadler's Systematic Biology, 2012 paper with
+      sampling fraction set to 1 and death rate set to 0. */
+
+  // Check that each node is within its calibration-derived interval
+  For(j,2*tree->n_otu-1) if(t[j] < tp_min[j] || t[j] > tp_max[j]) return(-INFINITY);
+
+  loglk = 0.0;
+  For(j,2*tree->n_otu-2)
+    {
+      n = tree->a_nodes[j];
+      lower_bound = MAX(FABS(tf[j]),FABS(tp_max[j]));
+      upper_bound = FABS(tp_min[j]);
+      
+      if(n->tax == NO)
+        {
+          loglk  += (loglbda - lbda * FABS(t[j]));
+          loglk -= LOG(EXP(-lbda*lower_bound) - EXP(-lbda*upper_bound)); // incorporate calibration boundaries here.
+    
+        }
+    }
+
+  /* lower_bound = MAX(FABS(tf[tree->n_root->num]),FABS(tp_max[tree->n_root->num])); */
+  /* upper_bound = FABS(tp_min[tree->n_root->num]); */
+  /* loglk += LOG(2) + loglbda - 2.*lbda * FABS(t[tree->n_root->num]); */
+  /* loglk -= LOG(EXP(-2.*lbda*lower_bound) - EXP(-2.*lbda*upper_bound)); */
+
+  return(loglk);
+}
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

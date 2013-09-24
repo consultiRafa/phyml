@@ -58,19 +58,16 @@ void DR_Print_Postscript_Header(int n_pages, FILE *fp)
 {
   if(!fp)
     {
-      PhyML_Printf("\n. Failed to open the postscript file.");
-      PhyML_Printf("\n. Did you forget the '--ps' option ?.");
-      Warn_And_Exit("\n");
+      PhyML_Printf("\n== Failed to open the postscript file.");
+      PhyML_Printf("\n== Did you forget the '--ps' option ?.");
+      Exit("\n");
     }
 
   PhyML_Fprintf(fp,"%%!PS-Adobe-3.0\n");
-  PhyML_Fprintf(fp,"%%%%BoundingBox: 40 40 560 820\n");
+  PhyML_Fprintf(fp,"%%%%BoundingBox: 0 0 595.28 841.89\n");
   PhyML_Fprintf(fp,"%%%%DocumentFonts: Times-Roman Times-Roman\n");
   PhyML_Fprintf(fp,"%%%%Creator: Stephane Guindon\n");
   PhyML_Fprintf(fp,"%%%%Title: tree\n");
-  PhyML_Fprintf(fp,"%%%%BeginFeature: *PageSize\n"); 
-  PhyML_Fprintf(fp,"a4\n");
-  PhyML_Fprintf(fp,"%%%%EndFeature\n");
   PhyML_Fprintf(fp,"%%%%EndComments\n");
   PhyML_Fprintf(fp,"%%%%Pages: %d\n",n_pages);
 
@@ -84,20 +81,34 @@ void DR_Print_Postscript_Header(int n_pages, FILE *fp)
   PhyML_Fprintf(fp,"/gr {grestore} bind def\n");
   
   PhyML_Fprintf(fp,"/Times-Roman findfont\n");
-  PhyML_Fprintf(fp,"14 scalefont\n");
+  PhyML_Fprintf(fp,"12 scalefont\n");
   PhyML_Fprintf(fp,"setfont\n");
 
   PhyML_Fprintf(fp,"/clipbox\n");
   PhyML_Fprintf(fp,"{\n");
   PhyML_Fprintf(fp,"newpath\n");
-  PhyML_Fprintf(fp,"40 40 mt\n");
-  PhyML_Fprintf(fp,"560 40 lt\n");
-  PhyML_Fprintf(fp,"560 820 lt\n");
-  PhyML_Fprintf(fp,"40 820 lt\n");
-  PhyML_Fprintf(fp,"40 40 lt\n");
+  PhyML_Fprintf(fp,"20 20 mt\n");
+  PhyML_Fprintf(fp,"580 20 lt\n");
+  PhyML_Fprintf(fp,"580 820 lt\n");
+  PhyML_Fprintf(fp,"20 820 lt\n");
+  PhyML_Fprintf(fp,"20 20 lt\n");
   PhyML_Fprintf(fp,"closepath\n");
   PhyML_Fprintf(fp,"clip\n");
   PhyML_Fprintf(fp,"} bind def\n");
+
+
+  /* PhyML_Fprintf(fp,"gs\n"); */
+  /* PhyML_Fprintf(fp,"newpath\n"); */
+  /* PhyML_Fprintf(fp,"20 20 mt\n"); */
+  /* PhyML_Fprintf(fp,"580 20 lt\n"); */
+  /* PhyML_Fprintf(fp,"580 820 lt\n"); */
+  /* PhyML_Fprintf(fp,"20 820 lt\n"); */
+  /* PhyML_Fprintf(fp,"20 20 lt\n"); */
+  /* PhyML_Fprintf(fp,"closepath\n"); */
+  /* PhyML_Fprintf(fp,"stroke\n"); */
+  /* PhyML_Fprintf(fp,"gr\n"); */
+  /* PhyML_Fprintf(fp,"0 0 0 sc\n"); */
+
 
 }
 
@@ -125,19 +136,19 @@ void DR_Print_Tree_Postscript(int page_num, int render_name, FILE *fp, t_tree *t
   n_root = tree->n_root;
 
 /*   PhyML_Fprintf(fp,"%%%%Page: %d %d\n",page_num,page_num); */
-  PhyML_Fprintf(fp,"0.001 setlinewidth\n");
+  /* PhyML_Fprintf(fp,"0.001 setlinewidth\n"); */
 /*   PhyML_Fprintf(fp,"0.5 0.5 0.4 sc\n"); */
-  PhyML_Fprintf(fp,"0 0 0 sc\n");
+  /* PhyML_Fprintf(fp,"0 0 0 sc\n"); */
 /*   PhyML_Fprintf(fp,"clipbox\n"); */
 /*   PhyML_Fprintf(fp,"stroke\n"); */
-  PhyML_Fprintf(fp,"0 0 translate\n");
+  PhyML_Fprintf(fp,"20 20 translate\n");
   PhyML_Fprintf(fp,"newpath\n");
 
 
-  draw->ycoord[n_root->num] = (draw->ycoord[n_root->v[2]->num] + draw->ycoord[n_root->v[1]->num])/2.; 
+  draw->ycoord[n_root->num] = (draw->ycoord[n_root->v[2]->num] + draw->ycoord[n_root->v[1]->num])/2. + 20; 
   draw->xcoord[n_root->num] = 0.0; 
-  DR_Print_Tree_Postscript_Pre(n_root,n_root->v[2],render_name,fp,draw,tree);
-  DR_Print_Tree_Postscript_Pre(n_root,n_root->v[1],render_name,fp,draw,tree);
+  DR_Print_Tree_Postscript_Pre(n_root,n_root->v[2],n_root->b[2],render_name,fp,draw,tree);
+  DR_Print_Tree_Postscript_Pre(n_root,n_root->v[1],n_root->b[1],render_name,fp,draw,tree);
 
 
   PhyML_Fprintf(fp,"closepath\n");
@@ -150,7 +161,7 @@ void DR_Print_Tree_Postscript(int page_num, int render_name, FILE *fp, t_tree *t
 //////////////////////////////////////////////////////////////
 
 
-void DR_Print_Tree_Postscript_Pre(t_node *a, t_node *d, int render_name, FILE *fp, tdraw *w, t_tree *tree)
+void DR_Print_Tree_Postscript_Pre(t_node *a, t_node *d, t_edge *b, int render_name, FILE *fp, tdraw *w, t_tree *tree)
 {
   int i;
   phydbl R, G, B;
@@ -219,7 +230,7 @@ void DR_Print_Tree_Postscript_Pre(t_node *a, t_node *d, int render_name, FILE *f
   /* 		w->ycoord[d->num]); */
 
 
-   if(tree->rates->has_survived[d->num] == YES)
+  if(tree->rates && tree->rates->has_survived[d->num] == YES)
     {
       PhyML_Fprintf(fp," /Helvetica findfont 16 scalefont\n");
       PhyML_Fprintf(fp,"setfont\n");
@@ -253,10 +264,12 @@ void DR_Print_Tree_Postscript_Pre(t_node *a, t_node *d, int render_name, FILE *f
       PhyML_Fprintf(fp,"%.1f %.1f mt\n",w->xcoord[d->num] - (w->xcoord[d->num] - w->xcoord[a->num])/2.,w->ycoord[d->num]);
       PhyML_Fprintf(fp," /Helvetica findfont 10 scalefont\n");
       PhyML_Fprintf(fp,"setfont\n");
+
+#if (defined GEO)
       PhyML_Fprintf(fp,"([%4.4f,%4.4f]) show \n",
                     tree->geo->ldscape[tree->geo->loc[d->num]*tree->geo->n_dim+0],
                     tree->geo->ldscape[tree->geo->loc[d->num]*tree->geo->n_dim+1]);
-      
+#endif
 
      
       /* PhyML_Fprintf(fp,"%.1f %.1f mt\n",w->xcoord[d->num]+5,w->ycoord[d->num]); */
@@ -289,7 +302,9 @@ void DR_Print_Tree_Postscript_Pre(t_node *a, t_node *d, int render_name, FILE *f
       PhyML_Fprintf(fp," /Helvetica findfont 10 scalefont\n");
       PhyML_Fprintf(fp,"setfont\n");
       PhyML_Fprintf(fp,"%.1f %.1f mt\n",w->xcoord[d->num]+2,w->ycoord[d->num]);
-      /* PhyML_Fprintf(fp,"(%d) show \n",d->num); */
+
+      PhyML_Fprintf(fp,"(%d) show \n",b->num);
+
       PhyML_Fprintf(fp,"%.1f %.1f mt\n",w->xcoord[d->num],w->ycoord[d->num]);
       PhyML_Fprintf(fp," /Helvetica findfont 14 scalefont\n");
       PhyML_Fprintf(fp,"setfont\n");
@@ -298,17 +313,19 @@ void DR_Print_Tree_Postscript_Pre(t_node *a, t_node *d, int render_name, FILE *f
       PhyML_Fprintf(fp,"%.1f %.1f mt\n",w->xcoord[d->num] - (w->xcoord[d->num] - w->xcoord[a->num])/2.,w->ycoord[d->num]);
       PhyML_Fprintf(fp," /Helvetica findfont 10 scalefont\n");
       PhyML_Fprintf(fp,"setfont\n");
+
+#if (defined GEO)
       PhyML_Fprintf(fp,"([%4.4f,%4.4f]) show \n",
                     tree->geo->ldscape[tree->geo->loc[d->num]*tree->geo->n_dim+0],
                     tree->geo->ldscape[tree->geo->loc[d->num]*tree->geo->n_dim+1]);
-      
+#endif      
 
 
       PhyML_Fprintf(fp,"stroke\n");
       PhyML_Fprintf(fp,"gr\n");
       PhyML_Fprintf(fp,"0 0 0 sc\n");
       For(i,3)
-	if(d->v[i] != a && d->b[i] != tree->e_root) DR_Print_Tree_Postscript_Pre(d,d->v[i],render_name,fp,w,tree);
+	if(d->v[i] != a && d->b[i] != tree->e_root) DR_Print_Tree_Postscript_Pre(d,d->v[i],d->b[i],render_name,fp,w,tree);
     }
 
 
@@ -356,18 +373,18 @@ void DR_Get_X_Coord(int fixed_tips, tdraw *w, t_tree *tree)
 
 void DR_Get_Y_Coord(int fixed_tips, tdraw *w, t_tree *tree)
 {
-  phydbl next_y_slot;
-  next_y_slot = .0;
+  int next_y_slot;
+  next_y_slot = 0;
   DR_Get_Y_Coord_Post(tree->n_root,tree->n_root->v[2],NULL,&next_y_slot,fixed_tips,w,tree);
   DR_Get_Y_Coord_Post(tree->n_root,tree->n_root->v[1],NULL,&next_y_slot,fixed_tips,w,tree);
-  w->ycoord[tree->n_root->num] = (int)((w->ycoord[tree->n_root->v[2]->num] + w->ycoord[tree->n_root->v[2]->num]) / 2.);
+  w->ycoord[tree->n_root->num] = (int)((w->ycoord[tree->n_root->v[2]->num] + w->ycoord[tree->n_root->v[2]->num]) / 2.) + 20;
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
 
-void DR_Get_Y_Coord_Post(t_node *a, t_node *d, t_edge *b, phydbl *next_y_slot, int fixed_tips, tdraw *w, t_tree *tree)
+void DR_Get_Y_Coord_Post(t_node *a, t_node *d, t_edge *b, int *next_y_slot, int fixed_tips, tdraw *w, t_tree *tree)
 {
   int i;
 
@@ -376,8 +393,9 @@ void DR_Get_Y_Coord_Post(t_node *a, t_node *d, t_edge *b, phydbl *next_y_slot, i
       if(!fixed_tips)
 	{
 /* 	  w->ycoord[d->num] = *next_y_slot + (int)(w->page_height / (2.*tree->n_otu)); */
-	  w->ycoord[d->num] = *next_y_slot;
-	  (*next_y_slot) += ((phydbl)w->page_height / (phydbl)tree->n_otu);
+	  w->ycoord[d->num] = *next_y_slot + 20;
+	  (*next_y_slot) += (int)(w->page_height / (tree->n_otu-1));
+          printf("\n. %s %f",d->name,w->ycoord[d->num]);
 	}
     }
   else
@@ -424,8 +442,8 @@ tdraw *DR_Make_Tdraw_Struct(t_tree *tree)
 
 void DR_Init_Tdraw_Struct(tdraw *w)
 {
-  w->page_width  = 510;
-  w->page_height = 760;
+  w->page_width  = 580-20;
+  w->page_height = 820-20;
 }
 
 //////////////////////////////////////////////////////////////
@@ -445,6 +463,7 @@ void DR_Get_Tree_Box_Width(tdraw *w, t_tree *tree)
     }
 
   w->tree_box_width = w->page_width - max_name_len * 8.66667;
+  /* w->tree_box_width = w->page_width - max_name_len * 10.; */
 }
 
 //////////////////////////////////////////////////////////////

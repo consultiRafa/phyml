@@ -336,19 +336,33 @@ void Post_Order_Lk(t_node *a, t_node *d, t_tree *tree)
           return;
         }
 
+      if(tree->n_root)
+        {
       For(i,3)
         {
           if(d->v[i] != a && d->b[i] != tree->e_root)
             Post_Order_Lk(d,d->v[i],tree);
           else dir = i;
         }
-
-      if(d->b[dir] != tree->e_root)
-      Get_All_Partial_Lk_Scale(tree,d->b[dir],a,d);
+        }
       else
+        {
+          For(i,3)
+            {
+              if(d->v[i] != a)
+                Post_Order_Lk(d,d->v[i],tree);
+              else dir = i;
+            }
+        }
+      
+      if(tree->ignore_root == NO && d->b[dir] == tree->e_root)
         {
           if(d == tree->n_root->v[1]) Get_All_Partial_Lk_Scale(tree,tree->n_root->b[1],tree->n_root,d);
           else                        Get_All_Partial_Lk_Scale(tree,tree->n_root->b[2],tree->n_root,d);
+        }
+      else
+        {
+          Get_All_Partial_Lk_Scale(tree,d->b[dir],a,d);
         }
     }
 }
@@ -369,6 +383,8 @@ void Pre_Order_Lk(t_node *a, t_node *d, t_tree *tree)
           return;
         }
 
+      if(tree->n_root)
+        {
       For(i,3)
     {
       if(d->v[i] != a && d->b[i] != tree->e_root)
@@ -378,6 +394,18 @@ void Pre_Order_Lk(t_node *a, t_node *d, t_tree *tree)
         }
     }
     }
+      else
+        {
+          For(i,3)
+            {
+              if(d->v[i] != a)
+                {
+                  Get_All_Partial_Lk_Scale(tree,d->b[i],d->v[i],d);
+                  Pre_Order_Lk(d,d->v[i],tree);
+                }
+            }
+        }
+    }      
 }
 
 //////////////////////////////////////////////////////////////
@@ -431,7 +459,7 @@ phydbl Lk(t_edge *b, t_tree *tree)
           {
               Update_PMat_At_Given_Edge(tree->a_edges[br],tree);
           }
-          if(tree->n_root)
+          if(tree->n_root && tree->ignore_root == NO)
             {
               Update_PMat_At_Given_Edge(tree->n_root->b[1],tree);
               Update_PMat_At_Given_Edge(tree->n_root->b[2],tree);
@@ -446,6 +474,8 @@ phydbl Lk(t_edge *b, t_tree *tree)
         {
           if(tree->n_root)
             {
+              if(tree->ignore_root == NO)
+                {
               Post_Order_Lk(tree->n_root,tree->n_root->v[1],tree);
               Post_Order_Lk(tree->n_root,tree->n_root->v[2],tree);
 
@@ -453,10 +483,22 @@ phydbl Lk(t_edge *b, t_tree *tree)
               Update_P_Lk(tree,tree->n_root->b[2],tree->n_root);
 
               if(tree->both_sides == YES)
+                    {
+                      Pre_Order_Lk(tree->n_root,tree->n_root->v[2],tree);
                 Pre_Order_Lk(tree->n_root,tree->n_root->v[1],tree);
+                    }
+                }
+              else
+                {
+                  Post_Order_Lk(tree->e_root->rght,tree->e_root->left,tree);
+                  Post_Order_Lk(tree->e_root->left,tree->e_root->rght,tree);
 
               if(tree->both_sides == YES)
-                Pre_Order_Lk(tree->n_root,tree->n_root->v[2],tree);
+                    {
+                      Pre_Order_Lk(tree->e_root->rght,tree->e_root->left,tree);
+                      Pre_Order_Lk(tree->e_root->left,tree->e_root->rght,tree);
+                    }
+                }
             }
           else
             {
@@ -469,8 +511,15 @@ phydbl Lk(t_edge *b, t_tree *tree)
 
   if(!b)
     {
-      if(tree->n_root) b = (tree->n_root->v[1]->tax == NO)?(tree->n_root->b[2]):(tree->n_root->b[1]);
-      else             b = tree->a_nodes[0]->b[0];
+      if(tree->n_root) 
+        {
+          if(tree->ignore_root == NO)
+            b = (tree->n_root->v[1]->tax == NO)?(tree->n_root->b[2]):(tree->n_root->b[1]);
+          else
+            b = tree->e_root;
+        }
+      else                                        
+        b = tree->a_nodes[0]->b[0];
     }
 
   tree->c_lnL             = .0;
@@ -682,7 +731,8 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
 
           if(sum < .0)
             {
-                  PhyML_Printf("\n== b->num = %d  sum = %G",sum,b->num);
+                  printf("\n. tree: %s\n",Write_Tree(tree,NO));
+                  PhyML_Printf("\n== b->num = %d  sum = %G root ? %d",sum,b->num,b == tree->e_root);
                   PhyML_Printf("\n== Err. in file %s at line %d\n\n",__FILE__,__LINE__);
                   Exit("\n");
             }
@@ -783,7 +833,10 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
       while(exponent != 0);
     }
 
-      /* tree->cur_site_lk[site] = EXP(log_site_lk); */
+      if(isinf(site_lk) || isnan(site_lk))
+        {
+          tree->cur_site_lk[site] = EXP(log_site_lk);
+        }
 
   For(catg,tree->mod->ras->n_catg) tree->log_site_lk_cat[catg][site] = LOG(tree->site_lk_cat[catg]) - (phydbl)LOG2 * fact_sum_scale;
 
@@ -792,11 +845,11 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
       PhyML_Printf("\n== Site = %d",site);
       PhyML_Printf("\n== Invar = %d",tree->data->invar[site]);
       PhyML_Printf("\n== Mixt = %d",tree->is_mixt_tree);
-      PhyML_Printf("\n== Lk = %e LOG(Lk) = %e < %e",site_lk,log_site_lk,-BIG);
+          PhyML_Printf("\n== Lk = %G log(Lk) = %f < %G",site_lk,log_site_lk,-BIG);
       For(catg,tree->mod->ras->n_catg) PhyML_Printf("\n== rr=%f p=%f",tree->mod->ras->gamma_rr->v[catg],tree->mod->ras->gamma_r_proba->v[catg]);
       PhyML_Printf("\n== Pinv = %G",tree->mod->ras->pinvar->v);
       PhyML_Printf("\n== Bl mult = %G",tree->mod->br_len_multiplier->v);
-
+          PhyML_Printf("\n== fact_sum_scale = %d",fact_sum_scale);
       /* int i; */
       /* For(i,2*tree->n_otu-3) */
       /* 	{ */
@@ -939,6 +992,7 @@ void Rate_Correction(int exponent, phydbl *site_lk_cat, t_tree *tree)
           PhyML_Printf("\n== exponent: %d", exponent);
       PhyML_Printf("\n== Numerical precision issue alert.");
       PhyML_Printf("\n== File %s at line %d\n\n",__FILE__,__LINE__);
+	  PhyML_Printf("\n== %s",Write_Tree(tree,NO));
       Exit("\n");
     }
       (*site_lk_cat) = .0;
@@ -2175,7 +2229,8 @@ void Init_P_Lk_Tips_Double(t_tree *tree)
 
   For(i,tree->n_otu)
     {
-      if(!tree->a_nodes[i]->c_seq || strcmp(tree->a_nodes[i]->c_seq->name,tree->a_nodes[i]->name))
+      if(!tree->a_nodes[i]->c_seq || 
+	 strcmp(tree->a_nodes[i]->c_seq->name,tree->a_nodes[i]->name))
         {
           PhyML_Printf("\n== Err. in file %s at line %d\n\n",__FILE__,__LINE__);
           Exit("");
@@ -2243,7 +2298,8 @@ void Init_P_Lk_Tips_Int(t_tree *tree)
 
   For(i,tree->n_otu)
     {
-      if(!tree->a_nodes[i]->c_seq || strcmp(tree->a_nodes[i]->c_seq->name,tree->a_nodes[i]->name))
+      if(!tree->a_nodes[i]->c_seq || 
+	 strcmp(tree->a_nodes[i]->c_seq->name,tree->a_nodes[i]->name))
         {
           PhyML_Printf("\n== Err. in file %s at line %d\n\n",__FILE__,__LINE__);
           Exit("");
@@ -2627,7 +2683,7 @@ void Print_Lk_Given_Edge_Recurr(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 void Alias_Subpatt(t_tree *tree)
 {
 
-  if(tree->n_root)
+  if(tree->n_root && tree->ignore_root == NO)
     {
       Alias_Subpatt_Post(tree->n_root,tree->n_root->v[2],tree);
       Alias_Subpatt_Post(tree->n_root,tree->n_root->v[1],tree);
@@ -3483,7 +3539,7 @@ int Check_Lk_At_Given_Edge(int verbose, t_tree *tree)
                                       tree->a_edges[i]->l_var->v);
     }
 
-  if(tree->n_root)
+  if(tree->n_root && tree->ignore_root == NO)
     {
       Lk(tree->n_root->b[1],tree);
       if(verbose == YES) PhyML_Printf("\n. Edge %3d %13G %f %13G",

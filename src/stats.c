@@ -571,8 +571,8 @@ phydbl Dnorm_Trunc(phydbl x, phydbl mean, phydbl sd, phydbl lo, phydbl up)
 
   if(isnan(dens) || isinf(FABS(dens)))
     {
-      PhyML_Printf("\n. mean=%f sd=%f lo=%f up=%f cdf_lo=%G CDF_up=%G",mean,sd,lo,up,cdf_lo,cdf_up);
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== mean=%f sd=%f lo=%f up=%f cdf_lo=%G CDF_up=%G",mean,sd,lo,up,cdf_lo,cdf_up);
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Exit("\n");
     }
 
@@ -2110,11 +2110,12 @@ phydbl *Hessian_Seo(t_tree *tree)
 
   lnL1 = lnL2 = UNLIKELY;
   
+  For(i,dim) ori_bl[i] = tree->a_edges[i]->l->v;
+  
   Set_Both_Sides(YES,tree);
   Lk(NULL,tree);
   ori_lnL = tree->c_lnL;
 
-  For(i,dim) ori_bl[i] = tree->a_edges[i]->l->v;
 
   if(tree->mod->log_l == NO)
     l_inf = MAX(tree->mod->l_min,1./(phydbl)tree->data->init_len);
@@ -2125,18 +2126,19 @@ phydbl *Hessian_Seo(t_tree *tree)
     {
       if(tree->a_edges[i]->l->v*(1.-eps) > l_inf)
 	{
-	  inc_plus[i]  = FABS(eps * tree->a_edges[i]->l->v);
-	  inc_minus[i] = FABS(eps * tree->a_edges[i]->l->v);
+	  inc_plus[i]  = FABS(eps * MAX(tree->mod->l_min,tree->a_edges[i]->l->v));
+	  inc_minus[i] = FABS(eps * MAX(tree->mod->l_min,tree->a_edges[i]->l->v));
 	  is_ok[i]     = YES;
 	}
       else
 	{
-	  inc_plus[i]  = FABS(0.2 * tree->a_edges[i]->l->v);
-	  inc_minus[i] = FABS(0.2 * tree->a_edges[i]->l->v);
+	  inc_plus[i]  = FABS(0.2 * MAX(tree->mod->l_min,tree->a_edges[i]->l->v));
+	  inc_minus[i] = FABS(0.2 * MAX(tree->mod->l_min,tree->a_edges[i]->l->v));
 	  is_ok[i]     = NO;
-	}
     }
 
+
+    }
 
   /* Fine tune the increments */
   For(i,dim)
@@ -2147,8 +2149,7 @@ phydbl *Hessian_Seo(t_tree *tree)
 	  lnL1 = Lk(tree->a_edges[i],tree);
 	  tree->a_edges[i]->l->v = ori_bl[i];
 	  inc_plus[i] *= 1.1;
-	}while((FABS(lnL1 - ori_lnL) < 1.E-1) && 
-	       (tree->a_edges[i]->l->v+inc_plus[i] < tree->mod->l_max));
+	}while((FABS(lnL1 - ori_lnL) < 1.E-1) && (tree->a_edges[i]->l->v+inc_plus[i] < tree->mod->l_max));
       inc_plus[i] /= 1.1;
     }
 
@@ -2233,6 +2234,7 @@ phydbl *Hessian_Seo(t_tree *tree)
 	  /* 	   plus[i*tree->n_pattern+k],plusplus[i*tree->n_pattern+k],zero[i*tree->n_pattern+k], */
 	  /* 	   (4.*plus[i*tree->n_pattern+k] - plusplus[i*tree->n_pattern+k] - 3.*zero[i*tree->n_pattern+k]), */
 	  /* 	   gradient[i]); */
+
 	}
       For(i,dim) For(j,dim) site_hessian[i*dim+j] = gradient[i] * gradient[j];
       For(i,dim*dim) hessian[i] -= site_hessian[i] * tree->data->wght[k]; 
@@ -2245,7 +2247,7 @@ phydbl *Hessian_Seo(t_tree *tree)
 
   l = tree->data->init_len;
   n = tree->mod->ns;
-  /* Delta method for variance. Assume Jukes and Cantor with p=1/n */
+  /* Delta method for variance. Assumes Jukes and Cantor with p=1/n */
   small_var = (1./(l*l))*(1.-1./l)*(n-1.)*(n-1.)/(n-1.-n/l);
   For(i,dim)
     if(is_ok[i] == NO)
@@ -4393,6 +4395,7 @@ phydbl t1354 = 0.1000000e7 * t1250 - 0.2889000000e10 * t94 - 0.600000e6 * t1235 
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+// Inverse method to sample from X where P(X=xi)=pi[i]
 
 int Sample_i_With_Proba_pi(phydbl *pi, int len)
 {
@@ -4407,7 +4410,7 @@ int Sample_i_With_Proba_pi(phydbl *pi, int len)
 
   if((cum_pi[i-1] > 1. + 1.E-10) || (cum_pi[i-1] < 1. - 1.E-10))
     {
-      PhyML_Printf("\n== Sum of probabilities is different from 1.0.");
+      PhyML_Printf("\n== Sum of probabilities is different from 1.0 (%f).",cum_pi[i-1]);
       PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Exit("\n");
     }
@@ -4600,6 +4603,28 @@ phydbl Weighted_Mean(phydbl *x, phydbl *w, int l)
   return(wm);
 }
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+int Sum_Bits(int value, int range)
+{
+  int i;
+  int sum;
+
+  if(range > 8*(int)sizeof(int))
+    {
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+      Exit("\n");
+    }
+
+  sum = 0;
+  For(i,range)
+    {
+      sum += (value >> i) & 1;
+    }
+
+  return(sum);
+}
 
 
 

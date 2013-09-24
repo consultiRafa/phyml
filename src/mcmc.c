@@ -1260,7 +1260,7 @@ void MCMC_Jump_Calibration(t_tree *tree)
 
       ///////////////////////////////////////////////////////////////////////////////////////////
       //if((comb_num - 1) == 1) for(i = tree -> n_otu; i < 2 * tree -> n_otu -1; i++) printf("\n. Node number:%d Min:%f Max:%f Cur.time:%f \n", i, tree -> rates -> t_prior_min[i], tree -> rates -> t_prior_max[i], tree -> rates -> nd_t[i]);
-      //PhyML_Printf("\n. .......................................................................\n");
+      /* PhyML_Printf("\n. .......................................................................\n"); */
       ///////////////////////////////////////////////////////////////////////////////////////////
       //PhyML_Printf("\n. Result:%d \n", result);  
 
@@ -1287,8 +1287,8 @@ void MCMC_Jump_Calibration(t_tree *tree)
       Check_Node_Time(tree -> n_root, tree -> n_root -> v[2], &result, tree);
       
       ///////////////////////////////////////////////////////////////////////////////////////////
-      //for(i = tree -> n_otu; i < 2 * tree -> n_otu -1; i++) printf("\n. Node number:%d Min:%f Max:%f Cur.time:%f \n", i, tree -> rates -> t_prior_min[i], tree -> rates -> t_prior_max[i], tree -> rates -> nd_t[i]);
-      //PhyML_Printf("\n. .......................................................................\n");
+      /* for(i = tree -> n_otu; i < 2 * tree -> n_otu -1; i++) printf("\n. Node number:%d Min:%f Max:%f Cur.time:%f \n", i, tree -> rates -> t_prior_min[i], tree -> rates -> t_prior_max[i], tree -> rates -> nd_t[i]); */
+      /* PhyML_Printf("\n. .......................................................................\n"); */
       ///////////////////////////////////////////////////////////////////////////////////////////
       
       if(result != TRUE)
@@ -1324,7 +1324,7 @@ void MCMC_Jump_Calibration(t_tree *tree)
       ratio += (new_lnL_time - cur_lnL_time);
       ratio += (cur_lnL_Hastings_ratio - new_lnL_Hastings_ratio); //Hastings ratio
       
-      ratio = EXP(ratio);
+      ratio = EXP(ratio); /* printf("\n ratio %f \n", ratio); */
       alpha = MIN(1.,ratio);
       u = Uni();
       
@@ -1397,6 +1397,7 @@ void MCMC_Root_Time(t_tree *tree)
   t0 = tree->rates->t_prior_min[root->num];
   t2 = tree->rates->nd_t[v2->num];
   t3 = tree->rates->nd_t[v3->num];
+  /* printf("\n %d t0= %f %d t2= %f %d t3= %f \n", root -> num, t0, v2 -> num, t2, v3 -> num, t3);  */
 
   t_min = t0;
   /* t_max = MIN(MIN(t2,t3),tree->rates->t_prior_max[root->num]); */

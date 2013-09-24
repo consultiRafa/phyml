@@ -537,6 +537,7 @@ phydbl Br_Len_Brent(phydbl prop_min, phydbl prop_max, t_edge *b_fcus, t_tree *tr
 
   lk_end = loc_tree->c_lnL;
 
+
   if(lk_end < lk_begin - tree->mod->s_opt->min_diff_lk_local)
     {
       PhyML_Printf("\n== prop_min: %f prop_max: %f l: %f var:%f",prop_min,prop_max,b_fcus->l->v,b_fcus->l_var->v);
@@ -567,6 +568,7 @@ void Round_Optimize(t_tree *tree, calign *data, int n_round_max)
 
   while(n_round < n_round_max)
     {
+
       if(tree->mod->s_opt->opt_bl || tree->mod->s_opt->constrained_br_len)
         Optimize_Br_Len_Serie(tree);
 
@@ -637,12 +639,22 @@ void Optimize_Br_Len_Serie(t_tree *tree)
         }
     }
 
-  if(tree->n_root)
+  if(tree->n_root && tree->ignore_root == NO)
     {
       Update_P_Lk(tree,tree->n_root->b[1],tree->n_root);
       Optimize_Br_Len_Serie_Post(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree);
       Update_P_Lk(tree,tree->n_root->b[2],tree->n_root);
       Optimize_Br_Len_Serie_Post(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree);
+    }
+  else if(tree->n_root && tree->ignore_root == YES)
+    {
+      Optimize_Br_Len_Serie_Post(tree->e_root->rght,
+                                 tree->e_root->left,
+                                 tree->e_root,tree);
+
+      Optimize_Br_Len_Serie_Post(tree->e_root->left,
+                                 tree->e_root->rght,
+                                 tree->e_root,tree);
     }
   else
     {
@@ -683,8 +695,9 @@ void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tr
   l_infa = tree->mod->l_max/b_fcus->l->v;
   l_infb = tree->mod->l_min/b_fcus->l->v;
 
-  if(tree->io->mod->s_opt->opt_bl == YES)
-    Br_Len_Brent(l_infb,l_infa,b_fcus,tree);
+  Set_Both_Sides(YES,tree);
+
+  if(tree->io->mod->s_opt->opt_bl == YES) Br_Len_Brent(l_infb,l_infa,b_fcus,tree);
 
   if(tree->c_lnL < lk_init - tree->mod->s_opt->min_diff_lk_local)
     {
@@ -696,25 +709,35 @@ void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tr
     }
 
   if(d->tax) return;
-  else
+
+  if(tree->n_root)
   {
-      For(i,3) if(d->v[i] != a && d->b[i] != tree->e_root)
+      For(i,3)
+        {
+          if(d->v[i] != a && d->b[i] != tree->e_root)
         {
           Update_P_Lk(tree,d->b[i],d);
           Optimize_Br_Len_Serie_Post(d,d->v[i],d->b[i],tree);
         }
   }
 
-  if(!tree->n_root)
-    {
       For(i,3)
-        if(d->v[i] == a && d->v[i]->tax == NO)
+        if(d->v[i] == a || d->b[i] == tree->e_root) 
           Update_P_Lk(tree,d->b[i],d);
     }
   else
     {
       For(i,3)
-        if(d->v[i] == a || d->b[i] == tree->e_root)
+        {
+          if(d->v[i] != a)
+            {
+              Update_P_Lk(tree,d->b[i],d);
+              Optimize_Br_Len_Serie_Post(d,d->v[i],d->b[i],tree);
+            }
+        }
+      
+      For(i,3) 
+        if(d->v[i] == a) 
           Update_P_Lk(tree,d->b[i],d);
     }
 }
@@ -790,6 +813,7 @@ void Optimiz_All_Free_Param(t_tree *tree, int verbose)
   Optimize_Rmat_Weights(tree,verbose);
   Optimize_Efrq_Weights(tree,verbose);
   Optimize_Free_Rate(tree,verbose);
+
 
   if(tree->mod->use_m4mod)
     {
@@ -958,6 +982,7 @@ void Optimiz_All_Free_Param(t_tree *tree, int verbose)
   Set_Both_Sides(init_both_sides,tree);
 
   if(tree->both_sides == YES) Lk(NULL,tree); /* Needed to update all partial likelihoods */
+
 
   /* if(tree->next) Optimiz_All_Free_Param(tree->next,verbose); */
   /* else            Optimiz_All_Free_Param(tree->next,verbose); */
@@ -2688,6 +2713,7 @@ void Optimize_TsTv(t_tree *mixt_tree, int verbose)
           Print_Lk(mixt_tree,"[Ts/ts ratio        ]");
           PhyML_Printf("[%10f]",tree->mod->kappa->v);
         }
+
         }
     }
 
