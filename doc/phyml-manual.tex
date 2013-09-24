@@ -55,7 +55,7 @@
 \clearpage
 
 {\par
-\small 
+\small
 \noindent
 \copyright Copyright 1999 - 2008 by PhyML Development Team.\\
 \noindent The software PhyML is provided ``as is''  without warranty of any kind.  In no event shall
@@ -88,7 +88,7 @@ the GNU public licence. See http://www.opensource.org for details.
 \item { Maria Anisimova} and { Olivier Gascuel} conceived the aLRT method for branch support.
 \item { St\'ephane Guindon, Franck Lethiec}, Jean-Francois Dufayard and Vincent Lefort implemented PhyML.
 \item { Jean-Francois Dufayard} created the benchmark and implemented the tools that are used to check
-  PhyML accuracy and performances. 
+  PhyML accuracy and performances.
 \item { Vincent Lefort, St\'ephane Guindon, Patrice Duroux} and { Olivier Gascuel} conceived and
   implemented PhyML web server.
 \item St\'ephane Guindon wrote this document.
@@ -192,7 +192,7 @@ Once MPI is  installed, it is necessary to launch  the MPI daemon. This can be  
 following instruction: \x{mpd \&}.  Note however that in most cases, the  MPI daemon will already be
 running on your server so  that you most likely do not need to worry  about this. You can then just
 go in the \x{phyml/} directory (the directory that contains the \x{src/}, \x{examples/} and \x{doc/}
-folders) and enter the commands below: 
+folders) and enter the commands below:
 
 {\setlength{\baselineskip}{0.5\baselineskip}
 \begin{verbatim}
@@ -212,6 +212,21 @@ mpirun -n 4 ./phyml-mpi -i myseq -b 100
 }
 
 \noindent Please read section \ref{sec:parallel_bootstrap} of this document for more information.
+
+\subsection{Installing the accelerated version of PhyML -- PhyML+++}\label{sec:install_phyml_beagle}
+
+PhyML can use BEAGLE\cite{ayres2012beagle} library for its computations which provides 10x(single core) to 150x speedup(on GPUs). PhyML+++ has almost all the features of ``normal" PhyML, and will eventually replace PhyML. For the time being, users can compile PhyML and PhyML+++ and primarily use the latter and switch to the former if need be. Please note that in some cases, the final log-likelihood reported by PhyML and PhyML+++ may not exactly match (it typically matches up until 3-4 decimal places). This imprecision should not matter because the likelihood surface still correlates (i.e. we care about the precision of the MLE, not the likelihood).
+
+First download and install the BEAGLE library by reading the instructions here: \href{https://code.google.com/p/beagle-lib/}{https://code.google.com/p/beagle-lib/}. Then run the following commands:
+
+{\setlength{\baselineskip}{0.5\baselineskip}
+\begin{verbatim}
+./configure --enable-beagle;
+make clean;
+make;
+\end{verbatim}
+}
+A binary file named \x{phyml-beagle} has now been created in the \x{src/} directory and is ready to use.
 
 \section{Program usage.}\label{sec:phyml_new}
 
@@ -257,7 +272,7 @@ described in what follows.
 
 \subsubsection{Input  Data sub-menu}
 
-\begin{center}\framebox{\x{[D] ............................... Data type (DNA/AA)}} \end{center} 
+\begin{center}\framebox{\x{[D] ............................... Data type (DNA/AA)}} \end{center}
 Type of data in the input file. It can be either DNA or amino-acid sequences in PHYLIP format (see
 Section \ref{sec:input_output}). Type \x{D} to change settings.
 
@@ -314,7 +329,7 @@ program. The format of this file is described in the section \ref{sec:customaa}.
 \begin{center} \framebox{\x{[F] ................. Optimise equilibrium frequencies}} \end{center}
 \begin{center} \framebox{\x{[E] ......... Equilibrium frequencies (empirical/user)}} \end{center}
 \begin{center} \framebox{\x{[F]  . Amino  acid frequencies (empirical/model  defined)}} \end{center}
-For  nucleotide  sequences,  optimising  nucleotide  frequencies  means that  the  values  of  these
+For  nucleotide  sequences,  optimising  equilibrium  frequencies  means that  the  values  of  these
 parameters  are estimated in  the maximum  likelihood framework.   When the  custom model  option is
 selected, it is  also possible to give the program a  user-defined nucleotide frequency distribution
 at equilibrium  (option \x{E}).   For protein sequences,  the stationary amino-acid  frequencies are
@@ -343,7 +358,7 @@ differences across sequences are actually observed at  that site.  Users can als
 to  any value  in the  $[0.0,1.0]$ range  or estimate  it from  the data  in  the maximum-likelihood
 framework.
 
-\vspace{0.7cm} 
+\vspace{0.7cm}
 \index{gamma distribution (discrete)!mean vs. median}
 \index{gamma distribution (discrete)!number of categories}
 \index{gamma distribution (discrete)!shape parameter}
@@ -463,8 +478,8 @@ Changes interleaved format (default) to sequential format.
 Use a minimum parsimony starting tree. This option is taken into account when the `-u' option
 is absent and when tree topology modifications are to be done.
 
-\item \x{-b} (or \x{--bootstrap}) \x{int}\index{bootstrap}\index{command-line options!\x{--bootstrap}} 
-\begin{itemize}  
+\item \x{-b} (or \x{--bootstrap}) \x{int}\index{bootstrap}\index{command-line options!\x{--bootstrap}}
+\begin{itemize}
 \item \x{int} $>$  0: \x{int} is the number of bootstrap replicates.
 \item \x{int} =  0: neither approximate likelihood ratio test nor bootstrap values are computed.
 \item \x{int} = -1: approximate likelihood ratio test returning aLRT statistics.
@@ -528,15 +543,15 @@ should provide a rate matrix and equilibrium amino acid in PAML format (see Sect
 \item \x{-f e}, \x{m}, or ``\x{fA,fC,fG,fT}" \index{frequencies!nucleotide}\index{frequencies!amino-acid}\index{stationary frequencies}\index{command-line options!\x{-f}}\\
 Nucleotide or amino-acid frequencies.
 \begin{itemize}
-\item \x{e} : the character frequencies are determined as follows : 
+\item \x{e} : the character frequencies are determined as follows :
 \begin{itemize}
 \item {\it Nucleotide sequences}: (Empirical) the equilibrium base frequencies are estimated by counting
-                 the occurence of the different bases in the alignment. 
+                 the occurence of the different bases in the alignment.
 \item {\it Amino-acid sequences}: (Empirical) the equilibrium amino-acid frequencies are estimated by counting
                  the occurence of the different amino-acids in the alignment.
-\end{itemize}  
+\end{itemize}
 
-\item \x{m} : the character frequencies are determined as follows : 
+\item \x{m} : the character frequencies are determined as follows :
 \begin{itemize}
 \item {\it Nucleotide sequences}: (ML) the equilibrium base frequencies are estimated using maximum
   likelihood.
@@ -544,9 +559,9 @@ Nucleotide or amino-acid frequencies.
                  the frequencies defined by the substitution model.
 \end{itemize}
 
-\item ``\x{fA,fC,fG,fT}": only valid for nucleotide-based models. \x{fA}, \x{fC}, \x{fG} and \x{fT} are floating numbers that 
+\item ``\x{fA,fC,fG,fT}": only valid for nucleotide-based models. \x{fA}, \x{fC}, \x{fG} and \x{fT} are floating numbers that
 correspond to the frequencies of A, C, G and T respectively.
-\end{itemize}  
+\end{itemize}
 
 \item \x{-t} (or \x{--ts/tv}) \x{ts/tv\_ratio} \index{$\kappa$}\index{ts/tv ratio}\index{command-line options!\x{--ts/tv}}\\
 \x{ts/tv\_ratio}: transition/transversion ratio. DNA sequences only. Can be a fixed positive value
@@ -628,7 +643,7 @@ PhyML in batch mode.
 \item \x{--no\_colalias} \index{command-line options!\x{--no\_colalias}}\\
 By default, PhyML preprocesses each alignment by putting together (or aliasing) the columns that are
 identical. Use this option to skip this step but be aware that the analysis might then take more
-time to complete. 
+time to complete.
 
 \item \x{--constrained\_lens} \index{command-line options!\x{--constrained\_lens}}\\
 When an input tree with branch lengths is provided, this option will find the branch multiplier that
@@ -651,7 +666,7 @@ exceeds 256MB and will not output the log-likelihood score to the output.
 \x{xml\_file\_name} is the name of the XML file containing the information required to run the
 analysis. More details about this type of file is given in the section \ref{sec:xmlio}.
 \end{itemize}
-  
+
 \subsection{Parallel  bootstrap}\label{sec:parallel_bootstrap}\index{MPI}\index{bootstrap!parallel}
 
 Bootstrapping is  a highly  parallelizable task. Indeed,  bootstrap replicates are  independent from
@@ -667,14 +682,14 @@ with, say 100 replicates on 2 CPUs, can be done by typing the following command-
 \begin{verbatim}
 mpd &;
 mpirun -np 2 ./phyml -i seqfile -b 100;
-\end{verbatim} 
+\end{verbatim}
 The  first command  launches  the mpi  daemon  while the  second launches  the  analysis. Note  that
 launching the daemon needs to be done only once.  The output files are similar to the ones generated
-using the standard, non-parallel, analysis (see Section \ref{sec:input_output}). Note that running 
+using the standard, non-parallel, analysis (see Section \ref{sec:input_output}). Note that running
 the program in batch mode, i.e.:
 \begin{verbatim}
 mpirun -np 2 ./phyml -i seqfile -b 100 &
-\end{verbatim} 
+\end{verbatim}
 will probably NOT work. I do not know how to run a mpi process in batch mode yet. Suggestions welcome...
 Also, at the moment, the number of bootstrap replicates must be a multiple of the number of CPUs
 required in the mpirun command.
@@ -740,7 +755,7 @@ tax7       ???GATTTCCTTAGTAGCGG
 tax8       ????????????????????
 tax9       ???GGATTTCTTCGTAGCGG
 tax10      ???????????????AGCGG;
-END;	                      	                                      	                                      	                  
+END;
 
 \end{Verbatim}
 \end{small}
@@ -764,7 +779,7 @@ tax7       ???20333113302302122
 tax8       ????????????????????
 tax9       ???22033313312302122
 tax10      ???????????????02122;
-END;	                      	                                      	                                      	                  
+END;
 
 \end{Verbatim}
 \end{small}
@@ -788,7 +803,7 @@ tax7       ??????0200030303010103030002030002010202
 tax8       ????????????????????????????????????????
 tax9       ??????0202000303030103030102030002010202
 tax10      ??????????????????????????????0002010202;
-END;	                      	                                      	                                      	                  
+END;
 
 \end{Verbatim}
 \end{small}
@@ -852,16 +867,16 @@ give the list of valid characters/symbols and the corresponding nucleotides or a
 \begin{center}
 \begin{tabular}{lr|lr}
 \hline
-Character & Nucleotide &   Character & Nucleotide \\               
-\hline                                   
-$A$       & Adenosine &     $Y$       & $C$ or $T$ \\                 
-$G$       & Guanine &       $K$       & $G$ or $T$ \\               
-$C$       & Cytosine &      $B$       & $C$ or $G$ or $T$\\         
-$T$       & Thymine &       $D$       & $A$ or $G$ or $T$ \\        
-$U$       & Uracil (=$T$) & $H$       & $A$ or $C$ or $T$ \\        
-$M$       & $A$ or $C$ &    $V$       & $A$ or $C$ or $G$ \\        
-$R$       & $A$ or $G$ &    $-$ or $N$ or $X$ or $?$ & unknown  \\  
-$W$       & $A$ or $T$ &    & (=$A$ or $C$ or $G$ or $T$)\\         
+Character & Nucleotide &   Character & Nucleotide \\
+\hline
+$A$       & Adenosine &     $Y$       & $C$ or $T$ \\
+$G$       & Guanine &       $K$       & $G$ or $T$ \\
+$C$       & Cytosine &      $B$       & $C$ or $G$ or $T$\\
+$T$       & Thymine &       $D$       & $A$ or $G$ or $T$ \\
+$U$       & Uracil (=$T$) & $H$       & $A$ or $C$ or $T$ \\
+$M$       & $A$ or $C$ &    $V$       & $A$ or $C$ or $G$ \\
+$R$       & $A$ or $G$ &    $-$ or $N$ or $X$ or $?$ & unknown  \\
+$W$       & $A$ or $T$ &    & (=$A$ or $C$ or $G$ or $T$)\\
 $S$       & $C$ or $G$ &   & \\
 \hline
 \end{tabular}
@@ -874,18 +889,18 @@ $S$       & $C$ or $G$ &   & \\
 \hline
 Character & Amino-Acid & Character & Amino-Acid \\
 \hline
-$A$       & Alanine &         $L$       & Leucine \\             
-$R$       & Arginine &        $K$       & Lysine \\              
-$N$ or $B$& Asparagine &      $M$       & Methionine \\          
-$D$       & Aspartic acid &   $F$       & Phenylalanine \\       
-$C$       & Cysteine &        $P$       & Proline \\             
-$Q$ or $Z$& Glutamine &       $S$       & Serine \\              
-$E$       & Glutamic acid &   $T$       & Threonine \\           
-$G$       & Glycine &         $W$       & Tryptophan \\          
-$H$       & Histidine &       $Y$       & Tyrosine \\            
-$I$       & Isoleucine &      $V$       & Valine \\              
-$L$       & Leucine &         $-$ or $X$ or $?$ & unknown \\     
-$K$       & Lysine &          & (can be any amino acid) \\       
+$A$       & Alanine &         $L$       & Leucine \\
+$R$       & Arginine &        $K$       & Lysine \\
+$N$ or $B$& Asparagine &      $M$       & Methionine \\
+$D$       & Aspartic acid &   $F$       & Phenylalanine \\
+$C$       & Cysteine &        $P$       & Proline \\
+$Q$ or $Z$& Glutamine &       $S$       & Serine \\
+$E$       & Glutamic acid &   $T$       & Threonine \\
+$G$       & Glycine &         $W$       & Tryptophan \\
+$H$       & Histidine &       $Y$       & Tyrosine \\
+$I$       & Isoleucine &      $V$       & Valine \\
+$L$       & Leucine &         $-$ or $X$ or $?$ & unknown \\
+$K$       & Lysine &          & (can be any amino acid) \\
 \hline
 \end{tabular}
 \end{center}
@@ -896,7 +911,7 @@ $K$       & Lysine &          & (can be any amino acid) \\
 
 PhyML can return rooted trees provided outgroup taxa are identified from the sequence file. In
 order to do so, sequence names that display a `*' character will be automatically considered as
-belonging to the outgroup. 
+belonging to the outgroup.
 
 The topology of  the rooted tree is  exactly the same as the  unrooted version of the  same tree. In
 other words,  PhyML first ignores the distinction  between ingroup and outgroup  sequences, builds a
@@ -988,13 +1003,13 @@ Ser, Thr, Trp, Tyr and Val.
 \subsection{Topological constraint file}\label{sec:topoconstraints}
 
 PhyML can perform phylogenetic tree estimation under user-specified topological constraints. In
-order to do so, one should use the \x{--constraint\_file}  \x{file\_name} command-line option where 
+order to do so, one should use the \x{--constraint\_file}  \x{file\_name} command-line option where
 \x{file\_name} lists the topological constraints. Such constraints are  straightforward to
-define. For instance, the following constraints: 
+define. For instance, the following constraints:
 \vspace{0.2cm}
 \begin{Verbatim}
 ((A,B,C),(D,E,F));
-\end{Verbatim} 
+\end{Verbatim}
 indicate that taxa A, B and C belong to the same clade. D, E and F also belong to the
 same  clade and the  two clades  hence defined  should not  overlap. Under  these two
 constraints, the tree ((A,B),D,((E,F),C)) is not valid. From the example above, you will notice that
@@ -1057,15 +1072,15 @@ be considered  as conflicting since  branch lengths depend  on the proportion of
 changing the proportion  of invariants implies that branch lengths are  changing too. More formally,
 let $l$ denote the length of a branch,  i.e., the expected number of substitutions per site, and $p$
 be  the proportion  of invariants.  We have  $l =  (1-p)l'$, where  $l'$ is  the expected  number of
-substitutions at variable sites.  When  asked to optimize  $p$ but leave $l$  unchanged, PhyML
+substitutions per  \_variable\_ sites.  When  asked to optimize  $p$ but leave $l$  unchanged, PhyML
 does the following:
 \begin{enumerate}
 \item Calculate $l' = l/(1-p)$ and leave $l'$ unchanged throughout the optimization.
-\item Find the value of the proportion of invariants that maximises the likelihood. Let $p^{*}$ denote this value.
+\item Find the value of $p$ that maximises the likelihood. Let $p^{*}$ denote this value.
 \item Set $l^{*} = (1-p^{*})l'$ and print out the tree with $l^{*}$ (instead of $l$).
-\end{enumerate} 
+\end{enumerate}
 
-PhyML therefore  assumes that the  users wants  to fix the  branch lengths measured  at variable
+PhyML therefore  assumes that the  users wants  to fix the  branch lengths measured  at \_variable\_
 sites only  (i.e., $l^{*}$ is  fixed). This is the  reason why the  branch lengths in the  input and
 output trees  do differ  despite the  use of the  the \x{-o  r} option. While  we believe  that this
 approach relies on a sound rationale, it  is not perfect. In particular, the original transformation
@@ -1127,7 +1142,7 @@ the possible combinations of 3 rates, 2 matrices and 2 vectors of frequencies.
 % \{R_2,M_1,F_2\}$,   $\mathcal{C}_7   =    \{R_2,M_2,F_1\}$,   $\mathcal{C}_8   =   \{R_2,M_2,F_2\}$,
 % $\mathcal{C}_9  =  \{R_3,M_1,F_1\}$,  $\mathcal{C}_{10}   =  \{R_3,M_1,F_2\}$,  $\mathcal{C}_{11}  =
 % \{R_3,M_2,F_1\}$ and $\mathcal{C}_{12} = \{R_3,M_2,F_2\}$.
- 
+
 
 \subsection{Partitions}\index{partitionned analysis}\index{data partitions}
 
@@ -1216,7 +1231,7 @@ data set made of $n$ partition elements is written as follows:
 \begin{eqnarray*}
 \Pr(D^{(1)},D^{(2)},\ldots,D^{(n)}) &=& \prod_{i=1}^{n}  \prod_{s=1}^{L_i} \Pr(D^{(i)}_s) \\
 &=& \prod_{i=1}^{n}  \prod_{s=1}^{L_i} \sum_{c=1}^{K_i} \Pr(D^{(i)}_s|\mathcal{C}=c) \Pr(\mathcal{C}=c),
-\end{eqnarray*} 
+\end{eqnarray*}
 
 where $L_i$ is  the number of sites in partition  element $i$ and $K_i$ is the  number of classes in
 the mixture model that applies to this same partition  element. Each class of a mixture is made of a
@@ -1229,8 +1244,8 @@ likelihood. Hence we have:
 &&=  \prod_{i=1}^{n}  \prod_{s=1}^{L_i} \sum_{c=1}^{K_i} \Pr(D^{(i)}_s|\mathcal{C}=c) \Pr(\mathcal{C}=c) \\
 &&= \prod_{i=1}^{n}  \prod_{s=1}^{L_i} \sum_{m}^{\mathcal{M}_i} \sum_{f}^{\mathcal{F}_i} \sum_{r}^{\mathcal{R}_i}  \Pr(D^{(i)}_s|M_m^{(i)},F_f^{(i)},R_r^{(i)},L^{(i)},\tau) \Pr(M_m^{(i)},F_f^{(i)},R_r^{(i)}) \mathcal{I}(m,f,r,i)
 % &&= \prod_{i=1}^{n}  \prod_{s=1}^{L_i} \sum_{m}^{\mathcal{M}_i} \sum_{f}^{\mathcal{F}_i} \sum_{r}^{\mathcal{R}_i}
-% \Pr(D^{(i)}_s|M_m^{(i)},F_f^{(i)},R_r^{(i)},L^{(i)},\tau) \Pr(M_m^{(i)}) \Pr(F_f^{(i)}) \Pr(R_r^{(i)}) 
-\end{eqnarray*} 
+% \Pr(D^{(i)}_s|M_m^{(i)},F_f^{(i)},R_r^{(i)},L^{(i)},\tau) \Pr(M_m^{(i)}) \Pr(F_f^{(i)}) \Pr(R_r^{(i)})
+\end{eqnarray*}
 where $\mathcal{M}_i$, $\mathcal{F}_i$ and $\mathcal{R}_i$ are the number of rate matrices,
 vector of equilibrium frequencies and relative rates that apply to partition element $i$
 respectively. $\mathcal{I}(m,f,r,i)$ is an indicator function that takes value 1 if the combination
@@ -1267,8 +1282,8 @@ are not markup are content:
 \vspace{0.2cm}
 \begin{Verbatim}[frame=single, label=XML markup and content example, samepage=true,
   baselinestretch=0.5, fontsize=\small]
-<markup> 
- content 
+<markup>
+ content
 </markup>
 \end{Verbatim}
 
@@ -1439,7 +1454,7 @@ mixture element  that had not  been introduced  before.  It defined  vectors of 
 apply to the estimated phylogeny. Two instances of  such vectors are defined: \x{L1} and \x{L2}.
 When examining the  two partition elements (\x{<partitionelem>} component), it  appears that \x{L1}
 is associated with \x{Part1} while \x{L2} is associated with \x{Part2}.  Hence, branch lengths
-will be estimated separately for these two partition elements.  
+will be estimated separately for these two partition elements.
 
 Note that  a given partition element  can only have  one {\tt branchlengths} instance  associated to
 it. For instance, the example given below is not valid:
@@ -1548,7 +1563,7 @@ Options:
 \item \x{init.tree="bionj"|"user"|"random"}.  Starting tree. Default is \x{bionj}.
 \item \x{file.name="name\_of\_tree\_file"}. In case \x{init.tree="user"}, this
   attribute  is mandatory. \x{name\_of\_tree\_file} is a
-  text file containing a tree in NEWICK format. 
+  text file containing a tree in NEWICK format.
 \item \x{optimise.tree="yes"|"true"|"no"|"false"}. The starting tree topology as defined by
   \x{init.tree} is to be optimised (or not) so as to maximise the likelihood function.
 \item \x{search="nni"|"spr"|"none"}. Tree topology search is conducted using NNI (fast), SPR (a bit
@@ -1580,11 +1595,11 @@ for amino-acid sequences. The default is \x{"LG"}.
   well as their frequences at equilibrium using PAML rate matrix format. An example of such file is
   provided in {phyml/examples/X1.mat}.
 \item \x{optimise.rr="yes"|"true"|"no"|"false"}. For \x{custom} and \x{GTR} nucleotide models only:
-  optimise the substitution rate model parameters. 
+  optimise the substitution rate model parameters.
 \item \x{optimise.tstv="yes"|"true"|"no"|"false"}. For \x{K80}, \x{F84}, \x{HKY85} and \x{TN93}
-  models only: optimise the transition/transversion rate ratio. 
+  models only: optimise the transition/transversion rate ratio.
 \item \x{tstv="value"}. For \x{K80}, \x{HKY85} and \x{TN93} models only: set the transition/transversion to a
-  given value.  
+  given value.
 \end{itemize}
 
 The {\tt ratematrices} component has the attribute {\tt optimise.weights=yes/no} (default is {\tt
@@ -1664,7 +1679,7 @@ distribution of the relative rates. The available options for such element are:
   a model that does not use any parametric function to describe the distribution of the relative
   rates (see \cite{soubrier12}). Under this option, relative rates and the corresponding frequencies of these classes are
   directly estimated from the data. While such approach is slightly more computationally demanding
-  than the $\Gamma$ (or $\Gamma$+I) model, it often provides a significantly better fit to the data. 
+  than the $\Gamma$ (or $\Gamma$+I) model, it often provides a significantly better fit to the data.
 \item \x{alpha="value|optimised"}, where \x{value} is a real positive number. Use this option to set
    the gamma shape parameter to the selected value. \x{optimised}: the parameter is estimated from
    the data (see also next option).
@@ -1676,7 +1691,7 @@ distribution of the relative rates. The available options for such element are:
 \item \x{optimise.pinv="yes|true|no|false"}. Optimise the proportion of invariable sites (or not).
 \item \x{optimise.freerates="yes|true|no|false"}. Optimise the parameters of the FreeRate model,
   i.e., the relative rates and the corresponding frequencies.
-\end{itemize} 
+\end{itemize}
 \vspace{0.2cm}
 \begin{Verbatim}[frame=single, label=Example of `siterates' component, samepage=true,
   baselinestretch=0.5, fontsize=\small, numbers=left]
@@ -1789,7 +1804,7 @@ M1, F1, R2, L1} and so forth.
     <instance id="T1" init.tree="bionj" optimise.tree="yes" \
     search="spr"/>
   </topology>
-  
+
   <branchlengths id="BL1">
     <instance id="L1" optimise.lens="yes"/>
   </branchlengths>
@@ -1797,7 +1812,7 @@ M1, F1, R2, L1} and so forth.
   <ratematrices id="RM1">
     <instance id="M1" model="GTR"/>
   </ratematrices>
-  
+
   <equfreqs id="EF1">
     <instance id="F1"/>
   </equfreqs>
@@ -1821,7 +1836,7 @@ M1, F1, R2, L1} and so forth.
     <mixtureelem list="R1, R2, R3, R4, R5"/>
     <mixtureelem list="L1, L1, L1, L1, L1"/>
   </partitionelem>
-  
+
 </phyml>
 
 \end{Verbatim}
@@ -1845,20 +1860,20 @@ provided in the PhyML package \x{example/lg4x/} directory.)
 <phyml run.id="lg4x" output.file="M587.tests" branch.test="no">
 
   <!-- Tree topology: start with BioNJ and then SPRs -->
-  <topology> 
+  <topology>
     <instance id="T1" init.tree="user" file.name="user_tree.txt" \
-    search="spr" optimise.tree="no"/> 
+    search="spr" optimise.tree="no"/>
   </topology>
-  
+
 
   <!-- Four rate matrices, read from files -->
-  <ratematrices id="RM1"> 
-    <instance id="M1" model="customaa" ratematrix.file="X1.mat"/> 
-    <instance id="M2" model="customaa" ratematrix.file="X2.mat"/> 
-    <instance id="M3" model="customaa" ratematrix.file="X3.mat"/> 
-    <instance id="M4" model="customaa" ratematrix.file="X4.mat"/> 
+  <ratematrices id="RM1">
+    <instance id="M1" model="customaa" ratematrix.file="X1.mat"/>
+    <instance id="M2" model="customaa" ratematrix.file="X2.mat"/>
+    <instance id="M3" model="customaa" ratematrix.file="X3.mat"/>
+    <instance id="M4" model="customaa" ratematrix.file="X4.mat"/>
   </ratematrices>
-  
+
   <!-- Freerate model of variation of rates across sites -->
   <siterates id="SR1">
     <instance id="R1" init.value="0.197063"/>
@@ -1872,7 +1887,7 @@ provided in the PhyML package \x{example/lg4x/} directory.)
       <instance appliesto="R4" value="0.060539"/>
     </weights>
   </siterates>
-  
+
   <!-- Amino-acid equilibrium freqs. are given by the models -->
   <equfreqs id="EF1">
     <instance id="F1" aa.freqs="model"/>
@@ -1889,7 +1904,7 @@ provided in the PhyML package \x{example/lg4x/} directory.)
 
 
   <!-- Mixture model assemblage -->
-  <partitionelem id="partition1" file.name="M587.nex.Phy" \ 
+  <partitionelem id="partition1" file.name="M587.nex.Phy" \
   data.type="aa" interleaved="yes">
     <mixtureelem list="T1, T1, T1, T1"/>
     <mixtureelem list="M1, M2, M3, M4"/>
@@ -1897,7 +1912,7 @@ provided in the PhyML package \x{example/lg4x/} directory.)
     <mixtureelem list="R1, R2, R3, R4"/>
     <mixtureelem list="L1, L1, L1, L1"/>
   </partitionelem>
-  
+
 </phyml>
 \end{Verbatim}
 
@@ -1933,7 +1948,7 @@ a NNI search algorithm.
     <instance id="T1" init.tree="bionj" optimise.tree="yes" \
     search="nni"/>
   </topology>
-  
+
   <branchlengths id="BL1">
     <instance id="L1" optimise.lens="yes"/>
     <instance id="L2"/>
@@ -1946,7 +1961,7 @@ a NNI search algorithm.
     optimise.rr="yes"/>
     <instance id="M3" model="GTR"/>
   </ratematrices>
-  
+
   <equfreqs id="EF1">
     <instance id="F1"/>
     <instance id="F2" base.freqs="0.25,0.25,0.25,0.25"/>
@@ -1969,7 +1984,7 @@ a NNI search algorithm.
     optimise.pinv="yes">
     </weights>
   </siterates>
-  
+
   <siterates id="SR3">
     <instance id="R10" value="1.0"/>
     <instance id="R11" value="1.0"/>
@@ -2013,7 +2028,7 @@ a NNI search algorithm.
     <mixtureelem list="F3, F3, F3, F1, F1"/>
     <mixtureelem list="L3, L3, L3, L3, L3"/>
   </partitionelem>
-  
+
 </phyml>
 
 \end{Verbatim}
@@ -2037,7 +2052,7 @@ be equal to $(1-p)l$.
 \section{Citing PhyML}
 The ``default citation'' for PhyML is:
 \begin{itemize}
-\item 
+\item
 ``New algorithms and methods to estimate maximum-likelihood phylogenies: assessing the performance
 of PhyML 3.0''. Guindon S., Dufayard J.F., Lefort V., Anisimova M., Hordijk W., Gascuel O. 2010, {\it Systematic
   Biology}, 59(3):307-321
@@ -2063,7 +2078,7 @@ in two article (see Section \ref{sec:citephytime}).
 
 It  relies on  a  Gibbs  sampler which  outperforms  the
 ``standard'' Metropolis-Hastings algorithm  implemented in a number of  phylogenetic softwares.  The
-details  and performance  of  this  approach are  described  in the  following  article: 
+details  and performance  of  this  approach are  described  in the  following  article:
 
 \subsubsection{Installing PhyTime}
 
@@ -2096,7 +2111,7 @@ Dugong_dugon Procavia_capensis Elephantidae | -65 -54
 Equus_sp. Ceratomorpha | -58 -54
 Cercopithecus_solatus Macaca_mulatta Hylobates_lar Homo_sapiens | -35 -25
 Lepus_crawshayi Oryctolagus_cuniculus Ochotona_princeps | -90 -37
-Marmota_monax Aplodontia_rufa | -120 -37 
+Marmota_monax Aplodontia_rufa | -120 -37
 Dryomys_nitedula Glis_glis | -120 -28.5
 @root@ | -100 -120
 \end{Verbatim}
@@ -2324,7 +2339,7 @@ adequate framework for inferring substitution rates  and divergence dates separa
 situation, it makes good  sense to use what is known about a  relatively well-defined feature of the
 evolution of genetic sequences (the ``molecular  clock'' hypothesis combined to stochastic variations of
 rates across lineages) to build a prior distribution on rates along edges.
-  
+
 
 
 
@@ -2391,7 +2406,7 @@ a  limited time  generally  requires  the use  of  the fastest  tree  searching 
 estimation methods Hence,  NNI and approximate likelihood ratios rather  than SPR and non-parametric
 bootstrap are generally the most appropriate here.
 \end{enumerate}
- 
+
 Another important  point is the  choice of the  substitution model. While default  options generally
 provide acceptable results, it is often warranted to perform a pre-analysis in order to identify the
 best-fit substitution model.  This pre-analysis can be done using popular software such as Modeltest
@@ -2412,7 +2427,7 @@ Analysing a data set using PhyTime should  involve three steps based on the foll
 do the priors seem to be adequate (2) can I use the fast approximation of the likelihood and (3) how
 long shall I run the program for? I explain below how to provide answers to these questions.
 
-\begin{itemize} 
+\begin{itemize}
 \item {\em  Are the priors adequate?} Bayesian  analysis relies on  specifiying the joint
 prior density  of model parameters.  In  the case of  node age estimation, these  priors essentially
 describe how rates of substitution vary across lineages and the probabilistic distribution that node
@@ -2471,7 +2486,7 @@ so that this number reaches at least 100.
 \end{itemize}
 
 
-\section{Frequently asked questions}  
+\section{Frequently asked questions}
 
 \begin{enumerate}
 \item {\it PhyML crashes before reading the sequences. What's wrong ?}\\
@@ -2507,13 +2522,16 @@ algorithms to search the space of tree topologies for this type of data.
 
 
 
-\section{Acknowledgements}  
+\section{Acknowledgements}
 The development of PhyML since 2000 has been supported by the Centre National de la Recherche
 Scientifique (CNRS) and the Minist\`ere de l'\'Education Nationale.
 
 % \bibliographystyle{/home/guindon/latex/biblio/OUPnum}
 \bibliographystyle{/home/guindon/latex/biblio/nature/naturemag}
+%\bibliographystyle{/home/imran/Workspace2/phyml/branches/beagle/doc/naturemag}
+%\bibliography{/home/imran/Workspace2/phyml/branches/beagle/doc/ref}
 \bibliography{/home/guindon/latex/biblio/ref}
 
 \printindex
 \end{document}
+
