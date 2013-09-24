@@ -213,6 +213,21 @@ mpirun -n 4 ./phyml-mpi -i myseq -b 100
 
 \noindent Please read section \ref{sec:parallel_bootstrap} of this document for more information.
 
+\subsection{Installing the accelerated version of PhyML -- PhyML+++}\label{sec:install_phyml_beagle}
+
+PhyML can use BEAGLE\cite{ayres2012beagle} library for its computations which provides 10x(single core) to 150x speedup(on GPUs). PhyML+++ has almost all the features of ``normal" PhyML, and will eventually replace PhyML. For the time being, users can compile PhyML and PhyML+++ and primarily use the latter and switch to the former if need be. Please note that in some cases, the final log-likelihood reported by PhyML and PhyML+++ may not exactly match (it typically matches up until 3-4 decimal places). This imprecision should not matter because the likelihood surface still correlates (i.e. we care about the precision of the MLE, not the likelihood).
+
+First download and install the BEAGLE library by reading the instructions here: \href{https://code.google.com/p/beagle-lib/}{https://code.google.com/p/beagle-lib/}. Then run the following commands:
+
+{\setlength{\baselineskip}{0.5\baselineskip}
+\begin{verbatim}
+./configure --enable-beagle;
+make clean;
+make;
+\end{verbatim}
+}
+A binary file named \x{phyml-beagle} has now been created in the \x{src/} directory and is ready to use.
+
 \section{Program usage.}\label{sec:phyml_new}
 
 PhyML has  three distinct user-interfaces.   The first corresponds  to a PHYLIP-like  text interface
@@ -296,7 +311,7 @@ that the six relative rates of nucleotide  changes: $A \leftrightarrow C$, $A \l
 \leftrightarrow T$,  $C \leftrightarrow  G$, $C  \leftrightarrow T$ and  $G \leftrightarrow  T$, are
 equal.   The   string  `\x{010010}'  indicates  that   the  rates  $A  \leftrightarrow   G$  and  $C
 \leftrightarrow  T$ are equal  and distinct  from $A  \leftrightarrow C  = A  \leftrightarrow T  = C
-\leftrightarrow G = G  \leftrightarrow T$.  This model corresponds to HKY85  (default) or JC69 if the
+\leftrightarrow G = G  \leftrightarrow T$.  This model corresponds to HKY85  (default) or K80 if the
 nucleotide frequencies  are all set to 0.25.   `\x{010020}' and `\x{012345}' correspond  to TN93 and
 GTR models respectively.  The digit string  therefore defines groups of relative substitution rates.
 The  initial rate within  each group  is set  to 1.0,  which corresponds  to F81  (JC69 if  the base
@@ -419,7 +434,7 @@ PhyML. Type \x{U} to choose among these two options.
 \subsubsection{Branch support sub-menu}
 
 \begin{center}  \framebox{\x{[B] ................ Non  parametric bootstrap  analysis}} \end{center}
-The  support  of the  estimation  for  each  internal branch  of  the  phylogeny  can be  estimated  using
+The  support  of the  data  for  each  internal branch  of  the  phylogeny  can be  estimated  using
 non-parametric bootstrap.   By default, this option is  switched off.  Typing \x{B}  switches on the
 bootstrap analysis. The user is then prompted for a number of bootstrap replicates. The largest this
 number the more precise the bootstrap  support estimates are.  However, for each bootstrap replicate
@@ -1690,8 +1705,9 @@ distribution of the relative rates. The available options for such element are:
     optimise.pinv="no">
     </weights>
   </siterates>
-
 \end{Verbatim}
+
+
 
 \subsubsection{{\tt partitionelem} and {\tt mixtureelem} components}\index{XML options!{\tt partitionelem}
   component}\index{XML options!{\tt mixtureelem} component}
@@ -1707,7 +1723,8 @@ Options:
 
 Each \x{partitionelem} element should include exactly four \x{mixtureelem} elements, corresponding to
 branch lengths, equilibrium frequencies, substitution rate model and tree topology. The ordering of
-in which the \x{mixtureelem} elements are given does not matter. The $n$-th element in the \x{list}
+in which the \x{mixtureelem} elements are given does not matter, though exceptions apply for the
+$\Gamma+I$ model (see below). The $n$-th element in the \x{list}
 attribute of each \x{mixtureelem} defines the $n$-th class of the mixture model. In the example given
 below, the first class of the mixture is made of the following elements: \x{T1}, \x{F1}, \x{R1} and
 \x{L1}, the second class is made of \x{T1}, \x{F1}, \x{R2} and \x{L1}, etc.
@@ -1726,6 +1743,31 @@ below, the first class of the mixture is made of the following elements: \x{T1},
   </partitionelem>
 
 \end{Verbatim}
+
+In general, the  ordering of the \x{mixtureelem}  elements does not matter. However,  when the model
+has invariable sites, then  the corresponding class should be first in  the list of classes provided
+by \x{mixtureelem}. For instance, in the example above, if the rates are defined as follows:
+
+\vspace{0.2cm}
+\begin{Verbatim}[frame=single, label=Example of `siterates' component, samepage=true,
+  baselinestretch=0.5, fontsize=\small, numbers=left]
+
+  <siterates id="SR1">
+    <instance id="R1" init.value="0.0"/>
+    <instance id="R2" init.value="1.0"/>
+    <instance id="R3" init.value="1.0"/>
+    <instance id="R4" init.value="1.0"/>
+    <weights  id="D1" family="gamma+inv" optimise.alpha="yes" \
+    optimise.pinv="no">
+    </weights>
+  </siterates>
+\end{Verbatim}
+
+then \x{R1} corresponds to the invariable  rate class (as \x{init.value="0.0"}).  As \x{R1} is first
+in the  \x{mixtureelem} (see line  6 in  the example of  \x{`partionelem'} given above),  PhyML will
+print out an  explicit error message and bail out.   One way to avoid this  shortcoming is to define
+\x{mixtureelem} as \x{R4, R2, R3, R1} instead.
+
 
 \subsection{A simple example: GTR + $\Gamma$4 + I}
 
@@ -1992,7 +2034,20 @@ a NNI search algorithm.
 \end{Verbatim}
 
 
+\subsection{Branch lengths with invariants and partionned data}
 
+Accommodating for models with invariable sites applying to some elements of a partitioned data, with
+these elements  sharing the  same set  of edge lengths  can lead  to inconsistencies.   Consider for
+instance a partitioned  data set with two elements.   Assume that these two elements  share the same
+set of edge lengths.  Also, consider that GTR+I  applies to the first element and HKY applies to the
+second. Now, the expected number of substitutions per site for the first element of the partition is
+equal  to  $(1-p)l$,  where  $p$  is  the   estimated  proportion  of  invariants  and  $l$  is  the
+maximum-likelihood estimate  for the length  of that  specific edge. For  the second element  of the
+partition, the  expected number of  substitutions per  site is equal  to $l$, rather  than $(1-p)l$.
+While $l$ are common to the two elements,  matching the specification of the input model, the actual
+edge  lengths do  differ across  the  two partition  elements.  Please  be  aware that,  due to  the
+programming structure implemented in PhyML, the program  will only return one value here, which will
+be equal to $(1-p)l$.
 
 \section{Citing PhyML}
 The ``default citation'' for PhyML is:
@@ -2473,7 +2528,10 @@ Scientifique (CNRS) and the Minist\`ere de l'\'Education Nationale.
 
 % \bibliographystyle{/home/guindon/latex/biblio/OUPnum}
 \bibliographystyle{/home/guindon/latex/biblio/nature/naturemag}
+%\bibliographystyle{/home/imran/Workspace2/phyml/branches/beagle/doc/naturemag}
+%\bibliography{/home/imran/Workspace2/phyml/branches/beagle/doc/ref}
 \bibliography{/home/guindon/latex/biblio/ref}
 
 \printindex
 \end{document}
+

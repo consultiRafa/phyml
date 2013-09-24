@@ -99,7 +99,7 @@ AC_ARG_ENABLE([win],
                               [Compile with mingw instead of gcc.])])
 AS_IF([test "x$enable_win" = "xyes"],[CC="i586-mingw32msvc-cc"])
 
-AC_ARG_ENABLE([beagle], [AS_HELP_STRING([--enable-beagle], [Compute likelihoods using Beagle library.])], [beagle=yes],[beagle=no])
+AC_ARG_ENABLE([beagle], [AS_HELP_STRING([--enable-beagle], [Compute likelihoods using BEAGLE library.])], [beagle=yes],[beagle=no])
 AS_IF([test "x$enable_beagle" = "xyes"],
       [CFLAGS="-ansi -Wall -g -msse -std=c99 -pedantic ${BEAGLE_CFLAGS} ${BEAGLE_LIBS} ${ARCH_flag}"],
       [CFLAGS="-ansi -Wall -g -msse -std=c99 ${ARCH_flag}"])

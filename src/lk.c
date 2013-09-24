@@ -395,7 +395,12 @@ phydbl Lk(t_edge *b, t_tree *tree)
     }
 
 
-  if(tree->is_mixt_tree) return MIXT_Lk(b,tree);
+  if(tree->is_mixt_tree) {
+#ifdef BEAGLE
+      Warn_And_Exit(TODO_BEAGLE);
+#endif
+      return MIXT_Lk(b,tree);
+  }
 
   tree->old_lnL = tree->c_lnL;
 

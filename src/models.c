@@ -447,7 +447,9 @@ void PMat(phydbl l, t_mod *mod, int pos, phydbl *Pij)
   /* Warning: l is never the log of branch length here */
   if(l < 0.0)
     {
-      Warn_And_Exit("PMatZeroLen");
+#ifdef BEAGLE
+      Warn_And_Exit(TODO_BEAGLE);
+#endif
       PMat_Zero_Br_Len(mod,pos,Pij);
     }
   else
