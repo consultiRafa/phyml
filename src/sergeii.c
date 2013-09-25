@@ -774,7 +774,7 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
       times_lk =  TIMES_Lk_Yule_Order_Root_Cond(tree);
 
       constant = 1.0; 
-      if (tot_num_comb > 1) if(times_lk > -INFINITY && result != FALSE) constant = K_Constant_Prior_Times(tree);
+      if (tot_num_comb > 1) if(times_lk > -INFINITY && result != FALSE) constant = K_Constant_Prior_Times_Log(tree);
  
       Yule_val[i] = constant + times_lk;
 
@@ -806,7 +806,7 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
 //Function calculates the normalizing constant K of the joint distribution Yule_Order.
 //Use the fact that density Yule_Order can be used streight forward only in case of the complete 
 //overlap of the calibration intervals for all of the nodes or in case of no overlap.  
-phydbl K_Constant_Prior_Times(t_tree *tree)
+phydbl K_Constant_Prior_Times_Log(t_tree *tree)
 {
   int i, j, k, f, n_otu, *indic, *n_slice, *slice_numbers;
   phydbl buf, chop_bound, *t_prior_min, *t_prior_max, *t_slice, *t_slice_min, *t_slice_max, *g_i_node;
@@ -1061,9 +1061,7 @@ phydbl K_Constant_Prior_Times(t_tree *tree)
           
       /* printf("\n. [START] Result '%d' \n", result_1); */
           
-      if(result_1) c++; 
-          
-          
+         
       K_total_cur = 0.0;
           
       if(result_1 != TRUE) K_total_cur = 0.0;
@@ -1161,6 +1159,7 @@ phydbl K_Constant_Prior_Times(t_tree *tree)
                   combinations = (int *)mRealloc(combinations, max_size*(n_otu - 1) + (n_otu - 1),sizeof(char));
                   max_size = max_size + 1;
                 }
+              c++;
             }
         }
           
@@ -1249,8 +1248,7 @@ phydbl K_Constant_Prior_Times(t_tree *tree)
                               /* For(i, n_otu - 1) printf(". [%d] .", combinations[comb_numb*(n_otu-1) + i]); */
                               /* printf("\n"); */
                                   
-                              c++;
-                                  
+                                              
                               For(i, shr_num_slices)
                                 {
                                   Search_Root_Node_In_Slice(tree -> n_root, tree -> n_root -> v[1], root_nodes, &num_elem, t_slice_min[cur_slices_shr[i]], t_slice_max[cur_slices_shr[i]], t_slice_min_f, t_slice_max_f, tree);
@@ -1326,6 +1324,7 @@ phydbl K_Constant_Prior_Times(t_tree *tree)
                                   combinations = (int *)mRealloc(combinations, max_size*(n_otu - 1) + (n_otu - 1),sizeof(char));
                                   max_size = max_size + 1;
                                 }
+                              c++;
                                   
                             }
                         }                     
@@ -1407,7 +1406,6 @@ phydbl K_Constant_Prior_Times(t_tree *tree)
                               /* For(i, n_otu - 1) printf(". [%d] .", combinations[comb_numb*(n_otu-1) + i]); */
                               /* printf("\n"); */
                                   
-                              c++;
                                   
                               For(i, shr_num_slices)
                                 {
@@ -1476,7 +1474,7 @@ phydbl K_Constant_Prior_Times(t_tree *tree)
                                   combinations = (int *)mRealloc(combinations, max_size*(n_otu - 1) + (n_otu - 1),sizeof(char));
                                   max_size = max_size + 1;
                                 }
-                                  
+                              c++;                                  
                             }
                         }
                     }
@@ -1566,8 +1564,7 @@ phydbl K_Constant_Prior_Times(t_tree *tree)
                           /* For(i, n_otu - 1) printf(". [%d] .", combinations[comb_numb*(n_otu-1) + i]); */
                           /* printf("\n"); */
                                   
-                          c++;
-                                  
+                                   
                           For(i, shr_num_slices)
                             {
                               Search_Root_Node_In_Slice(tree -> n_root, tree -> n_root -> v[1], root_nodes, &num_elem, t_slice_min[cur_slices_shr[i]], t_slice_max[cur_slices_shr[i]], t_slice_min_f, t_slice_max_f, tree);
@@ -1626,7 +1623,8 @@ phydbl K_Constant_Prior_Times(t_tree *tree)
                             {
                               combinations = (int *)mRealloc(combinations, max_size*(n_otu - 1) + (n_otu - 1),sizeof(char));
                               max_size = max_size + 1;
-                            }                                  
+                            } 
+                          c++;                                 
                         }
                     }                     
                 }                         
@@ -1857,7 +1855,7 @@ phydbl *Norm_Constant_Prior_Times(t_tree *tree)
       TIMES_Set_All_Node_Priors_S(&result, tree);
       //for(j = tree -> n_otu; j < 2 * tree -> n_otu - 1; j++) printf("\n. [1] Node [%d] min [%f] max[%f]\n", j, tree -> rates -> t_prior_min[j], tree -> rates -> t_prior_max[j]);
       //tree -> rates -> birth_rate = 4.0;
-      K_val[i] = K_Constant_Prior_Times(tree);     
+      K_val[i] = K_Constant_Prior_Times_Log(tree);     
       /* PhyML_Printf("\n. Number [%d] normolizing constant [%f] \n", i+1, K[i]); */
       while(calib -> prev) calib = calib -> prev;
     }
