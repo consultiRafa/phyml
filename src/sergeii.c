@@ -1049,7 +1049,7 @@ phydbl Slicing_Calibrations(t_tree *tree)
   phydbl K_total;
   phydbl *t_slice_min_f, *t_slice_max_f, *K_val_approx, *K_val_exact, *K_val;
   int *root_nodes, *dif, counter;
-  phydbl K_total_cur, max_K_val;
+  phydbl K_total_cur, max_K_val, scl_const;
 
   max_size = 1000;
   combinations     = (int *)mCalloc(max_size*(n_otu-1), sizeof(int));
@@ -1064,6 +1064,8 @@ phydbl Slicing_Calibrations(t_tree *tree)
   numb_exact = 0;
   counter = 0;
   max_K_val = 0;
+  scl_const = 0.0;
+  lmbd = 10.0;
 
   /* printf("\n ____________________________________________________________________________________________________ \n"); */
   /* if(tot_num_comb > 1000000) */
@@ -1218,7 +1220,7 @@ phydbl Slicing_Calibrations(t_tree *tree)
           
                   num = 0.0;
                   denom = 0.0;
-                  lmbd = .5;
+                  /* lmbd = 0.0001; */
                   
                   for(i = n_otu; i < 2 * n_otu - 2; i++) if(Are_Equal(t_prior_min[tree -> n_root -> num], t_prior_min[i], 1.E-10)) t_prior_min[i] = tree -> rates -> nd_t[tree -> n_root -> num];
                   For(j, n_otu - 2)
@@ -1234,7 +1236,7 @@ phydbl Slicing_Calibrations(t_tree *tree)
                   
                   /* printf("\n. [START] LOG(g_i) [%f] \n", num - denom); */
                   /* K_total = (K_total * num) / denom; */
-                  K_total_cur = EXP(K_total_cur + num - denom);
+                  K_total_cur = EXP(K_total_cur + num - denom + scl_const);
 
                   if(K_total_cur > max_K_val)
                     {
@@ -1383,7 +1385,8 @@ phydbl Slicing_Calibrations(t_tree *tree)
                                   
                                   num = 0.0;
                                   denom = 0.0;
-                                  lmbd = .5;
+                                  /* lmbd = 0.0001; */
+                               
 
                                   if(K_part > max_K_val)
                                     {
@@ -1406,7 +1409,7 @@ phydbl Slicing_Calibrations(t_tree *tree)
                                   /* printf("\n. [CONT] LOG(g_i) [%f] \n", num - denom); */
                                   /* K_part = (K_part * num) / denom; */
                                   
-                                  K_part = EXP(K_part + num - denom);
+                                  K_part = EXP(K_part + num - denom + scl_const);
  
                                   if(K_part > max_K_val)
                                     {
@@ -1552,7 +1555,7 @@ phydbl Slicing_Calibrations(t_tree *tree)
                                   
                                   num = 0.0;
                                   denom = 0.0;
-                                  lmbd = .5;
+                                  /* lmbd = 0.0001; */
                                   
                                   
                                   for(i = n_otu; i < 2 * n_otu - 2; i++) if(Are_Equal(t_prior_min[tree -> n_root -> num], t_prior_min[i], 1.E-10)) t_prior_min[i] = tree -> rates -> nd_t[tree -> n_root -> num];
@@ -1568,7 +1571,7 @@ phydbl Slicing_Calibrations(t_tree *tree)
                                   /* printf("\n. [CONT] LOG(g_i) [%f] \n", num - denom); */
                                   /* K_part = (K_part * num) / denom; */
                                   
-                                  K_part = EXP(K_part + num - denom);
+                                  K_part = EXP(K_part + num - denom + scl_const);
                                   if(K_part > max_K_val)
                                     {
                                       For(i, n_otu - 1) max_combination[i] = cur_slices_cpy[i];
@@ -1731,10 +1734,11 @@ phydbl Slicing_Calibrations(t_tree *tree)
                                   
                                   num = 0.0;
                                   denom = 0.0;
-                                  lmbd = .5;                              
+                                  /* lmbd = 0.0001;         */                      
                                   
                                   
                                   for(i = n_otu; i < 2 * n_otu - 2; i++) if(Are_Equal(t_prior_min[tree -> n_root -> num], t_prior_min[i], 1.E-10)) t_prior_min[i] = tree -> rates -> nd_t[tree -> n_root -> num];
+
                                   For(j, n_otu - 2)
                                     {
                                       num = num + LOG(EXP(lmbd * t_slice_max_f[j]) - EXP(lmbd * t_slice_min_f[j]));
@@ -1747,7 +1751,7 @@ phydbl Slicing_Calibrations(t_tree *tree)
                                   /* printf("\n. [CONT] LOG(g_i) [%f] \n", num - denom); */
                                   /* K_part = (K_part * num) / denom; */
                                   
-                                  K_part = EXP(K_part + num - denom);
+                                  K_part = EXP(K_part + num - denom + scl_const);
                                   if(K_part > max_K_val)
                                     {
                                       For(i, n_otu - 1) max_combination[i] = cur_slices_cpy[i];
@@ -1800,14 +1804,15 @@ phydbl Slicing_Calibrations(t_tree *tree)
             ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
           K_total = K_total + K_total_cur;
           /* printf("\n. [APPROX TOTAL] Approximated constant (K_total) = [%f] \n", (K_total)); */
-          printf("\n%f %d", (K_total), c);
+          printf("\n%G %d", (K_total), c);
           counter++;
         }
-      while(counter < 1000);
+      while(counter < 10);
       /* while(K_total_cur > K_total * 0.01); */
       free(dif);
       /* printf("\n"); */
-      /* printf("\n. [APPROX TOTAL] Approximated constant (K_total) = [%f] \n", (K_total)); */
+      /* printf("\n. [APPROX TOTAL] LOG(K_total) = [%f] \n", LOG(K_total)); */
+      /* printf("\n. [APPROX TOTAL] LOG(Constant) = scl_const - LOG(K_total) = [%f] \n", scl_const - LOG(K_total)); */
       /* printf("\n. [APPROX TOTAL] Approximated constant 1 / (K_total) = [%f] \n", 1 / (K_total)); */
       /* printf("\n ____________________________________________________________________________________________________ \n"); */
       /* printf("\n. [APPROX TOTAL] Numb_approx = [%d] \n", numb_approx); */
@@ -1949,7 +1954,7 @@ phydbl Slicing_Calibrations(t_tree *tree)
   /*             /\* lmbd = tree -> rates -> birth_rate; *\/ */
   /*             num = 1; */
   /*             denom = 1; */
-  /*             lmbd = .5; */
+  /*             /\* lmbd = .5; *\/ */
   /*             for(i = n_otu; i < 2 * n_otu - 2; i++) if(Are_Equal(t_prior_min[tree -> n_root -> num], t_prior_min[i], 1.E-10)) t_prior_min[i] = tree -> rates -> nd_t[tree -> n_root -> num]; */
   /*             For(j, n_otu - 2) */
   /*               { */
@@ -1972,7 +1977,7 @@ phydbl Slicing_Calibrations(t_tree *tree)
   /*         P = P + k_part; */
   /*         /\* printf("\n. [EXACT] sum(m_i * g_i) [%f] \n", P); *\/ */
   /*        } */
-  /*     //printf("\n. [P] of the tree for one combination of slices [%f] \n", P); */
+  /*     printf("\n. [P] of the tree for one combination of slices [%f] \n", P); */
   /*     phydbl K; */
   /*     K = 1 / P; */
   /*     /\* K_total = P; *\/ */
@@ -3021,7 +3026,7 @@ phydbl LOG_g_i(phydbl lmbd, phydbl t_slice_max, phydbl t_slice_min, phydbl t_pri
       if(lmbd * t_prior_max + K > 700.0)
         {
           PhyML_Printf("\n. Please scale your calibration intervals. \n");
-          PhyML_Printf("\n. Cannot calculate EXP(-lmbd * bound). \n");
+          PhyML_Printf("\n. Cannot calculate EXP(-lmbd * t_prior_max). \n");
           PhyML_Printf("\n. Err. in file %s at line %d\n\n",__FILE__,__LINE__);
           Warn_And_Exit("\n");
         }
