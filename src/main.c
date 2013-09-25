@@ -189,24 +189,11 @@ int main(int argc, char **argv)
 #ifdef PHYML
                   if(io->in_tree == 1) Spr_Pars(tree);
 
-                  if(io->do_alias_subpatt)
-                    {
-                      MIXT_Set_Alias_Subpatt(YES,tree);
-                      Lk(NULL,tree);
-                      MIXT_Set_Alias_Subpatt(NO,tree);
-                    }
-
-                  if(tree->mod->s_opt->opt_topo)//Optimize Tree topology?
-                    {
-                      if(tree->mod->s_opt->topo_search == NNI_MOVE) {
-                          Simu_Loop(tree);
-                      } else {
-                          if(tree->mod->s_opt->topo_search == SPR_MOVE) {
-                              Speed_Spr_Loop(tree);
-                          } else {
-                              Best_Of_NNI_And_SPR(tree);
-                          }
-                      }
+		  if(tree->mod->s_opt->opt_topo)
+		    {
+		      if(tree->mod->s_opt->topo_search      == NNI_MOVE) Simu_Loop(tree);
+		      else if(tree->mod->s_opt->topo_search == SPR_MOVE) Speed_Spr_Loop(tree);
+		      else                                               Best_Of_NNI_And_SPR(tree);
 
                       if(tree->n_root)
                           Add_Root(tree->a_edges[0],tree);

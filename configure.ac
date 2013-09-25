@@ -38,12 +38,12 @@ fi
 
 AM_CONDITIONAL([HAVE_PDFLATEX], test -n "$PDFLATEX")
 
-#Check for BEAGLE (TODO: Failure should not cause an exit, but instead remove the --enable-beagle switch)
-PKG_CHECK_MODULES(BEAGLE, hmsbeagle-1)
-#if test "x$BEAGLE" = x/bin/false; then
-# enable_beagle=no
-#AC_MSG_WARN([Beagle not found!])
-#fi
+
+AC_ARG_ENABLE([beagle],[AS_HELP_STRING([--enable-beagle],[Compile PhyML-BEAGLE])],[beagle=yes],[beagle=no])
+if test "x$enable_beagle" = "xyes"; then
+ PKG_CHECK_MODULES(BEAGLE, hmsbeagle-1)
+fi
+
 
 # Checks for library functions.
 AC_FUNC_MALLOC
