@@ -1355,6 +1355,9 @@ typedef struct __T_Rate {
   phydbl     *t_prior_max_buff;
   phydbl     *times_partial_proba;
 
+  phydbl log_K_cur;
+  int cur_comb_numb;
+
 }t_rate;
 
 /*!********************************************************/

@@ -400,6 +400,8 @@ void PhyTime_XML(char *xml_file)
                   tree -> rates -> calib -> n_all_applies_to++;
                   tree -> rates -> calib -> lower = low;
                   tree -> rates -> calib -> upper = up;
+                  PhyML_Printf("\n. Lower bound: %f.", low);
+                  PhyML_Printf("\n. Upper bound: %f.", up);
                   /* printf("\n. Porbability [%f] \n", String_To_Dbl(n_r -> child -> attr -> next -> value)); */
                   
                   /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -579,16 +581,26 @@ void PhyTime_XML(char *xml_file)
   /* printf("\n. Calib number [%d] \n", cal_numb); */
   /* Set_Current_Calibration(0, tree); */
   Set_Current_Calibration(cal_numb, tree);
-  int tot_num_comb;
-  tot_num_comb = Number_Of_Comb(tree -> rates -> calib);														
-  PhyML_Printf("\n. The number of calibration combinations that is going to be considered is %d.\n", tot_num_comb);
-  TIMES_Set_All_Node_Priors(tree);
+  /* TIMES_Set_All_Node_Priors(tree); */
+  /* tree -> rates -> log_K_cur = K_Constant_Prior_Times_Log(tree); */
+  /* tree -> rates -> cur_comb_numb = cal_numb; */
 
+  /* for(i = tree->n_otu; i<2*tree->n_otu-2; i++) printf("\n. [%d] [%f] [%f] \n", i, tree -> rates -> t_prior_min[i], tree -> rates -> t_prior_max[i]); */
+
+  int tot_num_comb;
+  tot_num_comb = Number_Of_Comb(tree -> rates -> calib);
+  PhyML_Printf("\n. The number of calibration combinations that is going to be considered is %d.\n", tot_num_comb);
+ 
   //set initial value for Hastings ratio for conditional jump:
   /* tree -> rates -> c_lnL_Hastings_ratio = 0.0; */
+
+  TIMES_Set_All_Node_Priors(tree);
+
+  tree -> rates -> cur_comb_numb = cal_numb;
  
   TIMES_Get_Number_Of_Time_Slices(tree);
   TIMES_Label_Edges_With_Calibration_Intervals(tree);
+
 
   tree -> write_br_lens = NO;	
 									
@@ -921,7 +933,7 @@ phydbl K_Constant_Prior_Times_Log(t_tree *tree)
   int *cur_slices, *cur_slices_shr, *cur_slices_cpy, *slices_start_node, shr_num_slices;
   phydbl *t_cur_slice_min, *t_cur_slice_max;
   phydbl tot_num_comb;
-  phydbl num, denom, lmbd;
+  phydbl log_g_i, lmbd;
           
   lmbd = tree -> rates -> birth_rate;
 
@@ -1120,25 +1132,14 @@ phydbl K_Constant_Prior_Times_Log(t_tree *tree)
               /* printf("\n. [START] LOG(m_i) [%f] \n", K_total_cur); */
               /* printf("\n. K_total_cur [%f] \n", K_total_cur); */
                   
-          
-              num = 0.0;
-              denom = 0.0;
-                  
+              log_g_i = 0.0;
+    
               for(i = n_otu; i < 2 * n_otu - 2; i++) if(Are_Equal(t_prior_min[tree -> n_root -> num], t_prior_min[i], 1.E-10)) t_prior_min[i] = tree -> rates -> nd_t[tree -> n_root -> num];
-              For(j, n_otu - 2)
-                {
-                  num = num + LOG(EXP(lmbd * t_slice_max_f[j]) - EXP(lmbd * t_slice_min_f[j]));
-                  /* printf("\n. num [%f] \n", num); */
-                }
-              for(j = n_otu; j < 2 * n_otu - 2; j++)
-                {
-                  denom = denom + LOG(EXP(lmbd * t_prior_max[j]) - EXP(lmbd * t_prior_min[j]));
-                  /* printf("\n. denom [%f] \n", denom); */
-                }
-                  
-              /* printf("\n. [START] LOG(g_i) [%f] \n", num - denom); */
-              /* K_total = (K_total * num) / denom; */
-              K_total_cur = EXP(K_total_cur + num - denom + scl_const);
+
+              For(i, n_otu - 2) log_g_i = log_g_i + LOG_g_i(lmbd, t_slice_max_f[i], t_slice_min_f[i], t_prior_max[i + n_otu], t_prior_min[i + n_otu]);   
+              /* printf("\n. [START] LOG(g_i) [%f] \n", log_g_i); */
+
+              K_total_cur = EXP(K_total_cur + log_g_i + scl_const);
 
               if(K_total_cur > max_K_val)
                 {
@@ -1269,9 +1270,7 @@ phydbl K_Constant_Prior_Times_Log(t_tree *tree)
                               /* printf("\n. [CONT] LOG(m_i) [%f] \n", K_part); */
                               /* printf("\n. K_part [%f] \n", K_part); */
                                   
-                              num = 0.0;
-                              denom = 0.0;
-                           
+                   
 
                               if(K_part > max_K_val)
                                 {
@@ -1279,22 +1278,15 @@ phydbl K_Constant_Prior_Times_Log(t_tree *tree)
                                   max_K_val = K_part;
                                 }
                                   
-                                  
+                              log_g_i = 0.0;                                          
                                   
                               for(i = n_otu; i < 2 * n_otu - 2; i++) if(Are_Equal(t_prior_min[tree -> n_root -> num], t_prior_min[i], 1.E-10)) t_prior_min[i] = tree -> rates -> nd_t[tree -> n_root -> num];
-                              For(j, n_otu - 2)
-                                {
-                                  num = num + LOG(EXP(lmbd * t_slice_max_f[j]) - EXP(lmbd * t_slice_min_f[j]));
-                                }
-                              for(j = n_otu; j < 2 * n_otu - 2; j++)
-                                {
-                                  denom = denom + LOG(EXP(lmbd * t_prior_max[j]) - EXP(lmbd * t_prior_min[j]));
-                                }
-                                  
-                              /* printf("\n. [CONT] LOG(g_i) [%f] \n", num - denom); */
-                              /* K_part = (K_part * num) / denom; */
-                                  
-                              K_part = EXP(K_part + num - denom + scl_const);
+
+
+                              For(i, n_otu - 2) log_g_i = log_g_i + LOG_g_i(lmbd, t_slice_max_f[i], t_slice_min_f[i], t_prior_max[i + n_otu], t_prior_min[i + n_otu]);   
+                              /* printf("\n. [START] LOG(g_i) [%f] \n", log_g_i); */
+                              
+                              K_part = EXP(K_part + log_g_i + scl_const);
  
                               if(K_part > max_K_val)
                                 {
@@ -1427,24 +1419,16 @@ phydbl K_Constant_Prior_Times_Log(t_tree *tree)
                               /* printf("\n. [CONT] LOG(m_i) [%f] \n", K_part); */
                               /* printf("\n. K_part [%f] \n", K_part); */
                                   
-                              num = 0.0;
-                              denom = 0.0;
-                                 
+                              log_g_i = 0.0;                                 
                                   
                               for(i = n_otu; i < 2 * n_otu - 2; i++) if(Are_Equal(t_prior_min[tree -> n_root -> num], t_prior_min[i], 1.E-10)) t_prior_min[i] = tree -> rates -> nd_t[tree -> n_root -> num];
-                              For(j, n_otu - 2)
-                                {
-                                  num = num + LOG(EXP(lmbd * t_slice_max_f[j]) - EXP(lmbd * t_slice_min_f[j]));
-                                }
-                              for(j = n_otu; j < 2 * n_otu - 2; j++)
-                                {
-                                  denom = denom + LOG(EXP(lmbd * t_prior_max[j]) - EXP(lmbd * t_prior_min[j]));
-                                }
-                                  
-                              /* printf("\n. [CONT] LOG(g_i) [%f] \n", num - denom); */
-                              /* K_part = (K_part * num) / denom; */
-                                  
-                              K_part = EXP(K_part + num - denom + scl_const);
+
+
+                              For(i, n_otu - 2) log_g_i = log_g_i + LOG_g_i(lmbd, t_slice_max_f[i], t_slice_min_f[i], t_prior_max[i + n_otu], t_prior_min[i + n_otu]);   
+                              /* printf("\n. [START] LOG(g_i) [%f] \n", log_g_i); */
+                              
+                              K_part = EXP(K_part + log_g_i + scl_const);
+
                               if(K_part > max_K_val)
                                 {
                                   For(i, n_otu - 1) max_combination[i] = cur_slices_cpy[i];
@@ -1585,26 +1569,17 @@ phydbl K_Constant_Prior_Times_Log(t_tree *tree)
                           /* printf("\n. [CONT] LOG(m_i) [%f] \n", K_part); */
                           /* printf("\n. K_part [%f] \n", K_part); */
                                   
-                          num = 0.0;
-                          denom = 0.0;
-                          /* lmbd = 0.0001;         */                      
+                          log_g_i = 0.0;               
                                   
                                   
                           for(i = n_otu; i < 2 * n_otu - 2; i++) if(Are_Equal(t_prior_min[tree -> n_root -> num], t_prior_min[i], 1.E-10)) t_prior_min[i] = tree -> rates -> nd_t[tree -> n_root -> num];
 
-                          For(j, n_otu - 2)
-                            {
-                              num = num + LOG(EXP(lmbd * t_slice_max_f[j]) - EXP(lmbd * t_slice_min_f[j]));
-                            }
-                          for(j = n_otu; j < 2 * n_otu - 2; j++)
-                            {
-                              denom = denom + LOG(EXP(lmbd * t_prior_max[j]) - EXP(lmbd * t_prior_min[j]));
-                            }
-                                  
-                          /* printf("\n. [CONT] LOG(g_i) [%f] \n", num - denom); */
-                          /* K_part = (K_part * num) / denom; */
-                                  
-                          K_part = EXP(K_part + num - denom + scl_const);
+
+                          For(i, n_otu - 2) log_g_i = log_g_i + LOG_g_i(lmbd, t_slice_max_f[i], t_slice_min_f[i], t_prior_max[i + n_otu], t_prior_min[i + n_otu]);   
+                          /* printf("\n. [START] LOG(g_i) [%f] \n", log_g_i); */
+                          
+                          K_part = EXP(K_part + log_g_i + scl_const);
+
                           if(K_part > max_K_val)
                             {
                               For(i, n_otu - 1) max_combination[i] = cur_slices_cpy[i];
@@ -1633,8 +1608,7 @@ phydbl K_Constant_Prior_Times_Log(t_tree *tree)
       ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
       K_total = K_total + K_total_cur;
       /* printf("\n. [APPROX TOTAL] Approximated constant (K_total) = [%f] \n", (K_total)); */
-      printf("\n%G %d", K_total, c);
-
+      /* printf("\n%G %d", K_total, c); */
       if(Are_Equal(c, 0, 1.E-10)) numb_unsuc++;
       else numb_unsuc = 0;
     }
@@ -2650,12 +2624,12 @@ phydbl LOG_g_i(phydbl lmbd, phydbl t_slice_max, phydbl t_slice_min, phydbl t_pri
 {
   phydbl result = 0.0;
 
-  printf("\n. lmbd * t_prior_min = [%f] \n", lmbd * t_prior_min);
+  /* printf("\n. lmbd * t_prior_min = [%f] \n", lmbd * t_prior_min); */
   if(lmbd * t_prior_min < -10.0)
     {
       phydbl K;
       K = -10.0 - lmbd * t_prior_min;
-      printf("\n. K = [%f] \n", K);
+      /* printf("\n. K = [%f] \n", K); */
       if(lmbd * t_prior_max + K > 700.0)
         {
           PhyML_Printf("\n. Please scale your calibration intervals. \n");

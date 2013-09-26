@@ -48,6 +48,8 @@ void MCMC(t_tree *tree)
       MCMC_Read_Param_Vals(tree);
     }
 
+  tree -> rates -> log_K_cur = K_Constant_Prior_Times_Log(tree);
+
   Switch_Eigen(YES,tree->mod);
 
   MCMC_Initialize_Param_Val(tree->mcmc,tree);
@@ -1187,6 +1189,7 @@ void MCMC_Jump_Calibration(t_tree *tree)
   phydbl cur_lnL_rate, new_lnL_rate;
   phydbl cur_lnL_time, new_lnL_time;
   phydbl cur_lnL_Hastings_ratio, new_lnL_Hastings_ratio;
+  phydbl log_K_new;
   phydbl ratio,alpha;
   //t_edge *b1,*b2,*b3;
   int i, j, comb_num, result; //rnd_node
@@ -1248,102 +1251,113 @@ void MCMC_Jump_Calibration(t_tree *tree)
             }
         }
       //printf("\n. [%d] \n", comb_num); 
-      //Exit("\n");      
-      
-      Set_Current_Calibration(comb_num - 1, tree);
-      TIMES_Set_All_Node_Priors(tree);
-      
-      result = TRUE;
-      
-      Check_Node_Time(tree -> n_root, tree -> n_root -> v[1], &result, tree);
-      Check_Node_Time(tree -> n_root, tree -> n_root -> v[2], &result, tree);
+      //Exit("\n");  
 
-      ///////////////////////////////////////////////////////////////////////////////////////////
-      //if((comb_num - 1) == 1) for(i = tree -> n_otu; i < 2 * tree -> n_otu -1; i++) printf("\n. Node number:%d Min:%f Max:%f Cur.time:%f \n", i, tree -> rates -> t_prior_min[i], tree -> rates -> t_prior_max[i], tree -> rates -> nd_t[i]);
-      /* PhyML_Printf("\n. .......................................................................\n"); */
-      ///////////////////////////////////////////////////////////////////////////////////////////
-      //PhyML_Printf("\n. Result:%d \n", result);  
-
-      new_lnL_Hastings_ratio = 0.0;
-      if(result != TRUE)
+      comb_num = comb_num - 1;    
+ 
+      if(!Are_Equal(tree -> rates -> cur_comb_numb, comb_num, 1.E-10))
         {
-          Update_Times_Down_Tree(tree -> n_root, tree -> n_root -> v[1], &new_lnL_Hastings_ratio, tree);
-          Update_Times_Down_Tree(tree -> n_root, tree -> n_root -> v[2], &new_lnL_Hastings_ratio, tree);
-          tree -> rates -> c_lnL_Hastings_ratio = new_lnL_Hastings_ratio;
-        }
-      else
-        { 
+          Set_Current_Calibration(comb_num, tree);
+          TIMES_Set_All_Node_Priors(tree);
+          
+          result = TRUE;
+          
+          Check_Node_Time(tree -> n_root, tree -> n_root -> v[1], &result, tree);
+          Check_Node_Time(tree -> n_root, tree -> n_root -> v[2], &result, tree);
+          
+          ///////////////////////////////////////////////////////////////////////////////////////////
+          //if((comb_num - 1) == 1) for(i = tree -> n_otu; i < 2 * tree -> n_otu -1; i++) printf("\n. Node number:%d Min:%f Max:%f Cur.time:%f \n", i, tree -> rates -> t_prior_min[i], tree -> rates -> t_prior_max[i], tree -> rates -> nd_t[i]);
+          /* PhyML_Printf("\n. .......................................................................\n"); */
+          ///////////////////////////////////////////////////////////////////////////////////////////
+          //PhyML_Printf("\n. Result:%d \n", result);  
+          
+          new_lnL_Hastings_ratio = 0.0;
+          if(result != TRUE)
+            {
+              Update_Times_Down_Tree(tree -> n_root, tree -> n_root -> v[1], &new_lnL_Hastings_ratio, tree);
+              Update_Times_Down_Tree(tree -> n_root, tree -> n_root -> v[2], &new_lnL_Hastings_ratio, tree);
+              tree -> rates -> c_lnL_Hastings_ratio = new_lnL_Hastings_ratio;
+            }
+          else
+            { 
+              free(proba_distr);
+              tree -> mcmc -> acc_move[move_num]++;    
+              tree -> mcmc -> run_move[move_num]++;
+              return; 
+            }
+          //PhyML_Printf("\n. Hastings Ratio:%f \n", cur_lnL_Hastings_ratio);  
+          //PhyML_Printf("\n. Hastings Ratio:%f \n", new_lnL_Hastings_ratio);  
+          
+          result = TRUE;
+          
+          Check_Node_Time(tree -> n_root, tree -> n_root -> v[1], &result, tree);
+          Check_Node_Time(tree -> n_root, tree -> n_root -> v[2], &result, tree);
+          
+          ///////////////////////////////////////////////////////////////////////////////////////////
+          /* for(i = tree -> n_otu; i < 2 * tree -> n_otu -1; i++) printf("\n. Node number:%d Min:%f Max:%f Cur.time:%f \n", i, tree -> rates -> t_prior_min[i], tree -> rates -> t_prior_max[i], tree -> rates -> nd_t[i]); */
+          /* PhyML_Printf("\n. .......................................................................\n"); */
+          ///////////////////////////////////////////////////////////////////////////////////////////
+          
+          if(result != TRUE)
+            {
+              PhyML_Printf("\n. ...................... OLD CALIBRATION.....................................\n");
+              for(i = tree -> n_otu; i < 2 * tree -> n_otu -1; i++) printf("\n. Node number:[%d] Lower bound:[%f] Upper bound:[%f] Node time:[%f]. \n", i, tree -> rates -> t_prior_min_buff[i], tree -> rates -> t_prior_max_buff[i], tree -> rates -> buff_t[i]);
+              PhyML_Printf("\n. ...........................................................................\n");
+              PhyML_Printf("\n. ................. NEW PROPOSED CALIBRATION ................................\n");
+              for(i = tree -> n_otu; i < 2 * tree -> n_otu -1; i++) printf("\n. Node number:[%d] Lower bound:[%f] Upper bound:[%f] Node time:[%f]. \n", i, tree -> rates -> t_prior_min[i], tree -> rates -> t_prior_max[i], tree -> rates -> nd_t[i]);
+              PhyML_Printf("\n. ...........................................................................\n");
+              PhyML_Printf("\n==You have a problem with calibration information.\n");
+              PhyML_Printf("\n==Err in file %s at line %d\n",__FILE__,__LINE__);
+              Exit("\n");
+            }
+          
+          
+          ///////////////////////////////////////////////////////////////////////////////////////////
+          //Exit("\n");
+          ///////////////////////////////////////////////////////////////////////////////////////////
+          
+          For(i,2*tree->n_otu-2) tree->rates->br_do_updt[i] = YES;
+          RATES_Update_Cur_Bl(tree);
+          if(tree->mcmc->use_data) new_lnL_data = Lk(NULL,tree);
+          
+          new_lnL_rate = RATES_Lk_Rates(tree);
+          new_lnL_time = TIMES_Lk_Times(tree);
+          log_K_new    = K_Constant_Prior_Times_Log(tree);
+          
+          /* Likelihood ratio */
+          if(tree->mcmc->use_data) ratio += (new_lnL_data - cur_lnL_data);
+          
+          /* Prior ratio */
+          ratio += (new_lnL_rate - cur_lnL_rate);
+          ratio += (new_lnL_time - cur_lnL_time);
+          ratio += (log_K_new - tree -> rates -> log_K_cur);
+          ratio += (cur_lnL_Hastings_ratio - new_lnL_Hastings_ratio); //Hastings ratio
+          
+          ratio = EXP(ratio); /* printf("\n ratio %f \n", ratio); */
+          alpha = MIN(1.,ratio);
+          u = Uni();
+          
+          if(u > alpha)
+            {
+              RATES_Reset_Times(tree);
+              Restore_Br_Len(tree);
+              TIMES_Reset_Prior_Times(tree);
+              tree->c_lnL = cur_lnL_data;
+              tree->rates->c_lnL_rates = cur_lnL_rate;
+              tree->rates->c_lnL_times = cur_lnL_time;
+              tree->rates->c_lnL_Hastings_ratio = cur_lnL_Hastings_ratio;
+            }
+          else
+            {
+              tree -> rates -> log_K_cur     = log_K_new;
+              tree -> rates -> cur_comb_numb = comb_num;
+              tree->mcmc->acc_move[move_num]++;
+            }      
+          tree->mcmc->run_move[move_num]++;
           free(proba_distr);
-          tree -> mcmc -> acc_move[move_num]++;    
-          tree -> mcmc -> run_move[move_num]++;
-          return; 
-        }
-      //PhyML_Printf("\n. Hastings Ratio:%f \n", cur_lnL_Hastings_ratio);  
-      //PhyML_Printf("\n. Hastings Ratio:%f \n", new_lnL_Hastings_ratio);  
-      
-      result = TRUE;
-      
-      Check_Node_Time(tree -> n_root, tree -> n_root -> v[1], &result, tree);
-      Check_Node_Time(tree -> n_root, tree -> n_root -> v[2], &result, tree);
-      
-      ///////////////////////////////////////////////////////////////////////////////////////////
-      /* for(i = tree -> n_otu; i < 2 * tree -> n_otu -1; i++) printf("\n. Node number:%d Min:%f Max:%f Cur.time:%f \n", i, tree -> rates -> t_prior_min[i], tree -> rates -> t_prior_max[i], tree -> rates -> nd_t[i]); */
-      /* PhyML_Printf("\n. .......................................................................\n"); */
-      ///////////////////////////////////////////////////////////////////////////////////////////
-      
-      if(result != TRUE)
-        {
-          PhyML_Printf("\n. ...................... OLD CALIBRATION.....................................\n");
-          for(i = tree -> n_otu; i < 2 * tree -> n_otu -1; i++) printf("\n. Node number:[%d] Lower bound:[%f] Upper bound:[%f] Node time:[%f]. \n", i, tree -> rates -> t_prior_min_buff[i], tree -> rates -> t_prior_max_buff[i], tree -> rates -> buff_t[i]);
-          PhyML_Printf("\n. ...........................................................................\n");
-          PhyML_Printf("\n. ................. NEW PROPOSED CALIBRATION ................................\n");
-          for(i = tree -> n_otu; i < 2 * tree -> n_otu -1; i++) printf("\n. Node number:[%d] Lower bound:[%f] Upper bound:[%f] Node time:[%f]. \n", i, tree -> rates -> t_prior_min[i], tree -> rates -> t_prior_max[i], tree -> rates -> nd_t[i]);
-          PhyML_Printf("\n. ...........................................................................\n");
-          PhyML_Printf("\n==You have a problem with calibration information.\n");
-          PhyML_Printf("\n==Err in file %s at line %d\n",__FILE__,__LINE__);
-          Exit("\n");
-        }
-          
-          
-      ///////////////////////////////////////////////////////////////////////////////////////////
-      //Exit("\n");
-      ///////////////////////////////////////////////////////////////////////////////////////////
-      
-      For(i,2*tree->n_otu-2) tree->rates->br_do_updt[i] = YES;
-      RATES_Update_Cur_Bl(tree);
-      if(tree->mcmc->use_data) new_lnL_data = Lk(NULL,tree);
-      
-      new_lnL_rate = RATES_Lk_Rates(tree);
-      new_lnL_time = TIMES_Lk_Times(tree);
-      
-      /* Likelihood ratio */
-      if(tree->mcmc->use_data) ratio += (new_lnL_data - cur_lnL_data);
-      
-      /* Prior ratio */
-      ratio += (new_lnL_rate - cur_lnL_rate);
-      ratio += (new_lnL_time - cur_lnL_time);
-      ratio += (cur_lnL_Hastings_ratio - new_lnL_Hastings_ratio); //Hastings ratio
-      
-      ratio = EXP(ratio); /* printf("\n ratio %f \n", ratio); */
-      alpha = MIN(1.,ratio);
-      u = Uni();
-      
-      if(u > alpha)
-        {
-          RATES_Reset_Times(tree);
-          Restore_Br_Len(tree);
-          TIMES_Reset_Prior_Times(tree);
-          tree->c_lnL = cur_lnL_data;
-          tree->rates->c_lnL_rates = cur_lnL_rate;
-          tree->rates->c_lnL_times = cur_lnL_time;
-          tree->rates->c_lnL_Hastings_ratio = cur_lnL_Hastings_ratio;
         }
       else
-        {
-          tree->mcmc->acc_move[move_num]++;
-        }      
-      tree->mcmc->run_move[move_num]++;
-      free(proba_distr);
+        return;
     }
   else 
     return;
@@ -4336,7 +4350,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_birth_rate]            = 2.0;
   mcmc->move_weight[mcmc->num_move_updown_t_br]           = 1.0;
 #if defined (SERGEII)
-  mcmc->move_weight[mcmc->num_move_jump_calibration]      = 0.0;
+  mcmc->move_weight[mcmc->num_move_jump_calibration]      = 1.0;
 #else
   mcmc->move_weight[mcmc->num_move_jump_calibration]      = 0.0;
 #endif
