@@ -2639,7 +2639,7 @@ phydbl LOG_g_i(phydbl lmbd, phydbl t_slice_max, phydbl t_slice_min, phydbl t_pri
         }
       else
         {
-          printf("\n. slice_max [%f] slice_min [%f] t_prior_max [%f] t_prior_min [%f]\n", lmbd * t_slice_max + K, lmbd * t_slice_min + K, lmbd * t_prior_max + K, lmbd * t_prior_min + K);
+          /* printf("\n. slice_max [%f] slice_min [%f] t_prior_max [%f] t_prior_min [%f]\n", lmbd * t_slice_max + K, lmbd * t_slice_min + K, lmbd * t_prior_max + K, lmbd * t_prior_min + K); */
           result = LOG(EXP(lmbd * t_slice_max + K) - EXP(lmbd * t_slice_min + K)) - LOG(EXP(lmbd * t_prior_max + K) - EXP(lmbd * t_prior_min + K));
         }
     }
