@@ -90,7 +90,7 @@ void Make_New_Edge_Label(t_edge *b)
 
   if(!b->labels)
     {
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
       Warn_And_Exit("");
     }
   else
@@ -184,7 +184,7 @@ void Make_Edge_Lk(t_edge *b, t_tree *tree)
 {
   if(tree->is_mixt_tree)
     {
-      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
       Warn_And_Exit("");
     }
 
@@ -426,7 +426,8 @@ t_tree *Make_Tree_From_Scratch(int n_otu, calign *data)
 #ifdef BEAGLE
   //offset the branch's partial indices because BEAGLE insists on first storing the tips/taxa
   int num_branches = 2*tree->n_otu-1;
-  for(int i=0;i<2*tree->n_otu-1;++i)
+  int i;
+  for(i=0;i<2*tree->n_otu-1;++i)
   {
       //For edgeX, its "left" partial lies at index `num_tax + edgeX->num"
       tree->a_edges[i]->p_lk_left_idx = tree->n_otu + tree->a_edges[i]->p_lk_left_idx;

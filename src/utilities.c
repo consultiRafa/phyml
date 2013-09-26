@@ -28,7 +28,7 @@ phydbl String_To_Dbl(char *string)
   if(!string)
     {
       PhyML_Printf("\n== String object empty.");
-      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
       Exit("\n");
     }
 
@@ -1409,7 +1409,7 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
 
   if(tree->prev)
     {
-      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
       Exit("\n");
     }
 
@@ -1431,12 +1431,12 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
 
   if(v1->num < v2->num)
     {
-      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
       Exit("\n");
     }
   if(v3->num < v4->num)
     {
-      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
       Exit("\n");
     }
 
@@ -1861,7 +1861,7 @@ void Swap(t_node *a, t_node *b, t_node *c, t_node *d, t_tree *tree)
   if(ab < 0 || ba < 0 || cd < 0 || dc < 0)
     {
       PhyML_Printf("\n== Nodes %d %d %d %d\n",a->num,b->num,c->num,d->num);
-      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
       Exit("\n");
     }
 #endif
@@ -2802,11 +2802,11 @@ void Bootstrap(t_tree *tree)
 
       init_len = 0;
       For(j,boot_data->init_len)
-    {
-      position = Rand_Int(0,(int)(tree->data->init_len-1.0));
-      boot_data->wght[site_num[position]] += 1;
-      init_len++;
-    }
+        {
+          position = Rand_Int(0,(int)(tree->data->init_len-1.0));
+          boot_data->wght[site_num[position]] += 1;
+          init_len++;
+        }
 
       Set_D_States(boot_data,tree->io->datatype,tree->io->state_len);
 
@@ -2825,28 +2825,28 @@ void Bootstrap(t_tree *tree)
       boot_mod        = Copy_Model(tree->mod);
 
       boot_mod->s_opt = tree->mod->s_opt; /* WARNING: re-using the same address here instead of creating a copying
-                         requires to leave the value of s_opt unchanged during the boostrap. */
+                                             requires to leave the value of s_opt unchanged during the boostrap. */
       boot_mod->io    = tree->io; /* WARNING: re-using the same address here instead of creating a copying
-                     requires to leave the value of io unchanged during the boostrap. */
+                                     requires to leave the value of io unchanged during the boostrap. */
 
       Init_Model(boot_data,boot_mod,tree->io);
 
       if(tree->io->mod->use_m4mod) M4_Init_Model(boot_mod->m4mod,boot_data,boot_mod);
 
       if(tree->io->in_tree == 2)
-    {
-      rewind(tree->io->fp_in_tree);
-      boot_tree = Read_Tree_File_Phylip(tree->io->fp_in_tree);
-    }
+        {
+          rewind(tree->io->fp_in_tree);
+          boot_tree = Read_Tree_File_Phylip(tree->io->fp_in_tree);
+        }
       else
-    {
-      boot_mat = ML_Dist(boot_data,boot_mod);
-      boot_mat->tree = Make_Tree_From_Scratch(boot_data->n_otu,boot_data);
-      Fill_Missing_Dist(boot_mat);
-      Bionj(boot_mat);
-      boot_tree = boot_mat->tree;
-      boot_tree->mat = boot_mat;
-    }
+        {
+          boot_mat = ML_Dist(boot_data,boot_mod);
+          boot_mat->tree = Make_Tree_From_Scratch(boot_data->n_otu,boot_data);
+          Fill_Missing_Dist(boot_mat);
+          Bionj(boot_mat);
+          boot_tree = boot_mat->tree;
+          boot_tree->mat = boot_mat;
+        }
 
       boot_tree->mod                = boot_mod;
       boot_tree->io                 = tree->io;
@@ -2877,33 +2877,32 @@ void Bootstrap(t_tree *tree)
 
 
       if(boot_tree->io->do_alias_subpatt)
-    {
-      MIXT_Set_Alias_Subpatt(YES,boot_tree);
-      Lk(NULL,boot_tree);
-      MIXT_Set_Alias_Subpatt(NO,boot_tree);
-    }
-
-
+        {
+          MIXT_Set_Alias_Subpatt(YES,boot_tree);
+          Lk(NULL,boot_tree);
+          MIXT_Set_Alias_Subpatt(NO,boot_tree);
+        }
+      
+      
       if(boot_tree->mod->s_opt->opt_topo)
-    {
-      if(boot_tree->mod->s_opt->topo_search == NNI_MOVE)
         {
-          Simu_Loop(boot_tree);
+          if(boot_tree->mod->s_opt->topo_search == NNI_MOVE)
+            {
+              Simu_Loop(boot_tree);
+            }
+          else if((boot_tree->mod->s_opt->topo_search == SPR_MOVE) ||
+                  (boot_tree->mod->s_opt->topo_search == BEST_OF_NNI_AND_SPR))
+            {
+              Speed_Spr_Loop(boot_tree);
+            }
         }
-      else if((boot_tree->mod->s_opt->topo_search == SPR_MOVE) ||
-          (boot_tree->mod->s_opt->topo_search == BEST_OF_NNI_AND_SPR))
+      else
         {
-          Speed_Spr_Loop(boot_tree);
+          if(boot_tree->mod->s_opt->opt_subst_param || boot_tree->mod->s_opt->opt_bl)
+            Round_Optimize(boot_tree,boot_tree->data,ROUND_MAX);
+          else
+            Lk(NULL,boot_tree);
         }
-    }
-      else
-    {
-      if(boot_tree->mod->s_opt->opt_subst_param || boot_tree->mod->s_opt->opt_bl)
-        Round_Optimize(boot_tree,boot_tree->data,ROUND_MAX);
-      else
-        Lk(NULL,boot_tree);
-    }
-
 
       Free_Bip(boot_tree);
 
@@ -2921,12 +2920,12 @@ void Bootstrap(t_tree *tree)
       Br_Len_Involving_Invar(boot_tree);
 
       if(tree->io->print_boot_trees)
-    {
-      s = Write_Tree(boot_tree,NO);
-      PhyML_Fprintf(tree->io->fp_out_boot_tree,"%s\n",s);
-      Free(s);
+        {
+          s = Write_Tree(boot_tree,NO);
+          PhyML_Fprintf(tree->io->fp_out_boot_tree,"%s\n",s);
+          Free(s);
           Print_Fp_Out_Lines(tree->io->fp_out_boot_stats,0,0,boot_tree,tree->io,replicate+1);
-    }
+        }
 
       /*       rf = .0; */
       /*       For(j,2*tree->n_otu-3)  */
@@ -2938,10 +2937,10 @@ void Bootstrap(t_tree *tree)
 fflush(stdout);
 #endif
       if(!((replicate+1)%tree->io->boot_prog_every))
-    {
-      PhyML_Printf("] %4d/%4d\n  ",replicate+1,tree->mod->bootstrap);
-      if(replicate != tree->mod->bootstrap-1) PhyML_Printf("[");
-    }
+        {
+          PhyML_Printf("] %4d/%4d\n  ",replicate+1,tree->mod->bootstrap);
+          if(replicate != tree->mod->bootstrap-1) PhyML_Printf("[");
+        }
 
       Free_Tree(boot_tree);
       Free_Model(boot_mod);
@@ -3384,8 +3383,8 @@ void Record_Model(t_mod *ori, t_mod *cpy)
 {
   int i;
 
-  cpy->ns          = ori->ns;
-  cpy->ras->n_catg = ori->ras->n_catg;
+  cpy->ns                   = ori->ns;
+  cpy->ras->n_catg          = ori->ras->n_catg;
   cpy->ras->normalise_rr    = ori->ras->normalise_rr;
   cpy->l_var_sigma          = ori->l_var_sigma;
 
@@ -3414,23 +3413,23 @@ void Record_Model(t_mod *ori, t_mod *cpy)
   if((ori->whichmodel == CUSTOM) || (ori->whichmodel == GTR))
     {
       For(i,ori->ns*(ori->ns-1)/2)
-    {
-      cpy->r_mat->rr_num->v[i]       = ori->r_mat->rr_num->v[i];
-      cpy->r_mat->rr_val->v[i]       = ori->r_mat->rr_val->v[i];
-      cpy->r_mat->rr->v[i]           = ori->r_mat->rr->v[i];
-      cpy->r_mat->n_rr_per_cat->v[i] = ori->r_mat->n_rr_per_cat->v[i];
+        {
+          cpy->r_mat->rr_num->v[i]       = ori->r_mat->rr_num->v[i];
+          cpy->r_mat->rr_val->v[i]       = ori->r_mat->rr_val->v[i];
+          cpy->r_mat->rr->v[i]           = ori->r_mat->rr->v[i];
+          cpy->r_mat->n_rr_per_cat->v[i] = ori->r_mat->n_rr_per_cat->v[i];
+        }
     }
-    }
-
+  
   For(i,cpy->ns)
     {
       cpy->e_frq->pi->v[i]          = ori->e_frq->pi->v[i];
       cpy->e_frq->pi_unscaled->v[i] = ori->e_frq->pi_unscaled->v[i];
       cpy->user_b_freq->v[i] = ori->user_b_freq->v[i];
     }
-
+  
   For(i,cpy->ns*cpy->ns) cpy->r_mat->qmat->v[i] = ori->r_mat->qmat->v[i];
-
+  
   For(i,cpy->ras->n_catg)
     {
       cpy->ras->gamma_r_proba->v[i]          = ori->ras->gamma_r_proba->v[i];
@@ -3438,9 +3437,9 @@ void Record_Model(t_mod *ori, t_mod *cpy)
       cpy->ras->gamma_r_proba_unscaled->v[i] = ori->ras->gamma_r_proba_unscaled->v[i];
       cpy->ras->gamma_rr_unscaled->v[i]      = ori->ras->gamma_rr_unscaled->v[i];
     }
-
+  
   cpy->use_m4mod = ori->use_m4mod;
-
+  
   cpy->eigen->size = ori->eigen->size;
   For(i,2*ori->ns)       cpy->eigen->space[i]       = ori->eigen->space[i];
   For(i,2*ori->ns)       cpy->eigen->space_int[i]   = ori->eigen->space_int[i];
@@ -3451,12 +3450,12 @@ void Record_Model(t_mod *ori, t_mod *cpy)
   For(i,ori->ns*ori->ns) cpy->eigen->r_e_vect_im[i] = ori->eigen->r_e_vect_im[i];
   For(i,ori->ns*ori->ns) cpy->eigen->l_e_vect[i]    = ori->eigen->l_e_vect[i];
   For(i,ori->ns*ori->ns) cpy->eigen->q[i]           = ori->eigen->q[i];
-
+  
 #ifdef BEAGLE
   cpy->b_inst              = ori->b_inst;
   cpy->optimizing_topology = ori->optimizing_topology;
 #endif
-
+  
 }
 
 //////////////////////////////////////////////////////////////
@@ -5653,7 +5652,7 @@ void Record_Br_Len(t_tree *mixt_tree)
   if(mixt_tree->br_len_recorded == YES)
     {
       PhyML_Printf("\n== Overwriting recorded edge lengths.\n");
-      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
       Exit("\n");
     }
 
@@ -7341,7 +7340,7 @@ void Best_Of_NNI_And_SPR(t_tree *tree)
       if(FABS(tree->c_lnL - ori_lnL) > tree->mod->s_opt->min_diff_lk_local)
         {
           PhyML_Printf("\n== ori_lnL = %f, c_lnL = %f",ori_lnL,tree->c_lnL);
-          PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+          PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
           Warn_And_Exit("");
         }
 
@@ -7578,7 +7577,7 @@ char *Bootstrap_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
 
   if(!tree)
     {
-      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
       Exit("");
     }
 
@@ -7636,7 +7635,7 @@ char *aLRT_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
 
   if(!tree)
     {
-      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
       Warn_And_Exit("");
     }
 
@@ -9756,7 +9755,7 @@ void Random_SPRs_On_Rooted_Tree(t_tree *tree)
 
       if(a == tree->n_root)
         {
-          PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+          PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
           Exit("\n");
         }
       /* if(a == tree->n_root->v[1] || a == tree->n_root->v[2]) continue; */
@@ -9856,7 +9855,7 @@ void Random_SPRs_On_Rooted_Tree(t_tree *tree)
 
       if(dir12 == -1)
         {
-          PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+          PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
           Exit("\n");
         }
 
@@ -9865,7 +9864,7 @@ void Random_SPRs_On_Rooted_Tree(t_tree *tree)
 
       if(dir21 == -1)
         {
-          PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+          PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
           Exit("\n");
         }
 
@@ -10305,7 +10304,7 @@ void Optimum_Root_Position_IL_Model(t_tree *tree)
   if(tree->n_root)
     {
       PhyML_Printf("\n== The tree already has a root node");
-      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
       Exit("\n");
     }
   else
@@ -10674,7 +10673,7 @@ void Calculate_Number_Of_Diff_States_Core(t_node *a, t_node *d, t_edge *b, t_tre
 
               if(iter == 1000) 
                 {
-                  PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);      
+                  PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);      
                   Exit("\n");
                 }
 
@@ -10702,7 +10701,7 @@ void Calculate_Number_Of_Diff_States_Core(t_node *a, t_node *d, t_edge *b, t_tre
 
               if(iter == 1000)
                 {
-                  PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);      
+                  PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);      
                   Exit("\n");
                 }
 
@@ -10718,7 +10717,7 @@ void Calculate_Number_Of_Diff_States_Core(t_node *a, t_node *d, t_edge *b, t_tre
 
       if(sum-1 > tree->mod->ns-1)
         {
-          PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);      
+          PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);      
           Exit("\n");
         }
 

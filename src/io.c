@@ -561,11 +561,10 @@ char *Write_Tree(t_tree *tree, int custom)
 {
   char *s;
   int i,available;
-  int init_len;
-
-  init_len = 3*(int)T_MAX_NAME;
 
 #ifndef MPI
+  int init_len;
+  init_len = 3*(int)T_MAX_NAME;
   s=(char *)mCalloc(init_len,sizeof(char));
   available = init_len;
 #elif defined MPI
@@ -3378,7 +3377,6 @@ void Print_Diversity(FILE *fp, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Print_Diversity_Pre(t_node *a, t_node *d, t_edge *b, FILE *fp, t_tree *tree)
 {
   int k,ns;
@@ -3400,78 +3398,93 @@ void Print_Diversity_Pre(t_node *a, t_node *d, t_edge *b, FILE *fp, t_tree *tree
 
 }
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 void Print_Tip_Partials(t_tree* tree, t_node* d)
 {
-    if(!d->tax)
+  if(!d->tax)
     {
-        fprintf(stdout,"Node %d is not a Taxa\n",d->num);fflush(stdout);
-        return;
+      fprintf(stdout,"Node %d is not a Taxa\n",d->num);fflush(stdout);
+      return;
     }
 
-    assert(d->b[0]->rght == d);
-    assert(d->b[0]->rght->tax);
-    fprintf(stdout,"Taxa/Node %d\n",d->num);
-    for(int site=0;site<tree->n_pattern;++site)
+  assert(d->b[0]->rght == d);
+  assert(d->b[0]->rght->tax);
+  fprintf(stdout,"Taxa/Node %d\n",d->num);
+  int site, i;
+  for(site=0;site<tree->n_pattern;++site)
     {
-        fprintf(stdout,"[%d: ",site);
-        for(int i=0;i<tree->mod->ns;++i)
+      fprintf(stdout,"[%d: ",site);
+      for(i=0;i<tree->mod->ns;++i)
         {
-            int tip_partial = d->b[0]->p_lk_tip_r[site*tree->mod->ns + i];
-            fprintf(stdout,"%d",tip_partial);fflush(stdout);
+          int tip_partial = d->b[0]->p_lk_tip_r[site*tree->mod->ns + i];
+          fprintf(stdout,"%d",tip_partial);fflush(stdout);
         }
-        fprintf(stdout,"] ");fflush(stdout);
+      fprintf(stdout,"] ");fflush(stdout);
     }
-    fprintf(stdout,"\n");fflush(stdout);
+  fprintf(stdout,"\n");fflush(stdout);
 }
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 
 void Print_Edge_PMats(t_tree* tree, t_edge* b)
 {
-    phydbl *Pij;
+  phydbl *Pij;
 #ifdef BEAGLE
-    Pij = (phydbl*)malloc(tree->mod->ns * tree->mod->ns * tree->mod->ras->n_catg * sizeof(phydbl)); if (NULL==Pij) Warn_And_Exit(__PRETTY_FUNCTION__);
-    int ret = beagleGetTransitionMatrix(tree->b_inst, b->Pij_rr_idx, Pij);
-    if(ret<0){
-        fprintf(stderr, "beagleGetTransitionMatrix() on instance %i failed:%i\n\n",tree->b_inst,ret);
-        Free(Pij);
-        Exit("");
-    }
+  Pij = (phydbl*)malloc(tree->mod->ns * tree->mod->ns * tree->mod->ras->n_catg * sizeof(phydbl)); if (NULL==Pij) Warn_And_Exit(__PRETTY_FUNCTION__);
+  int ret = beagleGetTransitionMatrix(tree->b_inst, b->Pij_rr_idx, Pij);
+  if(ret<0){
+    fprintf(stderr, "beagleGetTransitionMatrix() on instance %i failed:%i\n\n",tree->b_inst,ret);
+    Free(Pij);
+    Exit("");
+  }
 #else
-    Pij = b->Pij_rr;
+  Pij = b->Pij_rr;
 #endif
-    fprintf(stdout,"\nflattened P-Matrices (for each rate category) state*state*num_rates[%d*%d*%d] for branch num:%i\n",tree->mod->ns,tree->mod->ns,tree->mod->ras->n_catg, b->num);
-    for(int i=0;i<tree->mod->ns * tree->mod->ns * tree->mod->ras->n_catg;++i){
-        fprintf(stdout,"%f,",Pij[i]);
-        fflush(stdout);
-    }
-    fprintf(stdout,"\n");
+  fprintf(stdout,"\nflattened P-Matrices (for each rate category) state*state*num_rates[%d*%d*%d] for branch num:%i\n",tree->mod->ns,tree->mod->ns,tree->mod->ras->n_catg, b->num);
+  int i;
+  for(i=0;i<tree->mod->ns * tree->mod->ns * tree->mod->ras->n_catg;++i){
+    fprintf(stdout,"%f,",Pij[i]);
     fflush(stdout);
+  }
+  fprintf(stdout,"\n");
+  fflush(stdout);
 #ifdef BEAGLE
-Free(Pij);
+  Free(Pij);
 #endif
 }
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 
 void Print_All_Edge_PMats(t_tree* tree)
 {
-    for(int i=0;i < 2*tree->n_otu-3;++i)
-        Print_Edge_PMats(tree, tree->a_edges[i]);
+  int i;
+  for(i=0;i < 2*tree->n_otu-3;++i) Print_Edge_PMats(tree, tree->a_edges[i]);
 }
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 
 void Print_Edge_Likelihoods(t_tree* tree, t_edge* b, bool scientific/*Print in scientific notation?*/)
 {
-    char* fmt = scientific ? "[%d,%d,%d]%e ":"[%d,%d,%d]%f "; //rate category, site, state, likelihood
-
-    phydbl* lk_left = b->p_lk_left;
-    phydbl* lk_right = b->p_lk_rght;
-
-    fprintf(stdout,"\n");fflush(stdout);
-    if(NULL!=lk_left)//not a tip?
+  int catg, site, j;
+  char* fmt = scientific ? "[%d,%d,%d]%e ":"[%d,%d,%d]%f "; //rate category, site, state, likelihood
+  
+  phydbl* lk_left = b->p_lk_left;
+  phydbl* lk_right = b->p_lk_rght;
+  
+  fprintf(stdout,"\n");fflush(stdout);
+  if(NULL!=lk_left)//not a tip?
     {
-        fprintf(stdout,"Partial Likelihoods on LEFT subtree of Branch %d [rate,site,state]:\n",b->num);
-        for(int catg=0;catg<tree->mod->ras->n_catg;++catg)
-            for(int site=0;site<tree->n_pattern;++site)
-                for(int j=0;j<tree->mod->ns;++j)
+      fprintf(stdout,"Partial Likelihoods on LEFT subtree of Branch %d [rate,site,state]:\n",b->num);
+      for(catg=0;catg<tree->mod->ras->n_catg;++catg)
+        for(site=0;site<tree->n_pattern;++site)
+          for(j=0;j<tree->mod->ns;++j)
 #ifdef BEAGLE
-                    fprintf(stdout,fmt,catg,site,j,lk_left[catg*tree->n_pattern*tree->mod->ns + site*tree->mod->ns + j]);
+            fprintf(stdout,fmt,catg,site,j,lk_left[catg*tree->n_pattern*tree->mod->ns + site*tree->mod->ns + j]);
 #else
                     fprintf(stdout,fmt,catg,site,j,lk_left[catg*tree->mod->ns + site*tree->mod->ras->n_catg*tree->mod->ns + j]);
 #endif
@@ -3480,8 +3493,8 @@ void Print_Edge_Likelihoods(t_tree* tree, t_edge* b, bool scientific/*Print in s
     else //is a tip
     {
         fprintf(stdout,"Likelihoods on LEFT tip of Branch %d [site,state]:\n",b->num);
-        for(int site=0;site<tree->n_pattern;++site)
-            for(int j=0;j<tree->mod->ns;++j)
+        for(site=0;site<tree->n_pattern;++site)
+            for(j=0;j<tree->mod->ns;++j)
                 fprintf(stdout,"[%d,%d]%d ",site,j,b->p_lk_tip_l[site*tree->mod->ns + j]);
         fflush(stdout);
     }
@@ -3489,9 +3502,9 @@ void Print_Edge_Likelihoods(t_tree* tree, t_edge* b, bool scientific/*Print in s
     if(NULL!=lk_right)//not a tip?
     {
         fprintf(stdout,"Partial Likelihoods on RIGHT subtree of Branch %d [rate,site,state]:\n",b->num);
-        for(int catg=0;catg<tree->mod->ras->n_catg;++catg)
-            for(int site=0;site<tree->n_pattern;++site)
-                for(int j=0;j<tree->mod->ns;++j)
+        for(catg=0;catg<tree->mod->ras->n_catg;++catg)
+            for(site=0;site<tree->n_pattern;++site)
+                for(j=0;j<tree->mod->ns;++j)
 #ifdef BEAGLE
                     fprintf(stdout,fmt,catg,site,j,lk_right[catg*tree->n_pattern*tree->mod->ns + site*tree->mod->ns + j]);
 #else
@@ -3502,73 +3515,96 @@ void Print_Edge_Likelihoods(t_tree* tree, t_edge* b, bool scientific/*Print in s
     else //is a tip
     {
         fprintf(stdout,"Likelihoods on RIGHT tip of Branch %d [site,state]:\n",b->num);
-        for(int site=0;site<tree->n_pattern;++site)
-            for(int j=0;j<tree->mod->ns;++j)
+        for(site=0;site<tree->n_pattern;++site)
+            for(j=0;j<tree->mod->ns;++j)
                 fprintf(stdout,"[%d,%d]%d ",site,j,b->p_lk_tip_r[site*tree->mod->ns + j]);
         fflush(stdout);
     }
 }
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 
 void Print_All_Edge_Likelihoods(t_tree* tree)
 {
-    for(int i=0;i < 2*tree->n_otu-3; ++i)
-        Print_Edge_Likelihoods(tree, tree->a_edges[i],false);
-    fflush(stdout);
+  int i;
+  for(i=0;i < 2*tree->n_otu-3; ++i) Print_Edge_Likelihoods(tree, tree->a_edges[i],false);
+  fflush(NULL);
 }
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 
 void Dump_Arr_S(short int* arr, int num)
 {
-    if(NULL==arr)
+  int i;
+
+  if(NULL==arr)
     {
-        Warn_And_Exit("Trying to print NULL array");
-        return;
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
+      Exit("\n== Trying to print NULL array");
+      return;
     }
-    fprintf(stdout,"[");
-    for(int i=0;i<num;++i)
+  fprintf(stdout,"[");
+  for(i=0;i<num;++i)
     {
-        fprintf(stdout,"%d,",arr[i]);
-        fflush(stdout);
+      fprintf(stdout,"%d,",arr[i]);
+      fflush(stdout);
     }
-    fprintf(stdout,"]\n");fflush(stdout);
+  fprintf(stdout,"]\n");fflush(stdout);
 }
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 
 void Dump_Arr_D(phydbl* arr, int num)
 {
-    if(NULL==arr)
+  int i;
+
+  if(NULL==arr)
     {
-        Warn_And_Exit("Trying to print NULL array");
-        return;
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
+      Exit("\n== Trying to print NULL array");
+      return;
     }
-    fprintf(stdout,"[");
-    for(int i=0;i<num;++i)
+  fprintf(stdout,"[");
+  for(i=0;i<num;++i)
     {
-        fprintf(stdout,"%g,",arr[i]);
-        fflush(stdout);
+      fprintf(stdout,"%g,",arr[i]);
+      fflush(stdout);
     }
-    fprintf(stdout,"]\n");fflush(stdout);
+  fprintf(stdout,"]\n");fflush(stdout);
 }
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 
 void Dump_Arr_I(int* arr, int num)
 {
-    if(NULL==arr)
+  int i;
+
+  if(NULL==arr)
     {
-        Warn_And_Exit("Trying to print NULL array");
-        return;
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
+      Exit("\n== Trying to print NULL array");
+      return;
     }
-    fprintf(stdout,"[");
-    for(int i=0;i<num;++i)
+  fprintf(stdout,"[");
+  for(i=0;i<num;++i)
     {
         fprintf(stdout,"%d,",arr[i]);
         fflush(stdout);
     }
-    fprintf(stdout,"]\n");fflush(stdout);
+  fprintf(stdout,"]\n");fflush(stdout);
 }
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 
 void Print_Tree_Structure(t_tree* tree)
 {
-    for(int i=0; i<2*tree->n_otu-3; ++i)
+  int i;
+  for(i=0; i<2*tree->n_otu-3; ++i)
     {
         fprintf(stdout,"Edge %d, LeftNode %d, RightNode %d\n",tree->a_edges[i]->num,tree->a_edges[i]->left->num,tree->a_edges[i]->rght->num);fflush(stdout);
     }
@@ -3585,7 +3621,7 @@ t_tree *Read_User_Tree(calign *cdata, t_mod *mod, option *io)
   PhyML_Printf("\n. Reading tree..."); fflush(NULL);
   if(io->n_trees == 1) rewind(io->fp_in_tree);
   tree = Read_Tree_File_Phylip(io->fp_in_tree);
-  if(!tree) Exit("\n. Input tree not found...");
+  if(!tree) Exit("\n== Input tree not found...");
   /* Add branch lengths if necessary */
   if(!tree->has_branch_lengths) Add_BioNJ_Branch_Lengths(tree,cdata,mod);
   return tree;
@@ -3772,13 +3808,13 @@ void Read_Clade_Priors(char *file_name, t_tree *tree)
 
   if(!n_clade_priors)
     {
-      PhyML_Printf("\n. PhyTime could not find any prior on node age.");
-      PhyML_Printf("\n. This is likely due to a problem in the calibration ");
-      PhyML_Printf("\n. file format. Make sure, for instance, that there is ");
-      PhyML_Printf("\n. a blank character between the end of the last name");
-      PhyML_Printf("\n. of each clade and the character `|'. Otherwise, ");
-      PhyML_Printf("\n. please refer to the example file.\n");
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== PhyTime could not find any prior on node age.");
+      PhyML_Printf("\n== This is likely due to a problem in the calibration ");
+      PhyML_Printf("\n== file format. Make sure, for instance, that there is ");
+      PhyML_Printf("\n== a blank character between the end of the last name");
+      PhyML_Printf("\n== of each clade and the character `|'. Otherwise, ");
+      PhyML_Printf("\n== please refer to the example file.\n");
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
       Warn_And_Exit("");
     }
 

@@ -583,13 +583,6 @@ void Free_String(t_string *ts)
 
 void Free_Custom_Model(t_mod *mod)
 {
-  if(mod->r_mat->rr->v)
-    {
-      Free(mod->r_mat->rr_num->v);
-      Free(mod->r_mat->rr->v);
-      Free(mod->r_mat->rr_val->v);
-      Free(mod->r_mat->n_rr_per_cat->v);
-    }
 }
 
 //////////////////////////////////////////////////////////////
@@ -613,6 +606,7 @@ void Free_Efrq(t_efrq *e_frq)
 
 void Free_Rmat(t_rmat *r_mat)
 {
+  
   Free(r_mat->rr->v);
   Free(r_mat->rr);
 

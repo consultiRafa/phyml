@@ -1182,7 +1182,7 @@ void MCMC_One_Time(t_node *a, t_node *d, int traversal, t_tree *tree)
 
 void MCMC_Jump_Calibration(t_tree *tree)
 {
-
+#ifdef SERGEII
   phydbl u;
   phydbl *proba_distr, *times_partial_proba; 
   phydbl cur_lnL_data, new_lnL_data;
@@ -1361,6 +1361,7 @@ void MCMC_Jump_Calibration(t_tree *tree)
     }
   else 
     return;
+#endif
 }
 
 //////////////////////////////////////////////////////////////

@@ -186,6 +186,21 @@ int main(int argc, char **argv)
                   Br_Len_Not_Involving_Invar(tree);
                   Unscale_Br_Len_Multiplier_Tree(tree);
 
+#ifdef BEAGLE
+                  if(mod->bootstrap == YES)
+                    {
+                      PhyML_Printf("\n== PhyML-BEAGLE does not support bootstrap analysis yet... ");
+                      Exit("\n");
+                    }
+                  if(mod->ras->invar == YES)
+                    {
+                      PhyML_Printf("\n== PhyML-BEAGLE does not support invariant site models yet... ");
+                      Exit("\n");
+                    }
+#endif
+
+
+
 #ifdef PHYML
                   if(io->in_tree == 1) Spr_Pars(tree);
 
@@ -195,8 +210,7 @@ int main(int argc, char **argv)
 		      else if(tree->mod->s_opt->topo_search == SPR_MOVE) Speed_Spr_Loop(tree);
 		      else                                               Best_Of_NNI_And_SPR(tree);
 
-                      if(tree->n_root)
-                          Add_Root(tree->a_edges[0],tree);
+                      if(tree->n_root) Add_Root(tree->a_edges[0],tree);
                     }
                   else
                     {

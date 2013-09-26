@@ -91,6 +91,7 @@ the GNU public licence. See http://www.opensource.org for details.
   PhyML accuracy and performances.
 \item { Vincent Lefort, St\'ephane Guindon, Patrice Duroux} and { Olivier Gascuel} conceived and
   implemented PhyML web server.
+\item { Imran Fanaswala} interfaced PhyML with BEAGLE.
 \item St\'ephane Guindon wrote this document.
 \end{itemize}
 }
@@ -213,20 +214,27 @@ mpirun -n 4 ./phyml-mpi -i myseq -b 100
 
 \noindent Please read section \ref{sec:parallel_bootstrap} of this document for more information.
 
-\subsection{Installing the accelerated version of PhyML -- PhyML+++}\label{sec:install_phyml_beagle}
+\subsection{Installing PhyML-BEAGLE}\label{sec:install_phyml_beagle}
 
-PhyML can use BEAGLE\cite{ayres2012beagle} library for its computations which provides 10x(single core) to 150x speedup(on GPUs). PhyML+++ has almost all the features of ``normal" PhyML, and will eventually replace PhyML. For the time being, users can compile PhyML and PhyML+++ and primarily use the latter and switch to the former if need be. Please note that in some cases, the final log-likelihood reported by PhyML and PhyML+++ may not exactly match (it typically matches up until 3-4 decimal places). This imprecision should not matter because the likelihood surface still correlates (i.e. we care about the precision of the MLE, not the likelihood).
+PhyML  can use  the  BEAGLE\cite{ayres12}  library for  the  likelihood computation.  BEAGLE
+provides provides  significant speed-up: the  single core  version of PhyML-BEAGLE  can be up  to 10
+times  faster  than  PhyML  on  a  single   core  and  up  to  150  times  on  Graphical  Processing
+Units. PhyML-BEAGLE  will eventually have of  the features of PhyML,  even though at  the moment the
+boostrap and the invariant site options are not available. Also, please note that in some cases, the
+final  log-likelihood  reported  by  PhyML  and  PhyML-BEALGE may  not  exactly  match,  though  the
+differences observed are very minor (in the 10$^{-4}$ to 10$^{-4}$ range).
 
-First download and install the BEAGLE library by reading the instructions here: \href{https://code.google.com/p/beagle-lib/}{https://code.google.com/p/beagle-lib/}. Then run the following commands:
+In  order to  install  PhyML-BEAGLE, you  first  need to  download and  install  the BEAGLE  library
+available from \url{https://code.google.com/p/beagle-lib/}.  Then run the following commands:
 
 {\setlength{\baselineskip}{0.5\baselineskip}
 \begin{verbatim}
 ./configure --enable-beagle;
 make clean;
 make;
-\end{verbatim}
-}
-A binary file named \x{phyml-beagle} has now been created in the \x{src/} directory and is ready to use.
+\end{verbatim} } A binary file named \x{phyml-beagle} will be created in the \x{src/} directory. The
+interface  to  \x{phyml-beagle} (i.e.,  commandline  option  of  PHYLIP-like interface)  is  exactly
+identical to that of PhyML.
 
 \section{Program usage.}\label{sec:phyml_new}
 

@@ -236,7 +236,7 @@ void Init_Tips_At_One_Site_Generic_Float(char *state, int ns, int state_len, int
       if(state_int > ns)
     {
       PhyML_Printf("\n. %s %d cstate: %.2s istate: %d state_len: %d.\n",__FILE__,__LINE__,state,state_int,state_len);
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
       Warn_And_Exit("");
     }
       p_lk[pos+state_int] = 1.;
@@ -263,13 +263,13 @@ void Init_Tips_At_One_Site_Generic_Int(char *state, int ns, int state_len, int p
       if(!sscanf(state,format,&state_int))
     {
       PhyML_Printf("\n. state='%c'",state);
-      PhyML_Printf("\n. Err in file %s at line %d\n\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
       Warn_And_Exit("");
     }
       if(state_int > ns)
     {
       PhyML_Printf("\n. %s %d cstate: %.2s istate: %d state_len: %d.\n",__FILE__,__LINE__,state,state_int,state_len);
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
       Warn_And_Exit("");
     }
       p_pars[pos+state_int] = 1;
@@ -733,7 +733,7 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
             {
                   printf("\n. tree: %s\n",Write_Tree(tree,NO));
                   PhyML_Printf("\n== b->num = %d  sum = %G root ? %d",sum,b->num,b == tree->e_root);
-                  PhyML_Printf("\n== Err. in file %s at line %d\n\n",__FILE__,__LINE__);
+                  PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
                   Exit("\n");
             }
 
@@ -1684,7 +1684,7 @@ void Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
   if(d->tax)
     {
       PhyML_Printf("\n== t_node %d is a leaf...",d->num);
-      PhyML_Printf("\n== Err. in file %s at line %d\n\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
       Warn_And_Exit("\n");
     }
 
@@ -2045,7 +2045,7 @@ matrix *ML_Dist(calign *data, t_mod *mod)
       else
         {
           PhyML_Printf("\n== sum = %f\n",sum);
-          PhyML_Printf("\n== Err. in file %s at line %d\n\n",__FILE__,__LINE__);
+          PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
           Exit("");
         }
 
@@ -2232,7 +2232,7 @@ void Init_P_Lk_Tips_Double(t_tree *tree)
       if(!tree->a_nodes[i]->c_seq || 
 	 strcmp(tree->a_nodes[i]->c_seq->name,tree->a_nodes[i]->name))
         {
-          PhyML_Printf("\n== Err. in file %s at line %d\n\n",__FILE__,__LINE__);
+          PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
           Exit("");
         }
     }
@@ -2301,7 +2301,7 @@ void Init_P_Lk_Tips_Int(t_tree *tree)
       if(!tree->a_nodes[i]->c_seq || 
 	 strcmp(tree->a_nodes[i]->c_seq->name,tree->a_nodes[i]->name))
         {
-          PhyML_Printf("\n== Err. in file %s at line %d\n\n",__FILE__,__LINE__);
+          PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
           Exit("");
         }
     }
@@ -2537,7 +2537,7 @@ void Update_P_Lk_Along_A_Path(t_node **path, int path_length, t_tree *tree)
           }
         else
           {
-        PhyML_Printf("\n== Err. in file %s at line %d\n\n",__FILE__,__LINE__);
+        PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
         Exit("");
           }
         break;
@@ -2545,7 +2545,7 @@ void Update_P_Lk_Along_A_Path(t_node **path, int path_length, t_tree *tree)
 #ifdef DEBUG
       if(j == 3)
     {
-      PhyML_Printf("\n== Err. in file %s at line %d\n\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
       Exit("");
     }
 #endif

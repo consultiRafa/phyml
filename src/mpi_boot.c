@@ -317,7 +317,7 @@ fprintf (stderr, "\ntask %d, sending bootstraps done\n", Global_myRank);
 fflush(stderr);
 #endif
           }
-          Free (t);
+          Free(t);
           Free(s);
         }
 
@@ -326,7 +326,7 @@ fflush(stdout);
 #endif
 
       /* if(boot_tree->mat) Free_Mat(boot_tree->mat); */
-      Free_Tree(boot_tree);      
+      Free_Tree(boot_tree);
       Free_Model(boot_mod);
 
       //Each process computes the Bip score sum for all its bootstrap trees

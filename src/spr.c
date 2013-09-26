@@ -2367,8 +2367,8 @@ void Make_Move (_move_ *move, int type, t_tree *tree)
 
   if(tree->c_lnL < cur_lk-tree->mod->s_opt->min_diff_lk_local)
     {
-      PhyML_Printf("\n. tree->c_lnL = %f cur_lk = %f",tree->c_lnL,cur_lk);
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== tree->c_lnL = %f cur_lk = %f",tree->c_lnL,cur_lk);
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
       Warn_And_Exit("");
     }
   cur_lk = new_lk;
@@ -3160,7 +3160,7 @@ void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
 
   if((link != b->left) && (link != b->rght))
     {
-      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
       Exit("\n");
     }
   else
@@ -3200,7 +3200,7 @@ void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
             {
               if(tree->io->fp_in_constraint_tree)
                 {
-                  PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+                  PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
                   Exit("\n");
                 }
 
@@ -3225,7 +3225,7 @@ void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
                   if(tree->best_pars != best_pars_move->pars)
                     {
                       PhyML_Printf("\n== best_pars = %d move_pars = %d",tree->best_pars,best_pars_move->pars);
-                      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+                      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
                       Exit("\n");
                     }
                   tree->n_improvements++;
@@ -3283,7 +3283,7 @@ int Test_All_Spr_Targets(t_edge *b_pulled, t_node *n_link, t_tree *tree)
 
   if(tree->mixt_tree != NULL)
     {
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
       Exit("\n");
     }
 
@@ -3472,7 +3472,7 @@ phydbl Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
 
   if(tree->mixt_tree != NULL)
     {
-      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
       Exit("\n");
     }
 
@@ -3715,7 +3715,7 @@ void Speed_Spr(t_tree *tree, int max_cycles)
   if(tree->lock_topo == YES)
     {
       PhyML_Printf("\n== The tree topology is locked.");
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
       Exit("\n");
     }
 
@@ -3777,7 +3777,7 @@ void Speed_Spr(t_tree *tree, int max_cycles)
           if(tree->c_lnL < old_lnL-tree->mod->s_opt->min_diff_lk_local)
             {
               PhyML_Printf("\n== old_lnL = %f c_lnL = %f",old_lnL,tree->c_lnL);
-              PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+              PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
               Exit("");
             }
         }
@@ -3786,7 +3786,7 @@ void Speed_Spr(t_tree *tree, int max_cycles)
           if(tree->c_pars > old_pars)
             {
               PhyML_Printf("\n== old_pars = %d c_pars = %d",old_pars,tree->c_pars);
-              PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+              PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
               Exit("");
             }
         }
@@ -3818,7 +3818,7 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
 
   if(tree->mixt_tree != NULL)
     {
-      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
       Exit("\n");
     }
 
@@ -3831,7 +3831,7 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
   if(!list_size && !tree->io->fp_in_constraint_tree)
     {
       PhyML_Printf("\n== List size is 0 !");
-      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
       Exit("\n");
     }
 
@@ -3843,7 +3843,7 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
       if(!move)
         {
           PhyML_Printf("\n== move is NULL\n");
-          PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+          PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
           Exit("\n");
         }
 
@@ -4137,7 +4137,7 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
       PhyML_Printf("\n. %p %p",move,move->b_target);
     }
 
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
       Exit("\n");
     }
 #endif
@@ -4161,7 +4161,7 @@ int Try_One_Spr_Move_Triple(t_spr *move, t_tree *tree)
 
   if(tree->mixt_tree != NULL)
     {
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
       Exit("\n");
     }
 
@@ -4283,7 +4283,7 @@ int Try_One_Spr_Move_Triple(t_spr *move, t_tree *tree)
           /*        tree->next->next->c_lnL, */
           /*        tree->next->next->c_lnL, */
           /*        tree->next->next->next->c_lnL); */
-          PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+          PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
           Exit("\n");
         }
 
@@ -4414,7 +4414,7 @@ void Include_One_Spr_To_List_Of_Spr(t_spr *move, t_tree *tree)
 
   if(tree->mixt_tree != NULL)
     {
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
       Exit("\n");
     }
 
@@ -4630,8 +4630,9 @@ void SPR_Shuffle(t_tree *mixt_tree)
           //Give the first two categories equal weights
           cat_wghts[0] = 0.5;
           cat_wghts[1] = 0.5;
-          for(int i=2;i<orig_catg[n];++i){
-              cat_wghts[i] = 0.0;
+          int i;
+          for(i=2;i<orig_catg[n];++i){
+            cat_wghts[i] = 0.0;
           }
           int ret = beagleSetCategoryWeights(tree->b_inst,0,cat_wghts);
           if(ret<0) {fprintf(stderr, "beagleSetCategoryWeights() on instance %i failed:%i\n\n",tree->b_inst,ret);Exit(""); }

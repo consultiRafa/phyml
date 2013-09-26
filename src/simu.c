@@ -48,10 +48,11 @@ void Simu_Loop(t_tree *mixt_tree)
       if(orig_catg[n] > 2) //should we even bother?
       {
           double cat_wghts[orig_catg[n]];
+          int i;
           //Give the first two rate categories equal weight
           cat_wghts[0] = 0.5;
           cat_wghts[1] = 0.5;
-          for(int i=2;i<orig_catg[n];++i){
+          for(i=2;i<orig_catg[n];++i){
               cat_wghts[i] = 0.0;
           }
           int ret = beagleSetCategoryWeights(tree->b_inst,0,cat_wghts);
@@ -210,8 +211,8 @@ int Simu(t_tree *tree, int n_step_max)
 
   if(tree->lock_topo)
     {
-      PhyML_Printf("\n. The tree topology is locked.");
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== The tree topology is locked.");
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
       Warn_And_Exit("");
     }
 

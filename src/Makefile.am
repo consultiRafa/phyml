@@ -103,7 +103,6 @@ make.c make.h\
 mixt.c mixt.h\
 init.c init.h\
 nexus.c nexus.h\
-sergeii.c sergeii.h\
 xml.c xml.h
 phytime_LDADD = -lm
 else 
@@ -294,7 +293,6 @@ make.c make.h\
 nexus.c nexus.h\
 init.c init.h\
 xml.c xml.h\
-sergeii.c sergeii.h\
 mixt.c mixt.h\
 mpi_boot.c mpi_boot.h
 phyml_mpi_LDADD = -lm
@@ -393,7 +391,6 @@ make.c make.h\
 nexus.c nexus.h\
 init.c init.h\
 xml.c xml.h\
-sergeii.c sergeii.h\
 mixt.c mixt.h
 evolve_LDADD = -lm 
 else
@@ -426,7 +423,6 @@ make.c make.h\
 nexus.c nexus.h\
 init.c init.h\
 xml.c xml.h\
-sergeii.c sergeii.h\
 mixt.c mixt.h\
 geo.c geo.h
 geo_LDADD = -lm 
@@ -460,7 +456,6 @@ make.c make.h\
 nexus.c nexus.h\
 init.c init.h\
 xml.c xml.h\
-sergeii.c sergeii.h\
 mixt.c mixt.h\
 checkpoint.c checkpoint.h
 checkpoint_LDADD = -lm
@@ -494,7 +489,6 @@ make.c make.h\
 nexus.c nexus.h\
 init.c init.h\
 xml.c xml.h\
-sergeii.c sergeii.h\
 mixt.c mixt.h\
 beagle_utils.c beagle_utils.h
 phyml_beagle_LDADD = -lm -lhmsbeagle
@@ -527,7 +521,6 @@ make.c make.h\
 nexus.c nexus.h\
 init.c init.h\
 xml.c xml.h\
-sergeii.c sergeii.h\
 mixt.c mixt.h
 phyml_LDADD = -lm
 endif

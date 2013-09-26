@@ -452,7 +452,7 @@ void MIXT_Turn_Branches_OnOff(int onoff, t_tree *mixt_tree)
 
   if(mixt_tree->is_mixt_tree == NO)
     {
-      PhyML_Printf("\n== Err. in file %s at line %d\n\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
       Exit("\n");
     }
 
@@ -690,7 +690,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
               if(!tree || tree->is_mixt_tree == YES)
                 {
                   PhyML_Printf("\n== %p",(void *)tree);
-                  PhyML_Printf("\n== Err. in file %s at line %d",__FILE__,__LINE__);
+                  PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
                   Exit("\n");
                 }
             }
@@ -971,7 +971,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
               For(class,mixt_tree->mod->ras->n_catg) PhyML_Printf("\n== rr=%f p=%f",mixt_tree->mod->ras->gamma_rr->v[class],mixt_tree->mod->ras->gamma_r_proba->v[class]);
               PhyML_Printf("\n== Pinv = %G",mixt_tree->mod->ras->pinvar->v);
               PhyML_Printf("\n== Bl mult = %G",mixt_tree->mod->br_len_multiplier->v);
-              PhyML_Printf("\n== Err. in file %s at line %d",__FILE__,__LINE__);
+              PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
               Exit("\n");
             }
 

@@ -68,6 +68,7 @@ dnl CFLAGS="-g"
 
 LDFLAGS="${ARGC_flag}"
 
+
 dnl LT_INIT
 dnl AC_PROG_LIBTOOL
 dnl Add option for compiling with debugging informations
@@ -78,6 +79,7 @@ AC_ARG_ENABLE([debug],
 AS_IF([test "x$enable_debug" = "xyes"],
       [CFLAGS="-ansi -pedantic -Wall -std=c99 -O0 -g"],
       [CFLAGS="-Wall -O2 -msse -fomit-frame-pointer -funroll-loops ${ARCH_flag}"])
+
 
 AC_ARG_ENABLE([gprof],
               [AS_HELP_STRING([--enable-gprof],
@@ -99,10 +101,11 @@ AC_ARG_ENABLE([win],
                               [Compile with mingw instead of gcc.])])
 AS_IF([test "x$enable_win" = "xyes"],[CC="i586-mingw32msvc-cc"])
 
+
 AC_ARG_ENABLE([beagle], [AS_HELP_STRING([--enable-beagle], [Compute likelihoods using BEAGLE library.])], [beagle=yes],[beagle=no])
 AS_IF([test "x$enable_beagle" = "xyes"],
-      [CFLAGS="-ansi -Wall -g -msse -std=c99 -pedantic ${BEAGLE_CFLAGS} ${BEAGLE_LIBS} ${ARCH_flag}"],
-      [CFLAGS="-ansi -Wall -g -msse -std=c99 ${ARCH_flag}"])
+      [CFLAGS="${CFLAGS} ${BEAGLE_CFLAGS} ${BEAGLE_LIBS} ${ARCH_flag}"],
+      [CFLAGS=${CFLAGS}])
 AS_IF([test "x$enable_beagle" = "xyes"], AC_DEFINE([BEAGLE],[1],[BEAGLE tag on]))
 AM_CONDITIONAL([WANT_BEAGLE], [test "$enable_beagle" = yes])
 
