@@ -791,7 +791,7 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
       Yule_val[i] = constant + times_lk;
 
       while(calib -> prev) calib = calib -> prev;
-      Exit("\n");
+      /* Exit("\n"); */
     }
  
   /* Exit("\n"); */
@@ -1012,7 +1012,7 @@ phydbl K_Constant_Prior_Times_Log(t_tree *tree)
   numb_approx = 0;
   max_K_val = 0;
   scl_const = 0.0;
-  /* lmbd = 1.0; */
+  /* lmbd = 4.0; */
   numb_unsuc = 0;
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2666,4 +2666,62 @@ int CombineInt(int int1, int int2)
 
   sprintf(cResult, "%d%d", int1, int2);
   return atoi(cResult);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+void Update_Current_Times_Down_Tree(t_node *a, t_node *d, t_tree *tree)
+{
+  int i; 
+  phydbl *t_prior_min, *t_prior_max, *nd_t, t_low, t_up;
+
+  t_prior_min = tree -> rates -> t_prior_min;
+  t_prior_max = tree -> rates -> t_prior_max;
+  nd_t = tree -> rates -> nd_t;
+
+
+  t_low = MAX(t_prior_min[d -> num], nd_t[a -> num]);
+  t_up  = t_prior_max[d -> num];  
+
+  //printf("\n. [1] Node number: [%d] \n", d -> num);
+  if(d -> tax) return;
+  else
+    {    
+      if(nd_t[d -> num] > t_up || nd_t[d -> num] < t_low)
+        { 
+          nd_t[d -> num] = Randomize_One_Node_Time(t_low, t_up);
+        }    
+      
+      For(i,3) 
+        if((d -> v[i] != d -> anc) && (d -> b[i] != tree -> e_root)) 
+          Update_Current_Times_Down_Tree(d, d -> v[i], tree);
+    }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+void Hastings_Ratio(t_node *a, t_node *d, phydbl *L_Hastings_ratio, t_tree *tree)
+{
+  int i; 
+  phydbl *t_prior_min, *t_prior_max, *nd_t, t_low, t_up;
+
+  t_prior_min = tree -> rates -> t_prior_min;
+  t_prior_max = tree -> rates -> t_prior_max;
+  nd_t = tree -> rates -> nd_t;
+
+
+  t_low = MAX(t_prior_min[d -> num], nd_t[a -> num]);
+  t_up  = t_prior_max[d -> num];  
+
+  //printf("\n. [1] Node number: [%d] \n", d -> num);
+  if(d -> tax) return;
+  else
+    {    
+      (*L_Hastings_ratio) += (- LOG(t_up - t_low));
+     
+      
+      For(i,3) 
+        if((d -> v[i] != d -> anc) && (d -> b[i] != tree -> e_root)) 
+          Hastings_Ratio(d, d -> v[i], L_Hastings_ratio, tree);
+    }
 }

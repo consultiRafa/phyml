@@ -35,5 +35,7 @@ void TIMES_Set_All_Node_Priors_Bottom_Up_S(t_node *a, t_node *d, int *result, t_
 void TIMES_Set_All_Node_Priors_Top_Down_S(t_node *a, t_node *d, int *result, t_tree *tree);
 phydbl LOG_g_i(phydbl lmbd, phydbl t_slice_max, phydbl t_slice_min, phydbl t_prior_max, phydbl t_prior_min);
 int CombineInt(int int1, int int2);
+void Update_Current_Times_Down_Tree(t_node *a, t_node *d, t_tree *tree);
+void Hastings_Ratio(t_node *a, t_node *d, phydbl *L_Hastings_ratio, t_tree *tree);
 #endif
 

@@ -1182,7 +1182,7 @@ void MCMC_One_Time(t_node *a, t_node *d, int traversal, t_tree *tree)
 
 void MCMC_Jump_Calibration(t_tree *tree)
 {
-#ifdef SERGEII
+
   phydbl u;
   phydbl *proba_distr, *times_partial_proba; 
   phydbl cur_lnL_data, new_lnL_data;
@@ -1214,7 +1214,11 @@ void MCMC_Jump_Calibration(t_tree *tree)
       RATES_Record_Rates(tree);
       RATES_Record_Times(tree);
       TIMES_Record_Prior_Times(tree);
-      
+
+      tree -> rates -> c_lnL_Hastings_ratio = 0.0; 
+      Hastings_Ratio(tree -> n_root, tree -> n_root -> v[1], &tree->rates->c_lnL_Hastings_ratio, tree);
+      Hastings_Ratio(tree -> n_root, tree -> n_root -> v[2], &tree->rates->c_lnL_Hastings_ratio, tree);
+       
       move_num = tree -> mcmc -> num_move_jump_calibration;
       //K = tree -> mcmc -> tune_move[move_num];
       cur_lnL_data = tree -> c_lnL;
@@ -1257,6 +1261,7 @@ void MCMC_Jump_Calibration(t_tree *tree)
  
       if(!Are_Equal(tree -> rates -> cur_comb_numb, comb_num, 1.E-10))
         {
+
           Set_Current_Calibration(comb_num, tree);
           TIMES_Set_All_Node_Priors(tree);
           
@@ -1274,8 +1279,12 @@ void MCMC_Jump_Calibration(t_tree *tree)
           new_lnL_Hastings_ratio = 0.0;
           if(result != TRUE)
             {
-              Update_Times_Down_Tree(tree -> n_root, tree -> n_root -> v[1], &new_lnL_Hastings_ratio, tree);
-              Update_Times_Down_Tree(tree -> n_root, tree -> n_root -> v[2], &new_lnL_Hastings_ratio, tree);
+              Update_Current_Times_Down_Tree(tree -> n_root, tree -> n_root -> v[1], tree);
+              Update_Current_Times_Down_Tree(tree -> n_root, tree -> n_root -> v[2], tree);
+              Hastings_Ratio(tree -> n_root, tree -> n_root -> v[1], &new_lnL_Hastings_ratio, tree);
+              Hastings_Ratio(tree -> n_root, tree -> n_root -> v[2], &new_lnL_Hastings_ratio, tree);
+              /* Update_Times_Down_Tree(tree -> n_root, tree -> n_root -> v[1], &new_lnL_Hastings_ratio, tree); */
+              /* Update_Times_Down_Tree(tree -> n_root, tree -> n_root -> v[2], &new_lnL_Hastings_ratio, tree); */
               tree -> rates -> c_lnL_Hastings_ratio = new_lnL_Hastings_ratio;
             }
           else
@@ -1331,6 +1340,7 @@ void MCMC_Jump_Calibration(t_tree *tree)
           ratio += (new_lnL_rate - cur_lnL_rate);
           ratio += (new_lnL_time - cur_lnL_time);
           ratio += (log_K_new - tree -> rates -> log_K_cur);
+          ratio += (LOG(times_partial_proba[comb_num]) - LOG(times_partial_proba[tree -> rates -> cur_comb_numb]));
           ratio += (cur_lnL_Hastings_ratio - new_lnL_Hastings_ratio); //Hastings ratio
           
           ratio = EXP(ratio); /* printf("\n ratio %f \n", ratio); */
@@ -1361,9 +1371,7 @@ void MCMC_Jump_Calibration(t_tree *tree)
     }
   else 
     return;
-#endif
 }
-
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
