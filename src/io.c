@@ -1264,15 +1264,15 @@ align **Get_Seq(option *io)
       }
     default:
       {
-    PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
-    Exit("\n");
-    break;
+        PhyML_Printf("\n== Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
+        Exit("\n");
+        break;
       }
     }
 
   if(!io->data)
     {
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
       Exit("\n");
     }
   else

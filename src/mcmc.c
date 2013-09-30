@@ -48,7 +48,9 @@ void MCMC(t_tree *tree)
       MCMC_Read_Param_Vals(tree);
     }
 
+#ifdef SERGEII
   tree -> rates -> log_K_cur = K_Constant_Prior_Times_Log(tree);
+#endif
 
   Switch_Eigen(YES,tree->mod);
 
@@ -1184,27 +1186,23 @@ void MCMC_Jump_Calibration(t_tree *tree)
 {
 
   phydbl u;
-  phydbl *proba_distr, *times_partial_proba; 
+  phydbl *calib_prior_cumprob, *calib_prior_prob; 
   phydbl cur_lnL_data, new_lnL_data;
   phydbl cur_lnL_rate, new_lnL_rate;
   phydbl cur_lnL_time, new_lnL_time;
-  phydbl cur_lnL_Hastings_ratio, new_lnL_Hastings_ratio;
-  phydbl log_K_new;
+  phydbl cur_lnL_proposal_density, new_lnL_proposal_density;
+  int new_calib_comb_num, cur_calib_comb_num;
+  phydbl log_K_cur,log_K_new;
   phydbl ratio,alpha;
-  //t_edge *b1,*b2,*b3;
-  int i, j, comb_num, result; //rnd_node
-  //phydbl t0,t2,t3;
-  //t_node *v2,*v3;
-  //phydbl K;
+  int i,result;
   int move_num;
-  int tot_num;
+  int tot_num_of_calib_comb;
   
-  tot_num = Number_Of_Comb(tree -> rates -> calib);
+  tot_num_of_calib_comb = Number_Of_Comb(tree -> rates -> calib);
 
-  if(tot_num > 1)
+  if(tot_num_of_calib_comb > 1)
     {
-      times_partial_proba = tree -> rates -> times_partial_proba;
-      proba_distr = (phydbl *)mCalloc(tot_num + 1, sizeof(phydbl)); 
+      calib_prior_prob    = tree -> rates -> times_partial_proba;
   
       ///////////////////////////////////////////////////////////////////////////////////////////
       //for(i = tree -> n_otu; i < 2 * tree -> n_otu - 1; i++) printf("\n. '%f' '%f' \n", tree -> rates -> t_prior_min[i], tree -> rates -> t_prior_max[i]);
@@ -1215,55 +1213,58 @@ void MCMC_Jump_Calibration(t_tree *tree)
       RATES_Record_Times(tree);
       TIMES_Record_Prior_Times(tree);
 
-      tree -> rates -> c_lnL_Hastings_ratio = 0.0; 
-      Hastings_Ratio(tree -> n_root, tree -> n_root -> v[1], &tree->rates->c_lnL_Hastings_ratio, tree);
-      Hastings_Ratio(tree -> n_root, tree -> n_root -> v[2], &tree->rates->c_lnL_Hastings_ratio, tree);
-      /* printf("\n. [1] = [%f] \n", tree -> rates -> c_lnL_Hastings_ratio);  */
+      cur_lnL_proposal_density = 0.0; 
+      Multiple_Time_Proposal_Density(tree -> n_root, tree -> n_root -> v[1], &cur_lnL_proposal_density, tree);
+      Multiple_Time_Proposal_Density(tree -> n_root, tree -> n_root -> v[2], &cur_lnL_proposal_density, tree);
        
       move_num = tree -> mcmc -> num_move_jump_calibration;
-      //K = tree -> mcmc -> tune_move[move_num];
+      
       cur_lnL_data = tree -> c_lnL;
       cur_lnL_rate = tree -> rates -> c_lnL_rates;
-      cur_lnL_Hastings_ratio = tree -> rates -> c_lnL_Hastings_ratio;
-      new_lnL_data = cur_lnL_data;
-      new_lnL_rate = cur_lnL_rate;
-      new_lnL_Hastings_ratio = cur_lnL_Hastings_ratio;
+      
+      new_lnL_data             = cur_lnL_data;
+      new_lnL_rate             = cur_lnL_rate;
+      new_lnL_proposal_density = cur_lnL_proposal_density;
+      
       ratio = 0.0;
       cur_lnL_time = tree -> rates -> c_lnL_times;
       new_lnL_time = cur_lnL_time;
-      
-      //printf("\n. [%d] \n", tot_num); 
-      //For(i, tot_num) printf("\n. [%f] \n", times_partial_proba[i]); 
 
-      proba_distr[0]  = 0.0;
-      for(i = 1; i < tot_num + 1; i++)
+      cur_calib_comb_num = tree -> rates -> cur_comb_numb;
+      new_calib_comb_num = cur_calib_comb_num;
+
+      log_K_cur = tree->rates->log_K_cur;
+      log_K_new = log_K_cur;
+
+      calib_prior_cumprob = (phydbl *)mCalloc(tot_num_of_calib_comb, sizeof(phydbl)); 
+
+      // Calculate the cumulative prior probabilities for the calibration combinations
+      // Note: these cumulative probabilities are set by the user and do not change during the
+      // estimation. There is thus no need to calculate them every time the Jump_Calibration function
+      // is called.
+      calib_prior_cumprob[0] = calib_prior_prob[0]; 
+      For(i,tot_num_of_calib_comb-1) calib_prior_cumprob[i+1] += calib_prior_cumprob[i];
+
+      if(!Are_Equal(calib_prior_cumprob[tot_num_of_calib_comb-1],1.0,1.E-6))
         {
-          For(j, i)
-            {
-              proba_distr[i] = proba_distr[i] + times_partial_proba[j];
-            }
-          //printf("\n. [%f] \n", proba_distr[i]); 
+          PhyML_Printf("\n== The sum of probabilities of the calibration combinations is not 1.0 (%f).",calib_prior_cumprob[tot_num_of_calib_comb-1]);
+          PhyML_Printf("\n== Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
+          Exit("\n");
         }
-      //For(i, tot_num + 1) printf("\n. [%f] \n", proba_distr[i]); 
+
+
+      // Sample a combination of calibration from the corresponding probability distribution
       u = Uni();
-      comb_num = -1;
-      For(i, tot_num) 
-        {
-          if(u > proba_distr[i] && (Are_Equal(proba_distr[i + 1], u, 1.E-10) || u < proba_distr[i + 1]))
-            {
-              //printf("\n. u [%f] [%f] [%f]\n", u, proba_distr[i], proba_distr[i + 1]);
-              comb_num = i + 1;
-            }
-        }
-      //printf("\n. [%d] \n", comb_num); 
-      //Exit("\n");  
+      For(i,tot_num_of_calib_comb) if(u < calib_prior_cumprob[i]) break;
+      new_calib_comb_num = i;
+      
+      Free(calib_prior_cumprob);
 
-      comb_num = comb_num - 1;    
  
-      if(!Are_Equal(tree -> rates -> cur_comb_numb, comb_num, 1.E-10))
+      if(cur_calib_comb_num != new_calib_comb_num)
         {
 
-          Set_Current_Calibration(comb_num, tree);
+          Set_Current_Calibration(new_calib_comb_num, tree);
           TIMES_Set_All_Node_Priors(tree);
           
           result = TRUE;
@@ -1272,30 +1273,26 @@ void MCMC_Jump_Calibration(t_tree *tree)
           Check_Node_Time(tree -> n_root, tree -> n_root -> v[2], &result, tree);
           
           ///////////////////////////////////////////////////////////////////////////////////////////
-          //if((comb_num - 1) == 1) for(i = tree -> n_otu; i < 2 * tree -> n_otu -1; i++) printf("\n. Node number:%d Min:%f Max:%f Cur.time:%f \n", i, tree -> rates -> t_prior_min[i], tree -> rates -> t_prior_max[i], tree -> rates -> nd_t[i]);
+          //if((select_calib_comb_num - 1) == 1) for(i = tree -> n_otu; i < 2 * tree -> n_otu -1; i++) printf("\n. Node number:%d Min:%f Max:%f Cur.time:%f \n", i, tree -> rates -> t_prior_min[i], tree -> rates -> t_prior_max[i], tree -> rates -> nd_t[i]);
           /* PhyML_Printf("\n. .......................................................................\n"); */
           ///////////////////////////////////////////////////////////////////////////////////////////
           //PhyML_Printf("\n. Result:%d \n", result);  
           
-          new_lnL_Hastings_ratio = 0.0;
           if(result != TRUE)
             {
               Update_Current_Times_Down_Tree(tree -> n_root, tree -> n_root -> v[1], tree);
               Update_Current_Times_Down_Tree(tree -> n_root, tree -> n_root -> v[2], tree);
-              Hastings_Ratio(tree -> n_root, tree -> n_root -> v[1], &new_lnL_Hastings_ratio, tree);
-              Hastings_Ratio(tree -> n_root, tree -> n_root -> v[2], &new_lnL_Hastings_ratio, tree);
-              tree -> rates -> c_lnL_Hastings_ratio = new_lnL_Hastings_ratio;
+              new_lnL_proposal_density = 0.0;
+              Multiple_Time_Proposal_Density(tree -> n_root, tree -> n_root -> v[1], &new_lnL_proposal_density, tree);
+              Multiple_Time_Proposal_Density(tree -> n_root, tree -> n_root -> v[2], &new_lnL_proposal_density, tree);
               /* printf("\n. [2] = [%f] \n", new_lnL_Hastings_ratio);  */
             }
           else
             { 
-              free(proba_distr);
               tree -> mcmc -> acc_move[move_num]++;    
               tree -> mcmc -> run_move[move_num]++;
               return; 
             }
-          //PhyML_Printf("\n. Hastings Ratio:%f \n", cur_lnL_Hastings_ratio);  
-          //PhyML_Printf("\n. Hastings Ratio:%f \n", new_lnL_Hastings_ratio);  
           
           result = TRUE;
           
@@ -1315,15 +1312,11 @@ void MCMC_Jump_Calibration(t_tree *tree)
               PhyML_Printf("\n. ................. NEW PROPOSED CALIBRATION ................................\n");
               for(i = tree -> n_otu; i < 2 * tree -> n_otu -1; i++) printf("\n. Node number:[%d] Lower bound:[%f] Upper bound:[%f] Node time:[%f]. \n", i, tree -> rates -> t_prior_min[i], tree -> rates -> t_prior_max[i], tree -> rates -> nd_t[i]);
               PhyML_Printf("\n. ...........................................................................\n");
-              PhyML_Printf("\n==You have a problem with calibration information.\n");
-              PhyML_Printf("\n==Err in file %s at line %d\n",__FILE__,__LINE__);
+              PhyML_Printf("\n== There is  a problem with the calibration information provided.\n");
+              PhyML_Printf("\n== Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
               Exit("\n");
             }
           
-          
-          ///////////////////////////////////////////////////////////////////////////////////////////
-          //Exit("\n");
-          ///////////////////////////////////////////////////////////////////////////////////////////
           
           For(i,2*tree->n_otu-2) tree->rates->br_do_updt[i] = YES;
           RATES_Update_Cur_Bl(tree);
@@ -1336,12 +1329,11 @@ void MCMC_Jump_Calibration(t_tree *tree)
           /* Likelihood ratio */
           if(tree->mcmc->use_data) ratio += (new_lnL_data - cur_lnL_data);
           
-          /* Prior ratio */
           ratio += (new_lnL_rate - cur_lnL_rate);
           ratio += (new_lnL_time - cur_lnL_time);
-          ratio += (log_K_new - tree -> rates -> log_K_cur);
-          ratio += (LOG(times_partial_proba[comb_num]) - LOG(times_partial_proba[tree -> rates -> cur_comb_numb]));
-          ratio += (cur_lnL_Hastings_ratio - new_lnL_Hastings_ratio); //Hastings ratio
+          ratio += (log_K_new - log_K_cur);
+          ratio += (LOG(calib_prior_prob[new_calib_comb_num]) - LOG(calib_prior_prob[cur_calib_comb_num]));
+          ratio += (cur_lnL_proposal_density - new_lnL_proposal_density); // Hastings ratio
           
           ratio = EXP(ratio); /* printf("\n ratio %f \n", ratio); */
           alpha = MIN(1.,ratio);
@@ -1352,19 +1344,19 @@ void MCMC_Jump_Calibration(t_tree *tree)
               RATES_Reset_Times(tree);
               Restore_Br_Len(tree);
               TIMES_Reset_Prior_Times(tree);
-              tree->c_lnL = cur_lnL_data;
-              tree->rates->c_lnL_rates = cur_lnL_rate;
-              tree->rates->c_lnL_times = cur_lnL_time;
-              tree->rates->c_lnL_Hastings_ratio = cur_lnL_Hastings_ratio;
+              tree->c_lnL                    = cur_lnL_data;
+              tree->rates->c_lnL_rates       = cur_lnL_rate;
+              tree->rates->c_lnL_times       = cur_lnL_time;
+              tree -> rates -> log_K_cur     = log_K_cur;
+              tree -> rates -> cur_comb_numb = cur_calib_comb_num;
             }
           else
             {
               tree -> rates -> log_K_cur     = log_K_new;
-              tree -> rates -> cur_comb_numb = comb_num;
+              tree -> rates -> cur_comb_numb = new_calib_comb_num;
               tree->mcmc->acc_move[move_num]++;
             }      
           tree->mcmc->run_move[move_num]++;
-          free(proba_distr);
         }
       else
         return;

@@ -749,7 +749,6 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
   /* constant = tree -> K; */
 
   tot_num_comb = Number_Of_Comb(calib);
-
   
   Yule_val = (phydbl *)mCalloc(tot_num_comb, sizeof(phydbl));    
   /* times_partial_proba = (phydbl *)mCalloc(tot_num_comb, sizeof(phydbl));    */
@@ -2337,7 +2336,6 @@ void Update_Times_Down_Tree(t_node *a, t_node *d, phydbl *L_Hastings_ratio, t_tr
   t_prior_max = tree -> rates -> t_prior_max;
   nd_t = tree -> rates -> nd_t;
 
-
   t_low = MAX(t_prior_min[d -> num], nd_t[a -> num]);
   t_up  = t_prior_max[d -> num];  
 
@@ -2700,7 +2698,8 @@ void Update_Current_Times_Down_Tree(t_node *a, t_node *d, t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-void Hastings_Ratio(t_node *a, t_node *d, phydbl *L_Hastings_ratio, t_tree *tree)
+
+void Multiple_Time_Proposal_Density(t_node *a, t_node *d, phydbl *time_proposal_density, t_tree *tree)
 {
   int i; 
   phydbl *t_prior_min, *t_prior_max, *nd_t, t_low, t_up;
@@ -2720,11 +2719,10 @@ void Hastings_Ratio(t_node *a, t_node *d, phydbl *L_Hastings_ratio, t_tree *tree
       /* t_up  = MIN(t_prior_max[d -> num], MIN(nd_t[d -> v[1] -> num], nd_t[d -> v[2] -> num])); */
       /* printf("\n. Low [%f] Up [%f] \n", t_low, t_up); */
 
-      (*L_Hastings_ratio) += (- LOG(t_up - t_low));
-     
-      
+      (*time_proposal_density) += (- LOG(t_up - t_low));
+           
       For(i,3) 
         if((d -> v[i] != d -> anc) && (d -> b[i] != tree -> e_root)) 
-          Hastings_Ratio(d, d -> v[i], L_Hastings_ratio, tree);
+          Multiple_Time_Proposal_Density(d, d -> v[i], time_proposal_density, tree);
     }
 }
