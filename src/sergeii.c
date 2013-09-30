@@ -2710,13 +2710,16 @@ void Hastings_Ratio(t_node *a, t_node *d, phydbl *L_Hastings_ratio, t_tree *tree
   nd_t = tree -> rates -> nd_t;
 
 
-  t_low = MAX(t_prior_min[d -> num], nd_t[a -> num]);
-  t_up  = t_prior_max[d -> num];  
-
   //printf("\n. [1] Node number: [%d] \n", d -> num);
   if(d -> tax) return;
   else
-    {    
+    { 
+
+      t_low = MAX(t_prior_min[d -> num], nd_t[a -> num]);
+      t_up  = t_prior_max[d -> num];
+      /* t_up  = MIN(t_prior_max[d -> num], MIN(nd_t[d -> v[1] -> num], nd_t[d -> v[2] -> num])); */
+      /* printf("\n. Low [%f] Up [%f] \n", t_low, t_up); */
+
       (*L_Hastings_ratio) += (- LOG(t_up - t_low));
      
       

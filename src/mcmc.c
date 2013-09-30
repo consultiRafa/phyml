@@ -1218,6 +1218,7 @@ void MCMC_Jump_Calibration(t_tree *tree)
       tree -> rates -> c_lnL_Hastings_ratio = 0.0; 
       Hastings_Ratio(tree -> n_root, tree -> n_root -> v[1], &tree->rates->c_lnL_Hastings_ratio, tree);
       Hastings_Ratio(tree -> n_root, tree -> n_root -> v[2], &tree->rates->c_lnL_Hastings_ratio, tree);
+      /* printf("\n. [1] = [%f] \n", tree -> rates -> c_lnL_Hastings_ratio);  */
        
       move_num = tree -> mcmc -> num_move_jump_calibration;
       //K = tree -> mcmc -> tune_move[move_num];
@@ -1283,9 +1284,8 @@ void MCMC_Jump_Calibration(t_tree *tree)
               Update_Current_Times_Down_Tree(tree -> n_root, tree -> n_root -> v[2], tree);
               Hastings_Ratio(tree -> n_root, tree -> n_root -> v[1], &new_lnL_Hastings_ratio, tree);
               Hastings_Ratio(tree -> n_root, tree -> n_root -> v[2], &new_lnL_Hastings_ratio, tree);
-              /* Update_Times_Down_Tree(tree -> n_root, tree -> n_root -> v[1], &new_lnL_Hastings_ratio, tree); */
-              /* Update_Times_Down_Tree(tree -> n_root, tree -> n_root -> v[2], &new_lnL_Hastings_ratio, tree); */
               tree -> rates -> c_lnL_Hastings_ratio = new_lnL_Hastings_ratio;
+              /* printf("\n. [2] = [%f] \n", new_lnL_Hastings_ratio);  */
             }
           else
             { 
