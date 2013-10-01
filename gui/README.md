@@ -3,8 +3,6 @@ Requirements
 
  * Java (version = 6) 
  * maven (version >= 3)
- * git
- * m2e eclipse plugin (should be default in Juno)
  
 Downloads
 ----------------
