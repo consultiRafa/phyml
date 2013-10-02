@@ -1357,6 +1357,7 @@ typedef struct __T_Rate {
 
   phydbl log_K_cur;
   int cur_comb_numb;
+  int *numb_calib_chosen;
 
 }t_rate;
 
