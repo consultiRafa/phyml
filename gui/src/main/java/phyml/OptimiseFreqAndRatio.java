@@ -1,22 +1,18 @@
 package phyml;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JTextField;
+import javax.swing.*;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 /**
  * This JPanel implements the components to specify whether the "Equilibrium
  * Frequency" is optimised or not and whether the "Transition/Transversion Ratio"
  * is estimated or user defined.
- * 
+ *
  * @author Christoph Knapp
  * @date 02/07/12
  */
@@ -26,8 +22,8 @@ public class OptimiseFreqAndRatio extends JPanel implements ActionListener {
 	 */
 	private static final long serialVersionUID = 1L;
 	private JLabel ratioLab;
-	private JRadioButton choice1;
-	private JRadioButton choice2;
+	private JRadioButton estimatedRadioButton;
+	private JRadioButton fixedRadioButton;
 	private CustomTextField ratioField;
 	private final static String DNA = "DNA";
 	private final static String AA = "AA";
@@ -38,16 +34,16 @@ public class OptimiseFreqAndRatio extends JPanel implements ActionListener {
 	 * This JPanel implements the components to specify whether the "Equilibrium
 	 * Frequency" is optimised or not and whether the "Transition/Transversion"
 	 * ratio is estimated or user defined.
-	 * 
+	 *
 	 * @param moleculeType
 	 * String : Which molecule type the data is (DNA or AA).
 	 */
 	public OptimiseFreqAndRatio(String moleculeType) {
 		this.moleculeType = moleculeType;
 		ratioLab = new JLabel("Transition/Transversion Ratio");
-		choice1 = new JRadioButton("Estimated");
-		choice1.setSelected(true);
-		choice2 = new JRadioButton("Fixed");
+		estimatedRadioButton = new JRadioButton("Estimated");
+		estimatedRadioButton.setSelected(true);
+		fixedRadioButton = new JRadioButton("Fixed");
 		ratioField = new CustomTextField("4.0");
 		ratioField.setEnabled(false);
 		if (moleculeType.equals(DNA)) {
@@ -56,13 +52,13 @@ public class OptimiseFreqAndRatio extends JPanel implements ActionListener {
 			isDNA = false;
 			ratioLab.setVisible(false);
 			ratioField.setVisible(false);
-			choice1.setVisible(false);
-			choice2.setVisible(false);
+			estimatedRadioButton.setVisible(false);
+			fixedRadioButton.setVisible(false);
 		}
-		choice1.addActionListener(this);
-		choice2.addActionListener(this);
-		
-		
+		estimatedRadioButton.addActionListener(this);
+		fixedRadioButton.addActionListener(this);
+
+
 		CustomGridLayout layout = new CustomGridLayout();
 		setLayout(layout);
 		layout.setDimensions(1, 0.1);
@@ -81,9 +77,9 @@ public class OptimiseFreqAndRatio extends JPanel implements ActionListener {
 		lo1.setDimensions(0.2, 1);
 		p1.add(new JPanel());
 		lo1.setDimensions(0.4, 1);
-		p1.add(choice1);
+		p1.add(estimatedRadioButton);
 		lo1.setDimensions(0.4, 1);
-		p1.add(choice2);
+		p1.add(fixedRadioButton);
 		layout.setDimensions(0.01, 0.9);
 		add(new JPanel());
 	}
@@ -97,20 +93,20 @@ public class OptimiseFreqAndRatio extends JPanel implements ActionListener {
 //				ratioField.setEnabled(false);
 //			}
 //		}
-		if (e.getSource() == choice1) {
-			if(choice1.isSelected()){
-				choice2.setSelected(false);
+		if (e.getSource() == estimatedRadioButton) {
+			if(estimatedRadioButton.isSelected()){
+				fixedRadioButton.setSelected(false);
 				ratioField.setEnabled(false);
 			}else{
-				choice2.setSelected(true);
+				fixedRadioButton.setSelected(true);
 				ratioField.setEnabled(true);
 			}
-		}else if(e.getSource() == choice2){
-			if(choice2.isSelected()){
-				choice1.setSelected(false);
+		}else if(e.getSource() == fixedRadioButton){
+			if(fixedRadioButton.isSelected()){
+				estimatedRadioButton.setSelected(false);
 				ratioField.setEnabled(true);
 			}else{
-				choice1.setSelected(true);
+				estimatedRadioButton.setSelected(true);
 				ratioField.setEnabled(false);
 			}
 		}
@@ -119,7 +115,7 @@ public class OptimiseFreqAndRatio extends JPanel implements ActionListener {
 	/**
 	 * When the Moleculetype is changed in a DataType object the moleculetype
 	 * needs to change here as well.
-	 * 
+	 *
 	 * @param moleType
 	 * String : Whether "DNA" or "AA" is selected in the DataType JPanel
 	 */
@@ -131,8 +127,8 @@ public class OptimiseFreqAndRatio extends JPanel implements ActionListener {
 //			optimiseBox.setVisible(true);
 			ratioLab.setVisible(true);
 //			ratioBox.setVisible(true);
-			choice1.setVisible(true);
-			choice2.setVisible(true);
+			estimatedRadioButton.setVisible(true);
+			fixedRadioButton.setVisible(true);
 			ratioField.setVisible(true);
 		} else if (moleType.equals(AA)) {
 			isDNA = false;
@@ -140,15 +136,15 @@ public class OptimiseFreqAndRatio extends JPanel implements ActionListener {
 //			optimiseBox.setVisible(false);
 			ratioLab.setVisible(false);
 //			ratioBox.setVisible(false);
-			choice1.setVisible(false);
-			choice2.setVisible(false);
+			estimatedRadioButton.setVisible(false);
+			fixedRadioButton.setVisible(false);
 			ratioField.setVisible(false);
 		}
 	}
 
 	/**
 	 * Retrieves whether "DNA" or "AA" is set as molecule type.
-	 * 
+	 *
 	 * @return
 	 * boolean : returns true if molecule type is "DNA" and false when "AA".
 	 */
@@ -169,7 +165,7 @@ public class OptimiseFreqAndRatio extends JPanel implements ActionListener {
 		/**
 		 * Constructor only accepting Strings which can be converted into
 		 * Double.
-		 * 
+		 *
 		 * @param string
 		 * String : Needs to be convertable into a Double value or it will
 		 * not be accepted. Otherwise it sets the displayed default
@@ -189,10 +185,10 @@ public class OptimiseFreqAndRatio extends JPanel implements ActionListener {
 
 		/**
 		 * tests whether the input value can be converted into a Double value.
-		 * 
+		 *
 		 * @param str
 		 * String : TextField input String
-		 * @return 
+		 * @return
 		 * boolean : true if str can be converted, false otherwise
 		 */
 		private boolean isNumber(String str) {
@@ -230,15 +226,15 @@ public class OptimiseFreqAndRatio extends JPanel implements ActionListener {
 
 	/**
 	 * Returns whether the TS/TV ratio is estimated or fixed.
-	 * 
-	 * @return 
+	 *
+	 * @return
 	 * String : "e" for estimated or Double value from CustomTextField for fixed
 	 * or "" otherwise.
 	 */
 	public String getTsTvRatio() {
 		if (moleculeType.equals(DNA)) {
 //			if (ratioBox.getSelectedItem().toString().equals("estimated")) {
-			if (choice1.isSelected()) {
+			if (estimatedRadioButton.isSelected()) {
 				return "e";
 			}
 			return ratioField.getText();
@@ -247,22 +243,26 @@ public class OptimiseFreqAndRatio extends JPanel implements ActionListener {
 	}
 	/**
 	 * Enables or disables the Transition/Transversion Ratio dropdownmenu.
-	 * 
+	 *
 	 * @param off
 	 * boolean : if true disabled otherwise enabled;
 	 */
 	public void setRatioBoxOff(boolean off){
 //		ratioBox.setEnabled(!off);
-		choice1.setEnabled(!off);
-		choice2.setEnabled(!off);
-	}
+        fixedRadioButton.setSelected(true);
+        estimatedRadioButton.setSelected(false);
+		estimatedRadioButton.setEnabled(!off);
+		fixedRadioButton.setEnabled(!off);
+
+
+    }
 	/**
 	 * Sets the index of ratioBox to 0.
 	 */
 	public void setRatioBoxDefault() {
 //		ratioBox.setSelectedIndex(0);
-		choice1.setSelected(true);
-		choice2.setSelected(false);
+		estimatedRadioButton.setSelected(true);
+		fixedRadioButton.setSelected(false);
 	}
 
 }

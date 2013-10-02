@@ -1,13 +1,12 @@
 package phyml;
 
-import java.awt.Color;
-
-import javax.swing.JPanel;
+import javax.swing.*;
+import java.awt.*;
 
 /**
  * JPanel implementing all components necessary for specifying the
  * "Substitution Model" parameters.
- * 
+ *
  * @author Christoph Knapp
  */
 
@@ -24,7 +23,7 @@ public class SubstitutionModelPhyml extends JPanel {
 	/**
 	 * JPanel implementing all components necessary for specifying the
 	 * "Substitution Model" parameters.
-	 * 
+	 *
 	 * @param molecularType
 	 *            : whether DNA or AA is "Data Type"
 	 */
@@ -39,17 +38,20 @@ public class SubstitutionModelPhyml extends JPanel {
 		layout.setDimensions(1, 0.08);
 		oFAR = new OptimiseFreqAndRatio("DNA");
 		add(oFAR);
+        sM.setOptimiseFreqAndRatioPanel(oFAR);
 		layout.setDimensions(1, 0.16);
 		pAS = new ProportionAndSubrate();
 		add(pAS);
+        sM.setProportionAndSubratePanel(pAS);
 		layout.setDimensions(1, 0.24);
 		nSCGA = new NumSubCatGammaAverage();
 		add(nSCGA);
+        sM.setNumSubCatGammaAveragePanel(nSCGA);
 	}
 
 	/**
 	 * Retrieves the type of Substitution model from a SubModel object.
-	 * 
+	 *
 	 * @return -m (or --model) model name<br>
 	 *         model name : substitution model name.<br>
 	 *         - Nucleotide-based models: HKY85 (default) | JC69 | K80 | F81 |
@@ -78,7 +80,7 @@ public class SubstitutionModelPhyml extends JPanel {
 
 	/**
 	 * Retrieves the path to the Amino Acid rate file specified by the user.
-	 * 
+	 *
 	 * @return --aa rate file file name This option is compulsory when analysing
 	 *         amino-acid sequences under a ‘custom’ model. file name should
 	 *         provide a rate matrix and equilibrium amino acid in PAML format
@@ -91,7 +93,7 @@ public class SubstitutionModelPhyml extends JPanel {
 	/**
 	 * Retrieve the frequencies if custom model was selected and nucleotide
 	 * frequencies were specified.
-	 * 
+	 *
 	 * @return -f e, m, or “fA,fC,fG,fT”<br>
 	 *         Nucleotide or amino-acid frequencies.<br>
 	 *         - e : the character frequencies are determined as follows : -
@@ -116,7 +118,7 @@ public class SubstitutionModelPhyml extends JPanel {
 
 	/**
 	 * Retrieves the TS/TV ratio for the given Substitution Model.
-	 * 
+	 *
 	 * @return -t (or --ts/tv) ts/tv ratio ts/tv ratio: transition/transversion
 	 *         ratio. DNA sequences only. Can be a fixed positive value (e.g.,
 	 *         4.0) or type e to get the maximum likelihood estimate.
@@ -128,7 +130,7 @@ public class SubstitutionModelPhyml extends JPanel {
 	/**
 	 * Retrieves the proportion of invariable sites parameter from the
 	 * ProportionAndSubrate panel.
-	 * 
+	 *
 	 * @return -v (or --pinv) prop invar prop invar: proportion of invariable
 	 *         sites. Can be a fixed value in the [0,1] range or type e to get
 	 *         the maximum likelihood estimate.
@@ -140,7 +142,7 @@ public class SubstitutionModelPhyml extends JPanel {
 	/**
 	 * Retrieves the number of substitution categories from
 	 * NumSubCatGammaAverage object.
-	 * 
+	 *
 	 * @return -c (or --nclasses) nb subst cat nb subst cat: number of relative
 	 *         substitution rate categories. Default: nb subst cat=4. Must be a
 	 *         positive integer.
@@ -151,7 +153,7 @@ public class SubstitutionModelPhyml extends JPanel {
 
 	/**
 	 * Retrieves the Alpha value as a String from NumSubCatGammaAverage object.
-	 * 
+	 *
 	 * @return -a (or --alpha) gamma gamma: value of the gamma shape parameter.
 	 *         Can be a fixed positive value or e to get the maximum likelihood
 	 *         estimate. The value of this parameter is estimated in the maximum
@@ -164,7 +166,7 @@ public class SubstitutionModelPhyml extends JPanel {
 	/**
 	 * Retrieves whether the median or the mean is used as average from a
 	 * NumSubCatGammaAverage object.
-	 * 
+	 *
 	 * @return --use median The middle of each substitution rate class in the
 	 *         discrete gamma distribution is taken as the median. The mean is
 	 *         used by default.
@@ -175,7 +177,7 @@ public class SubstitutionModelPhyml extends JPanel {
 
 	/**
 	 * Retrieves the optimised rate parameter from a SubModel object.
-	 * 
+	 *
 	 * @return --free rates As an alternative to the discrete gamma model, it is
 	 *         possible to estimate the (relative) rate in each class of the
 	 *         (mixture) model and the corresponding frequencies. This model has
@@ -189,7 +191,7 @@ public class SubstitutionModelPhyml extends JPanel {
 	/**
 	 * Sets all components in the NumSubCatGammaAverage object to visible or not
 	 * visible.
-	 * 
+	 *
 	 * @param b
 	 *            boolean : true if visible, false otherwise.
 	 */
@@ -200,7 +202,7 @@ public class SubstitutionModelPhyml extends JPanel {
 	/**
 	 * Forwards the change of the molecule type to an OptimiseFreqAndRatio
 	 * object.
-	 * 
+	 *
 	 * @param string
 	 *            String : either "DNA" or "AA"
 	 */
@@ -210,7 +212,7 @@ public class SubstitutionModelPhyml extends JPanel {
 	}
 	/**
 	 * Enables or disables the dropdownmenu for changing the Transition/Transversion ratio.
-	 * 
+	 *
 	 * @param off
 	 * boolean : if true disabled otherwise enabled
 	 */

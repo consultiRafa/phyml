@@ -22,25 +22,25 @@ public class ProportionAndSubrate extends JPanel implements ActionListener {
 	 */
 	private static final long serialVersionUID = 1L;
 	private CustomTextField parameter;
-	private JRadioButton choice1;
-	private JRadioButton choice2;
-	private JRadioButton choice3;
-	private JRadioButton choice4;
+	private JRadioButton proportionInvariableSitesEstimatedRadioButton;
+	private JRadioButton proportionInvariableSitesFixedRadioButton;
+	private JRadioButton variableRatesNoRadioButton;
+	private JRadioButton variableRatesYesRadioButton;
 
 	/**
 	 * Constructor method.
 	 */
 	public ProportionAndSubrate() {
 		parameter = new CustomTextField("0.00");
-		choice1 = new JRadioButton("Estimated");
-		choice2 = new JRadioButton("Fixed");
-		choice3 = new JRadioButton("No");
-		choice4 = new JRadioButton("Yes");
-		choice1.addActionListener(this);
-		choice2.addActionListener(this);
-		choice3.addActionListener(this);
-		choice4.addActionListener(this);
-		choice1.setSelected(true);
+		proportionInvariableSitesEstimatedRadioButton = new JRadioButton("Estimated");
+		proportionInvariableSitesFixedRadioButton = new JRadioButton("Fixed");
+		variableRatesNoRadioButton = new JRadioButton("No");
+		variableRatesYesRadioButton = new JRadioButton("Yes");
+		proportionInvariableSitesEstimatedRadioButton.addActionListener(this);
+		proportionInvariableSitesFixedRadioButton.addActionListener(this);
+		variableRatesNoRadioButton.addActionListener(this);
+		variableRatesYesRadioButton.addActionListener(this);
+		proportionInvariableSitesEstimatedRadioButton.setSelected(true);
 
 		CustomGridLayout layout = new CustomGridLayout();
 		setLayout(layout);
@@ -60,9 +60,9 @@ public class ProportionAndSubrate extends JPanel implements ActionListener {
 		lo1.setDimensions(0.2, 1);
 		p1.add(new JPanel());
 		lo1.setDimensions(0.4, 1);
-		p1.add(choice1);
+		p1.add(proportionInvariableSitesEstimatedRadioButton);
 		lo1.setDimensions(0.4, 1);
-		p1.add(choice2);
+		p1.add(proportionInvariableSitesFixedRadioButton);
 		layout.setDimensions(0.01, 0.4);
 		add(new JPanel());
 		layout.setDimensions(1, 0.1);
@@ -81,12 +81,12 @@ public class ProportionAndSubrate extends JPanel implements ActionListener {
 		lo2.setDimensions(0.2, 1);
 		p2.add(new JPanel());
 		lo2.setDimensions(0.4, 1);
-		p2.add(choice3);
+		p2.add(variableRatesNoRadioButton);
 		lo2.setDimensions(0.4, 1);
-		p2.add(choice4);
+		p2.add(variableRatesYesRadioButton);
 
         // setting variable rates to "Yes" by default
-        choice4.setSelected(true);
+        variableRatesYesRadioButton.setSelected(true);
 
 
 	}
@@ -165,42 +165,52 @@ public class ProportionAndSubrate extends JPanel implements ActionListener {
 		}
 	}
 
+    public void disableTransationTransversionRatio(boolean disable) {
+        proportionInvariableSitesEstimatedRadioButton.setEnabled(!disable);
+        proportionInvariableSitesFixedRadioButton.setEnabled(!disable);
+    }
+
+    public void setProportionInvariableSitesToFixed(boolean fixed) {
+        proportionInvariableSitesEstimatedRadioButton.setSelected(!fixed);
+        proportionInvariableSitesFixedRadioButton.setSelected(fixed);
+    }
+
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		if (e.getSource() == choice1) {
-			if(choice1.isSelected()){
-				choice2.setSelected(false);
+		if (e.getSource() == proportionInvariableSitesEstimatedRadioButton) {
+			if(proportionInvariableSitesEstimatedRadioButton.isSelected()){
+				proportionInvariableSitesFixedRadioButton.setSelected(false);
 				parameter.setEnabled(false);
 			}else{
-				choice2.setSelected(true);
+				proportionInvariableSitesFixedRadioButton.setSelected(true);
 				parameter.setEnabled(true);
 			}
 		}
-		if(e.getSource() == choice2){
-			if(choice2.isSelected()){
-				choice1.setSelected(false);
+		if(e.getSource() == proportionInvariableSitesFixedRadioButton){
+			if(proportionInvariableSitesFixedRadioButton.isSelected()){
+				proportionInvariableSitesEstimatedRadioButton.setSelected(false);
 				parameter.setEnabled(true);
 			}else{
-				choice1.setSelected(true);
+				proportionInvariableSitesEstimatedRadioButton.setSelected(true);
 				parameter.setEnabled(false);
 			}
 		}
-		if (e.getSource() == choice3) {
-			if(choice3.isSelected()){
-				choice4.setSelected(false);
+		if (e.getSource() == variableRatesNoRadioButton) {
+			if(variableRatesNoRadioButton.isSelected()){
+				variableRatesYesRadioButton.setSelected(false);
 				PhymlPanel.sM.setNumSubCatGammaAverageCompVisible(true);
 			}else{
-				choice4.setSelected(true);
+				variableRatesYesRadioButton.setSelected(true);
 				PhymlPanel.sM.setNumSubCatGammaAverageCompVisible(false);
 			}
 		}
-		if(e.getSource() == choice4){
-			if(choice4.isSelected()){
-				choice3.setSelected(false);
+		if(e.getSource() == variableRatesYesRadioButton){
+			if(variableRatesYesRadioButton.isSelected()){
+				variableRatesNoRadioButton.setSelected(false);
 				PhymlPanel.sM.setNumSubCatGammaAverageCompVisible(false);
 			}else{
 				PhymlPanel.sM.setNumSubCatGammaAverageCompVisible(true);
-				choice3.setSelected(true);
+				variableRatesNoRadioButton.setSelected(true);
 			}
 		}
 	}
@@ -213,7 +223,7 @@ public class ProportionAndSubrate extends JPanel implements ActionListener {
 	 *         fixed.
 	 */
 	public String getPropInvarSites() {
-		if (choice1.isSelected()) {
+		if (proportionInvariableSitesEstimatedRadioButton.isSelected()) {
 			return "e";
 		} else {
 			return Double.parseDouble(parameter.getText()) + "";
