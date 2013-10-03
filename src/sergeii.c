@@ -1611,7 +1611,8 @@ phydbl K_Constant_Prior_Times_Log(t_tree *tree)
   free(slice_numbers); 
   free(root_nodes);   
   free(n_slice);
-  free(g_i_node);    
+  free(g_i_node);   
+  free(K_val_approx); 
  
   return(-LOG(K_total));
 }
