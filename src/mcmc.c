@@ -4010,17 +4010,33 @@ void MCMC_Covarion_Switch(t_tree *tree)
 
 void MCMC_Birth_Rate(t_tree *tree)
 {
-  phydbl lmbd_start, lmbd_final;
-  lmbd_start = tree -> rates -> birth_rate; 
-  tree -> rates -> birth_rate_updated_or_not_updated = NO;
+  phydbl lmbd_start, lmbd_final, *log_K_val_cur;
+  int i, tot_num_of_calib_comb;
+
+  tot_num_of_calib_comb = Number_Of_Comb(tree -> rates -> calib);
+
+  log_K_val_cur = (phydbl *)mCalloc(tot_num_of_calib_comb, sizeof(phydbl));
+
+  lmbd_start = tree -> rates -> birth_rate;
+
+  For(i, tot_num_of_calib_comb) log_K_val_cur[i] = tree -> rates -> log_K_val_cur[i]; 
+ 
+  tree -> rates -> birth_rate_updated_or_not_updated = YES;
+
   MCMC_Single_Param_Generic(&(tree->rates->birth_rate),
 			    tree->rates->birth_rate_min,
 			    tree->rates->birth_rate_max,
 			    tree->mcmc->num_move_birth_rate,
 			    &(tree->rates->c_lnL_times),NULL,
 			    Wrap_Lk_Times,NULL,tree->mcmc->move_type[tree->mcmc->num_move_birth_rate],NO,NULL,tree,NULL); 
+
   lmbd_final = tree -> rates -> birth_rate;
-  if(!Are_Equal(lmbd_start, lmbd_final, 1.E-10)) tree -> rates -> birth_rate_updated_or_not_updated = YES;
+
+  if(Are_Equal(lmbd_start, lmbd_final, 1.E-10)) For(i, tot_num_of_calib_comb) tree -> rates -> log_K_val_cur[i] = log_K_val_cur[i];
+   
+  tree -> rates -> birth_rate_updated_or_not_updated = NO;
+
+  free(log_K_val_cur);
 
 }
 

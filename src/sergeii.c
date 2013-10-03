@@ -749,7 +749,8 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
       times_lk =  TIMES_Lk_Yule_Order_Root_Cond(tree);
 
       constant = 1.0; 
-      if (tot_num_comb > 1) if(times_lk > -INFINITY && result != FALSE) constant = K_Constant_Prior_Times_Log(tree);
+      if (tot_num_comb > 1 && times_lk > -INFINITY && result != FALSE && birth_rate_updated_or_not_updated == YES) constant = K_Constant_Prior_Times_Log(tree);
+      else constant = tree -> rates -> log_K_val_cur[i];
  
       Yule_val[i] = constant + times_lk;
 
