@@ -1124,6 +1124,7 @@ void RATES_Free_Rates(t_rate *rates)
       Free(rates->survival_rank);
       Free(rates->survival_dur);
       Free(rates->calib_prob);
+      Free(rates->node_height_dens_log_norm_const_update);
     }
   Free_Calib(rates->calib);
   Free(rates);

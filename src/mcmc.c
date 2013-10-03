@@ -48,8 +48,7 @@ void MCMC(t_tree *tree)
       MCMC_Read_Param_Vals(tree);
     }
 #ifdef SERGEII
-  tree -> rates -> log_K_val_cur = Norm_Constant_Prior_Times(tree);
-  /* For(i, 6) printf("\n %f \n", tree -> rates -> log_K_val_cur[i]); Exit("\n");  */
+  tree -> rates -> node_height_dens_log_norm_const_update = Norm_Constant_Prior_Times(tree);
 #endif
   Switch_Eigen(YES,tree->mod);
 
@@ -4011,37 +4010,36 @@ void MCMC_Covarion_Switch(t_tree *tree)
 void MCMC_Birth_Rate(t_tree *tree)
 {
 #ifdef SERGEII
-  phydbl lmbd_start, lmbd_final, *log_K_val_cur;
+  phydbl lmbd_start, lmbd_final, *node_height_dens_log_norm_const_update;
   int i, tot_num_of_calib_comb;
 
   tot_num_of_calib_comb = Number_Of_Comb(tree -> rates -> calib);
 
-  log_K_val_cur = (phydbl *)mCalloc(tot_num_of_calib_comb, sizeof(phydbl));
+  node_height_dens_log_norm_const_update = (phydbl *)mCalloc(tot_num_of_calib_comb, sizeof(phydbl));
 
   lmbd_start = tree -> rates -> birth_rate;
 
-  For(i, tot_num_of_calib_comb) log_K_val_cur[i] = tree -> rates -> log_K_val_cur[i];
-
+  For(i, tot_num_of_calib_comb) node_height_dens_log_norm_const_update[i] = tree -> rates -> node_height_dens_log_norm_const_update[i]; 
+ 
   tree -> rates -> birth_rate_updated_or_not_updated = YES;
 #endif
- 
+
   MCMC_Single_Param_Generic(&(tree->rates->birth_rate),
-                            tree->rates->birth_rate_min,
-                            tree->rates->birth_rate_max,
-                            tree->mcmc->num_move_birth_rate,
-                            &(tree->rates->c_lnL_times),NULL,
-                            Wrap_Lk_Times,NULL,tree->mcmc->move_type[tree->mcmc->num_move_birth_rate],NO,NULL,tree,NULL);
-  
+			    tree->rates->birth_rate_min,
+			    tree->rates->birth_rate_max,
+			    tree->mcmc->num_move_birth_rate,
+			    &(tree->rates->c_lnL_times),NULL,
+			    Wrap_Lk_Times,NULL,tree->mcmc->move_type[tree->mcmc->num_move_birth_rate],NO,NULL,tree,NULL); 
+
 #ifdef SERGEII
   lmbd_final = tree -> rates -> birth_rate;
-  
-  if(Are_Equal(lmbd_start, lmbd_final, 1.E-10)) For(i, tot_num_of_calib_comb) tree -> rates -> log_K_val_cur[i] = log_K_val_cur[i];
-  
+
+  if(Are_Equal(lmbd_start, lmbd_final, 1.E-10)) For(i, tot_num_of_calib_comb) tree -> rates -> node_height_dens_log_norm_const_update[i] = node_height_dens_log_norm_const_update[i];
+   
   tree -> rates -> birth_rate_updated_or_not_updated = NO;
-  
-  free(log_K_val_cur);
+
+  free(node_height_dens_log_norm_const_update);
 #endif
-  
 }
 
 //////////////////////////////////////////////////////////////
