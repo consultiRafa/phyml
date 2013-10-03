@@ -731,7 +731,7 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
               
               if(sum < .0)
                 {
-                  printf("\n. tree: %s\n",Write_Tree(tree,NO));
+                  printf("\n== tree: %s\n",Write_Tree(tree,NO));
                   PhyML_Printf("\n== b->num = %d  sum = %G root ? %d",sum,b->num,b == tree->e_root);
                   PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
                   Exit("\n");
@@ -852,6 +852,15 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
           PhyML_Printf("\n== fact_sum_scale = %d",fact_sum_scale);
           PhyML_Printf("\n== n_catg: %d",tree->mod->ras->n_catg);
 
+          if(tree->mod->whichmodel == GTR || tree->mod->whichmodel == CUSTOM)
+            {
+              int i;
+              For(i,6)
+                {
+                  PhyML_Printf("\n== rr[%d]: %f",i,tree->mod->r_mat->rr->v[i]); 
+                }
+            }
+
           /* int i; */
           /* For(i,2*tree->n_otu-3) */
           /* 	{ */
@@ -958,23 +967,23 @@ void Rate_Correction(int exponent, phydbl *site_lk_cat, t_tree *tree)
     {
       /*! Multiply by 2^exponent */
       do
-    {
-      piecewise_exponent = MIN(exponent,63);
-      multiplier = (phydbl)((unsigned long long)(1) << piecewise_exponent);
-      (*site_lk_cat) *= multiplier;
-      exponent -= piecewise_exponent;
-    }
+        {
+          piecewise_exponent = MIN(exponent,63);
+          multiplier = (phydbl)((unsigned long long)(1) << piecewise_exponent);
+          (*site_lk_cat) *= multiplier;
+          exponent -= piecewise_exponent;
+        }
       while(exponent != 0);
     }
   else
     {
       do
-    {
-      piecewise_exponent = MAX(exponent,-63);
-      multiplier = 1. / (phydbl)((unsigned long long)(1) << -piecewise_exponent);
-      (*site_lk_cat) *= multiplier;
-      exponent -= piecewise_exponent;
-    }
+        {
+          piecewise_exponent = MAX(exponent,-63);
+          multiplier = 1. / (phydbl)((unsigned long long)(1) << -piecewise_exponent);
+          (*site_lk_cat) *= multiplier;
+          exponent -= piecewise_exponent;
+        }
       while(exponent != 0);
     }
 
@@ -985,21 +994,22 @@ void Rate_Correction(int exponent, phydbl *site_lk_cat, t_tree *tree)
       PhyML_Printf("\n== File %s at line %d\n\n",__FILE__,__LINE__);
       (*site_lk_cat) = BIG / 10;
     }
-
+  
   if(*site_lk_cat < SMALL)
     {
       if(tree->mod->ras->n_catg == 1)
-    {
-      PhyML_Printf("\n== site_lk_cat = %G",*site_lk_cat);
+        {
+          PhyML_Printf("\n== site_lk_cat = %G",*site_lk_cat);
           PhyML_Printf("\n== exponent: %d", exponent);
-      PhyML_Printf("\n== Numerical precision issue alert.");
-      PhyML_Printf("\n== File %s at line %d\n\n",__FILE__,__LINE__);
+          PhyML_Printf("\n== Numerical precision issue alert.");
+          PhyML_Printf("\n== File %s at line %d\n\n",__FILE__,__LINE__);
 	  PhyML_Printf("\n== %s",Write_Tree(tree,NO));
-      Exit("\n");
-    }
+          Exit("\n");
+        }
       (*site_lk_cat) = .0;
     }
 }
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
@@ -1039,6 +1049,7 @@ phydbl Invariant_Lk(int *fact_sum_scale, int site, int *num_prec_issue, t_tree *
           if(isinf(inv_site_lk)) // P(D|r=0) >> P(D|r>0) => assume P(D) = P(D|r=0)P(r=0)
             {
               int i;
+              PhyML_Printf("\n== fact_sum_scale: %d",*fact_sum_scale);              
               PhyML_Printf("\n== pi: %f",tree->mod->e_frq->pi->v[tree->data->invar[site]]);              
               For(i,tree->mod->ns) PhyML_Printf("\n== pi %d: %f",i,tree->mod->e_frq->pi->v[i]);
               PhyML_Printf("\n== Numerical precision issue alert.");
@@ -1581,7 +1592,7 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
                                   PhyML_Printf("\n== %f %f",b->l->v,b->l->v*b->l->v*tree->mod->l_var_sigma);
                                   PhyML_Printf("\n== p0=%f p1=%f p2=%f p3=%f",p0,p1,p2,p3);
                                   PhyML_Printf("\n== Pij2[0]=%f Pij2[1]=%f Pij2[2]=%f Pij2[3]=%f",Pij2[catg*dim3+i*dim2+0],Pij2[catg*dim3+i*dim2+1],Pij2[catg*dim3+i*dim2+2],Pij2[catg*dim3+i*dim2+3]);
-                                  PhyML_Printf("\n== Err. in file %s at line %d.",__FILE__,__LINE__);
+                                  PhyML_Printf("\n== Err. in file %s at line %d (function '%s').",__FILE__,__LINE__,__FUNCTION__);
                               Warn_And_Exit("\n");
                             }
                         }
@@ -1622,10 +1633,10 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
 
                           if(p_lk[site*dim1+catg*dim2+i] > BIG)
                             {
-                              PhyML_Printf("\n. p_lk_lim_inf = %G smallest_p_lk = %G",p_lk_lim_inf,smallest_p_lk);
-                              PhyML_Printf("\n. curr_scaler_pow = %d",curr_scaler_pow);
-                              PhyML_Printf("\n. Err in file %s at line %d.",__FILE__,__LINE__);
-                              Warn_And_Exit("\n");
+                              PhyML_Printf("\n== p_lk_lim_inf = %G smallest_p_lk = %G",p_lk_lim_inf,smallest_p_lk);
+                              PhyML_Printf("\n== curr_scaler_pow = %d",curr_scaler_pow);
+                              PhyML_Printf("\n== Err in file %s at line %d (function '%s').",__FILE__,__LINE__,__FUNCTION__);
+                              Exit("\n");
                             }
 //                              fprintf(stderr,"\n%e",p_lk[site*dim1+catg*dim2+i]);
                         }

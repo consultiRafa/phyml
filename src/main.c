@@ -168,10 +168,10 @@ int main(int argc, char **argv)
                   Set_Both_Sides(YES,tree);
 
                   if(mod->s_opt->random_input_tree)
-                            {
-                              PhyML_Printf("\n");
-                              Random_Tree(tree);
-                            }
+                    {
+                      PhyML_Printf("\n");
+                      Random_Tree(tree);
+                    }
 
                   if((!num_data_set) && (!num_tree) && (!num_rand_tree)) Check_Memory_Amount(tree);
 
@@ -219,9 +219,10 @@ int main(int argc, char **argv)
 #endif
                       //Optimize Branch lengths?
                       if(tree->mod->s_opt->opt_subst_param || tree->mod->s_opt->opt_bl) {
-                          Round_Optimize(tree,tree->data,ROUND_MAX);
-                      } else { //No topology or branch length optimizations
-                          Lk(NULL,tree);
+                        Round_Optimize(tree,tree->data,ROUND_MAX);
+                      } 
+                      else { //No topology or branch length optimizations
+                        Lk(NULL,tree);
                       }
                     }
 
@@ -244,8 +245,8 @@ int main(int argc, char **argv)
                   Rescale_Br_Len_Multiplier_Tree(tree);
 
 #elif defined EVOLVE
-                          Evolve(tree->data,tree->mod,tree);
-                          Exit("\n");
+                  Evolve(tree->data,tree->mod,tree);
+                  Exit("\n");
 #endif
 
 
@@ -326,8 +327,8 @@ int main(int argc, char **argv)
     else
         {
           PhyML_Printf("\n== No data was found.\n");
-          PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
-          Warn_And_Exit("");
+          PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+          Exit("\n");
         }
     Free_Model_Complete(mod);
     }
