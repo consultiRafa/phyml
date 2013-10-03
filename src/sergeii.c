@@ -707,7 +707,6 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
   int i, j, k, tot_num_comb, birth_rate_updated_or_not_updated;
   t_cal *calib;
  
-
   times_tot_proba = 0.0;
   calib = tree -> rates -> calib;
   t_prior_min = tree -> rates -> t_prior_min;
@@ -751,7 +750,7 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
       constant = 1.0; 
       if (tot_num_comb > 1 && times_lk > -INFINITY && result != FALSE && birth_rate_updated_or_not_updated == YES) constant = K_Constant_Prior_Times_Log(tree);
       else constant = tree -> rates -> log_K_val_cur[i];
- 
+      
       Yule_val[i] = constant + times_lk;
 
       while(calib -> prev) calib = calib -> prev;
