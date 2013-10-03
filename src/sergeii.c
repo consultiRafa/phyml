@@ -969,7 +969,7 @@ phydbl K_Constant_Prior_Times_Log(t_tree *tree)
   int *root_nodes, *dif;
   phydbl K_total_cur, max_K_val, scl_const;
 
-  max_size = 1000;
+  max_size = 1000000;
   combinations     = (int *)mCalloc(max_size*(n_otu-1), sizeof(int));
   max_combination  = (int *)mCalloc((n_otu-1), sizeof(int));
   t_slice_min_f    = (phydbl *)mCalloc(n_otu - 1, sizeof(phydbl));
