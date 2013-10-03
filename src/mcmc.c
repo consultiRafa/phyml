@@ -48,7 +48,8 @@ void MCMC(t_tree *tree)
       MCMC_Read_Param_Vals(tree);
     }
 #ifdef SERGEII
-  tree -> rates -> log_K_cur = K_Constant_Prior_Times_Log(tree);
+  tree -> rates -> log_K_val_cur = Norm_Constant_Prior_Times(tree);
+  /* For(i, 6) printf("\n %f \n", tree -> rates -> log_K_val_cur[i]); Exit("\n");  */
 #endif
   Switch_Eigen(YES,tree->mod);
 
@@ -1182,7 +1183,7 @@ void MCMC_One_Time(t_node *a, t_node *d, int traversal, t_tree *tree)
 
 void MCMC_Jump_Calibration(t_tree *tree)
 {
-#ifdef SERGEII
+
   phydbl u;
   phydbl *calib_prior_cumprob, *calib_prior_prob; 
   phydbl cur_lnL_data, new_lnL_data;
@@ -1361,7 +1362,6 @@ void MCMC_Jump_Calibration(t_tree *tree)
     }
   else 
     return;
-#endif
 }
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -4009,12 +4009,18 @@ void MCMC_Covarion_Switch(t_tree *tree)
 
 void MCMC_Birth_Rate(t_tree *tree)
 {
+  phydbl lmbd_start, lmbd_final;
+  lmbd_start = tree -> rates -> birth_rate; 
+  tree -> rates -> birth_rate_updated_or_not_updated = NO;
   MCMC_Single_Param_Generic(&(tree->rates->birth_rate),
 			    tree->rates->birth_rate_min,
 			    tree->rates->birth_rate_max,
 			    tree->mcmc->num_move_birth_rate,
 			    &(tree->rates->c_lnL_times),NULL,
 			    Wrap_Lk_Times,NULL,tree->mcmc->move_type[tree->mcmc->num_move_birth_rate],NO,NULL,tree,NULL); 
+  lmbd_final = tree -> rates -> birth_rate;
+  if(!Are_Equal(lmbd_start, lmbd_final, 1.E-10)) tree -> rates -> birth_rate_updated_or_not_updated = YES;
+
 }
 
 //////////////////////////////////////////////////////////////
@@ -4350,7 +4356,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_birth_rate]            = 2.0;
   mcmc->move_weight[mcmc->num_move_updown_t_br]           = 1.0;
 #if defined (SERGEII)
-  mcmc->move_weight[mcmc->num_move_jump_calibration]      = 1.0;
+  mcmc->move_weight[mcmc->num_move_jump_calibration]      = 0.0;
 #else
   mcmc->move_weight[mcmc->num_move_jump_calibration]      = 0.0;
 #endif

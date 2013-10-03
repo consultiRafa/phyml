@@ -1018,8 +1018,8 @@ phydbl TIMES_Lk_Times(t_tree *tree)
   #ifdef PHYTIME
   tree->rates->c_lnL_times =  TIMES_Lk_Yule_Order(tree);
   #elif SERGEII
-  /* tree->rates->c_lnL_times = TIMES_Calib_Cond_Prob(tree); */
-  tree->rates->c_lnL_times =  TIMES_Lk_Yule_Order(tree);
+  tree->rates->c_lnL_times = TIMES_Calib_Cond_Prob(tree);
+  /* tree->rates->c_lnL_times =  TIMES_Lk_Yule_Order(tree); */
   #endif
 
 
