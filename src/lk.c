@@ -866,49 +866,6 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
           /* 	} */
           
           Print_Site(tree->data,site,tree->n_otu,"\n",tree->mod->io->state_len,stdout);
-
-          int i,j,k;
-          For(i,tree->n_otu)
-            {
-              printf("\n. %30s ",tree->a_nodes[i]->name);
-              For(j,tree->mod->ns)
-                {
-                  printf("%d",tree->a_nodes[i]->b[0]->p_lk_tip_r[site*tree->mod->ns+j]);
-                }
-            }
-          For(i,2*tree->n_otu-3)
-            {
-              printf("\n. Edge %d\n",i);
-              For(j,4)
-                {
-                  For(k,4)
-                    {
-                      printf("%8f ",tree->a_edges[i]->Pij_rr[j*4+k]);
-                    }
-                  printf("\n");
-                }
-            }
-
-          printf("\n. EIGEN\n");          
-          For(i,tree->mod->ns) 
-            {
-              For(j,tree->mod->ns)
-                printf("%8f ",tree->mod->eigen->l_e_vect[i*4+j]);
-              printf("\n");
-            }
-          printf("\n. EIGEN\n");
-          For(i,tree->mod->ns) 
-            {
-              For(j,tree->mod->ns)
-                printf("%8f ",tree->mod->eigen->r_e_vect[i*4+j]);
-              printf("\n");
-            }
-          printf("\n. EIGEN\n");
-          For(i,tree->mod->ns) 
-            {
-              printf("%8f ",tree->mod->eigen->e_val[i]);
-            }
-
           PhyML_Printf("\n== Err. in file %s at line %d (function '%s')",__FILE__,__LINE__,__FUNCTION__);
           Exit("\n");
         }
@@ -1034,7 +991,7 @@ void Rate_Correction(int exponent, phydbl *site_lk_cat, t_tree *tree)
           PhyML_Printf("\n== site_lk_cat = %G",*site_lk_cat);
           PhyML_Printf("\n== exponent: %d", exponent);
           PhyML_Printf("\n== Numerical precision issue alert.");
-          PhyML_Printf("\n== File %s at line %d\n\n",__FILE__,__LINE__);
+          PhyML_Printf("\n== File %s at line %d (funtction '%s')\n",__FILE__,__LINE__,__FUNCTION__);
 	  PhyML_Printf("\n== %s",Write_Tree(tree,NO));
           Exit("\n");
         }

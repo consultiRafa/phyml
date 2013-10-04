@@ -110,7 +110,6 @@ void Bootstrap_MPI(t_tree *tree)
               init_len++;
             }
             
-          Set_D_States(boot_data,tree->io->datatype,tree->io->state_len);
 
           if (init_len != tree->data->init_len) {
             MPI_Finalize();
@@ -148,6 +147,8 @@ fflush(stderr);
         (Get_AA_Freqs(boot_data));
 
       if(tree->io->random_boot_seq_order) Randomize_Sequence_Order(boot_data);
+
+      Set_D_States(boot_data,tree->io->datatype,tree->io->state_len);
 
       boot_mod        = Copy_Model(tree->mod);
       boot_mod->s_opt = tree->mod->s_opt; /* WARNING: re-using the same address here instead of creating a copying
