@@ -171,64 +171,64 @@ void Init_Ui_Tips(t_tree *tree)
   For(curr_site,tree->data->crunch_len)
     {
       For(i,tree->n_otu)
-    {
-      if(tree->io->datatype == NT)
         {
-          if(tree->a_nodes[i]->b[0]->rght->tax != 1)
-        {
-          PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
-          Exit("\n");
-        }
-
-          Init_Tips_At_One_Site_Nucleotides_Int(tree->a_nodes[i]->c_seq->state[curr_site],
-                            0,
-                            state_v);
-          /* Init_Tips_At_One_Site_Nucleotides_Int(tree->data->c_seq[i]->state[curr_site], */
-          /* 					    0, */
-          /* 					    state_v);	       */
-          tree->a_nodes[i]->b[0]->ui_r[curr_site] = 0;
-          For(j,tree->mod->ns) tree->a_nodes[i]->b[0]->ui_r[curr_site] += (unsigned int)(state_v[j] * POW(2,j));
-        }
-      else if(tree->io->datatype == AA)
-        {
-          Init_Tips_At_One_Site_AA_Int(tree->a_nodes[i]->c_seq->state[curr_site],
-                       0,
-                       state_v);
-          /* Init_Tips_At_One_Site_AA_Int(tree->data->c_seq[i]->state[curr_site], */
-          /* 				   0, */
-          /* 				   state_v); */
-          tree->a_nodes[i]->b[0]->ui_r[curr_site] = 0;
-          For(j,tree->mod->ns) tree->a_nodes[i]->b[0]->ui_r[curr_site] += (unsigned int)(state_v[j] * POW(2,j));
-        }
-      else if(tree->io->datatype == GENERIC)
-        {
-          Init_Tips_At_One_Site_Generic_Int(tree->a_nodes[i]->c_seq->state+curr_site*tree->mod->io->state_len,
-                        tree->mod->ns,
-                        tree->mod->io->state_len,
-                        0,
-                        state_v);
-          /* Init_Tips_At_One_Site_Generic_Int(tree->data->c_seq[i]->state+curr_site*tree->mod->io->state_len, */
-          /* 					tree->mod->ns, */
-          /* 					tree->mod->io->state_len, */
-          /* 					0, */
-          /* 					state_v); */
-          tree->a_nodes[i]->b[0]->ui_r[curr_site] = 0;
-          For(j,tree->mod->ns) tree->a_nodes[i]->b[0]->ui_r[curr_site] += (unsigned int)(state_v[j] * POW(2,j));
+          if(tree->io->datatype == NT)
+            {
+              if(tree->a_nodes[i]->b[0]->rght->tax != 1)
+                {
+                  PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+                  Exit("\n");
+                }
+              
+              Init_Tips_At_One_Site_Nucleotides_Int(tree->a_nodes[i]->c_seq->state[curr_site],
+                                                    0,
+                                                    state_v);
+              /* Init_Tips_At_One_Site_Nucleotides_Int(tree->data->c_seq[i]->state[curr_site], */
+              /* 					    0, */
+              /* 					    state_v);	       */
+              tree->a_nodes[i]->b[0]->ui_r[curr_site] = 0;
+              For(j,tree->mod->ns) tree->a_nodes[i]->b[0]->ui_r[curr_site] += (unsigned int)(state_v[j] * POW(2,j));
+            }
+          else if(tree->io->datatype == AA)
+            {
+              Init_Tips_At_One_Site_AA_Int(tree->a_nodes[i]->c_seq->state[curr_site],
+                                           0,
+                                           state_v);
+              /* Init_Tips_At_One_Site_AA_Int(tree->data->c_seq[i]->state[curr_site], */
+              /* 				   0, */
+              /* 				   state_v); */
+              tree->a_nodes[i]->b[0]->ui_r[curr_site] = 0;
+              For(j,tree->mod->ns) tree->a_nodes[i]->b[0]->ui_r[curr_site] += (unsigned int)(state_v[j] * POW(2,j));
+            }
+          else if(tree->io->datatype == GENERIC)
+            {
+              Init_Tips_At_One_Site_Generic_Int(tree->a_nodes[i]->c_seq->state+curr_site*tree->mod->io->state_len,
+                                                tree->mod->ns,
+                                                tree->mod->io->state_len,
+                                                0,
+                                                state_v);
+              /* Init_Tips_At_One_Site_Generic_Int(tree->data->c_seq[i]->state+curr_site*tree->mod->io->state_len, */
+              /* 					tree->mod->ns, */
+              /* 					tree->mod->io->state_len, */
+              /* 					0, */
+              /* 					state_v); */
+              tree->a_nodes[i]->b[0]->ui_r[curr_site] = 0;
+              For(j,tree->mod->ns) tree->a_nodes[i]->b[0]->ui_r[curr_site] += (unsigned int)(state_v[j] * POW(2,j));
+            }
         }
     }
-    }
-
-
+  
+  
   For(br,2*tree->n_otu-3)
     {
       For(curr_site,tree->data->crunch_len)
-    {
-      tree->a_edges[br]->pars_r[curr_site] = 0;
-      tree->a_edges[br]->pars_l[curr_site] = 0;
+        {
+          tree->a_edges[br]->pars_r[curr_site] = 0;
+          tree->a_edges[br]->pars_l[curr_site] = 0;
+        }
     }
-    }
-
-
+  
+  
   Free(state_v);
 }
 

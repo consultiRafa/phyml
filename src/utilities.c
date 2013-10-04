@@ -224,89 +224,89 @@ calign *Compact_Data(align **data, option *io)
   Fors(site,data[0]->len,io->state_len)
     {
       if(io->rm_ambigu)
-    {
-      is_ambigu = 0;
-      For(j,n_otu) if(Is_Ambigu(data[j]->state+site,io->datatype,io->state_len)) break;
-      if(j != n_otu)
         {
-          is_ambigu = 1;
-          n_ambigu++;
+          is_ambigu = 0;
+          For(j,n_otu) if(Is_Ambigu(data[j]->state+site,io->datatype,io->state_len)) break;
+          if(j != n_otu)
+            {
+              is_ambigu = 1;
+              n_ambigu++;
+            }
         }
-    }
-
+      
       if(!is_ambigu)
-    {
-      if(compress)
         {
-          which_patt = -1;
-
-          Traverse_Prefix_Tree(site,-1,&which_patt,&n_patt,data,io,proot);
-          if(which_patt == n_patt-1) /* New pattern found */
-        {
-          n_patt--;
-          k=n_patt;
-        }
+          if(compress)
+            {
+              which_patt = -1;
+              
+              Traverse_Prefix_Tree(site,-1,&which_patt,&n_patt,data,io,proot);
+              if(which_patt == n_patt-1) /* New pattern found */
+                {
+                  n_patt--;
+                  k=n_patt;
+                }
+              else
+                {
+                  k = n_patt-10;
+                }
+            }
           else
-        {
-          k = n_patt-10;
-        }
-        }
-      else
-        {
-          k = n_patt;
-        }
-
-      if(k == n_patt) /* add a new site pattern */
-        {
-          For(j,n_otu)
-        Copy_One_State(data[j]->state+site,
-                   cdata_tmp->c_seq[j]->state+n_patt*io->state_len,
-                   io->state_len);
-
-          For(i,n_otu)
-        {
-          For(j,n_otu)
             {
-              if(!(Are_Compatible(cdata_tmp->c_seq[i]->state+n_patt*io->state_len,
-                      cdata_tmp->c_seq[j]->state+n_patt*io->state_len,
-                      io->state_len,
-                      io->datatype))) break;
+              k = n_patt;
             }
-          if(j != n_otu) break;
-        }
-
-          if((j == n_otu) && (i == n_otu)) /* all characters at that site are compatible with one another:
-                          the site may be invariant */
-        {
-          For(j,n_otu)
+          
+          if(k == n_patt) /* add a new site pattern */
             {
-              cdata_tmp->invar[n_patt] = Assign_State(cdata_tmp->c_seq[j]->state+n_patt*io->state_len,
-                                      io->datatype,
-                                      io->state_len);
-
-              if(cdata_tmp->invar[n_patt] > -1.) break;
+              For(j,n_otu)
+                Copy_One_State(data[j]->state+site,
+                               cdata_tmp->c_seq[j]->state+n_patt*io->state_len,
+                               io->state_len);
+              
+              For(i,n_otu)
+                {
+                  For(j,n_otu)
+                    {
+                      if(!(Are_Compatible(cdata_tmp->c_seq[i]->state+n_patt*io->state_len,
+                                          cdata_tmp->c_seq[j]->state+n_patt*io->state_len,
+                                          io->state_len,
+                                          io->datatype))) break;
+                    }
+                  if(j != n_otu) break;
+                }
+              
+              if((j == n_otu) && (i == n_otu)) /* all characters at that site are compatible with one another:
+                                                  the site may be invariant */
+                {
+                  For(j,n_otu)
+                    {
+                      cdata_tmp->invar[n_patt] = Assign_State(cdata_tmp->c_seq[j]->state+n_patt*io->state_len,
+                                                              io->datatype,
+                                                              io->state_len);
+                      
+                      if(cdata_tmp->invar[n_patt] > -1.) break;
+                    }
+                }
+              else cdata_tmp->invar[n_patt] = -1;
+              
+              cdata_tmp->sitepatt[site] = n_patt;
+              cdata_tmp->wght[n_patt]  += 1;
+              n_patt                   += 1;
             }
-        }
-          else cdata_tmp->invar[n_patt] = -1;
-
-          cdata_tmp->sitepatt[site] = n_patt;
-          cdata_tmp->wght[n_patt]  += 1;
-          n_patt                   += 1;
-        }
-      else
-        {
-          cdata_tmp->sitepatt[site]    = which_patt;
-          cdata_tmp->wght[which_patt] += 1;
+          else
+            {
+              cdata_tmp->sitepatt[site]    = which_patt;
+              cdata_tmp->wght[which_patt] += 1;
+            }
         }
     }
-    }
-
+  
   data[0]->len -= n_ambigu;
-
+  
   cdata_tmp->init_len                   = data[0]->len;
   cdata_tmp->crunch_len                 = n_patt;
   For(i,n_otu) cdata_tmp->c_seq[i]->len = n_patt;
-
+  
   if(!io->quiet) PhyML_Printf("\n. %d patterns found (out of a total of %d sites). \n",n_patt,data[0]->len);
 
   if((io->rm_ambigu) && (n_ambigu)) PhyML_Printf("\n. Removed %d columns of the alignment as they contain ambiguous characters (e.g., gaps) \n",n_ambigu);
@@ -393,67 +393,67 @@ calign *Compact_Cdata(calign *data, option *io)
   For(site,data->crunch_len)
     {
       if(data->wght[site])
-    {
-      For(k,n_patt)
         {
-          For(j,n_otu)
-        {
-          if(strncmp(cdata->c_seq[j]->state+k*io->state_len,
-                 data->c_seq[j]->state+site*io->state_len,
-                 io->state_len))
-            break;
-        }
-
-          if(j == n_otu)
-        {
-          which_patt = k;
-          break;
-        }
-        }
-
-      /*       /\* TO DO *\/ */
-      /*       k = n_patt; */
-
-      if(k == n_patt)
-        {
-          For(j,n_otu) Copy_One_State(data->c_seq[j]->state+site*io->state_len,
-                      cdata->c_seq[j]->state+n_patt*io->state_len,
-                      io->state_len);
-
-          For(i,n_otu)
-        {
-          For(j,n_otu)
+          For(k,n_patt)
             {
-              if(!(Are_Compatible(cdata->c_seq[i]->state+n_patt*io->state_len,
-                      cdata->c_seq[j]->state+n_patt*io->state_len,
-                      io->state_len,
-                      io->datatype))) break;
+              For(j,n_otu)
+                {
+                  if(strncmp(cdata->c_seq[j]->state+k*io->state_len,
+                             data->c_seq[j]->state+site*io->state_len,
+                             io->state_len))
+                    break;
+                }
+              
+              if(j == n_otu)
+                {
+                  which_patt = k;
+                  break;
+                }
             }
-          if(j != n_otu) break;
-        }
-
-          if((j == n_otu) && (i == n_otu))
-        {
-          For(j,n_otu)
+          
+          /*       /\* TO DO *\/ */
+          /*       k = n_patt; */
+          
+          if(k == n_patt)
             {
-              cdata->invar[n_patt] = Assign_State(cdata->c_seq[j]->state+n_patt*io->state_len,
-                              io->datatype,
-                              io->state_len);
-
-              if(cdata->invar[n_patt] > -1.) break;
+              For(j,n_otu) Copy_One_State(data->c_seq[j]->state+site*io->state_len,
+                                          cdata->c_seq[j]->state+n_patt*io->state_len,
+                                          io->state_len);
+              
+              For(i,n_otu)
+                {
+                  For(j,n_otu)
+                    {
+                      if(!(Are_Compatible(cdata->c_seq[i]->state+n_patt*io->state_len,
+                                          cdata->c_seq[j]->state+n_patt*io->state_len,
+                                          io->state_len,
+                                          io->datatype))) break;
+                    }
+                  if(j != n_otu) break;
+                }
+              
+              if((j == n_otu) && (i == n_otu))
+                {
+                  For(j,n_otu)
+                    {
+                      cdata->invar[n_patt] = Assign_State(cdata->c_seq[j]->state+n_patt*io->state_len,
+                                                          io->datatype,
+                                                          io->state_len);
+                      
+                      if(cdata->invar[n_patt] > -1.) break;
+                    }
+                }
+              else cdata->invar[n_patt] = -1;
+              
+              cdata->wght[n_patt] += data->wght[site];
+              n_patt+=1;
             }
+          else cdata->wght[which_patt] += data->wght[site];
+          
+          /*       Print_Site(cdata,k,n_otu,"\n",io->stepsize); */
         }
-          else cdata->invar[n_patt] = -1;
-
-          cdata->wght[n_patt] += data->wght[site];
-          n_patt+=1;
-        }
-      else cdata->wght[which_patt] += data->wght[site];
-
-      /*       Print_Site(cdata,k,n_otu,"\n",io->stepsize); */
     }
-    }
-
+  
   cdata->init_len   = data->crunch_len;
   cdata->crunch_len = n_patt;
   For(i,n_otu) cdata->c_seq[i]->len = n_patt;
@@ -2018,26 +2018,26 @@ calign *Copy_Cseq(calign *ori, option *io)
   For(j,ori->crunch_len)
     {
       For(i,ori->n_otu)
-    {
-      For(k,io->state_len)
         {
-          new->c_seq[i]->state[j*io->state_len+k] =
-        ori->c_seq[i]->state[j*io->state_len+k];
+          For(k,io->state_len)
+            {
+              new->c_seq[i]->state[j*io->state_len+k] =
+                ori->c_seq[i]->state[j*io->state_len+k];
+            }
+          new->c_seq[i]->is_ambigu[j] = ori->c_seq[i]->is_ambigu[j];
         }
-      new->c_seq[i]->is_ambigu[j] = ori->c_seq[i]->is_ambigu[j];
-    }
-
+      
       new->wght[j]   = ori->wght[j];
       new->ambigu[j] = ori->ambigu[j];
       new->invar[j]  = ori->invar[j];
     }
-
+  
   For(i,ori->n_otu)
     {
       new->c_seq[i]->len = ori->c_seq[i]->len;
       strcpy(new->c_seq[i]->name,ori->c_seq[i]->name);
     }
-
+  
   For(i,ori->n_otu) new->c_seq[i]->state[c_len*io->state_len] = '\0';
 
   For(i,T_MAX_ALPHABET) new->b_frq[i] = ori->b_frq[i];
@@ -2399,20 +2399,20 @@ void Check_Ambiguities(calign *data, int datatype, int stepsize)
     {
       data->ambigu[j] = NO;
       For(i,data->n_otu)
-    {
-      data->c_seq[i]->is_ambigu[j] = NO;
-    }
-
-      For(i,data->n_otu)
-    {
-      if(Is_Ambigu(data->c_seq[i]->state+j*stepsize,
-               datatype,
-               stepsize))
         {
-          data->ambigu[j]              = YES;
-          data->c_seq[i]->is_ambigu[j] = YES;
+          data->c_seq[i]->is_ambigu[j] = NO;
         }
-    }
+      
+      For(i,data->n_otu)
+        {
+          if(Is_Ambigu(data->c_seq[i]->state+j*stepsize,
+                       datatype,
+                       stepsize))
+            {
+              data->ambigu[j]              = YES;
+              data->c_seq[i]->is_ambigu[j] = YES;
+            }
+        }
     }
 }
 
@@ -2429,9 +2429,9 @@ void Set_D_States(calign *data, int datatype, int stepsize)
         {
           if(data->c_seq[i]->is_ambigu[j] == NO)
             {
-                  data->c_seq[i]->d_state[j] = Assign_State(data->c_seq[i]->state+j,
-                                                            datatype,
-                                                            stepsize);
+              data->c_seq[i]->d_state[j] = Assign_State(data->c_seq[i]->state+j,
+                                                        datatype,
+                                                        stepsize);
             }
         }
     }
@@ -2808,19 +2808,19 @@ void Bootstrap(t_tree *tree)
           init_len++;
         }
 
-      Set_D_States(boot_data,tree->io->datatype,tree->io->state_len);
-
-      if(init_len != tree->data->init_len) Exit("\n== Pb when copying sequences\n");
+      if(init_len != tree->data->init_len) Exit("\n== Pb. when copying sequences\n");
 
       init_len = 0;
       For(j,boot_data->crunch_len) init_len += boot_data->wght[j];
 
-      if(init_len != tree->data->init_len) Exit("\n== Pb when copying sequences\n");
+      if(init_len != tree->data->init_len) Exit("\n== Pb. when copying sequences\n");
 
       if(tree->io->datatype == NT)      Get_Base_Freqs(boot_data);
       else if(tree->io->datatype == AA) Get_AA_Freqs(boot_data);
 
       if(tree->io->random_boot_seq_order) Randomize_Sequence_Order(boot_data);
+
+      Set_D_States(boot_data,tree->io->datatype,tree->io->state_len);
 
       boot_mod        = Copy_Model(tree->mod);
 
@@ -2934,7 +2934,7 @@ void Bootstrap(t_tree *tree)
 
       PhyML_Printf(".");
 #ifndef QUIET
-fflush(stdout);
+      fflush(stdout);
 #endif
       if(!((replicate+1)%tree->io->boot_prog_every))
         {
@@ -3369,7 +3369,7 @@ t_mod *Copy_Model(t_mod *ori)
   cpy->m4mod = M4_Copy_M4_Model(ori, ori->m4mod);
 
 #ifdef BEAGLE
-  cpy->b_inst      = ori->b_inst;
+  cpy->b_inst              = ori->b_inst;
   cpy->optimizing_topology = ori->optimizing_topology;
 #endif
 
@@ -9642,19 +9642,19 @@ void Connect_CSeqs_To_Nodes(calign *cdata, t_tree *tree)
   For(i,MAX(n_otu_tree,n_otu_cdata))
     {
       For(j,MIN(n_otu_tree,n_otu_cdata))
-    {
-      if(!strcmp(tree->a_nodes[i]->name,cdata->c_seq[j]->name))
-        break;
-    }
-
+        {
+          if(!strcmp(tree->a_nodes[i]->name,cdata->c_seq[j]->name))
+            break;
+        }
+      
       if(j==MIN(n_otu_tree,n_otu_cdata))
-    {
-      PhyML_Printf("\n== Taxon '%s' was not found in sequence file '%s'.\n",
+        {
+          PhyML_Printf("\n== Taxon '%s' was not found in sequence file '%s'.\n",
                        tree->a_nodes[i]->name,
                        tree->io->in_align_file);
-      Exit("\n");
-    }
-
+          Exit("\n");
+        }
+      
       tree->a_nodes[i]->c_seq = cdata->c_seq[j];
 
     }

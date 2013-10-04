@@ -2041,7 +2041,7 @@ void Print_Site(calign *cdata, int num, int n_otu, char *sep, int stepsize, FILE
     {
       PhyML_Fprintf(fp,"%20s ",cdata->c_seq[i]->name);
       For(j,stepsize)
-    PhyML_Fprintf(fp,"%c",cdata->c_seq[i]->state[num+j]);
+        PhyML_Fprintf(fp,"%c",cdata->c_seq[i]->state[num+j]);
       PhyML_Fprintf(fp,"%s",sep);
     }
   PhyML_Fprintf(fp,"%s",sep);
@@ -3320,9 +3320,9 @@ void Print_Square_Matrix_Generic(int n, phydbl *mat)
     {
       PhyML_Printf("[%3d]",i);
       For(j,n)
-    {
-      PhyML_Printf("%12.5f ",mat[i*n+j]);
-    }
+        {
+          PhyML_Printf("%12.5f ",mat[i*n+j]);
+        }
       PhyML_Printf("\n");
     }
   PhyML_Printf("\n");

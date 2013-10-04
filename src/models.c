@@ -642,15 +642,15 @@ void Update_Qmat_GTR(phydbl *rr, phydbl *rr_val, int *rr_num, phydbl *pi, phydbl
   int i;
   phydbl mr;
 
+
   For(i,6) rr[i] = rr_val[rr_num[i]];
   For(i,6)
     if(rr[i] < 0.0)
       {
-        PhyML_Printf("\n. rr%d: %f",i,rr[i]);
-        PhyML_Printf("\n. Err. in file %s at line %d\n\n",__FILE__,__LINE__);
+        PhyML_Printf("\n== rr%d: %f",i,rr[i]);
+        PhyML_Printf("\n== Err. in file %s at line %d (function '%s').\n",__FILE__,__LINE__,__FUNCTION__);
         Exit("");
       }
-
 
   For(i,6) rr[i] /= rr[5];
 
@@ -956,8 +956,8 @@ void Update_Eigen(t_mod *mod)
       /* 			  mod->eigen->space_int,mod->eigen->space)) */
 
       if(!Eigen(1,mod->r_mat->qmat_buff->v,mod->eigen->size,mod->eigen->e_val,
-        mod->eigen->e_val_im,mod->eigen->r_e_vect,
-        mod->eigen->r_e_vect_im,mod->eigen->space))
+                mod->eigen->e_val_im,mod->eigen->r_e_vect,
+                mod->eigen->r_e_vect_im,mod->eigen->space))
         {
           /* compute inverse(Vr) into Vi */
           For (i,mod->ns*mod->ns) mod->eigen->l_e_vect[i] = mod->eigen->r_e_vect[i];

@@ -535,7 +535,7 @@ void Set_Defaults_Input(option* io)
   io->curr_interface             = 0;
   io->r_seed                     = -1;
   io->collapse_boot              = 0;
-  io->random_boot_seq_order      = 1;
+  io->random_boot_seq_order      = YES;
   io->print_trace                = 0;
   io->print_site_lnl             = 0;
   io->m4_model                   = NO;
@@ -621,8 +621,10 @@ void Set_Defaults_Model(t_mod *mod)
 
 
 #if !(defined PHYTIME || defined SERGEII)
-  mod->l_min = 1.E-8;
-  mod->l_max = 100.0;
+  /* mod->l_min = 1.E-8; */
+  /* mod->l_max = 100.0; */
+  mod->l_min = 1.E-4;
+  mod->l_max = 2.0;
 #else
   mod->l_min = 1.E-8;
   mod->l_max = 2.0;
@@ -977,22 +979,19 @@ void Init_Model(calign *data, t_mod *mod, option *io)
   if(mod->ras->init_rr == YES)
     {
       if(mod->ras->n_catg > 1)
-    {
-      For(i,mod->ras->n_catg) mod->ras->gamma_rr->v[i]               = (phydbl)i;
-      For(i,mod->ras->n_catg) mod->ras->gamma_rr_unscaled->v[i]      = (phydbl)i;
-    }
+        {
+          For(i,mod->ras->n_catg) mod->ras->gamma_rr->v[i]               = (phydbl)i;
+          For(i,mod->ras->n_catg) mod->ras->gamma_rr_unscaled->v[i]      = (phydbl)i;
+        }
       else
         {
           mod->ras->gamma_rr->v[0]          = 1.0;
           mod->ras->gamma_rr_unscaled->v[0] = 1.0;
         }
     }
-
-
-
-
+  
   mod->br_len_multiplier->v = 1.0;
-
+  
   For(i,mod->ns)
     {
       mod->e_frq->pi->v[i] = data->b_frq[i];
@@ -1002,29 +1001,30 @@ void Init_Model(calign *data, t_mod *mod, option *io)
   if(io->datatype == NT)
     {
       /* Set the substitution parameters to their default values
-     if they are not fixed by the user */
+         if they are not fixed by the user */
       if(mod->s_opt->opt_kappa == YES)
-    {
-      mod->kappa->v  = 4.0;
-      mod->lambda->v = 1.0;
-    }
-
+        {
+          mod->kappa->v  = 4.0;
+          mod->lambda->v = 1.0;
+        }
+      
       /* if(mod->s_opt->opt_rr) */
       if(mod->whichmodel == GTR || mod->whichmodel == CUSTOM)
-    {
-      int i;
-
-      For(i,6)
         {
-          mod->r_mat->rr->v[i]     = 1.0;
-          mod->r_mat->rr_val->v[i] = 1.0;
+          mod->r_mat->rr->v[AC]     = 1.0;
+          mod->r_mat->rr->v[AG]     = 4.0;
+          mod->r_mat->rr->v[AT]     = 1.0;
+          mod->r_mat->rr->v[CG]     = 1.0;
+          mod->r_mat->rr->v[CT]     = 4.0;
+          mod->r_mat->rr->v[GT]     = 1.0;
+
+          For(i,6) mod->r_mat->rr_val->v[i] = mod->r_mat->rr->v[i];
         }
     }
-    }
-
+  
   if(mod->s_opt->opt_alpha)  mod->ras->alpha->v  = 1.0;
   if(mod->s_opt->opt_pinvar) mod->ras->pinvar->v = 0.2;
-
+  
 
   if(io->datatype == NT) /* Nucleotides */
     {
@@ -1034,67 +1034,67 @@ void Init_Model(calign *data, t_mod *mod, option *io)
 
 
       if(mod->whichmodel == JC69)
-    {
-      mod->e_frq->pi->v[0] = mod->e_frq->pi->v[1] = mod->e_frq->pi->v[2] = mod->e_frq->pi->v[3] = .25;
-      mod->kappa->v = 1.;
-      mod->s_opt->opt_state_freq = NO;
-      mod->s_opt->opt_kappa      = NO;
-      mod->s_opt->opt_lambda     = NO;
-      mod->update_eigen          = NO;
-    }
-
+        {
+          mod->e_frq->pi->v[0] = mod->e_frq->pi->v[1] = mod->e_frq->pi->v[2] = mod->e_frq->pi->v[3] = .25;
+          mod->kappa->v = 1.;
+          mod->s_opt->opt_state_freq = NO;
+          mod->s_opt->opt_kappa      = NO;
+          mod->s_opt->opt_lambda     = NO;
+          mod->update_eigen          = NO;
+        }
+      
       if(mod->whichmodel == K80)
-    {
-      mod->e_frq->pi->v[0] = mod->e_frq->pi->v[1] = mod->e_frq->pi->v[2] = mod->e_frq->pi->v[3] = .25;
-      mod->s_opt->opt_state_freq = NO;
-      mod->s_opt->opt_lambda     = NO;
-      mod->update_eigen          = NO;
-    }
-
+        {
+          mod->e_frq->pi->v[0] = mod->e_frq->pi->v[1] = mod->e_frq->pi->v[2] = mod->e_frq->pi->v[3] = .25;
+          mod->s_opt->opt_state_freq = NO;
+          mod->s_opt->opt_lambda     = NO;
+          mod->update_eigen          = NO;
+        }
+      
       if(mod->whichmodel == F81)
-    {
-      mod->kappa->v = 1.;
-      mod->update_eigen          = NO;
-    }
-
+        {
+          mod->kappa->v = 1.;
+          mod->update_eigen          = NO;
+        }
+      
       if(mod->whichmodel == F84)
-    {
-      aux = ((mod->e_frq->pi->v[0]+mod->e_frq->pi->v[2])-(mod->e_frq->pi->v[1]+mod->e_frq->pi->v[3]))/(2.*mod->kappa->v);
-      mod->lambda->v = ((mod->e_frq->pi->v[1]+mod->e_frq->pi->v[3]) + aux)/((mod->e_frq->pi->v[0]+mod->e_frq->pi->v[2]) - aux);
-      mod->update_eigen          = NO;
-    }
-
+        {
+          aux = ((mod->e_frq->pi->v[0]+mod->e_frq->pi->v[2])-(mod->e_frq->pi->v[1]+mod->e_frq->pi->v[3]))/(2.*mod->kappa->v);
+          mod->lambda->v = ((mod->e_frq->pi->v[1]+mod->e_frq->pi->v[3]) + aux)/((mod->e_frq->pi->v[0]+mod->e_frq->pi->v[2]) - aux);
+          mod->update_eigen          = NO;
+        }
+      
       if(mod->whichmodel == TN93)
-    {
-      mod->update_eigen          = NO;
-      if(io->mod->s_opt->opt_kappa) io->mod->s_opt->opt_lambda = 1;
-    }
-
+        {
+          mod->update_eigen          = NO;
+          if(io->mod->s_opt->opt_kappa) io->mod->s_opt->opt_lambda = 1;
+        }
+      
       if(mod->whichmodel == GTR)
-    {
-      mod->kappa->v = 1.;
-      mod->update_eigen      = YES;
-      io->mod->s_opt->opt_rr = YES;
-    }
-
+        {
+          mod->kappa->v          = 1.;
+          mod->update_eigen      = YES;
+          io->mod->s_opt->opt_rr = YES;
+        }
+      
       if(mod->whichmodel == CUSTOM)
-    {
-      mod->kappa->v = 1.;
-      mod->update_eigen = YES;
-      /* 	  io->mod->s_opt->opt_rr     = YES; */ /* What if the user decided not to optimise the rates? */
-    }
-
+        {
+          mod->kappa->v = 1.;
+          mod->update_eigen = YES;
+          /* 	  io->mod->s_opt->opt_rr     = YES; */ /* What if the user decided not to optimise the rates? */
+        }
+      
       if(mod->whichmodel == GTR)
-    {
-      mod->custom_mod_string->s[0] = '0';
-      mod->custom_mod_string->s[1] = '1';
-      mod->custom_mod_string->s[2] = '2';
-      mod->custom_mod_string->s[3] = '3';
-      mod->custom_mod_string->s[4] = '4';
-      mod->custom_mod_string->s[5] = '5';
-      Translate_Custom_Mod_String(mod);
-    }
-
+        {
+          mod->custom_mod_string->s[0] = '0';
+          mod->custom_mod_string->s[1] = '1';
+          mod->custom_mod_string->s[2] = '2';
+          mod->custom_mod_string->s[3] = '3';
+          mod->custom_mod_string->s[4] = '4';
+          mod->custom_mod_string->s[5] = '5';
+          Translate_Custom_Mod_String(mod);
+        }
+      
       if(mod->s_opt->user_state_freq == YES && mod->whichmodel != JC69 && mod->whichmodel != K80)
         {
           For(i,4)
@@ -1102,7 +1102,7 @@ void Init_Model(calign *data, t_mod *mod, option *io)
               mod->e_frq->pi->v[i] = mod->user_b_freq->v[i];
             }
         }
-
+      
       if(((mod->whichmodel == GTR)    ||
           (mod->whichmodel == CUSTOM) ||
           (mod->whichmodel == HKY85)) &&
@@ -1118,122 +1118,122 @@ void Init_Model(calign *data, t_mod *mod, option *io)
     }
   else if(mod->io->datatype == AA)
     {
-
+      
       /* init for amino-acids */
       /* see comments of PMat_Empirical for details */
       /* read pi and Q from file */
-
+      
       /* These initialisations are needed when analysing multiple
        * data sets
        */
       For(i,mod->ns*mod->ns) mod->r_mat->qmat->v[i] = .0;
       For(i,mod->ns        ) mod->e_frq->pi->v[i]   = .0;
-
+      
       switch(mod->whichmodel)
-    {
-    case DAYHOFF :
-      {
-        Init_Qmat_Dayhoff(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-        if(mod->s_opt->opt_state_freq)
-          For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
-        break;
-      }
-    case JTT :
-      {
-        Init_Qmat_JTT(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-        if(mod->s_opt->opt_state_freq)
-          For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
-        break;
-      }
-    case MTREV :
-      {
-        Init_Qmat_MtREV(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-        if(mod->s_opt->opt_state_freq)
-          For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
-        break;
-      }
-    case LG :
-      {
-        Init_Qmat_LG(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-        if(mod->s_opt->opt_state_freq)
-          For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
-        break;
-      }
-    case WAG :
-      {
-        Init_Qmat_WAG(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-        if(mod->s_opt->opt_state_freq)
-          For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
-        break;
-      }
-    case DCMUT :
-      {
-        Init_Qmat_DCMut(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-        if(mod->s_opt->opt_state_freq)
-          For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
-        break;
-      }
-    case RTREV :
-      {
-        Init_Qmat_RtREV(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-        if(mod->s_opt->opt_state_freq)
-          For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
-        break;
-      }
-    case CPREV :
-      {
-        Init_Qmat_CpREV(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-        if(mod->s_opt->opt_state_freq)
-          For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
-        break;
-      }
-    case VT :
-      {
-        Init_Qmat_VT(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-        if(mod->s_opt->opt_state_freq)
-          For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
-        break;
-      }
-    case BLOSUM62 :
-      {
-        Init_Qmat_Blosum62(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-        if(mod->s_opt->opt_state_freq)
-          For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
-        break;
-      }
-    case MTMAM :
-      {
-        Init_Qmat_MtMam(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-        if(mod->s_opt->opt_state_freq)
-          For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
-        break;
-      }
-    case MTART :
-      {
-        Init_Qmat_MtArt(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-        if(mod->s_opt->opt_state_freq)
-          For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
-        break;
-      }
-    case HIVW :
-      {
-        Init_Qmat_HIVw(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-        if(mod->s_opt->opt_state_freq)
-          For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
-        break;
-      }
-    case HIVB :
-      {
-        Init_Qmat_HIVb(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-        if(mod->s_opt->opt_state_freq)
-          For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
-        break;
-      }
-    case CUSTOMAA :
-      {
-        Read_Qmat(mod->r_mat->qmat->v,mod->e_frq->pi->v,mod->fp_aa_rate_mat);
+        {
+        case DAYHOFF :
+          {
+            Init_Qmat_Dayhoff(mod->r_mat->qmat->v,mod->e_frq->pi->v);
+            if(mod->s_opt->opt_state_freq)
+              For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
+            break;
+          }
+        case JTT :
+          {
+            Init_Qmat_JTT(mod->r_mat->qmat->v,mod->e_frq->pi->v);
+            if(mod->s_opt->opt_state_freq)
+              For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
+            break;
+          }
+        case MTREV :
+          {
+            Init_Qmat_MtREV(mod->r_mat->qmat->v,mod->e_frq->pi->v);
+            if(mod->s_opt->opt_state_freq)
+              For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
+            break;
+          }
+        case LG :
+          {
+            Init_Qmat_LG(mod->r_mat->qmat->v,mod->e_frq->pi->v);
+            if(mod->s_opt->opt_state_freq)
+              For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
+            break;
+          }
+        case WAG :
+          {
+            Init_Qmat_WAG(mod->r_mat->qmat->v,mod->e_frq->pi->v);
+            if(mod->s_opt->opt_state_freq)
+              For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
+            break;
+          }
+        case DCMUT :
+          {
+            Init_Qmat_DCMut(mod->r_mat->qmat->v,mod->e_frq->pi->v);
+            if(mod->s_opt->opt_state_freq)
+              For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
+            break;
+          }
+        case RTREV :
+          {
+            Init_Qmat_RtREV(mod->r_mat->qmat->v,mod->e_frq->pi->v);
+            if(mod->s_opt->opt_state_freq)
+              For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
+            break;
+          }
+        case CPREV :
+          {
+            Init_Qmat_CpREV(mod->r_mat->qmat->v,mod->e_frq->pi->v);
+            if(mod->s_opt->opt_state_freq)
+              For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
+            break;
+          }
+        case VT :
+          {
+            Init_Qmat_VT(mod->r_mat->qmat->v,mod->e_frq->pi->v);
+            if(mod->s_opt->opt_state_freq)
+              For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
+            break;
+          }
+        case BLOSUM62 :
+          {
+            Init_Qmat_Blosum62(mod->r_mat->qmat->v,mod->e_frq->pi->v);
+            if(mod->s_opt->opt_state_freq)
+              For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
+            break;
+          }
+        case MTMAM :
+          {
+            Init_Qmat_MtMam(mod->r_mat->qmat->v,mod->e_frq->pi->v);
+            if(mod->s_opt->opt_state_freq)
+              For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
+            break;
+          }
+        case MTART :
+          {
+            Init_Qmat_MtArt(mod->r_mat->qmat->v,mod->e_frq->pi->v);
+            if(mod->s_opt->opt_state_freq)
+              For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
+            break;
+          }
+        case HIVW :
+          {
+            Init_Qmat_HIVw(mod->r_mat->qmat->v,mod->e_frq->pi->v);
+            if(mod->s_opt->opt_state_freq)
+              For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
+            break;
+          }
+        case HIVB :
+          {
+            Init_Qmat_HIVb(mod->r_mat->qmat->v,mod->e_frq->pi->v);
+            if(mod->s_opt->opt_state_freq)
+              For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
+            break;
+          }
+        case CUSTOMAA :
+          {
+            Read_Qmat(mod->r_mat->qmat->v,mod->e_frq->pi->v,mod->fp_aa_rate_mat);
 	    Print_Qmat_AA(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-        if(mod->s_opt->opt_state_freq) For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
+            if(mod->s_opt->opt_state_freq) For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
 	    break;
 	  }
 	case FLU : 
@@ -1241,41 +1241,41 @@ void Init_Model(calign *data, t_mod *mod, option *io)
 	    Init_Qmat_FLU(mod->r_mat->qmat->v,mod->e_frq->pi->v);
 	    if(mod->s_opt->opt_state_freq)
 	      For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
-        break;
-      }
-    default :
-          {
-        Init_Qmat_LG(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-        if(mod->s_opt->opt_state_freq)
-          For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
-        break;
+            break;
           }
-    }
-
-/*       /\* multiply the nth col of Q by the nth term of pi/100 just as in PAML *\/ */
+        default :
+          {
+            Init_Qmat_LG(mod->r_mat->qmat->v,mod->e_frq->pi->v);
+            if(mod->s_opt->opt_state_freq)
+              For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
+            break;
+          }
+        }
+      
+      /*       /\* multiply the nth col of Q by the nth term of pi/100 just as in PAML *\/ */
       For(i,mod->ns) For(j,mod->ns) mod->r_mat->qmat->v[i*mod->ns+j] *= mod->e_frq->pi->v[j] / 100.0;
-
+      
       /* compute diagonal terms of Q and mean rate mr = l/t */
       mod->mr->v= .0;
       For (i,mod->ns)
-    {
-      sum=.0;
-      For(j, mod->ns) sum += mod->r_mat->qmat->v[i*mod->ns+j];
-      mod->r_mat->qmat->v[i*mod->ns+i] = -sum;
-      mod->mr->v += mod->e_frq->pi->v[i] * sum;
-    }
-
+        {
+          sum=.0;
+          For(j, mod->ns) sum += mod->r_mat->qmat->v[i*mod->ns+j];
+          mod->r_mat->qmat->v[i*mod->ns+i] = -sum;
+          mod->mr->v += mod->e_frq->pi->v[i] * sum;
+        }
+      
       /* scale imod->nstantaneous rate matrix so that mu=1 */
       For (i,mod->ns*mod->ns) mod->r_mat->qmat->v[i] /= mod->mr->v;
-
+      
       /* compute eigenvectors/values */
       result = 0;
-
+      
       For(i,mod->ns*mod->ns) mod->r_mat->qmat_buff->v[i] = mod->r_mat->qmat->v[i];
-
+      
       if(!Eigen(1,mod->r_mat->qmat_buff->v,mod->eigen->size,mod->eigen->e_val,
-        mod->eigen->e_val_im,mod->eigen->r_e_vect,
-        mod->eigen->r_e_vect_im,mod->eigen->space))
+                mod->eigen->e_val_im,mod->eigen->r_e_vect,
+                mod->eigen->r_e_vect_im,mod->eigen->space))
         {
           /* compute inverse(Vr) into Vi */
           For (i,mod->ns*mod->ns) mod->eigen->l_e_vect[i] = mod->eigen->r_e_vect[i];
@@ -1284,7 +1284,7 @@ void Init_Model(calign *data, t_mod *mod, option *io)
               PhyML_Printf("\n== Err in file %s at line %d.",__FILE__,__LINE__);
               Exit("\n");
             }
-
+          
           /* compute the diagonal terms of EXP(D) */
           For(i,mod->ns) mod->eigen->e_val[i] = (phydbl)EXP(mod->eigen->e_val[i]);
         }
@@ -1315,8 +1315,6 @@ void Init_Model(calign *data, t_mod *mod, option *io)
 
   Init_Eigen_Struct(mod->eigen);
 
-
-  
   free(dr);free(di);free(space);
 }
 

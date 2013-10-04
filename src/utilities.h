@@ -64,6 +64,12 @@ static inline int isinf_d  (double      x) { return isnan (x - x); }
 static inline int isinf_ld (long double x) { return isnan (x - x); }
 #endif
 
+#define AC 0
+#define AG 1
+#define AT 2
+#define CG 3
+#define CT 4
+#define GT 5
 
 #define MCMC_MOVE_RANDWALK_UNIFORM       0
 #define MCMC_MOVE_LOG_RANDWALK_UNIFORM   1

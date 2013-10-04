@@ -476,16 +476,16 @@ phydbl Lk(t_edge *b, t_tree *tree)
             {
               if(tree->ignore_root == NO)
                 {
-              Post_Order_Lk(tree->n_root,tree->n_root->v[1],tree);
-              Post_Order_Lk(tree->n_root,tree->n_root->v[2],tree);
-
-              Update_P_Lk(tree,tree->n_root->b[1],tree->n_root);
-              Update_P_Lk(tree,tree->n_root->b[2],tree->n_root);
-
-              if(tree->both_sides == YES)
+                  Post_Order_Lk(tree->n_root,tree->n_root->v[1],tree);
+                  Post_Order_Lk(tree->n_root,tree->n_root->v[2],tree);
+                  
+                  Update_P_Lk(tree,tree->n_root->b[1],tree->n_root);
+                  Update_P_Lk(tree,tree->n_root->b[2],tree->n_root);
+                  
+                  if(tree->both_sides == YES)
                     {
                       Pre_Order_Lk(tree->n_root,tree->n_root->v[2],tree);
-                Pre_Order_Lk(tree->n_root,tree->n_root->v[1],tree);
+                      Pre_Order_Lk(tree->n_root,tree->n_root->v[1],tree);
                     }
                 }
               else
@@ -629,11 +629,7 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
                     {
                       sum +=
                         b->Pij_rr[(catg*dim3)+(state*dim2)+l] *
-#ifdef BEAGLE
-                        b->p_lk_left[(site*dim2)+(catg*dim1)+l];
-#else
-                      b->p_lk_left[(site*dim1)+(catg*dim2)+l];
-#endif
+                        b->p_lk_left[(site*dim1)+(catg*dim2)+l];
                     }
                   
                   site_lk_cat += sum * tree->mod->e_frq->pi->v[state];
@@ -649,11 +645,7 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
                             {
                               sum +=
                                 b->Pij_rr[(catg*dim3)+(k*dim2)+l] *
-#ifdef BEAGLE
-                                b->p_lk_left[(site*dim2)+(catg*dim1)+l];
-#else
-                              b->p_lk_left[(site*dim1)+(catg*dim2)+l];
-#endif
+                                b->p_lk_left[(site*dim1)+(catg*dim2)+l];
                             }
                           
                           site_lk_cat +=
@@ -669,41 +661,24 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
               For(k,ns)
                 {
                   sum = .0;
-#ifdef BEAGLE
-                  if(b->p_lk_rght[(site*dim2)+(catg*dim1)+k] > .0)
-#else
-                    if(b->p_lk_rght[(site*dim1)+(catg*dim2)+k] > .0) //Only bother descending into the subtrees if the likelihood of state k, at site "site*dim2" is > 0
-#endif
-                      {
-                        For(l,ns)
-                          {
-                            sum +=
-                              b->Pij_rr[(catg*dim3)+(k*dim2)+l] *     //"catg*dim3" offsets into a rate-specific flat 4*4 DNA matrix P. Then, P[i,j] is given by "k*4+l"
-#ifdef BEAGLE
-                              b->p_lk_left[(site*dim2)+(catg*dim1)+l];
-#else
+                  if(b->p_lk_rght[(site*dim1)+(catg*dim2)+k] > .0) //Only bother descending into the subtrees if the likelihood of state k, at site "site*dim2" is > 0
+                    {
+                      For(l,ns)
+                        {
+                          sum +=
+                            b->Pij_rr[(catg*dim3)+(k*dim2)+l] *     //"catg*dim3" offsets into a rate-specific flat 4*4 DNA matrix P. Then, P[i,j] is given by "k*4+l"
                             b->p_lk_left[(site*dim1)+(catg*dim2)+l];//"site*dim1" offsets into a rate-specific flat num_rates*4 matrix L. Then, L[i,j] is given by "catg*dim2+l"
-#endif
-                          }
-                        
-                        site_lk_cat +=
-                          sum *
-                          tree->mod->e_frq->pi->v[k] *
-#ifdef BEAGLE
-                          b->p_lk_rght[(site*dim2)+(catg*dim1)+k];
-#else
+                        }
+                      
+                      site_lk_cat +=
+                        sum *
+                        tree->mod->e_frq->pi->v[k] *
                         b->p_lk_rght[(site*dim1)+(catg*dim2)+k];
-#endif
-                      }
+                    }
                 }
             }
           
-#ifdef BEAGLE
-          if(0.0==site_lk_cat)
-            site_lk_cat=SMALL_PIJ;//oterwhise the forthcoming calculations get thrown off
-#endif
           
-          assert(site_lk_cat>0.0);
           tree->site_lk_cat[catg] = site_lk_cat;
           
           //      fprintf(stdout,"[%d,%d,%d]site_lk_cat:%e,e.frq:%f,edge:%d,tax:%d\n",catg,site,state,site_lk_cat,tree->mod->e_frq->pi->v[state],b->num,b->rght->tax);fflush(stdout);
@@ -854,13 +829,26 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
 
           if(tree->mod->whichmodel == GTR || tree->mod->whichmodel == CUSTOM)
             {
-              int i;
-              For(i,6)
+              int i,j;
+              PhyML_Printf("\n== Rate matrix\n");
+              For(i,4)
+                {
+                  For(j,4)
+                    {
+                      PhyML_Printf("%12f ",i,tree->mod->r_mat->qmat->v[i*4+j]); 
+                    }
+                  printf("\n");
+                }
+
+              PhyML_Printf("\n== Relative rates\n");
+              For(i,4)
                 {
                   PhyML_Printf("\n== rr[%d]: %f",i,tree->mod->r_mat->rr->v[i]); 
                 }
             }
 
+          
+          
           /* int i; */
           /* For(i,2*tree->n_otu-3) */
           /* 	{ */
@@ -877,6 +865,50 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
           
           /* 	} */
           
+          Print_Site(tree->data,site,tree->n_otu,"\n",tree->mod->io->state_len,stdout);
+
+          int i,j,k;
+          For(i,tree->n_otu)
+            {
+              printf("\n. %30s ",tree->a_nodes[i]->name);
+              For(j,tree->mod->ns)
+                {
+                  printf("%d",tree->a_nodes[i]->b[0]->p_lk_tip_r[site*tree->mod->ns+j]);
+                }
+            }
+          For(i,2*tree->n_otu-3)
+            {
+              printf("\n. Edge %d\n",i);
+              For(j,4)
+                {
+                  For(k,4)
+                    {
+                      printf("%8f ",tree->a_edges[i]->Pij_rr[j*4+k]);
+                    }
+                  printf("\n");
+                }
+            }
+
+          printf("\n. EIGEN\n");          
+          For(i,tree->mod->ns) 
+            {
+              For(j,tree->mod->ns)
+                printf("%8f ",tree->mod->eigen->l_e_vect[i*4+j]);
+              printf("\n");
+            }
+          printf("\n. EIGEN\n");
+          For(i,tree->mod->ns) 
+            {
+              For(j,tree->mod->ns)
+                printf("%8f ",tree->mod->eigen->r_e_vect[i*4+j]);
+              printf("\n");
+            }
+          printf("\n. EIGEN\n");
+          For(i,tree->mod->ns) 
+            {
+              printf("%8f ",tree->mod->eigen->e_val[i]);
+            }
+
           PhyML_Printf("\n== Err. in file %s at line %d (function '%s')",__FILE__,__LINE__,__FUNCTION__);
           Exit("\n");
         }
@@ -1162,8 +1194,8 @@ void Update_P_Lk_Generic(t_tree *tree, t_edge *b, t_node *d)
   if(d->tax)
     {
       PhyML_Printf("\n== t_node %d is a leaf...",d->num);
-      PhyML_Printf("\n== Err in file %s at line %d\n\n",__FILE__,__LINE__);
-      Warn_And_Exit("\n");
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s').\n",__FILE__,__LINE__,__FUNCTION__);
+      Exit("\n");
     }
 
   n_patterns = tree->n_pattern;
@@ -1346,7 +1378,7 @@ void Update_P_Lk_Generic(t_tree *tree, t_edge *b, t_node *d)
                             {
                               PhyML_Printf("\n. p_lk_lim_inf = %G smallest_p_lk = %G",p_lk_lim_inf,smallest_p_lk);
                               PhyML_Printf("\n. curr_scaler_pow = %d",curr_scaler_pow);
-                              PhyML_Printf("\n. Err in file %s at line %d.",__FILE__,__LINE__);
+                              PhyML_Printf("\n. Err. in file %s at line %d (function '%s').",__FILE__,__LINE__,__FUNCTION__);
                               Warn_And_Exit("\n");
                             }
                         }
@@ -1411,8 +1443,8 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
   if(d->tax)
     {
       PhyML_Printf("\n== t_node %d is a leaf...",d->num);
-      PhyML_Printf("\n== Err in file %s at line %d\n\n",__FILE__,__LINE__);
-      Warn_And_Exit("\n");
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
+      Exit("\n");
     }
 
 
@@ -1450,14 +1482,14 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
             {
               /* Is the state at this tip ambiguous? */
               ambiguity_check_v1 = n_v1->c_seq->is_ambigu[site];
-                  if(ambiguity_check_v1 == NO) state_v1 = n_v1->c_seq->d_state[site];
+              if(ambiguity_check_v1 == NO) state_v1 = n_v1->c_seq->d_state[site];
             }
 
             if(n_v2 && n_v2->tax)
             {
               /* Is the state at this tip ambiguous? */
               ambiguity_check_v2 = n_v2->c_seq->is_ambigu[site];
-                  if(ambiguity_check_v2 == NO) state_v2 = n_v2->c_seq->d_state[site];
+              if(ambiguity_check_v2 == NO) state_v2 = n_v2->c_seq->d_state[site];
             }
         }
 
@@ -1491,28 +1523,28 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
                       /* n_v1 is a tip */
                       if((n_v1->tax) && (!tree->mod->s_opt->greedy))
                         {
-                              if(ambiguity_check_v1 == NO)
+                          if(ambiguity_check_v1 == NO)
+                            {
+                              /* For the (non-ambiguous) state at node n_v1 */
+                              p1_lk1 = Pij1[catg*dim3+i*dim2+state_v1];
+                            }
+                          else
+                            {
+                              /* For all the states at node n_v1 */
+                              p0=Pij1[catg*dim3+i*dim2+0] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+0];
+                              p1=Pij1[catg*dim3+i*dim2+1] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+1];
+                              p2=Pij1[catg*dim3+i*dim2+2] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+2];
+                              p3=Pij1[catg*dim3+i*dim2+3] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+3];
+                              p1_lk1 = p0+p1+p2+p3;
+                              
+                              
+                              if(isnan(p1_lk1))
                                 {
-                                  /* For the (non-ambiguous) state at node n_v1 */
-                                  p1_lk1 = Pij1[catg*dim3+i*dim2+state_v1];
+                                  PhyML_Printf("\n== p0=%f p1=%f p2=%f p3=%f",p0,p1,p2,p3);
+                                  PhyML_Printf("\n== Err. in file %s at line %d (function '%s').",__FILE__,__LINE__,__FUNCTION__);
+                                  Exit("\n");
                                 }
-                              else
-                                {
-                                  /* For all the states at node n_v1 */
-                                  p0=Pij1[catg*dim3+i*dim2+0] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+0];
-                                  p1=Pij1[catg*dim3+i*dim2+1] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+1];
-                                  p2=Pij1[catg*dim3+i*dim2+2] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+2];
-                                  p3=Pij1[catg*dim3+i*dim2+3] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+3];
-                                  p1_lk1 = p0+p1+p2+p3;
-
-
-                                  if(isnan(p1_lk1))
-                                    {
-                                      PhyML_Printf("\n== p0=%f p1=%f p2=%f p3=%f",p0,p1,p2,p3);
-                                      PhyML_Printf("\n== Err. in file %s at line %d.",__FILE__,__LINE__);
-                                      Warn_And_Exit("\n");
-                                    }
-                                }
+                            }
                         }
                       /* n_v1 is an internal node */
                       else
@@ -1524,11 +1556,11 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
                           p2=Pij1[catg*dim3+i*dim2+2] * p_lk_v1[site*dim1+catg*dim2+2];
                           p3=Pij1[catg*dim3+i*dim2+3] * p_lk_v1[site*dim1+catg*dim2+3];
                           p1_lk1 = p0+p1+p2+p3;
-
+                          
                           if(isnan(p1_lk1))
                             {
-                                  PhyML_Printf("\n== p0=%f p1=%f p2=%f p3=%f",p0,p1,p2,p3);
-                                  PhyML_Printf("\n== Err. in file %s at line %d.",__FILE__,__LINE__);
+                              PhyML_Printf("\n== p0=%f p1=%f p2=%f p3=%f",p0,p1,p2,p3);
+                              PhyML_Printf("\n== Err. in file %s at line %d.",__FILE__,__LINE__);
                               Warn_And_Exit("\n");
                             }
                         }
@@ -1537,9 +1569,9 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
                     {
                       p1_lk1 = 1.0;
                     }
-
+                  
                   p2_lk2 = .0;
-
+                  
                   /* We do exactly the same as for node n_v1 but for node n_v2 this time.*/
                   if(n_v2)
                     {
@@ -1556,8 +1588,8 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
                                   PhyML_Printf("\n== catg=%d dim3=%d dim2=%d i=%d state_v2=%d",catg,dim3,dim2,i,state_v2);
                                   PhyML_Printf("\n== Pij2[0] = %f",Pij2[0]);
                                   PhyML_Printf("\n== q[0]=%f",tree->mod->eigen->q[0]);
-                                  PhyML_Printf("\n== Err. in file %s at line %d.",__FILE__,__LINE__);
-                                  Warn_And_Exit("\n");
+                                  PhyML_Printf("\n== Err. in file %s at line %d (function '%s').",__FILE__,__LINE__,__FUNCTION__);
+                                  Exit("\n");
                                 }
                             }
                           else
@@ -1568,14 +1600,13 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
                               p2=Pij2[catg*dim3+i*dim2+2] * (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+2];
                               p3=Pij2[catg*dim3+i*dim2+3] * (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+3];
                               p2_lk2 = p0+p1+p2+p3;
-
-
+                                                            
                               if(isnan(p2_lk2))
                                 {
                                   PhyML_Printf("\n== p0=%f p1=%f p2=%f p3=%f",p0,p1,p2,p3);
                                   PhyML_Printf("\n== Err. in file %s at line %d.",__FILE__,__LINE__);
                                   Warn_And_Exit("\n");
-                                }
+                                }                             
                             }
                         }
                       /* n_v2 is an internal node */
@@ -1589,10 +1620,10 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
                           p2_lk2 = p0+p1+p2+p3;
                           if(isnan(p2_lk2))
                             {
-                                  PhyML_Printf("\n== %f %f",b->l->v,b->l->v*b->l->v*tree->mod->l_var_sigma);
-                                  PhyML_Printf("\n== p0=%f p1=%f p2=%f p3=%f",p0,p1,p2,p3);
-                                  PhyML_Printf("\n== Pij2[0]=%f Pij2[1]=%f Pij2[2]=%f Pij2[3]=%f",Pij2[catg*dim3+i*dim2+0],Pij2[catg*dim3+i*dim2+1],Pij2[catg*dim3+i*dim2+2],Pij2[catg*dim3+i*dim2+3]);
-                                  PhyML_Printf("\n== Err. in file %s at line %d (function '%s').",__FILE__,__LINE__,__FUNCTION__);
+                              PhyML_Printf("\n== %f %f",b->l->v,b->l->v*b->l->v*tree->mod->l_var_sigma);
+                              PhyML_Printf("\n== p0=%f p1=%f p2=%f p3=%f",p0,p1,p2,p3);
+                              PhyML_Printf("\n== Pij2[0]=%f Pij2[1]=%f Pij2[2]=%f Pij2[3]=%f",Pij2[catg*dim3+i*dim2+0],Pij2[catg*dim3+i*dim2+1],Pij2[catg*dim3+i*dim2+2],Pij2[catg*dim3+i*dim2+3]);
+                              PhyML_Printf("\n== Err. in file %s at line %d (function '%s').",__FILE__,__LINE__,__FUNCTION__);
                               Warn_And_Exit("\n");
                             }
                         }
@@ -1601,28 +1632,51 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
                     {
                       p2_lk2 = 1.0;
                     }
-
+                  
                   p_lk[site*dim1+catg*dim2+i] = p1_lk1 * p2_lk2;//Partial likelihood of character "i" at site "site" under rate "catg"
-
+                  
                   if(p_lk[site*dim1+catg*dim2+i] < smallest_p_lk) smallest_p_lk = p_lk[site*dim1+catg*dim2+i] ;
-                }
 
+
+                  /* if(site == 3658 && n_v1->tax == YES && n_v2->tax == YES) */
+                  /*   { */
+                  /*     printf("\n## i=%3d %12G %12G %12G == P1:%12G P2:%12G [%3d %3d] [%20s %20s] [%c %c] [%3d %3d]", */
+                  /*            i, */
+                  /*            p_lk[site*dim1+catg*dim2+i], */
+                  /*            p1_lk1, */
+                  /*            p2_lk2, */
+                  /*            (ambiguity_check_v1 == NO)? Pij1[catg*dim3+i*dim2+state_v1] : -1., */
+                  /*            (ambiguity_check_v2 == NO)? Pij2[catg*dim3+i*dim2+state_v2] : -1., */
+                  /*            (ambiguity_check_v1 == NO)? state_v1 : -1, */
+                  /*            (ambiguity_check_v2 == NO)? state_v2 : -1, */
+                  /*            n_v1->name, */
+                  /*            n_v2->name, */
+                  /*            n_v1->c_seq->state[site], */
+                  /*            n_v2->c_seq->state[site], */
+                  /*            n_v1->c_seq->d_state[site], */
+                  /*            n_v2->c_seq->d_state[site] */
+                  /*            ); */
+                  /*   } */
+
+                }
+              
               /* Current scaling values at that site */
               sum_scale_v1_val = (sum_scale_v1)?(sum_scale_v1[catg*n_patterns+site]):(0);
               sum_scale_v2_val = (sum_scale_v2)?(sum_scale_v2[catg*n_patterns+site]):(0);
-
+              
               sum_scale[catg*n_patterns+site] = sum_scale_v1_val + sum_scale_v2_val;
-//                  fprintf(stderr,"\n%f,%f,%d",smallest_p_lk,curr_scaler,curr_scaler_pow);
+              
+
 
               /* Scaling */
               if(smallest_p_lk < p_lk_lim_inf)
                 {
                   curr_scaler_pow = (int)(LOG(p_lk_lim_inf)-LOG(smallest_p_lk))/LOG2;
                   curr_scaler     = (phydbl)((unsigned long long)(1) << curr_scaler_pow);
-
+                  
                   sum_scale[catg*n_patterns+site] += curr_scaler_pow;
-//                  fprintf(stderr,"\n%d",sum_scale[catg*n_patterns+site]);
-
+                  //                  fprintf(stderr,"\n%d",sum_scale[catg*n_patterns+site]);
+                                        
                   do
                     {
                       piecewise_scaler_pow = MIN(curr_scaler_pow,63);
@@ -1635,7 +1689,7 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
                             {
                               PhyML_Printf("\n== p_lk_lim_inf = %G smallest_p_lk = %G",p_lk_lim_inf,smallest_p_lk);
                               PhyML_Printf("\n== curr_scaler_pow = %d",curr_scaler_pow);
-                              PhyML_Printf("\n== Err in file %s at line %d (function '%s').",__FILE__,__LINE__,__FUNCTION__);
+                              PhyML_Printf("\n== Err. in file %s at line %d (function '%s').",__FILE__,__LINE__,__FUNCTION__);
                               Exit("\n");
                             }
 //                              fprintf(stderr,"\n%e",p_lk[site*dim1+catg*dim2+i]);
