@@ -971,13 +971,23 @@ void Update_Eigen(t_mod *mod)
                      mod->eigen->e_val_im,mod->eigen->r_e_vect,
                      mod->eigen->r_e_vect_im,mod->eigen->space);
               if (result == -1)
-		Exit("\n== Eigenvalues/vectors computation did not converge: computation cancelled\n");
+                {
+                  PhyML_Printf("\n== Eigenvalues/vectors computation did not converge: computation cancelled."); 
+                  Exit("\n");
+                }
               else if (result == 1)
-		Exit("\n== Complex eigenvalues/vectors: computation cancelled\n");
+		{
+                  PhyML_Printf("\n== Complex eigenvalues/vectors: computation cancelled.");
+                  Exit("\n");
+                }
 
               For (i,mod->eigen->size*mod->eigen->size) mod->eigen->l_e_vect[i] = mod->eigen->r_e_vect[i];
               n_iter++;
-	      if(n_iter > 100) Exit("\n== Cannot work out eigen vectors\n");
+	      if(n_iter > 100) 
+                {                  
+                  PhyML_Printf("\n== Cannot work out eigen vectors.");
+                  Exit("\n");
+                }
             };
           For(i,mod->eigen->size) mod->eigen->e_val[i] /= scalar;
 
