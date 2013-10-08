@@ -831,9 +831,9 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
             {
               int i,j;
               PhyML_Printf("\n== Rate matrix\n");
-              For(i,mod->ns)
+              For(i,tree->mod->ns)
                 {
-                  For(j,mod->ns)
+                  For(j,tree->mod->ns)
                     {
                       PhyML_Printf("%12G ",i,tree->mod->r_mat->qmat->v[i*4+j]); 
                     }
@@ -842,7 +842,7 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
               fflush(NULL);
 
               PhyML_Printf("\n== Relative rates\n");
-              For(i,mod->ns*(mod->ns-1)/2)
+              For(i,tree->mod->ns*(tree->mod->ns-1)/2)
                 {
                   PhyML_Printf("\n== rr[%3d]: %12G",i,tree->mod->r_mat->rr->v[i]); 
                 }
