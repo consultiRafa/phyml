@@ -1093,10 +1093,10 @@ phydbl General_Dist(phydbl *F, t_mod *mod, eigen *eigen_struct)
   For(i,eigen_struct->size)
     {
       For(j,eigen_struct->size)
-    {
-      pi[i] += (F[eigen_struct->size*i+j] + F[eigen_struct->size*j+i])/2.;
-      sum += F[eigen_struct->size*i+j];
-    }
+        {
+          pi[i] += (F[eigen_struct->size*i+j] + F[eigen_struct->size*j+i])/2.;
+          sum += F[eigen_struct->size*i+j];
+        }
     }
 
   Make_Symmetric(&F,eigen_struct->size);

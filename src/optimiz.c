@@ -999,19 +999,19 @@ static phydbl sqrarg;
 #define SQR(a) ((sqrarg=(a)) < SMALL ? 0.0 : sqrarg*sqrarg)
 
 void BFGS(t_tree *tree,
-      phydbl *p,
-      int n,
-      phydbl gtol,
+          phydbl *p,
+          int n,
+          phydbl gtol,
           phydbl difff,
-      phydbl step_size,
+          phydbl step_size,
           int logt,
           int is_positive,
-      phydbl(*func)(t_tree *tree),
-      int(*dfunc)(t_tree *tree,phydbl *param,int n_param,phydbl stepsize,int logt, phydbl(*func)(t_tree *tree),phydbl *derivatives, int is_positive),
-      int(*lnsrch)(t_tree *tree, int n, phydbl *xold, phydbl fold, phydbl *g, phydbl *p, phydbl *x,phydbl *f, phydbl stpmax, int *check, int logt, int is_positive),
-      int *failed)
+          phydbl(*func)(t_tree *tree),
+          int(*dfunc)(t_tree *tree,phydbl *param,int n_param,phydbl stepsize,int logt, phydbl(*func)(t_tree *tree),phydbl *derivatives, int is_positive),
+          int(*lnsrch)(t_tree *tree, int n, phydbl *xold, phydbl fold, phydbl *g, phydbl *p, phydbl *x,phydbl *f, phydbl stpmax, int *check, int logt, int is_positive),
+          int *failed)
 {
-
+  
   int check,i,its,j;
   phydbl den,fac,fad,fae,fp,stpmax,sum=0.0,sumdg,sumxi,temp,test,fret;
   phydbl *dg,*g,*hdg,**hessin,*pnew,*xi;
@@ -1036,7 +1036,7 @@ void BFGS(t_tree *tree,
   if(logt == YES) For(i,n) p[i] = EXP(MIN(1.E+2,p[i]));
   fp=(*func)(tree);
   if(logt == YES) For(i,n) p[i] = LOG(p[i]);
-
+  
   /* PhyML_Printf("\n. ENTER BFGS WITH: %f\n",fp); */
 
   fp_old = fp;
@@ -2625,31 +2625,31 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
         {
           int failed,i;
 
-              For(i,tree->mod->r_mat->n_diff_rr) tree->mod->r_mat->rr_val->v[i] = LOG(tree->mod->r_mat->rr_val->v[i]);
+          For(i,tree->mod->r_mat->n_diff_rr) tree->mod->r_mat->rr_val->v[i] = LOG(tree->mod->r_mat->rr_val->v[i]);
 
           failed = NO;
 
           /* BFGS(mixt_tree,tree->mod->r_mat->rr_val->v,tree->mod->r_mat->n_diff_rr,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,NO,YES, */
           BFGS(mixt_tree,tree->mod->r_mat->rr_val->v,tree->mod->r_mat->n_diff_rr,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,YES,NO,
-           &Return_Abs_Lk,
-           &Num_Derivative_Several_Param,
-           &Lnsrch,&failed);
-
-              For(i,tree->mod->r_mat->n_diff_rr) tree->mod->r_mat->rr_val->v[i] = EXP(tree->mod->r_mat->rr_val->v[i]);
+               &Return_Abs_Lk,
+               &Num_Derivative_Several_Param,
+               &Lnsrch,&failed);
+          
+          For(i,tree->mod->r_mat->n_diff_rr) tree->mod->r_mat->rr_val->v[i] = EXP(tree->mod->r_mat->rr_val->v[i]);
 
           if(failed == YES)
-        {
-          For(i,tree->mod->r_mat->n_diff_rr)
-            if(i != 5)
-              {
-            Generic_Brent_Lk(&(tree->mod->r_mat->rr_val->v[i]),
-                     1.E-2,1.E+2,
-                     tree->mod->s_opt->min_diff_lk_local,
-                     tree->mod->s_opt->brent_it_max,
-                     tree->mod->s_opt->quickdirty,
-                     Wrap_Lk,NULL,mixt_tree,NULL,NO);
-              }
-        }
+            {
+              For(i,tree->mod->r_mat->n_diff_rr)
+                if(i != 5)
+                  {
+                    Generic_Brent_Lk(&(tree->mod->r_mat->rr_val->v[i]),
+                                     1.E-2,1.E+2,
+                                     tree->mod->s_opt->min_diff_lk_local,
+                                     tree->mod->s_opt->brent_it_max,
+                                     tree->mod->s_opt->quickdirty,
+                                     Wrap_Lk,NULL,mixt_tree,NULL,NO);
+                  }
+            }
 
           if(verbose) Print_Lk(tree->mixt_tree?
                    tree->mixt_tree:
