@@ -837,14 +837,17 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
                     {
                       PhyML_Printf("%12G ",i,tree->mod->r_mat->qmat->v[i*4+j]); 
                     }
-                  printf("\n");
+                  PhyML_Printf("\n");
                 }
+              fflush(NULL);
 
               PhyML_Printf("\n== Relative rates\n");
               For(i,mod->ns*(mod->ns-1)/2)
                 {
-                  PhyML_Printf("\n== rr[%d]: %G",i,tree->mod->r_mat->rr->v[i]); 
+                  PhyML_Printf("\n== rr[%3d]: %12G",i,tree->mod->r_mat->rr->v[i]); 
                 }
+              fflush(NULL);
+
             }
 
           
