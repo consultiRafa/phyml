@@ -2888,7 +2888,7 @@ void Bootstrap(t_tree *tree)
       int i;
       For(i,6)
         {
-          PhyML_Printf("\n== %3d %15G",i,boot_tree->mod->r_mat->rr_val->v[i]);
+          PhyML_Printf("\n== %3d %15G %15G",i,boot_tree->mod->r_mat->rr_val->v[i],boot_tree->mod->r_mat->rr->v[i]);
         }
 
       if(boot_tree->mod->s_opt->opt_topo)

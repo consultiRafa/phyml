@@ -2630,7 +2630,7 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
                 int i;
                 For(i,6)
                   {
-                    PhyML_Printf("\n== %3d %15G",i,tree->mod->r_mat->rr_val->v[i]);
+                    PhyML_Printf("\n== %3d %15G %15G",i,tree->mod->r_mat->rr_val->v[i],tree->mod->r_mat->rr->v[i]);
                   }
               }
 
@@ -2655,7 +2655,7 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
                 int i;
                 For(i,6)
                   {
-                    PhyML_Printf("\n== %3d %15G",i,tree->mod->r_mat->rr_val->v[i]);
+                    PhyML_Printf("\n== %3d %15G %15G",i,tree->mod->r_mat->rr_val->v[i],tree->mod->r_mat->rr->v[i]);
                   }
               }
 
@@ -2677,7 +2677,7 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
                     int i;
                     For(i,6)
                       {
-                        PhyML_Printf("\n== %3d %15G",i,tree->mod->r_mat->rr_val->v[i]);
+                        PhyML_Printf("\n== %3d %15G %15G",i,tree->mod->r_mat->rr_val->v[i],tree->mod->r_mat->rr->v[i]);
                       }
                   }
 

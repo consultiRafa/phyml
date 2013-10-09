@@ -220,6 +220,13 @@ fflush(stderr);
       Init_P_Pars_Tips(boot_tree);
       Br_Len_Not_Involving_Invar(boot_tree);
       
+      PhyML_Printf("\n== rr val in bootstrap");
+      int i;
+      For(i,6)
+        {
+          PhyML_Printf("\n== %3d %15G %15G",i,boot_tree->mod->r_mat->rr_val->v[i],boot_tree->mod->r_mat->rr->v[i]);
+        }
+
       if(boot_tree->mod->s_opt->opt_topo)
         {
           if(boot_tree->mod->s_opt->topo_search == NNI_MOVE) 
