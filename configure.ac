@@ -60,6 +60,17 @@ AC_CHECK_FUNCS([floor pow rint sqrt strchr strstr])
 #;;
 #esac
 
+# Thanks for Charles Plessy from Debian
+case "${host}" in
+*i386*|*amd64*|*x86_64*)
+MSSE=-msse
+AC_MSG_NOTICE("On arch ${host} use MSSE = ${MSSE}")
+;;
+*)
+MSSE=
+AC_MSG_NOTICE("Do not use MSSE = ${MSSE} because not available on arch ${host}")
+;;
+esac
 
 dnl CFLAGS="-O3 -fomit-frame-pointer -funroll-loops -Wall ${ARCH_flag}"
 dnl CFLAGS="-O3 -Wfloat-equal -fomit-frame-pointer -funroll-loops"
@@ -78,7 +89,7 @@ AC_ARG_ENABLE([debug],
                               [Remove optimization options and add debug informations.])])
 AS_IF([test "x$enable_debug" = "xyes"],
       [CFLAGS="-ansi -pedantic -Wall -std=c99 -O0 -g"],
-      [CFLAGS="-Wall -O2 -msse -fomit-frame-pointer -funroll-loops ${ARCH_flag}"])
+      [CFLAGS="-Wall -O2 ${MSSE} -fomit-frame-pointer -funroll-loops ${ARCH_flag}"])
 
 
 AC_ARG_ENABLE([gprof],

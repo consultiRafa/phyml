@@ -2884,6 +2884,13 @@ void Bootstrap(t_tree *tree)
         }
       
       
+      PhyML_Printf("\n== rr val in bootstrap");
+      int i;
+      For(i,6)
+        {
+          PhyML_Printf("\n== %3d %15G",i,boot_tree->mod->r_mat->rr_val->v[i]);
+        }
+
       if(boot_tree->mod->s_opt->opt_topo)
         {
           if(boot_tree->mod->s_opt->topo_search == NNI_MOVE)

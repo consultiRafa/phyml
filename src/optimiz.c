@@ -935,50 +935,49 @@ void Optimiz_All_Free_Param(t_tree *tree, int verbose)
 
       /* Substitutions between nucleotides are considered to follow a
      GTR model */
-
+      
       if(tree->mod->io->datatype == NT)
-    {
-      if(tree->mod->whichmodel == GTR ||
-         tree->mod->whichmodel == CUSTOM)
         {
-          failed = NO;
+          if(tree->mod->whichmodel == GTR || tree->mod->whichmodel == CUSTOM)
+            {
+              failed = NO;
 
-          Switch_Eigen(YES,tree->mod);
+              Switch_Eigen(YES,tree->mod);
 
               For(i,5) tree->mod->m4mod->o_rr[i] = LOG(tree->mod->m4mod->o_rr[i]);
 
-          /* BFGS(tree,tree->mod->m4mod->o_rr,5,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,NO,YES, */
-          BFGS(tree,tree->mod->m4mod->o_rr,5,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,YES,NO,
-           &Return_Abs_Lk,
-           &Num_Derivative_Several_Param,
-           &Lnsrch,&failed);
+              /* BFGS(tree,tree->mod->m4mod->o_rr,5,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,NO,YES, */
+              BFGS(tree,tree->mod->m4mod->o_rr,5,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,YES,NO,
+                   &Return_Abs_Lk,
+                   &Num_Derivative_Several_Param,
+                   &Lnsrch,&failed);
 
               For(i,5) tree->mod->m4mod->o_rr[i] = EXP(tree->mod->m4mod->o_rr[i]);
 
-          For(i,5)
-        {
-          /* 	      Optimize_Single_Param_Generic(tree,&(tree->mod->m4mod->o_rr[i]), */
-          /* 					    1.E-20,1.E+10, */
-          /* 					    tree->mod->s_opt->min_diff_lk_local, */
-          /* 					    tree->mod->s_opt->brent_it_max, */
-          /* 					    tree->mod->s_opt->quickdirty); */
-
-          Generic_Brent_Lk(&(tree->mod->m4mod->o_rr[i]),
-                   1.E-20,1.E+10,
-                   tree->mod->s_opt->min_diff_lk_local,
-                   tree->mod->s_opt->brent_it_max,
-                   tree->mod->s_opt->quickdirty,
+              For(i,5)
+                {
+                  /* 	      Optimize_Single_Param_Generic(tree,&(tree->mod->m4mod->o_rr[i]), */
+                  /* 					    1.E-20,1.E+10, */
+                  /* 					    tree->mod->s_opt->min_diff_lk_local, */
+                  /* 					    tree->mod->s_opt->brent_it_max, */
+                  /* 					    tree->mod->s_opt->quickdirty); */
+                  
+                  Generic_Brent_Lk(&(tree->mod->m4mod->o_rr[i]),
+                                   1.E-4,1.E+4,
+                                   tree->mod->s_opt->min_diff_lk_local,
+                                   tree->mod->s_opt->brent_it_max,
+                                   tree->mod->s_opt->quickdirty,
                                    Wrap_Lk,NULL,tree,NULL,NO);
-
-        }
-
-      if(verbose) Print_Lk(tree,"[GTR parameters     ]");
-
-      Switch_Eigen(NO,tree->mod);
+                  
+                }
+              
+              if(verbose) Print_Lk(tree,"[GTR parameters     ]");
+              
+              Switch_Eigen(NO,tree->mod);
             }
+        }
     }
-    }
-
+  
   Set_Both_Sides(init_both_sides,tree);
 
   if(tree->both_sides == YES) Lk(NULL,tree); /* Needed to update all partial likelihoods */
@@ -2612,50 +2611,83 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
       For(i,n_r_mat) if(tree->mod->r_mat == r_mat[i]) break;
 
       if(i == n_r_mat) // tree->mod->r_mat was not found before
-    {
-      if(!r_mat) r_mat = (t_rmat **)mCalloc(1,sizeof(t_rmat *));
-      else       r_mat = (t_rmat **)mRealloc(r_mat,n_r_mat+1,sizeof(t_rmat *));
-      r_mat[n_r_mat] = tree->mod->r_mat;
-      n_r_mat++;
-
-      if((tree->mod->whichmodel == GTR) ||
-         ((tree->mod->whichmodel == CUSTOM) &&
-          (tree->mod->s_opt->opt_rr) &&
-          (tree->mod->r_mat->n_diff_rr > 1)))
         {
-          int failed,i;
-
-          For(i,tree->mod->r_mat->n_diff_rr) tree->mod->r_mat->rr_val->v[i] = LOG(tree->mod->r_mat->rr_val->v[i]);
-
-          failed = NO;
-
-          /* BFGS(mixt_tree,tree->mod->r_mat->rr_val->v,tree->mod->r_mat->n_diff_rr,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,NO,YES, */
-          BFGS(mixt_tree,tree->mod->r_mat->rr_val->v,tree->mod->r_mat->n_diff_rr,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,YES,NO,
-               &Return_Abs_Lk,
-               &Num_Derivative_Several_Param,
-               &Lnsrch,&failed);
+          if(!r_mat) r_mat = (t_rmat **)mCalloc(1,sizeof(t_rmat *));
+          else       r_mat = (t_rmat **)mRealloc(r_mat,n_r_mat+1,sizeof(t_rmat *));
+          r_mat[n_r_mat] = tree->mod->r_mat;
+          n_r_mat++;
           
-          For(i,tree->mod->r_mat->n_diff_rr) tree->mod->r_mat->rr_val->v[i] = EXP(tree->mod->r_mat->rr_val->v[i]);
-
-          if(failed == YES)
+          if((tree->mod->whichmodel == GTR) ||
+             ((tree->mod->whichmodel == CUSTOM) &&
+              (tree->mod->s_opt->opt_rr) &&
+              (tree->mod->r_mat->n_diff_rr > 1)))
             {
-              For(i,tree->mod->r_mat->n_diff_rr)
-                if(i != 5)
+              int failed,i;
+              
+
+              {
+                PhyML_Printf("\n== rr val before BFGS");
+                int i;
+                For(i,6)
                   {
-                    Generic_Brent_Lk(&(tree->mod->r_mat->rr_val->v[i]),
-                                     1.E-2,1.E+2,
-                                     tree->mod->s_opt->min_diff_lk_local,
-                                     tree->mod->s_opt->brent_it_max,
-                                     tree->mod->s_opt->quickdirty,
-                                     Wrap_Lk,NULL,mixt_tree,NULL,NO);
+                    PhyML_Printf("\n== %3d %15G",i,tree->mod->r_mat->rr_val->v[i]);
                   }
+              }
+
+              For(i,tree->mod->r_mat->n_diff_rr) tree->mod->r_mat->rr_val->v[i] = LOG(tree->mod->r_mat->rr_val->v[i]);
+              
+              failed = NO;
+              
+
+              /* BFGS(mixt_tree,tree->mod->r_mat->rr_val->v,tree->mod->r_mat->n_diff_rr,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,NO,YES, */
+              BFGS(mixt_tree,tree->mod->r_mat->rr_val->v,tree->mod->r_mat->n_diff_rr,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,YES,NO,
+                   &Return_Abs_Lk,
+                   &Num_Derivative_Several_Param,
+                   &Lnsrch,&failed);
+              
+              For(i,tree->mod->r_mat->n_diff_rr) tree->mod->r_mat->rr_val->v[i] = EXP(tree->mod->r_mat->rr_val->v[i]);
+              
+              {
+                if(failed == YES) PhyML_Printf("\n== BFGS failed");
+                else PhyML_Printf("\n== BFGS succeeded");
+
+                PhyML_Printf("\n== rr val after BFGS");
+                int i;
+                For(i,6)
+                  {
+                    PhyML_Printf("\n== %3d %15G",i,tree->mod->r_mat->rr_val->v[i]);
+                  }
+              }
+
+              if(failed == YES)
+                {
+                  For(i,tree->mod->r_mat->n_diff_rr)
+                    if(i != 5)
+                      {
+                        Generic_Brent_Lk(&(tree->mod->r_mat->rr_val->v[i]),
+                                         1.E-2,1.E+2,
+                                         tree->mod->s_opt->min_diff_lk_local,
+                                         tree->mod->s_opt->brent_it_max,
+                                         tree->mod->s_opt->quickdirty,
+                                         Wrap_Lk,NULL,mixt_tree,NULL,NO);
+                      }
+
+                  {
+                    PhyML_Printf("\n== rr val after single opt");
+                    int i;
+                    For(i,6)
+                      {
+                        PhyML_Printf("\n== %3d %15G",i,tree->mod->r_mat->rr_val->v[i]);
+                      }
+                  }
+
+                }
+              
+              if(verbose) Print_Lk(tree->mixt_tree?
+                                   tree->mixt_tree:
+                                   tree,"[GTR parameters     ]");
+              
             }
-
-          if(verbose) Print_Lk(tree->mixt_tree?
-                   tree->mixt_tree:
-                   tree,"[GTR parameters     ]");
-
-        }
     }
 
       tree = tree->next;
