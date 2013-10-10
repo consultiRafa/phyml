@@ -308,6 +308,8 @@ int main(int argc, char **argv)
 #endif
 
                   most_likely_tree = Bootstrap_From_String(most_likely_tree,cdata,mod,io);
+
+		PhyML_Printf("\n\n. Completed the bootstrap analysis succesfully."); fflush(NULL);
                 }
               else
                   if(io->ratio_test)

@@ -139,7 +139,7 @@ fflush(stderr);
 
       if(init_len != tree->data->init_len) {
         MPI_Finalize();
-        Warn_And_Exit("\n. Pb when copying sequences\n");
+        Warn_And_Exit("\n== Pb when copying sequences\n");
       }
 
       (tree->mod->io->datatype == NT)?
@@ -356,6 +356,7 @@ fflush(stdout);
   if (Global_myRank == 0)
     if(((bootRecv)%tree->io->boot_prog_every)) PhyML_Printf("] %4d/%4d\n ",bootRecv,tree->mod->bootstrap);
 
+PhyML_Printf("\n\n. Exiting bootstrap function normally."); fflush(NULL);
   tree->lock_topo = 1; /* TopoLOGy should not be modified afterwards */
 
   if(tree->io->print_boot_trees)
