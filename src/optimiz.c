@@ -2624,16 +2624,6 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
             {
               int failed,i;
               
-
-              {
-                PhyML_Printf("\n== rr val before BFGS");
-                int i;
-                For(i,6)
-                  {
-                    PhyML_Printf("\n== %3d %15G %15G",i,tree->mod->r_mat->rr_val->v[i],tree->mod->r_mat->rr->v[i]);
-                  }
-              }
-
               For(i,tree->mod->r_mat->n_diff_rr) tree->mod->r_mat->rr_val->v[i] = LOG(tree->mod->r_mat->rr_val->v[i]);
               
               failed = NO;
@@ -2647,18 +2637,6 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
               
               For(i,tree->mod->r_mat->n_diff_rr) tree->mod->r_mat->rr_val->v[i] = EXP(tree->mod->r_mat->rr_val->v[i]);
               
-              {
-                if(failed == YES) PhyML_Printf("\n== BFGS failed");
-                else PhyML_Printf("\n== BFGS succeeded");
-
-                PhyML_Printf("\n== rr val after BFGS");
-                int i;
-                For(i,6)
-                  {
-                    PhyML_Printf("\n== %3d %15G %15G",i,tree->mod->r_mat->rr_val->v[i],tree->mod->r_mat->rr->v[i]);
-                  }
-              }
-
               if(failed == YES)
                 {
                   For(i,tree->mod->r_mat->n_diff_rr)
@@ -2671,16 +2649,6 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
                                          tree->mod->s_opt->quickdirty,
                                          Wrap_Lk,NULL,mixt_tree,NULL,NO);
                       }
-
-                  {
-                    PhyML_Printf("\n== rr val after single opt");
-                    int i;
-                    For(i,6)
-                      {
-                        PhyML_Printf("\n== %3d %15G %15G",i,tree->mod->r_mat->rr_val->v[i],tree->mod->r_mat->rr->v[i]);
-                      }
-                  }
-
                 }
               
               if(verbose) Print_Lk(tree->mixt_tree?

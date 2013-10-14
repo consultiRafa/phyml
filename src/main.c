@@ -241,6 +241,11 @@ int main(int argc, char **argv)
                           /* ML_Ancestral_Sequences(tree); */
                           //
 
+
+                  Build_Distrib_Number_Of_Diff_States_Under_Model(tree);
+                  Exit("\n");
+
+
                   Check_Br_Lens(tree);
                   Br_Len_Involving_Invar(tree);
                   Rescale_Br_Len_Multiplier_Tree(tree);

@@ -229,8 +229,8 @@ void Init_Tips_At_One_Site_Generic_Float(char *state, int ns, int state_len, int
       sprintf(format,"%%%dd",state_len);
       if(!sscanf(state,format,&state_int))
     {
-      PhyML_Printf("\n. state='%c'",state);
-      PhyML_Printf("\n. Err in file %s at line %d\n\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== state='%c'",state);
+      PhyML_Printf("\n== Err in file %s at line %d (function '%s')\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
       if(state_int > ns)

@@ -2884,13 +2884,6 @@ void Bootstrap(t_tree *tree)
         }
       
       
-      PhyML_Printf("\n== rr val in bootstrap");
-      int i;
-      For(i,6)
-        {
-          PhyML_Printf("\n== %3d %15G %15G",i,boot_tree->mod->r_mat->rr_val->v[i],boot_tree->mod->r_mat->rr->v[i]);
-        }
-
       if(boot_tree->mod->s_opt->opt_topo)
         {
           if(boot_tree->mod->s_opt->topo_search == NNI_MOVE)
@@ -10419,25 +10412,24 @@ void Build_Distrib_Number_Of_Diff_States_Under_Model(t_tree *tree)
   int iter,n_iter_tot,i,j;
   phydbl *n_diff_states_all_l,*n_diff_states_all_r;
 
-
   Calculate_Number_Of_Diff_States(tree);
   
-  printf("\n TRUE     edge    side    states val");
+  PhyML_Printf("\n TRUE     edge    side    states val");
   For(i,2*tree->n_otu-3)
     {
       if(tree->a_edges[i]->left->tax == NO && tree->a_edges[i]->rght->tax == NO)
         {
           For(j,tree->mod->ns)
             {
-              printf("\n TRUE %3d 0 %3d %d",
-                     i,
-                     j+1,
-                     tree->a_edges[i]->n_diff_states_l[j]);
-
-              printf("\n TRUE %3d 1 %3d %d",
-                     i,
-                     j+1,
-                     tree->a_edges[i]->n_diff_states_r[j]);
+              PhyML_Printf("\n TRUE %3d 0 %3d %d",
+                           i,
+                           j+1,
+                           tree->a_edges[i]->n_diff_states_l[j]);
+              
+              PhyML_Printf("\n TRUE %3d 1 %3d %d",
+                           i,
+                           j+1,
+                           tree->a_edges[i]->n_diff_states_r[j]);
             }
         }
     }
@@ -10492,24 +10484,24 @@ void Build_Distrib_Number_Of_Diff_States_Under_Model(t_tree *tree)
   while(iter < n_iter_tot);
 
 
-  printf("\n SIM     edge    side    states low      up");
+  PhyML_Printf("\n SIM     edge    side    states low      up");
   For(i,2*tree->n_otu-3)
     {
       if(tree->a_edges[i]->left->tax == NO && tree->a_edges[i]->rght->tax == NO)
         {
           For(j,tree->mod->ns)
             {              
-              printf("\n SIM %3d 0 %3d %.0f %.0f",
+              PhyML_Printf("\n SIM %3d 0 %3d %.0f %.0f",
                      i,
                      j+1,
                      Quantile(n_diff_states_all_l + j*(2*tree->n_otu-3)*(n_iter_tot) + i*(n_iter_tot), n_iter_tot, 0.10),
                      Quantile(n_diff_states_all_l + j*(2*tree->n_otu-3)*(n_iter_tot) + i*(n_iter_tot), n_iter_tot, 0.90));
               
-              printf("\n SIM %3d 1 %3d %.0f %.0f",
-                     i,
-                     j+1,
-                     Quantile(n_diff_states_all_r + j*(2*tree->n_otu-3)*(n_iter_tot) + i*(n_iter_tot), n_iter_tot, 0.10),
-                     Quantile(n_diff_states_all_r + j*(2*tree->n_otu-3)*(n_iter_tot) + i*(n_iter_tot), n_iter_tot, 0.90));
+              PhyML_Printf("\n SIM %3d 1 %3d %.0f %.0f",
+                           i,
+                           j+1,
+                           Quantile(n_diff_states_all_r + j*(2*tree->n_otu-3)*(n_iter_tot) + i*(n_iter_tot), n_iter_tot, 0.10),
+                           Quantile(n_diff_states_all_r + j*(2*tree->n_otu-3)*(n_iter_tot) + i*(n_iter_tot), n_iter_tot, 0.90));
             }
         }
     }
