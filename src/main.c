@@ -242,8 +242,8 @@ int main(int argc, char **argv)
                           //
 
 
-                  Build_Distrib_Number_Of_Diff_States_Under_Model(tree);
-                  Exit("\n");
+                  /* Build_Distrib_Number_Of_Diff_States_Under_Model(tree); */
+                  /* Exit("\n"); */
 
 
                   Check_Br_Lens(tree);
