@@ -2003,11 +2003,6 @@ void Set_Current_Calibration(int row, t_tree *tree)
           curr_nd_for_cal[i] = calib -> all_applies_to[k] -> num;
           i++;
         }
-      else 
-        {
-          if(calib->next) calib = calib->next;
-          else break;    
-        }     
       if(calib->next) calib = calib->next;
       else break;    
     }
@@ -2653,3 +2648,8 @@ void Multiple_Time_Proposal_Density(t_node *a, t_node *d, phydbl *time_proposal_
           Multiple_Time_Proposal_Density(d, d -> v[i], time_proposal_density, tree);
     }
 }
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+
