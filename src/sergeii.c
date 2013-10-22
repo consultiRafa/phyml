@@ -1961,17 +1961,16 @@ int Number_Of_Calib(t_cal *calib)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-//Function sets current calibartion in the following way:
-//Suppose we have a vector of calibrations C=(C1, C2, C3), each calibration  
-//applies to a set of nodes. we can reach each node number through the indeces (corresponds 
-//to the number the information was read). C1={0,1,2}, C2={0,1}, C3={0};
-//The total number of combinations is 3*2*1=6. The first combination with row number 0 
-//will be {0,0,0}, the second row will be {0,1,0} and so on. Calling the node numbers with 
-//the above indeces will return current calibration. Also sets the vector of the probabilities
-//for current calibration combination.   
+// Function sets current calibration in the following way:
+// Suppose we have a vector of calibrations C=(C1, C2, C3), each calibration  
+// applies to a set of nodes. We can reach each node number through the indexes (corresponds 
+// to the number the information was read). C1={0,1,2}, C2={0,1}, C3={0};
+// The total number of combinations is 3*2*1=6. The first combination with row number 0 
+// will be {0,0,0}, the second row will be {0,1,0} and so on. Calling the node numbers with 
+// the above indexes will return current calibration. Also sets the vector of probabilities
+// for current calibration combination.   
 void Set_Current_Calibration(int row, t_tree *tree)
 {
-
   t_cal *calib;
   phydbl *t_prior_min, *t_prior_max; 
   short int *t_has_prior;
@@ -1999,7 +1998,7 @@ void Set_Current_Calibration(int row, t_tree *tree)
         {
           t_prior_min[calib -> all_applies_to[k] -> num] = MAX(t_prior_min[calib -> all_applies_to[k] -> num], calib -> lower);
           t_prior_max[calib -> all_applies_to[k] -> num] = MIN(t_prior_max[calib -> all_applies_to[k] -> num], calib -> upper);     
-          t_has_prior[calib -> all_applies_to[k] -> num] = YES; 
+          t_has_prior[calib -> all_applies_to[k] -> num] = YES;
           curr_nd_for_cal[i] = calib -> all_applies_to[k] -> num;
           i++;
         }
@@ -2009,11 +2008,6 @@ void Set_Current_Calibration(int row, t_tree *tree)
   while(calib);
 
 }
-
-
-
-
-
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

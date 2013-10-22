@@ -2487,11 +2487,11 @@ void RATES_Update_Cur_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
       
       if(b && (isnan(b->l->v) || isnan(b->l_var->v)))
 	{
-	  PhyML_Printf("\n. dt=%G rr=%G cr=%G ra=%G rd=%G nu=%G %f %f ",dt,rr,cr,ra,rd,nu,b->l_var->v,b->l->v);	  
-	  PhyML_Printf("\n. ta=%G td=%G ra*cr=%G rd*cr=%G sd=%G",
+	  PhyML_Printf("\n== dt=%G rr=%G cr=%G ra=%G rd=%G nu=%G %f %f ",dt,rr,cr,ra,rd,nu,b->l_var->v,b->l->v);	  
+	  PhyML_Printf("\n== ta=%G td=%G ra*cr=%G rd*cr=%G sd=%G",
 		       ta,td,ra*cr,rd*cr,
 		       SQRT(dt*nu)*cr);
-	  PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+	  PhyML_Printf("\n== Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
 	  Exit("\n");
 	}
     }

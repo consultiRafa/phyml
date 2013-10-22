@@ -174,6 +174,7 @@ void MCMC(t_tree *tree)
       /* 	} */
 
 
+
       u = Uni();
 
       For(move,tree->mcmc->n_moves) if(tree->mcmc->move_weight[move] > u) break;
@@ -1258,11 +1259,15 @@ void MCMC_Jump_Calibration(t_tree *tree)
 
 
       new_calib_comb_num = new_calib_comb_num - 1; 
-  
+
       tree -> rates -> numb_calib_chosen[new_calib_comb_num]++;
  
       if(!Are_Equal(cur_calib_comb_num, new_calib_comb_num, 1.E-10))
         {
+          printf("\n. Current calibration");          
+          printf("\n");
+          Print_Node(tree->n_root,tree->n_root->v[1],tree);
+          Print_Node(tree->n_root,tree->n_root->v[2],tree);
 
           Set_Current_Calibration(new_calib_comb_num, tree);
           TIMES_Set_All_Node_Priors(tree);
@@ -1272,7 +1277,11 @@ void MCMC_Jump_Calibration(t_tree *tree)
           Check_Node_Time(tree -> n_root, tree -> n_root -> v[1], &result, tree);
           Check_Node_Time(tree -> n_root, tree -> n_root -> v[2], &result, tree);
           
-          
+          printf("\n. New calibration");          
+          printf("\n");
+          Print_Node(tree->n_root,tree->n_root->v[1],tree);
+          Print_Node(tree->n_root,tree->n_root->v[2],tree);
+
           if(result != TRUE)
             {
               Update_Current_Times_Down_Tree(tree -> n_root, tree -> n_root -> v[1], tree);
@@ -1364,6 +1373,7 @@ void MCMC_Jump_Calibration(t_tree *tree)
 #endif
 }
 //////////////////////////////////////////////////////////////
+
 //////////////////////////////////////////////////////////////
 
 void MCMC_Root_Time(t_tree *tree)
@@ -1381,7 +1391,6 @@ void MCMC_Root_Time(t_tree *tree)
   phydbl K;
   int move_num;
   t_node *root;
-
 
   root = tree->n_root;
 
@@ -1424,8 +1433,8 @@ void MCMC_Root_Time(t_tree *tree)
     {
       PhyML_Printf("\n== t_min = %f t_max = %f",t_min,t_max);
       PhyML_Printf("\n== prior_min = %f prior_max = %f",tree->rates->t_prior_min[root->num],tree->rates->t_prior_max[root->num]);
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
-      /* Exit("\n"); */
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
+      Exit("\n");
     }
 
 
@@ -3328,6 +3337,7 @@ void MCMC_Randomize_Node_Times(t_tree *tree)
   MCMC_Randomize_Node_Times_Top_Down(tree->n_root,tree->n_root->v[2],tree);
   MCMC_Randomize_Node_Times_Top_Down(tree->n_root,tree->n_root->v[1],tree);
 
+
   min_node = -1;
   iter = 0;
   do
@@ -3362,6 +3372,7 @@ void MCMC_Randomize_Node_Times(t_tree *tree)
       MCMC_Randomize_Node_Times_Bottom_Up(tree->n_root,tree->n_root->v[2],tree);
       MCMC_Randomize_Node_Times_Bottom_Up(tree->n_root,tree->n_root->v[1],tree);
       
+
       iter++;
     }
   while(iter < 1000);
@@ -3374,7 +3385,7 @@ void MCMC_Randomize_Node_Times(t_tree *tree)
       PhyML_Printf("\n== a up=%f down=%f",tree->rates->t_prior_min[tree->a_nodes[min_node]->anc->num],tree->rates->t_prior_max[tree->a_nodes[min_node]->anc->num]);
       PhyML_Printf("\n== up=%f down=%f",tree->rates->t_prior_min[min_node],tree->rates->t_floor[tree->a_nodes[min_node]->anc->num]);
       PhyML_Printf("\n== min_node = %d",min_node);
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
       Warn_And_Exit("");
     }
 
@@ -3383,9 +3394,10 @@ void MCMC_Randomize_Node_Times(t_tree *tree)
 /*   TIMES_Print_Node_Times(tree->n_root,tree->n_root->v[2],tree); */
 /*   TIMES_Print_Node_Times(tree->n_root,tree->n_root->v[1],tree); */
 
+
   if(RATES_Check_Node_Times(tree))
     {
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
       Warn_And_Exit("");
     }
 }
@@ -4375,7 +4387,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_birth_rate]            = 2.0;
   mcmc->move_weight[mcmc->num_move_updown_t_br]           = 1.0;
 #if defined (SERGEII)
-  mcmc->move_weight[mcmc->num_move_jump_calibration]      = 0.0;
+  mcmc->move_weight[mcmc->num_move_jump_calibration]      = 1.0;
 #else
   mcmc->move_weight[mcmc->num_move_jump_calibration]      = 0.0;
 #endif

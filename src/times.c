@@ -941,7 +941,6 @@ phydbl TIMES_Lk_Yule_Joint(t_tree *tree)
 // statistics 'simplification' as described in Yang and Rannala, 2005. 
 phydbl TIMES_Lk_Yule_Order(t_tree *tree)
 {
-
   int j;
   phydbl *t,*tf;
   t_node *n;
@@ -1006,7 +1005,8 @@ phydbl TIMES_Lk_Yule_Order(t_tree *tree)
   loglk += LOG(2) + loglbda - 2.*lbda * FABS(t[tree->n_root->num]);
   loglk -= LOG(EXP(-2.*lbda*lower_bound) - EXP(-2.*lbda*upper_bound));
 
-  return(loglk);
+  /* return(loglk); */
+  return(0.0);
 }
 
 //////////////////////////////////////////////////////////////
@@ -1018,8 +1018,8 @@ phydbl TIMES_Lk_Times(t_tree *tree)
   #ifdef PHYTIME
   tree->rates->c_lnL_times =  TIMES_Lk_Yule_Order(tree);
   #elif SERGEII
-  tree->rates->c_lnL_times = TIMES_Calib_Cond_Prob(tree);
-  /* tree->rates->c_lnL_times =  TIMES_Lk_Yule_Order(tree); */
+  /* tree->rates->c_lnL_times = TIMES_Calib_Cond_Prob(tree); */
+  tree->rates->c_lnL_times =  TIMES_Lk_Yule_Order(tree);
   #endif
 
 
