@@ -1369,6 +1369,7 @@ typedef struct __T_Rate {
   int *numb_calib_chosen;
   phydbl *node_height_dens_log_norm_const_update;
   int birth_rate_updated_or_not_updated;
+  int calib_updated_or_not_updated;
 
 }t_rate;
 

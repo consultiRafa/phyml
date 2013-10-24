@@ -1020,6 +1020,13 @@ phydbl TIMES_Lk_Times(t_tree *tree)
   #elif SERGEII
   /* tree->rates->c_lnL_times = TIMES_Calib_Cond_Prob(tree); */
   tree->rates->c_lnL_times =  TIMES_Lk_Yule_Order(tree);
+  /* if(tree -> rates -> birth_rate_updated_or_not_updated == YES || tree -> rates -> calib_updated_or_not_updated == YES) */
+  /*   { */
+  /*     tree -> rates -> log_K_cur = K_Constant_Prior_Times_Log(tree); */
+  /*     tree -> rates -> c_lnL_times = tree -> rates -> log_K_cur + TIMES_Lk_Yule_Order(tree); */
+  /*   } */
+  /* else */
+  /*   tree -> rates -> c_lnL_times = tree -> rates -> log_K_cur + TIMES_Lk_Yule_Order(tree); */
   #endif
 
 

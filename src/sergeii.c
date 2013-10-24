@@ -480,6 +480,7 @@ void PhyTime_XML(char *xml_file)
         } 
       if(tree -> rates -> calib -> next) tree -> rates -> calib = tree -> rates -> calib -> next;
       else break;
+     
     }
   while(tree -> rates -> calib);
   while(tree -> rates -> calib -> prev) tree -> rates -> calib = tree -> rates -> calib -> prev;
@@ -498,9 +499,19 @@ void PhyTime_XML(char *xml_file)
       free(mon_list[i]);
     }
   free(mon_list);
-
-
-  //Exit("\n");
+  /* do */
+  /*   { */
+  /*     printf("\n %f %f \n", tree -> rates -> calib -> lower, tree -> rates -> calib -> upper); */
+  /*     printf("\n numb applies to: %d \n", tree -> rates -> calib -> n_all_applies_to); */
+  /*     For(i, tree -> rates -> calib -> n_all_applies_to) printf("\n Node number %d \n", tree -> rates -> calib -> all_applies_to[i] -> num); */
+  /*     if(tree -> rates -> calib -> next) tree -> rates -> calib = tree -> rates -> calib -> next; */
+  /*     else break; */
+     
+  /*   } */
+  /* while(tree -> rates -> calib); */
+  /* while(tree -> rates -> calib -> prev) tree -> rates -> calib = tree -> rates -> calib -> prev; */
+ 
+  /* Exit("\n"); */
   ////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////   
   //START analysis:
@@ -555,7 +566,7 @@ void PhyTime_XML(char *xml_file)
   while(1); 
 
 
-  Set_Current_Calibration(cal_numb, tree);
+  Set_Current_Calibration(cal_numb, tree);   
   tree -> rates -> numb_calib_chosen[cal_numb]++;
 
 
@@ -566,9 +577,10 @@ void PhyTime_XML(char *xml_file)
   //set initial value for Hastings ratio for conditional jump:
   /* tree -> rates -> c_lnL_Hastings_ratio = 0.0; */
 
-  TIMES_Set_All_Node_Priors(tree);
+  TIMES_Set_All_Node_Priors(tree);  
 
   tree -> rates -> cur_comb_numb = cal_numb;
+  tree -> rates -> log_K_cur = K_Constant_Prior_Times_Log(tree);
  
   TIMES_Get_Number_Of_Time_Slices(tree);
   TIMES_Label_Edges_With_Calibration_Intervals(tree);
@@ -1981,7 +1993,7 @@ void Set_Current_Calibration(int row, t_tree *tree)
   t_prior_max = tree -> rates -> t_prior_max;
   t_has_prior = tree -> rates -> t_has_prior;
   curr_nd_for_cal = tree -> rates -> curr_nd_for_cal;
-
+  /* printf("\n %d \n", row); */
   for(j = tree -> n_otu; j < 2 * tree -> n_otu - 1; j++) 
     {
       t_prior_min[j] = -BIG;
@@ -1995,7 +2007,10 @@ void Set_Current_Calibration(int row, t_tree *tree)
     {
       k = (row % Number_Of_Comb(calib)) / Number_Of_Comb(calib -> next); 
       if(calib -> all_applies_to[k] -> num) 
-        {
+        { 
+          /* printf("\n"); */
+          /* printf(" %f %f ", calib -> lower, calib -> upper); */
+          /* printf("\n"); */
           t_prior_min[calib -> all_applies_to[k] -> num] = MAX(t_prior_min[calib -> all_applies_to[k] -> num], calib -> lower);
           t_prior_max[calib -> all_applies_to[k] -> num] = MIN(t_prior_max[calib -> all_applies_to[k] -> num], calib -> upper);     
           t_has_prior[calib -> all_applies_to[k] -> num] = YES;
@@ -2006,6 +2021,7 @@ void Set_Current_Calibration(int row, t_tree *tree)
       else break;    
     }
   while(calib);
+  while(calib -> prev) calib = calib -> prev;
 
 }
 
