@@ -1005,8 +1005,7 @@ phydbl TIMES_Lk_Yule_Order(t_tree *tree)
   loglk += LOG(2) + loglbda - 2.*lbda * FABS(t[tree->n_root->num]);
   loglk -= LOG(EXP(-2.*lbda*lower_bound) - EXP(-2.*lbda*upper_bound));
 
-  /* return(loglk); */
-  return(0.0);
+  return(loglk);
 }
 
 //////////////////////////////////////////////////////////////
@@ -1019,14 +1018,14 @@ phydbl TIMES_Lk_Times(t_tree *tree)
   tree->rates->c_lnL_times =  TIMES_Lk_Yule_Order(tree);
   #elif SERGEII
   /* tree->rates->c_lnL_times = TIMES_Calib_Cond_Prob(tree); */
-  tree->rates->c_lnL_times =  TIMES_Lk_Yule_Order(tree);
-  /* if(tree -> rates -> birth_rate_updated_or_not_updated == YES || tree -> rates -> calib_updated_or_not_updated == YES) */
-  /*   { */
-  /*     tree -> rates -> log_K_cur = K_Constant_Prior_Times_Log(tree); */
-  /*     tree -> rates -> c_lnL_times = tree -> rates -> log_K_cur + TIMES_Lk_Yule_Order(tree); */
-  /*   } */
-  /* else */
-  /*   tree -> rates -> c_lnL_times = tree -> rates -> log_K_cur + TIMES_Lk_Yule_Order(tree); */
+  /* tree->rates->c_lnL_times =  TIMES_Lk_Yule_Order(tree); */
+  if(tree -> rates -> birth_rate_updated_or_not_updated == YES || tree -> rates -> calib_updated_or_not_updated == YES)
+    {
+      tree -> rates -> log_K_cur = K_Constant_Prior_Times_Log(tree);
+      tree -> rates -> c_lnL_times = tree -> rates -> log_K_cur + TIMES_Lk_Yule_Order(tree);
+    }
+  else
+    tree -> rates -> c_lnL_times = tree -> rates -> log_K_cur + TIMES_Lk_Yule_Order(tree);
   #endif
 
 
