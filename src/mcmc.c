@@ -60,13 +60,15 @@ void MCMC(t_tree *tree)
   For(i,2*tree->n_otu-2) tree->rates->br_do_updt[i] = YES;  
   RATES_Update_Cur_Bl(tree);
   RATES_Lk_Rates(tree);	
+
 #ifdef SERGEII
-  tree -> rates -> calib_updated_or_not_updated = YES;
+  tree->rates->update_time_norm_const = YES;
 #endif
   TIMES_Lk_Times(tree); 
 #ifdef SERGEII
-  tree -> rates -> calib_updated_or_not_updated = NO;
+  tree->rates->update_time_norm_const = NO;
 #endif
+
   Set_Both_Sides(NO,tree);  
   if(tree->mcmc->use_data) Lk(NULL,tree);
   else tree->c_lnL = 0.0;
@@ -1204,7 +1206,8 @@ void MCMC_Jump_Calibration(t_tree *tree)
   int tot_num_of_calib_comb;
   
   tot_num_of_calib_comb = Number_Of_Comb(tree -> rates -> calib);
-  tree -> rates -> calib_updated_or_not_updated = YES;
+
+  tree->rates->update_time_norm_const = YES;
 
   if(tot_num_of_calib_comb > 1)
     {
@@ -1299,16 +1302,6 @@ void MCMC_Jump_Calibration(t_tree *tree)
               Multiple_Time_Proposal_Density(tree -> n_root, tree -> n_root -> v[1], &new_lnL_proposal_density, tree);
               Multiple_Time_Proposal_Density(tree -> n_root, tree -> n_root -> v[2], &new_lnL_proposal_density, tree);
             }
-          else
-            { 
-              tree -> rates -> cur_comb_numb        = new_calib_comb_num;
-              Set_Current_Calibration(tree -> rates -> cur_comb_numb, tree);
-              TIMES_Set_All_Node_Priors(tree);
-              free(calib_prior_cumprob);
-              tree -> mcmc -> acc_move[move_num]++;    
-              tree -> mcmc -> run_move[move_num]++;
-              return; 
-            }
           
           result = TRUE;
           
@@ -1348,7 +1341,6 @@ void MCMC_Jump_Calibration(t_tree *tree)
           /* Prior ratio */
           ratio += (new_lnL_rate - cur_lnL_rate);
           ratio += (new_lnL_time - cur_lnL_time);
-          ratio += (log_K_new - log_K_cur);
           ratio += (LOG(calib_prior_prob[new_calib_comb_num]) - LOG(calib_prior_prob[cur_calib_comb_num]));
           ratio += (cur_lnL_proposal_density - new_lnL_proposal_density);
           
@@ -1372,27 +1364,15 @@ void MCMC_Jump_Calibration(t_tree *tree)
             }
           else
             {
-              /* tree -> rates -> numb_calib_chosen[comb_num]++; */
-              tree -> rates -> log_K_cur     = log_K_new;
               tree -> rates -> cur_comb_numb = new_calib_comb_num;
               tree->mcmc->acc_move[move_num]++;
-              /* printf("\n. ......................ACCEPTED.....................................\n"); */
             }      
           tree->mcmc->run_move[move_num]++;
           free(calib_prior_cumprob);
-        }
-      else
-        {
-          Set_Current_Calibration(tree -> rates -> cur_comb_numb, tree);
-          TIMES_Set_All_Node_Priors(tree);
-          return;
-        }
+        }                                             
     }
-  else
-    { 
-      tree -> rates -> calib_updated_or_not_updated = NO;
-      return;
-    }
+  
+  tree->rates->update_time_norm_const = NO;
 
 #endif
 }
@@ -4046,18 +4026,7 @@ void MCMC_Covarion_Switch(t_tree *tree)
 void MCMC_Birth_Rate(t_tree *tree)
 {
 #ifdef SERGEII
-  /* phydbl lmbd_start, lmbd_final, *node_height_dens_log_norm_const_update */;
-/*   int i, tot_num_of_calib_comb; */
-
-/*   tot_num_of_calib_comb = Number_Of_Comb(tree -> rates -> calib); */
-
-/*   node_height_dens_log_norm_const_update = (phydbl *)mCalloc(tot_num_of_calib_comb, sizeof(phydbl)); */
-
-  /* lmbd_start = tree -> rates -> birth_rate; */
-
-/*   For(i, tot_num_of_calib_comb) node_height_dens_log_norm_const_update[i] = tree -> rates -> node_height_dens_log_norm_const_update[i]; */
- 
-  tree -> rates -> birth_rate_updated_or_not_updated = YES;
+  tree->rates->update_time_norm_const = YES;
 #endif
 
   MCMC_Single_Param_Generic(&(tree->rates->birth_rate),
@@ -4068,13 +4037,8 @@ void MCMC_Birth_Rate(t_tree *tree)
 			    Wrap_Lk_Times,NULL,tree->mcmc->move_type[tree->mcmc->num_move_birth_rate],NO,NULL,tree,NULL); 
 
 #ifdef SERGEII
-  /* lmbd_final = tree -> rates -> birth_rate; */
-
-/*   if(Are_Equal(lmbd_start, lmbd_final, 1.E-10)) For(i, tot_num_of_calib_comb) tree -> rates -> node_height_dens_log_norm_const_update[i] = node_height_dens_log_norm_const_update[i]; */
-   
-  tree -> rates -> birth_rate_updated_or_not_updated = NO;
-
-/*   free(node_height_dens_log_norm_const_update); */
+  TIMES_Lk_Times(tree); 
+  tree->rates->update_time_norm_const = NO;
 #endif
 }
 

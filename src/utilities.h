@@ -1368,8 +1368,7 @@ typedef struct __T_Rate {
   int cur_comb_numb;
   int *numb_calib_chosen;
   phydbl *node_height_dens_log_norm_const_update;
-  int birth_rate_updated_or_not_updated;
-  int calib_updated_or_not_updated;
+  int update_time_norm_const;
 
 }t_rate;
 

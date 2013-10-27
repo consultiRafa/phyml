@@ -716,7 +716,7 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
 
   phydbl times_lk, *Yule_val, *times_partial_proba, times_tot_proba, *t_prior_min, *t_prior_max, c, constant, ln_t; 
   short int *t_has_prior;
-  int i, j, k, tot_num_comb, birth_rate_updated_or_not_updated;
+  int i, j, k, tot_num_comb;
   t_cal *calib;
  
 
@@ -726,7 +726,6 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
   t_prior_max = tree -> rates -> t_prior_max;
   t_has_prior = tree -> rates -> t_has_prior;
   times_partial_proba = tree -> rates -> times_partial_proba;
-  birth_rate_updated_or_not_updated = tree -> rates -> birth_rate_updated_or_not_updated;
 
   tot_num_comb = Number_Of_Comb(calib);
 
@@ -761,7 +760,7 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
       times_lk =  TIMES_Lk_Yule_Order_Root_Cond(tree);
 
       constant = 0.0; 
-      if (tot_num_comb > 1 && times_lk > -INFINITY && result != FALSE && birth_rate_updated_or_not_updated == YES) 
+      if (tot_num_comb > 1 && times_lk > -INFINITY && result != FALSE && tree->rates->update_time_norm_const == YES) 
         {
           tree -> rates -> node_height_dens_log_norm_const_update[i] = K_Constant_Prior_Times_Log(tree);
           constant = tree -> rates -> node_height_dens_log_norm_const_update[i];
@@ -918,7 +917,6 @@ phydbl K_Constant_Prior_Times_Log(t_tree *tree)
   lmbd = tree -> rates -> birth_rate;
 
   tot_num_comb = 1;
- 
  
   t_cur_slice_min    = (phydbl *)mCalloc(n_otu - 1, sizeof(phydbl));
   t_cur_slice_max    = (phydbl *)mCalloc(n_otu - 1, sizeof(phydbl));

@@ -899,9 +899,7 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
     }
 
   rates->calib = NULL;
-  rates -> birth_rate_updated_or_not_updated = NO;
-  rates -> calib_updated_or_not_updated      = NO;
-
+  rates->update_time_norm_const = NO;
 }
 
 //////////////////////////////////////////////////////////////
