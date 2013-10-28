@@ -48,7 +48,7 @@ void MCMC(t_tree *tree)
       MCMC_Read_Param_Vals(tree);
     }
 #ifdef SERGEII
-  /* tree -> rates -> node_height_dens_log_norm_const_update = Norm_Constant_Prior_Times(tree); */
+  tree -> rates -> node_height_dens_log_norm_const_update = Norm_Constant_Prior_Times(tree);
 #endif
   Switch_Eigen(YES,tree->mod);
 
@@ -1280,6 +1280,7 @@ void MCMC_Jump_Calibration(t_tree *tree)
           /* Print_Node(tree->n_root,tree->n_root->v[1],tree); */
           /* Print_Node(tree->n_root,tree->n_root->v[2],tree); */
           /* for(i = tree -> n_otu; i < 2 * tree -> n_otu -1; i++) printf("\n. Node number:[%d] Lower bound:[%f] Upper bound:[%f] Node time:[%f]. \n", i, tree -> rates -> t_prior_min[i], tree -> rates -> t_prior_max[i], tree -> rates -> nd_t[i]); */
+
           Set_Current_Calibration(new_calib_comb_num, tree);
           TIMES_Set_All_Node_Priors(tree);
           
@@ -1294,15 +1295,14 @@ void MCMC_Jump_Calibration(t_tree *tree)
           /* Print_Node(tree->n_root,tree->n_root->v[2],tree); */
           /* for(i = tree -> n_otu; i < 2 * tree -> n_otu -1; i++) printf("\n. Node number:[%d] Lower bound:[%f] Upper bound:[%f] Node time:[%f]. \n", i, tree -> rates -> t_prior_min[i], tree -> rates -> t_prior_max[i], tree -> rates -> nd_t[i]); */ /* Exit("\n"); */
 
-          if(result != TRUE)
-            {
-              Update_Current_Times_Down_Tree(tree -> n_root, tree -> n_root -> v[1], tree);
-              Update_Current_Times_Down_Tree(tree -> n_root, tree -> n_root -> v[2], tree);
-              new_lnL_proposal_density = 0.0;
-              Multiple_Time_Proposal_Density(tree -> n_root, tree -> n_root -> v[1], &new_lnL_proposal_density, tree);
-              Multiple_Time_Proposal_Density(tree -> n_root, tree -> n_root -> v[2], &new_lnL_proposal_density, tree);
-            }
+
+          Update_Current_Times_Down_Tree(tree -> n_root, tree -> n_root -> v[1], tree);
+          Update_Current_Times_Down_Tree(tree -> n_root, tree -> n_root -> v[2], tree);
+          new_lnL_proposal_density = 0.0;
+          Multiple_Time_Proposal_Density(tree -> n_root, tree -> n_root -> v[1], &new_lnL_proposal_density, tree);
+          Multiple_Time_Proposal_Density(tree -> n_root, tree -> n_root -> v[2], &new_lnL_proposal_density, tree);
           
+
           result = TRUE;
           
           Check_Node_Time(tree -> n_root, tree -> n_root -> v[1], &result, tree);
@@ -1322,11 +1322,6 @@ void MCMC_Jump_Calibration(t_tree *tree)
               Exit("\n");
             }
           
-          
-          ///////////////////////////////////////////////////////////////////////////////////////////
-          //Exit("\n");
-          ///////////////////////////////////////////////////////////////////////////////////////////
-          
           For(i,2*tree->n_otu-2) tree->rates->br_do_updt[i] = YES;
           RATES_Update_Cur_Bl(tree);
           if(tree->mcmc->use_data) new_lnL_data = Lk(NULL,tree);
@@ -1342,7 +1337,7 @@ void MCMC_Jump_Calibration(t_tree *tree)
           ratio += (new_lnL_rate - cur_lnL_rate);
           ratio += (new_lnL_time - cur_lnL_time);
           ratio += (LOG(calib_prior_prob[new_calib_comb_num]) - LOG(calib_prior_prob[cur_calib_comb_num]));
-          ratio += (cur_lnL_proposal_density - new_lnL_proposal_density);
+          /* ratio += (cur_lnL_proposal_density - new_lnL_proposal_density); */
           
           ratio = EXP(ratio);
           alpha = MIN(1.,ratio);
@@ -4375,7 +4370,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_birth_rate]            = 2.0;
   mcmc->move_weight[mcmc->num_move_updown_t_br]           = 1.0;
 #if defined (SERGEII)
-  mcmc->move_weight[mcmc->num_move_jump_calibration]      = 1.0;
+  mcmc->move_weight[mcmc->num_move_jump_calibration]      = 5.0;
 #else
   mcmc->move_weight[mcmc->num_move_jump_calibration]      = 0.0;
 #endif

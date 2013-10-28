@@ -760,7 +760,7 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
       times_lk =  TIMES_Lk_Yule_Order_Root_Cond(tree);
 
       constant = 0.0; 
-      if (tot_num_comb > 1 && times_lk > -INFINITY && result != FALSE && tree->rates->update_time_norm_const == YES) 
+      if(tot_num_comb > 1 && times_lk > -INFINITY && result != FALSE && tree->rates->update_time_norm_const == YES) 
         {
           tree -> rates -> node_height_dens_log_norm_const_update[i] = K_Constant_Prior_Times_Log(tree);
           constant = tree -> rates -> node_height_dens_log_norm_const_update[i];
@@ -1763,9 +1763,6 @@ phydbl *Norm_Constant_Prior_Times(t_tree *tree)
   int i, j, k, tot_num_comb;
   t_cal *calib;
  
-
-
-
   calib = tree -> rates -> calib;
   t_prior_min = tree -> rates -> t_prior_min;
   t_prior_max = tree -> rates -> t_prior_max;
@@ -2598,6 +2595,7 @@ int CombineInt(int int1, int int2)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
 void Update_Current_Times_Down_Tree(t_node *a, t_node *d, t_tree *tree)
 {
   int i; 
@@ -2615,10 +2613,10 @@ void Update_Current_Times_Down_Tree(t_node *a, t_node *d, t_tree *tree)
   if(d -> tax) return;
   else
     {    
-      if(nd_t[d -> num] > t_up || nd_t[d -> num] < t_low)
-        { 
-          nd_t[d -> num] = Randomize_One_Node_Time(t_low, t_up);
-        }    
+      /* if(nd_t[d -> num] > t_up || nd_t[d -> num] < t_low) */
+      /*   {  */
+      nd_t[d -> num] = Uni()*(t_up - t_low) + t_low;
+        /* }     */
       
       For(i,3) 
         if((d -> v[i] != d -> anc) && (d -> b[i] != tree -> e_root)) 
