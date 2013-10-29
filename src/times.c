@@ -1019,6 +1019,7 @@ phydbl TIMES_Lk_Times(t_tree *tree)
   #elif SERGEII
   /* tree->rates->c_lnL_times = TIMES_Calib_Cond_Prob(tree); */
   tree->rates->c_lnL_times =  TIMES_Lk_Yule_Order(tree);
+  /* tree->rates->c_lnL_times =  TIMES_Lk_Yule_Order_Root_Cond(tree); */
   if(tree->rates->update_time_norm_const == YES) tree->rates->log_K_cur = K_Constant_Prior_Times_Log(tree);
   tree->rates->c_lnL_times += tree->rates->log_K_cur;
   #endif

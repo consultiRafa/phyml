@@ -1258,7 +1258,7 @@ phydbl K_Constant_Prior_Times_Log(t_tree *tree)
                                   
                               log_g_i = 0.0;                                          
                                   
-                              for(i = n_otu; i < 2 * n_otu - 2; i++) if(Are_Equal(t_prior_min[tree -> n_root -> num], t_prior_min[i], 1.E-10)) t_prior_min[i] = tree -> rates -> nd_t[tree -> n_root -> num];
+                              /* for(i = n_otu; i < 2 * n_otu - 2; i++) if(Are_Equal(t_prior_min[tree -> n_root -> num], t_prior_min[i], 1.E-10)) t_prior_min[i] = tree -> rates -> nd_t[tree -> n_root -> num]; */
 
 
                               For(i, n_otu - 2) log_g_i = log_g_i + LOG_g_i(lmbd, t_slice_max_f[i], t_slice_min_f[i], t_prior_max[i + n_otu], t_prior_min[i + n_otu]);   
@@ -1399,7 +1399,7 @@ phydbl K_Constant_Prior_Times_Log(t_tree *tree)
                                   
                               log_g_i = 0.0;                                 
                                   
-                              for(i = n_otu; i < 2 * n_otu - 2; i++) if(Are_Equal(t_prior_min[tree -> n_root -> num], t_prior_min[i], 1.E-10)) t_prior_min[i] = tree -> rates -> nd_t[tree -> n_root -> num];
+                              /* for(i = n_otu; i < 2 * n_otu - 2; i++) if(Are_Equal(t_prior_min[tree -> n_root -> num], t_prior_min[i], 1.E-10)) t_prior_min[i] = tree -> rates -> nd_t[tree -> n_root -> num]; */
 
 
                               For(i, n_otu - 2) log_g_i = log_g_i + LOG_g_i(lmbd, t_slice_max_f[i], t_slice_min_f[i], t_prior_max[i + n_otu], t_prior_min[i + n_otu]);   
@@ -1550,7 +1550,7 @@ phydbl K_Constant_Prior_Times_Log(t_tree *tree)
                           log_g_i = 0.0;               
                                   
                                   
-                          for(i = n_otu; i < 2 * n_otu - 2; i++) if(Are_Equal(t_prior_min[tree -> n_root -> num], t_prior_min[i], 1.E-10)) t_prior_min[i] = tree -> rates -> nd_t[tree -> n_root -> num];
+                          /* for(i = n_otu; i < 2 * n_otu - 2; i++) if(Are_Equal(t_prior_min[tree -> n_root -> num], t_prior_min[i], 1.E-10)) t_prior_min[i] = tree -> rates -> nd_t[tree -> n_root -> num]; */
 
 
                           For(i, n_otu - 2) log_g_i = log_g_i + LOG_g_i(lmbd, t_slice_max_f[i], t_slice_min_f[i], t_prior_max[i + n_otu], t_prior_min[i + n_otu]);   
