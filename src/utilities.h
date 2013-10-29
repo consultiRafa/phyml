@@ -1360,8 +1360,8 @@ typedef struct __T_Rate {
   int *curr_nd_for_cal;
   phydbl c_lnL_Hastings_ratio;
 
-  phydbl     *t_prior_min_buff;
-  phydbl     *t_prior_max_buff;
+  phydbl     *t_prior_min_ori;
+  phydbl     *t_prior_max_ori;
   phydbl     *times_partial_proba;
 
   phydbl log_K_cur;

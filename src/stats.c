@@ -4408,10 +4408,12 @@ int Sample_i_With_Proba_pi(phydbl *pi, int len)
   phydbl *cum_pi;
   int i;
   phydbl u;
-
-  cum_pi = (phydbl *)mCalloc(len,sizeof(phydbl));
   
-  For(i,len) cum_pi[i] = pi[i];
+  cum_pi = (phydbl *)mCalloc(len,sizeof(phydbl));
+
+  u = .0;
+  For(i,len) u += pi[i];  
+  For(i,len) cum_pi[i] = pi[i] / u;
   for(i=1;i<len;i++) cum_pi[i] += cum_pi[i-1];
 
   if((cum_pi[i-1] > 1. + 1.E-10) || (cum_pi[i-1] < 1. - 1.E-10))

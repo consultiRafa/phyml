@@ -676,9 +676,9 @@ void TIMES_Set_All_Node_Priors_Bottom_Up(t_node *a, t_node *d, t_tree *tree)
 
 	  if(tree->rates->t_prior_max[d->num] < tree->rates->t_prior_min[d->num])
 	    {
-	      PhyML_Printf("\n. prior_min=%f prior_max=%f",tree->rates->t_prior_min[d->num],tree->rates->t_prior_max[d->num]);
-	      PhyML_Printf("\n. Inconsistency in the prior settings detected at t_node %d",d->num);
-	      PhyML_Printf("\n. Err in file %s at line %d\n\n",__FILE__,__LINE__);
+	      PhyML_Printf("\n== prior_min=%f prior_max=%f",tree->rates->t_prior_min[d->num],tree->rates->t_prior_max[d->num]);
+	      PhyML_Printf("\n== Inconsistency in the prior settings detected at node %d",d->num);
+	      PhyML_Printf("\n== Err. in file %s at line %d (function %s)\n\n",__FILE__,__LINE__,__FUNCTION__);
 	      Warn_And_Exit("\n");
 	    }
 	}
@@ -1013,7 +1013,7 @@ phydbl TIMES_Lk_Yule_Order(t_tree *tree)
 
 phydbl TIMES_Lk_Times(t_tree *tree)
 {
-
+  
   #ifdef PHYTIME
   tree->rates->c_lnL_times =  TIMES_Lk_Yule_Order(tree);
   #elif SERGEII
@@ -1571,8 +1571,8 @@ void TIMES_Record_Prior_Times(t_tree *tree)
   int i;
   For(i,2*tree->n_otu-1) 
     {
-      tree->rates->t_prior_min_buff[i] = tree->rates->t_prior_min[i];
-      tree->rates->t_prior_max_buff[i] = tree->rates->t_prior_max[i];
+      tree->rates->t_prior_min_ori[i] = tree->rates->t_prior_min[i];
+      tree->rates->t_prior_max_ori[i] = tree->rates->t_prior_max[i];
     }
 }
 
@@ -1585,8 +1585,8 @@ void TIMES_Reset_Prior_Times(t_tree *tree)
   int i;
   For(i,2*tree->n_otu-1) 
     {
-      tree->rates->t_prior_min[i] = tree->rates->t_prior_min_buff[i];
-      tree->rates->t_prior_max[i] = tree->rates->t_prior_max_buff[i];
+      tree->rates->t_prior_min[i] = tree->rates->t_prior_min_ori[i];
+      tree->rates->t_prior_max[i] = tree->rates->t_prior_max_ori[i];
      }
 }
 
@@ -1608,6 +1608,7 @@ phydbl TIMES_Lk_Yule_Order_Root_Cond(t_tree *tree)
   phydbl lbda;
   phydbl *tp_min,*tp_max;
   phydbl lower_bound,upper_bound;
+  phydbl root_height;
 
   tp_min = tree->rates->t_prior_min;
   tp_max = tree->rates->t_prior_max;
@@ -1618,6 +1619,7 @@ phydbl TIMES_Lk_Yule_Order_Root_Cond(t_tree *tree)
   lbda = tree->rates->birth_rate;
   lower_bound = -1.;
   upper_bound = -1.;
+  root_height = FABS(tree->rates->nd_t[tree->n_root->num]);
 
   /*! Adapted from  Equation (6) in T. Stadler's Systematic Biology, 2012 paper with
       sampling fraction set to 1 and death rate set to 0. Dropped the 1/(n-1) scaling 
@@ -1649,13 +1651,12 @@ phydbl TIMES_Lk_Yule_Order_Root_Cond(t_tree *tree)
     {
       n = tree->a_nodes[j];
       lower_bound = MAX(FABS(tf[j]),FABS(tp_max[j]));
-      upper_bound = FABS(tp_min[j]);
+      upper_bound = MIN(FABS(tp_min[j]),root_height);
       
       if(n->tax == NO)
         {
           loglk  += (loglbda - lbda * FABS(t[j]));
-          loglk -= LOG(EXP(-lbda*lower_bound) - EXP(-lbda*upper_bound)); // incorporate calibration boundaries here.
-    
+          loglk -= LOG(EXP(-lbda*lower_bound) - EXP(-lbda*upper_bound)); // incorporate calibration boundaries here.    
         }
     }
 
@@ -1667,9 +1668,4 @@ phydbl TIMES_Lk_Yule_Order_Root_Cond(t_tree *tree)
   return(loglk);
 }
 
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
+

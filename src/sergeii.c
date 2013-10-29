@@ -1112,7 +1112,7 @@ phydbl K_Constant_Prior_Times_Log(t_tree *tree)
                   
               log_g_i = 0.0;
     
-              for(i = n_otu; i < 2 * n_otu - 2; i++) if(Are_Equal(t_prior_min[tree -> n_root -> num], t_prior_min[i], 1.E-10)) t_prior_min[i] = tree -> rates -> nd_t[tree -> n_root -> num];
+              /* for(i = n_otu; i < 2 * n_otu - 2; i++) if(Are_Equal(t_prior_min[tree -> n_root -> num], t_prior_min[i], 1.E-10)) t_prior_min[i] = tree -> rates -> nd_t[tree -> n_root -> num]; */
 
               For(i, n_otu - 2) log_g_i = log_g_i + LOG_g_i(lmbd, t_slice_max_f[i], t_slice_min_f[i], t_prior_max[i + n_otu], t_prior_min[i + n_otu]);   
               /* printf("\n. [START] LOG(g_i) [%f] \n", log_g_i); */
@@ -2613,10 +2613,10 @@ void Update_Current_Times_Down_Tree(t_node *a, t_node *d, t_tree *tree)
   if(d -> tax) return;
   else
     {    
-      /* if(nd_t[d -> num] > t_up || nd_t[d -> num] < t_low) */
-      /*   {  */
-      nd_t[d -> num] = Uni()*(t_up - t_low) + t_low;
-        /* }     */
+      if(nd_t[d -> num] > t_up || nd_t[d -> num] < t_low)
+        {
+          nd_t[d -> num] = Uni()*(t_up - t_low) + t_low;
+        }
       
       For(i,3) 
         if((d -> v[i] != d -> anc) && (d -> b[i] != tree -> e_root)) 

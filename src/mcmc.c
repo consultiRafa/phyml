@@ -1193,7 +1193,7 @@ void MCMC_Jump_Calibration(t_tree *tree)
 {
 #ifdef SERGEII
   phydbl u;
-  phydbl *calib_prior_cumprob, *calib_prior_prob; 
+  phydbl *calib_prior_cumprob, *calib_prior_prob, *uniform_prob; 
   phydbl cur_lnL_data, new_lnL_data;
   phydbl cur_lnL_rate, new_lnL_rate;
   phydbl cur_lnL_time, new_lnL_time;
@@ -1201,7 +1201,7 @@ void MCMC_Jump_Calibration(t_tree *tree)
   phydbl log_K_cur, log_K_new;
   int new_calib_comb_num, cur_calib_comb_num;
   phydbl ratio, alpha;
-  int i, j, result;
+  int i, result;
   int move_num;
   int tot_num_of_calib_comb;
   
@@ -1213,7 +1213,8 @@ void MCMC_Jump_Calibration(t_tree *tree)
     {
       calib_prior_prob = tree -> rates -> times_partial_proba;
       calib_prior_cumprob = (phydbl *)mCalloc(tot_num_of_calib_comb + 1, sizeof(phydbl)); 
-  
+      uniform_prob =  (phydbl *)mCalloc(tot_num_of_calib_comb + 1, sizeof(phydbl));
+
       ///////////////////////////////////////////////////////////////////////////////////////////
       //for(i = tree -> n_otu; i < 2 * tree -> n_otu - 1; i++) printf("\n. '%f' '%f' \n", tree -> rates -> t_prior_min[i], tree -> rates -> t_prior_max[i]);
       //for(i = tree -> n_otu; i < 2 * tree -> n_otu - 1; i++) printf("\n. '%f' \n", tree -> rates -> nd_t[i]);
@@ -1223,7 +1224,6 @@ void MCMC_Jump_Calibration(t_tree *tree)
       RATES_Record_Times(tree);
       TIMES_Record_Prior_Times(tree);
 
-   
       cur_lnL_proposal_density = 0.0;  
       Multiple_Time_Proposal_Density(tree -> n_root, tree -> n_root -> v[1], &cur_lnL_proposal_density, tree);
       Multiple_Time_Proposal_Density(tree -> n_root, tree -> n_root -> v[2], &cur_lnL_proposal_density, tree);
@@ -1247,39 +1247,48 @@ void MCMC_Jump_Calibration(t_tree *tree)
       log_K_cur = tree->rates->log_K_cur;
       log_K_new = log_K_cur;
 
+      /* new_calib_comb_num = Sample_i_With_Proba_pi(calib_prior_prob,tot_num_of_calib_comb); */
+      For(i,tot_num_of_calib_comb) uniform_prob[i] = calib_prior_prob[i] > .0 ? 1. : 0.;
+      new_calib_comb_num = Sample_i_With_Proba_pi(uniform_prob,tot_num_of_calib_comb);
 
-      calib_prior_cumprob[0]  = 0.0;
-      for(i = 1; i < tot_num_of_calib_comb + 1; i++)
-        {
-          For(j, i)
-            {
-              calib_prior_cumprob[i] = calib_prior_cumprob[i] + calib_prior_prob[j];
-            }
-        }
- 
-      u = Uni();
-      new_calib_comb_num = -1;
-      For(i, tot_num_of_calib_comb) 
-        {
-          if(u > calib_prior_cumprob[i] && (Are_Equal(calib_prior_cumprob[i + 1], u, 1.E-10) || u < calib_prior_cumprob[i + 1]))
-            {
-              new_calib_comb_num = i + 1;
-            }
-        }
+      /* int j; */
+      /* calib_prior_cumprob[0] = 0.0; */
+      /* for(i = 1; i < tot_num_of_calib_comb + 1; i++) */
+      /*   { */
+      /*     For(j, i) */
+      /*       { */
+      /*         calib_prior_cumprob[i] = calib_prior_cumprob[i] + calib_prior_prob[j]; */
+      /*         /\* calib_prior_cumprob[i] = calib_prior_cumprob[i] + uniform_prob[j]; *\/ */
+      /*       } */
+      /*   } */
+      
+      /* u = Uni(); */
+      /* new_calib_comb_num = -1; */
+      /* For(i, tot_num_of_calib_comb) */
+      /*   { */
+      /*     if(u > calib_prior_cumprob[i] && (Are_Equal(calib_prior_cumprob[i + 1], u, 1.E-10) || u < calib_prior_cumprob[i + 1])) */
+      /*       { */
+      /*         new_calib_comb_num = i + 1; */
+      /*       } */
+      /*   } */
 
-    
-      new_calib_comb_num = new_calib_comb_num - 1; 
+
+      /* new_calib_comb_num = new_calib_comb_num - 1;  */
+
 
       tree -> rates -> numb_calib_chosen[new_calib_comb_num]++;
 
       /* for(i = tree -> n_otu; i < 2 * tree -> n_otu -1; i++) printf("\n. Node number:[%d] Lower bound:[%f] Upper bound:[%f] Node time:[%f]. \n", i, tree -> rates -> t_prior_min[i], tree -> rates -> t_prior_max[i], tree -> rates -> nd_t[i]); */ /* Exit("\n"); */
       if(!Are_Equal(cur_calib_comb_num, new_calib_comb_num, 1.E-10))
         {
-          /* printf("\n. Current calibration %d", cur_calib_comb_num); */
+          /* printf("\n. current calibration: %d == new_calibration: %d", cur_calib_comb_num, new_calib_comb_num); */
           /* printf("\n"); */
           /* Print_Node(tree->n_root,tree->n_root->v[1],tree); */
           /* Print_Node(tree->n_root,tree->n_root->v[2],tree); */
-          /* for(i = tree -> n_otu; i < 2 * tree -> n_otu -1; i++) printf("\n. Node number:[%d] Lower bound:[%f] Upper bound:[%f] Node time:[%f]. \n", i, tree -> rates -> t_prior_min[i], tree -> rates -> t_prior_max[i], tree -> rates -> nd_t[i]); */
+          /* for(i = tree -> n_otu; i < 2 * tree -> n_otu -1; i++) printf("\nAV Node number:[%d] Lower bound:[%f] Upper bound:[%f] Node time:[%f].", i, */
+          /*                                                              tree -> rates -> t_prior_min[i], */
+          /*                                                              tree -> rates -> t_prior_max[i], */
+          /*                                                              tree -> rates -> nd_t[i]); */
 
           Set_Current_Calibration(new_calib_comb_num, tree);
           TIMES_Set_All_Node_Priors(tree);
@@ -1293,7 +1302,10 @@ void MCMC_Jump_Calibration(t_tree *tree)
           /* printf("\n"); */
           /* Print_Node(tree->n_root,tree->n_root->v[1],tree); */
           /* Print_Node(tree->n_root,tree->n_root->v[2],tree); */
-          /* for(i = tree -> n_otu; i < 2 * tree -> n_otu -1; i++) printf("\n. Node number:[%d] Lower bound:[%f] Upper bound:[%f] Node time:[%f]. \n", i, tree -> rates -> t_prior_min[i], tree -> rates -> t_prior_max[i], tree -> rates -> nd_t[i]); */ /* Exit("\n"); */
+          /* for(i = tree -> n_otu; i < 2 * tree -> n_otu -1; i++) printf("\nAP Node number:[%d] Lower bound:[%f] Upper bound:[%f] Node time:[%f].", i, */
+          /*                                                              tree -> rates -> t_prior_min[i], */
+          /*                                                              tree -> rates -> t_prior_max[i], */
+          /*                                                              tree -> rates -> nd_t[i]); */
 
 
           Update_Current_Times_Down_Tree(tree -> n_root, tree -> n_root -> v[1], tree);
@@ -1312,7 +1324,7 @@ void MCMC_Jump_Calibration(t_tree *tree)
           if(result != TRUE)
             {
               PhyML_Printf("\n. ...................... OLD CALIBRATION.....................................\n");
-              for(i = tree -> n_otu; i < 2 * tree -> n_otu -1; i++) printf("\n. Node number:[%d] Lower bound:[%f] Upper bound:[%f] Node time:[%f]. \n", i, tree -> rates -> t_prior_min_buff[i], tree -> rates -> t_prior_max_buff[i], tree -> rates -> buff_t[i]);
+              for(i = tree -> n_otu; i < 2 * tree -> n_otu -1; i++) printf("\n. Node number:[%d] Lower bound:[%f] Upper bound:[%f] Node time:[%f]. \n", i, tree -> rates -> t_prior_min_ori[i], tree -> rates -> t_prior_max_ori[i], tree -> rates -> buff_t[i]);
               PhyML_Printf("\n. ...........................................................................\n");
               PhyML_Printf("\n. ................. NEW PROPOSED CALIBRATION ................................\n");
               for(i = tree -> n_otu; i < 2 * tree -> n_otu -1; i++) printf("\n. Node number:[%d] Lower bound:[%f] Upper bound:[%f] Node time:[%f]. \n", i, tree -> rates -> t_prior_min[i], tree -> rates -> t_prior_max[i], tree -> rates -> nd_t[i]);
@@ -1337,7 +1349,7 @@ void MCMC_Jump_Calibration(t_tree *tree)
           ratio += (new_lnL_rate - cur_lnL_rate);
           ratio += (new_lnL_time - cur_lnL_time);
           ratio += (LOG(calib_prior_prob[new_calib_comb_num]) - LOG(calib_prior_prob[cur_calib_comb_num]));
-          /* ratio += (cur_lnL_proposal_density - new_lnL_proposal_density); */
+          ratio += (cur_lnL_proposal_density - new_lnL_proposal_density);
           
           ratio = EXP(ratio);
           alpha = MIN(1.,ratio);
@@ -1363,7 +1375,8 @@ void MCMC_Jump_Calibration(t_tree *tree)
               tree->mcmc->acc_move[move_num]++;
             }      
           tree->mcmc->run_move[move_num]++;
-          free(calib_prior_cumprob);
+          Free(calib_prior_cumprob);
+          Free(uniform_prob);
         }                                             
     }
   
@@ -4370,7 +4383,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_birth_rate]            = 2.0;
   mcmc->move_weight[mcmc->num_move_updown_t_br]           = 1.0;
 #if defined (SERGEII)
-  mcmc->move_weight[mcmc->num_move_jump_calibration]      = 5.0;
+  mcmc->move_weight[mcmc->num_move_jump_calibration]      = 0.1;
 #else
   mcmc->move_weight[mcmc->num_move_jump_calibration]      = 0.0;
 #endif
