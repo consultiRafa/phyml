@@ -338,9 +338,9 @@ void Free_Tree_Pars(t_tree *mixt_tree)
 
 void Free_Edge_Pars_Left(t_edge *b)
 {
-  if(b->pars_l)   Free(b->pars_l);
-  if(b->ui_l)     Free(b->ui_l);
-  if(b->p_pars_l) Free(b->p_pars_l);
+  if(b->pars_l)          Free(b->pars_l);
+  if(b->ui_l)            Free(b->ui_l);
+  if(b->p_pars_l)        Free(b->p_pars_l);
   if(b->n_diff_states_l) Free(b->n_diff_states_l);
 }
 

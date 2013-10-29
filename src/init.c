@@ -180,6 +180,15 @@ void Init_Edge_Light(t_edge *b, int num)
   b->Pij_rr               = NULL;
   b->labels               = NULL;
 
+  b->pars_l               = NULL;
+  b->pars_r               = NULL;
+  b->ui_l                 = NULL;
+  b->ui_r                 = NULL;
+  b->p_pars_l             = NULL;
+  b->p_pars_r             = NULL;
+  b->n_diff_states_l      = NULL;
+  b->n_diff_states_r      = NULL;
+
 #ifdef BEAGLE
   b->p_lk_left_idx         = num;
   b->p_lk_rght_idx         = UNINITIALIZED; //Will be initialized later when the total number of branches is known (i.e. in Make_Tree_From_Scratch())
