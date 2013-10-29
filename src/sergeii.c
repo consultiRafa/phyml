@@ -1111,11 +1111,14 @@ phydbl K_Constant_Prior_Times_Log(t_tree *tree)
               /* printf("\n. K_total_cur [%f] \n", K_total_cur); */
                   
               log_g_i = 0.0;
-    
-              for(i = n_otu; i < 2 * n_otu - 2; i++) if(Are_Equal(t_prior_min[tree -> n_root -> num], t_prior_min[i], 1.E-10)) t_prior_min[i] = tree -> rates -> nd_t[tree -> n_root -> num];
+              For(i, n_otu - 2) 
+		  log_g_i += LOG_g_i(lmbd, 
+				t_slice_max_f[i], 
+				t_slice_min_f[i], 
+				t_prior_max[i + n_otu], 
+				MAX(t_prior_min[i + n_otu],tree->rates->nd_t[tree->n_root->num]));   
 
-              For(i, n_otu - 2) log_g_i = log_g_i + LOG_g_i(lmbd, t_slice_max_f[i], t_slice_min_f[i], t_prior_max[i + n_otu], t_prior_min[i + n_otu]);   
-              /* printf("\n. [START] LOG(g_i) [%f] \n", log_g_i); */
+       	      /* printf("\n. [START] LOG(g_i) [%f] \n", log_g_i); */
 
               K_total_cur = EXP(K_total_cur + log_g_i + scl_const);
 
@@ -1257,11 +1260,13 @@ phydbl K_Constant_Prior_Times_Log(t_tree *tree)
                                 }
                                   
                               log_g_i = 0.0;                                          
-                                  
-                              for(i = n_otu; i < 2 * n_otu - 2; i++) if(Are_Equal(t_prior_min[tree -> n_root -> num], t_prior_min[i], 1.E-10)) t_prior_min[i] = tree -> rates -> nd_t[tree -> n_root -> num];
-
-
-                              For(i, n_otu - 2) log_g_i = log_g_i + LOG_g_i(lmbd, t_slice_max_f[i], t_slice_min_f[i], t_prior_max[i + n_otu], t_prior_min[i + n_otu]);   
+                              For(i, n_otu - 2) 
+				log_g_i += LOG_g_i(lmbd, 
+					t_slice_max_f[i], 
+					t_slice_min_f[i], 
+					t_prior_max[i + n_otu], 
+					MAX(t_prior_min[i + n_otu],tree->rates->nd_t[tree->n_root->num]));
+   
                               /* printf("\n. [START] LOG(g_i) [%f] \n", log_g_i); */
                               
                               K_part = EXP(K_part + log_g_i + scl_const);
@@ -1398,11 +1403,12 @@ phydbl K_Constant_Prior_Times_Log(t_tree *tree)
                               /* printf("\n. K_part [%f] \n", K_part); */
                                   
                               log_g_i = 0.0;                                 
-                                  
-                              for(i = n_otu; i < 2 * n_otu - 2; i++) if(Are_Equal(t_prior_min[tree -> n_root -> num], t_prior_min[i], 1.E-10)) t_prior_min[i] = tree -> rates -> nd_t[tree -> n_root -> num];
-
-
-                              For(i, n_otu - 2) log_g_i = log_g_i + LOG_g_i(lmbd, t_slice_max_f[i], t_slice_min_f[i], t_prior_max[i + n_otu], t_prior_min[i + n_otu]);   
+                              For(i, n_otu - 2) 
+				log_g_i += LOG_g_i(lmbd, 
+					t_slice_max_f[i], 
+					t_slice_min_f[i], 
+					t_prior_max[i + n_otu], 
+					MAX(t_prior_min[i + n_otu],tree->rates->nd_t[tree->n_root->num]));   
                               /* printf("\n. [START] LOG(g_i) [%f] \n", log_g_i); */
                               
                               K_part = EXP(K_part + log_g_i + scl_const);
@@ -1548,12 +1554,12 @@ phydbl K_Constant_Prior_Times_Log(t_tree *tree)
                           /* printf("\n. K_part [%f] \n", K_part); */
                                   
                           log_g_i = 0.0;               
-                                  
-                                  
-                          for(i = n_otu; i < 2 * n_otu - 2; i++) if(Are_Equal(t_prior_min[tree -> n_root -> num], t_prior_min[i], 1.E-10)) t_prior_min[i] = tree -> rates -> nd_t[tree -> n_root -> num];
-
-
-                          For(i, n_otu - 2) log_g_i = log_g_i + LOG_g_i(lmbd, t_slice_max_f[i], t_slice_min_f[i], t_prior_max[i + n_otu], t_prior_min[i + n_otu]);   
+                          For(i, n_otu - 2) 
+				log_g_i += LOG_g_i(lmbd, 
+					t_slice_max_f[i], 
+					t_slice_min_f[i], 
+					t_prior_max[i + n_otu], 
+					MAX(t_prior_min[i + n_otu],tree->rates->nd_t[tree->n_root->num]));   
                           /* printf("\n. [START] LOG(g_i) [%f] \n", log_g_i); */
                           
                           K_part = EXP(K_part + log_g_i + scl_const);
