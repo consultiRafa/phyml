@@ -1653,7 +1653,7 @@ void MCMC_Tree_Height(t_tree *tree)
     {
       tree->mcmc->acc_move[tree->mcmc->num_move_tree_height]++;
       tree->mcmc->acc_move[tree->mcmc->num_move_nd_t+tree->n_root->num-tree->n_otu]++;
-      printf("\n. ACCEPT\n");
+      /* printf("\n. ACCEPT\n"); */
     }
 
   tree->mcmc->run_move[tree->mcmc->num_move_tree_height]++;
