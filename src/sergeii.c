@@ -1904,17 +1904,22 @@ void Check_Node_Time(t_node *a, t_node *d, int *result, t_tree *tree)
   t_prior_min = tree -> rates -> t_prior_min;
   t_prior_max = tree -> rates -> t_prior_max;
   nd_t = tree -> rates -> nd_t;
-
-  if(a == tree -> n_root && (nd_t[a -> num] > MIN(t_prior_max[a -> num], MIN(nd_t[a -> v[1] -> num], nd_t[a -> v[2] -> num]))))  
+  
+  if((a == tree -> n_root) && 
+     ((nd_t[a -> num] > MIN(t_prior_max[a -> num], MIN(nd_t[a -> v[1] -> num], nd_t[a -> v[2] -> num]))) ||
+      (nd_t[a -> num] < t_prior_min[a -> num])))
+      
     {
       *result = FALSE;
       return;
     }
+
   if(d -> tax) return;
   else
     { 
       t_low = MAX(t_prior_min[d -> num], nd_t[d -> anc -> num]);
-      t_up = MIN(t_prior_max[d -> num], MIN(nd_t[d -> v[1] -> num], nd_t[d -> v[2] -> num]));
+      t_up  = MIN(t_prior_max[d -> num], MIN(nd_t[d -> v[1] -> num], nd_t[d -> v[2] -> num]));
+      printf("\n. CHECK: %d t:%f u:%f d:%f",d->num,nd_t[d->num],t_up,t_low);
       if(nd_t[d -> num] < t_low || nd_t[d -> num] > t_up)
         {
           *result = FALSE; 
@@ -1924,7 +1929,7 @@ void Check_Node_Time(t_node *a, t_node *d, int *result, t_tree *tree)
       int i;
       For(i,3) 
 	if((d -> v[i] != d -> anc) && (d -> b[i] != tree -> e_root))
-             Check_Node_Time(d, d -> v[i], result, tree);
+          Check_Node_Time(d, d -> v[i], result, tree);
     }
 }
 

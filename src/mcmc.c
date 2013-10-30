@@ -75,6 +75,7 @@ void MCMC(t_tree *tree)
   Switch_Eigen(NO,tree->mod);
   MCMC_Print_Param(tree->mcmc,tree);
   
+
   //////////////////
   if(tree->io->mutmap == YES)
     {
@@ -191,7 +192,6 @@ void MCMC(t_tree *tree)
       else       { first = 1; secod = 2; }
  
 
-      /* printf("\n. [%15s] %15f ",tree->mcmc->move_name[move],tree->c_lnL); */
 
 
       /* Clock rate */
@@ -339,8 +339,16 @@ void MCMC(t_tree *tree)
 	  /* MCMC_Sim_Rate(tree->n_root,tree->n_root->v[2],tree); */
 	  /* MCMC_Sim_Rate(tree->n_root,tree->n_root->v[1],tree); */
       	  /* if(tree->mcmc->use_data == YES) Lk(NULL,tree); */
-	  /* RATES_Lk_Rates(tree); */
+	  /* RATES_Lk_Rates(tree); */          
       	}
+
+
+      printf("\n. move: '%s' lnL: %f",tree->mcmc->move_name[move],tree->rates->c_lnL_times);
+      int i;
+      for(i = tree -> n_otu; i < 2 * tree -> n_otu -1; i++) printf("\nLOOP Node number:[%d] Lower bound:[%f] Upper bound:[%f] Node time:[%f].", i,
+                                                                   tree -> rates -> t_prior_min[i],
+                                                                   tree -> rates -> t_prior_max[i],
+                                                                   tree -> rates -> nd_t[i]);
 
       tree->mcmc->run++;
       MCMC_Get_Acc_Rates(tree->mcmc);
@@ -1197,8 +1205,8 @@ void MCMC_Jump_Calibration(t_tree *tree)
   phydbl cur_lnL_data, new_lnL_data;
   phydbl cur_lnL_rate, new_lnL_rate;
   phydbl cur_lnL_time, new_lnL_time;
+  phydbl cur_lnL_K;
   phydbl cur_lnL_proposal_density, new_lnL_proposal_density;
-  phydbl log_K_cur, log_K_new;
   int new_calib_comb_num, cur_calib_comb_num;
   phydbl ratio, alpha;
   int i, result;
@@ -1206,6 +1214,7 @@ void MCMC_Jump_Calibration(t_tree *tree)
   int tot_num_of_calib_comb;
   
   tot_num_of_calib_comb = Number_Of_Comb(tree -> rates -> calib);
+
 
   tree->rates->update_time_norm_const = YES;
 
@@ -1216,7 +1225,7 @@ void MCMC_Jump_Calibration(t_tree *tree)
       uniform_prob =  (phydbl *)mCalloc(tot_num_of_calib_comb + 1, sizeof(phydbl));
 
       ///////////////////////////////////////////////////////////////////////////////////////////
-      //for(i = tree -> n_otu; i < 2 * tree -> n_otu - 1; i++) printf("\n. '%f' '%f' \n", tree -> rates -> t_prior_min[i], tree -> rates -> t_prior_max[i]);
+      /* for(i = tree -> n_otu; i < 2 * tree -> n_otu - 1; i++) printf("\n. '%f' '%f' \n", tree -> rates -> t_prior_min[i], tree -> rates -> t_prior_max[i]); */
       //for(i = tree -> n_otu; i < 2 * tree -> n_otu - 1; i++) printf("\n. '%f' \n", tree -> rates -> nd_t[i]);
       ///////////////////////////////////////////////////////////////////////////////////////////
       Record_Br_Len(tree);
@@ -1244,37 +1253,11 @@ void MCMC_Jump_Calibration(t_tree *tree)
       cur_calib_comb_num = tree -> rates -> cur_comb_numb;
       new_calib_comb_num = cur_calib_comb_num;
 
-      log_K_cur = tree->rates->log_K_cur;
-      log_K_new = log_K_cur;
+      cur_lnL_K = tree->rates->log_K_cur;
 
       /* new_calib_comb_num = Sample_i_With_Proba_pi(calib_prior_prob,tot_num_of_calib_comb); */
       For(i,tot_num_of_calib_comb) uniform_prob[i] = calib_prior_prob[i] > .0 ? 1. : 0.;
       new_calib_comb_num = Sample_i_With_Proba_pi(uniform_prob,tot_num_of_calib_comb);
-
-      /* int j; */
-      /* calib_prior_cumprob[0] = 0.0; */
-      /* for(i = 1; i < tot_num_of_calib_comb + 1; i++) */
-      /*   { */
-      /*     For(j, i) */
-      /*       { */
-      /*         calib_prior_cumprob[i] = calib_prior_cumprob[i] + calib_prior_prob[j]; */
-      /*         /\* calib_prior_cumprob[i] = calib_prior_cumprob[i] + uniform_prob[j]; *\/ */
-      /*       } */
-      /*   } */
-      
-      /* u = Uni(); */
-      /* new_calib_comb_num = -1; */
-      /* For(i, tot_num_of_calib_comb) */
-      /*   { */
-      /*     if(u > calib_prior_cumprob[i] && (Are_Equal(calib_prior_cumprob[i + 1], u, 1.E-10) || u < calib_prior_cumprob[i + 1])) */
-      /*       { */
-      /*         new_calib_comb_num = i + 1; */
-      /*       } */
-      /*   } */
-
-
-      /* new_calib_comb_num = new_calib_comb_num - 1;  */
-
 
       tree -> rates -> numb_calib_chosen[new_calib_comb_num]++;
 
@@ -1295,8 +1278,8 @@ void MCMC_Jump_Calibration(t_tree *tree)
           
           result = TRUE;
           
-          Check_Node_Time(tree -> n_root, tree -> n_root -> v[1], &result, tree);
-          Check_Node_Time(tree -> n_root, tree -> n_root -> v[2], &result, tree);
+          /* Check_Node_Time(tree -> n_root, tree -> n_root -> v[1], &result, tree); */
+          /* Check_Node_Time(tree -> n_root, tree -> n_root -> v[2], &result, tree); */
           
           /* printf("\n. New calibration %d", new_calib_comb_num); */
           /* printf("\n"); */
@@ -1329,8 +1312,8 @@ void MCMC_Jump_Calibration(t_tree *tree)
               PhyML_Printf("\n. ................. NEW PROPOSED CALIBRATION ................................\n");
               for(i = tree -> n_otu; i < 2 * tree -> n_otu -1; i++) printf("\n. Node number:[%d] Lower bound:[%f] Upper bound:[%f] Node time:[%f]. \n", i, tree -> rates -> t_prior_min[i], tree -> rates -> t_prior_max[i], tree -> rates -> nd_t[i]);
               PhyML_Printf("\n. ...........................................................................\n");
-              PhyML_Printf("\n==You have a problem with calibration information.\n");
-              PhyML_Printf("\n==Err in file %s at line %d\n",__FILE__,__LINE__);
+              PhyML_Printf("\n== There is a problem with calibration information.\n");
+              PhyML_Printf("\n== Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
               Exit("\n");
             }
           
@@ -1340,8 +1323,13 @@ void MCMC_Jump_Calibration(t_tree *tree)
           
           new_lnL_rate = RATES_Lk_Rates(tree);
           new_lnL_time = TIMES_Lk_Times(tree);
-          log_K_new    = K_Constant_Prior_Times_Log(tree);
           
+          printf("\n. JUMP cur_lnL_time: %f new_lnL_time: %f",cur_lnL_time,new_lnL_time);
+          for(i = tree -> n_otu; i < 2 * tree -> n_otu -1; i++) printf("\nJUMP1 Node number:[%d] Lower bound:[%f] Upper bound:[%f] Node time:[%f].", i,
+                                                                   tree -> rates -> t_prior_min[i],
+                                                                   tree -> rates -> t_prior_max[i],
+                                                                   tree -> rates -> nd_t[i]);
+
           /* Likelihood ratio */
           if(tree->mcmc->use_data) ratio += (new_lnL_data - cur_lnL_data);
           
@@ -1363,17 +1351,44 @@ void MCMC_Jump_Calibration(t_tree *tree)
               tree -> c_lnL                         = cur_lnL_data;
               tree -> rates -> c_lnL_rates          = cur_lnL_rate;
               tree -> rates -> c_lnL_times          = cur_lnL_time;
-              tree -> rates -> log_K_cur            = log_K_cur;
+              tree -> rates -> log_K_cur            = cur_lnL_K;
               tree -> rates -> cur_comb_numb        = cur_calib_comb_num;
+              for(i = tree -> n_otu; i < 2 * tree -> n_otu -1; i++) printf("\nJUMP3 Node number:[%d] Lower bound:[%f,%f] Upper bound:[%f,%f] Node time:[%f].", i,
+                                                                           tree->rates->t_prior_min[i],tree->rates->t_prior_min_ori[i],
+                                                                           tree->rates->t_prior_max[i],tree->rates->t_prior_max_ori[i],
+                                                                           tree->rates->nd_t[i]);
               Set_Current_Calibration(tree -> rates -> cur_comb_numb, tree);
+              for(i = tree -> n_otu; i < 2 * tree -> n_otu -1; i++) printf("\nJUMP4 Node number:[%d] Lower bound:[%f,%f] Upper bound:[%f,%f] Node time:[%f].", i,
+                                                                           tree->rates->t_prior_min[i],tree->rates->t_prior_min_ori[i],
+                                                                           tree->rates->t_prior_max[i],tree->rates->t_prior_max_ori[i],
+                                                                           tree->rates->nd_t[i]);
               TIMES_Set_All_Node_Priors(tree);
-              /* printf("\n. ......................REJECTED.....................................\n"); */
+              printf("\n. ......................REJECTED.....................................\n");
             }
           else
             {
               tree -> rates -> cur_comb_numb = new_calib_comb_num;
               tree->mcmc->acc_move[move_num]++;
+              printf("\n. ......................ACCEPTED.....................................\n");
             }      
+
+          for(i = tree -> n_otu; i < 2 * tree -> n_otu -1; i++) printf("\nJUMP2 Node number:[%d] Lower bound:[%f,%f] Upper bound:[%f,%f] Node time:[%f].", i,
+                                                                       tree->rates->t_prior_min[i],tree->rates->t_prior_min_ori[i],
+                                                                       tree->rates->t_prior_max[i],tree->rates->t_prior_max_ori[i],
+                                                                       tree->rates->nd_t[i]);
+
+          Check_Node_Time(tree -> n_root, tree -> n_root -> v[1], &result, tree);
+          Check_Node_Time(tree -> n_root, tree -> n_root -> v[2], &result, tree);
+          
+         
+          if(result != TRUE)
+            {
+              PhyML_Printf("\n== Err. in file %s at line %d (function '%s').\n",__FILE__,__LINE__,__FUNCTION__);
+              Exit("\n");      
+            }
+
+
+
           tree->mcmc->run_move[move_num]++;
           Free(calib_prior_cumprob);
           Free(uniform_prob);
@@ -1423,7 +1438,7 @@ void MCMC_Root_Time(t_tree *tree)
   cur_lnL_time   = tree->rates->c_lnL_times;
   new_lnL_time   = cur_lnL_time;
 
-  
+
   v2 = root->v[2];
   v3 = root->v[1];
 
@@ -1443,12 +1458,12 @@ void MCMC_Root_Time(t_tree *tree)
 
   if(t_min > t_max) 
     {
+      PhyML_Printf("\n== t0 = %f t2 = %f t3 = %f",t0,t2,t3);
       PhyML_Printf("\n== t_min = %f t_max = %f",t_min,t_max);
       PhyML_Printf("\n== prior_min = %f prior_max = %f",tree->rates->t_prior_min[root->num],tree->rates->t_prior_max[root->num]);
       PhyML_Printf("\n== Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
       Exit("\n");
     }
-
 
   MCMC_Make_Move(&t1_cur,&t1_new,t_min,t_max,&ratio,K,tree->mcmc->move_type[move_num]);
  
@@ -1577,6 +1592,7 @@ void MCMC_Tree_Height(t_tree *tree)
   new_lnL_rate = RATES_Lk_Rates(tree);
   new_lnL_time = TIMES_Lk_Times(tree);
  
+
   /* The Hastings ratio is actually mult^(n) when changing the absolute
      node heights. When considering the relative heights, this ratio combined
      to the Jacobian for the change of variable ends up to being equal to mult. 
@@ -1606,7 +1622,7 @@ void MCMC_Tree_Height(t_tree *tree)
   alpha = MIN(1.,ratio);
   u = Uni();
 
-  
+  printf("\n. cur_lnL_time: %f new_lnL_time: %f",cur_lnL_time,new_lnL_time);
   
   if(u > alpha)
     {
@@ -1620,6 +1636,7 @@ void MCMC_Tree_Height(t_tree *tree)
     {
       tree->mcmc->acc_move[tree->mcmc->num_move_tree_height]++;
       tree->mcmc->acc_move[tree->mcmc->num_move_nd_t+tree->n_root->num-tree->n_otu]++;
+      printf("\n. ACCEPT\n");
     }
 
   tree->mcmc->run_move[tree->mcmc->num_move_tree_height]++;
@@ -4033,6 +4050,9 @@ void MCMC_Covarion_Switch(t_tree *tree)
 
 void MCMC_Birth_Rate(t_tree *tree)
 {
+ 
+  printf("\n. BIRTH cur_lnL_time: %f ",tree->rates->c_lnL_times);
+
 #ifdef SERGEII
   tree->rates->update_time_norm_const = YES;
 #endif
