@@ -563,7 +563,8 @@ void PhyTime_XML(char *xml_file)
       if(!Are_Equal(tree -> rates -> times_partial_proba[cal_numb], 0.0, 1.E-10)) break;
       else cal_numb += 1;
     }
-  while(1); 
+  while(1);
+  PhyML_Printf("\n. Calibration number chosen %d.\n", cal_numb); 
 
 
   Set_Current_Calibration(cal_numb, tree);   
@@ -573,11 +574,17 @@ void PhyTime_XML(char *xml_file)
   int tot_num_comb;
   tot_num_comb = Number_Of_Comb(tree -> rates -> calib);
   PhyML_Printf("\n. The number of calibration combinations that is going to be considered is %d.\n", tot_num_comb);
+  /* For(i, tot_num_comb) Set_Current_Calibration(i, tree); */
+  /* Exit("\n"); */
  
   //set initial value for Hastings ratio for conditional jump:
   /* tree -> rates -> c_lnL_Hastings_ratio = 0.0; */
 
-  TIMES_Set_All_Node_Priors(tree);  
+  TIMES_Set_All_Node_Priors(tree);
+  for(i = tree -> n_otu; i < 2 * tree -> n_otu -1; i++) printf("\nJUMP00 Node number:[%d] Lower bound:[%f] Upper bound:[%f] Node time:[%f].", i,
+                                                              tree -> rates -> t_prior_min[i],
+                                                              tree -> rates -> t_prior_max[i],
+                                                              tree -> rates -> nd_t[i]);  
 
   tree -> rates -> cur_comb_numb = cal_numb;
   tree -> rates -> log_K_cur = K_Constant_Prior_Times_Log(tree);
@@ -1919,7 +1926,7 @@ void Check_Node_Time(t_node *a, t_node *d, int *result, t_tree *tree)
     { 
       t_low = MAX(t_prior_min[d -> num], nd_t[d -> anc -> num]);
       t_up  = MIN(t_prior_max[d -> num], MIN(nd_t[d -> v[1] -> num], nd_t[d -> v[2] -> num]));
-      printf("\n. CHECK: %d t:%f u:%f d:%f",d->num,nd_t[d->num],t_up,t_low);
+      /* printf("\n. CHECK: %d t:%f u:%f d:%f",d->num,nd_t[d->num],t_up,t_low); */
       if(nd_t[d -> num] < t_low || nd_t[d -> num] > t_up)
         {
           *result = FALSE; 
@@ -1999,7 +2006,7 @@ void Set_Current_Calibration(int row, t_tree *tree)
   t_prior_max = tree -> rates -> t_prior_max;
   t_has_prior = tree -> rates -> t_has_prior;
   curr_nd_for_cal = tree -> rates -> curr_nd_for_cal;
-  /* printf("\n %d \n", row); */
+  /* printf("\n COMBINATION NUMBER [%d] \n", row); */
   for(j = tree -> n_otu; j < 2 * tree -> n_otu - 1; j++) 
     {
       t_prior_min[j] = -BIG;
@@ -2015,10 +2022,13 @@ void Set_Current_Calibration(int row, t_tree *tree)
       if(calib -> all_applies_to[k] -> num) 
         { 
           /* printf("\n"); */
-          /* printf(" %f %f ", calib -> lower, calib -> upper); */
+          /* printf(" %f %f %f %f ", calib -> lower, calib -> upper, t_prior_min[calib -> all_applies_to[k] -> num], t_prior_max[calib -> all_applies_to[k] -> num]); */
           /* printf("\n"); */
-          t_prior_min[calib -> all_applies_to[k] -> num] = MAX(t_prior_min[calib -> all_applies_to[k] -> num], calib -> lower);
-          t_prior_max[calib -> all_applies_to[k] -> num] = MIN(t_prior_max[calib -> all_applies_to[k] -> num], calib -> upper);     
+          /* printf("\n"); */
+          /* printf(" Node number [%d] ", calib -> all_applies_to[k] -> num); */
+          /* printf("\n"); */
+          t_prior_min[calib -> all_applies_to[k] -> num] = MAX(t_prior_min[calib -> all_applies_to[k] -> num], calib -> lower); /* printf("\n Prior min [%f] \n", t_prior_min[calib -> all_applies_to[k] -> num]); */
+          t_prior_max[calib -> all_applies_to[k] -> num] = MIN(t_prior_max[calib -> all_applies_to[k] -> num], calib -> upper); /* printf("\n Prior max [%f] \n", t_prior_max[calib -> all_applies_to[k] -> num]);    */
           t_has_prior[calib -> all_applies_to[k] -> num] = YES;
           curr_nd_for_cal[i] = calib -> all_applies_to[k] -> num;
           i++;
