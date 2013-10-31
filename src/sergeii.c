@@ -721,17 +721,13 @@ void PhyTime_XML(char *xml_file)
 phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
 {
 
-  phydbl times_lk, *Yule_val, *times_partial_proba, times_tot_proba, *t_prior_min, *t_prior_max, c, constant, ln_t; 
-  short int *t_has_prior;
-  int i, j, k, tot_num_comb;
+  phydbl times_lk, *Yule_val, *times_partial_proba, times_tot_proba, c, constant, ln_t; 
+  int i, tot_num_comb;
   t_cal *calib;
  
 
   times_tot_proba = 0.0;
   calib = tree -> rates -> calib;
-  t_prior_min = tree -> rates -> t_prior_min;
-  t_prior_max = tree -> rates -> t_prior_max;
-  t_has_prior = tree -> rates -> t_has_prior;
   times_partial_proba = tree -> rates -> times_partial_proba;
 
   tot_num_comb = Number_Of_Comb(calib);
@@ -740,25 +736,8 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
   Yule_val = (phydbl *)mCalloc(tot_num_comb, sizeof(phydbl));    
   For(i, tot_num_comb)
     {
-      for(j = tree -> n_otu; j < 2 * tree -> n_otu - 1; j++) 
-        {
-          t_prior_min[j] = -BIG;
-          t_prior_max[j] = BIG;
-          t_has_prior[j] = NO; 
-        }
-      do
-        {
-          k = (i % Number_Of_Comb(calib)) / Number_Of_Comb(calib -> next);
-          if(calib -> all_applies_to[k] -> num)
-            {
-              t_prior_min[calib -> all_applies_to[k] -> num] = MAX(t_prior_min[calib -> all_applies_to[k] -> num], calib -> lower);
-              t_prior_max[calib -> all_applies_to[k] -> num] = MIN(t_prior_max[calib -> all_applies_to[k] -> num], calib -> upper);
-              t_has_prior[calib -> all_applies_to[k] -> num] = YES;
-            }
-          if(calib -> next) calib = calib -> next;
-          else break;
-        }
-      while(calib);
+
+      Set_Current_Calibration(i, tree);
 
       int result;
       result = TRUE;
@@ -777,7 +756,6 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
       Yule_val[i] = constant + times_lk;
 
       while(calib -> prev) calib = calib -> prev;
-      /* Exit("\n"); */
     }
  
   /* Exit("\n"); */
@@ -787,8 +765,6 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
     {
       times_tot_proba += times_partial_proba[i] * EXP(Yule_val[i] + c);
     } 
-
-  For(i, 2 * tree -> n_otu - 1) t_has_prior[i] = NO;
 
   ln_t = -c + LOG(times_tot_proba);
 
@@ -1771,15 +1747,11 @@ int Factorial(int base)
 phydbl *Norm_Constant_Prior_Times(t_tree *tree)
 {
 
-  phydbl *t_prior_min, *t_prior_max, *log_K_val; 
-  short int *t_has_prior;
-  int i, j, k, tot_num_comb;
+  phydbl *log_K_val; 
+  int i, tot_num_comb;
   t_cal *calib;
  
   calib = tree -> rates -> calib;
-  t_prior_min = tree -> rates -> t_prior_min;
-  t_prior_max = tree -> rates -> t_prior_max;
-  t_has_prior = tree -> rates -> t_has_prior;
 
   tot_num_comb = Number_Of_Comb(calib);
   
@@ -1788,25 +1760,8 @@ phydbl *Norm_Constant_Prior_Times(t_tree *tree)
 
   For(i, tot_num_comb)
     {
-      for(j = tree -> n_otu; j < 2 * tree -> n_otu - 1; j++) 
-        {
-          t_prior_min[j] = -BIG;
-          t_prior_max[j] = BIG;
-          t_has_prior[j] = NO; 
-        }
-      do
-        {
-          k = (i % Number_Of_Comb(calib)) / Number_Of_Comb(calib -> next);
-          if(calib -> all_applies_to[k] -> num)
-            {
-              t_prior_min[calib -> all_applies_to[k] -> num] = MAX(t_prior_min[calib -> all_applies_to[k] -> num], calib -> lower);
-              t_prior_max[calib -> all_applies_to[k] -> num] = MIN(t_prior_max[calib -> all_applies_to[k] -> num], calib -> upper);
-              t_has_prior[calib -> all_applies_to[k] -> num] = YES;
-            }
-          if(calib -> next) calib = calib -> next;
-          else break;
-        }
-      while(calib);
+
+      Set_Current_Calibration(i, tree);
 
       int result = TRUE;
 
