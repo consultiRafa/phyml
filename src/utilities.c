@@ -1200,12 +1200,10 @@ void Share_Lk_Struct(t_tree *t_full, t_tree *t_empt)
   t_node *n_e, *n_f;
 
   n_otu                   = t_full->n_otu;
-  t_empt->n_root          = t_full->n_root;
-  t_empt->e_root          = t_full->e_root;
   t_empt->c_lnL_sorted    = t_full->c_lnL_sorted;
   t_empt->log_site_lk_cat = t_full->log_site_lk_cat;
-  t_empt->cur_site_lk   = t_full->cur_site_lk;
-  t_empt->old_site_lk   = t_full->old_site_lk;
+  t_empt->cur_site_lk     = t_full->cur_site_lk;
+  t_empt->old_site_lk     = t_full->old_site_lk;
   t_empt->triplet_struct  = t_full->triplet_struct;
   t_empt->log_lks_aLRT    = t_full->log_lks_aLRT;
   t_empt->site_lk_cat     = t_full->site_lk_cat;
@@ -8531,11 +8529,14 @@ void Get_Best_Root_Position(t_tree *tree)
       Warn_And_Exit("");
     }
 
+  has_outgrp = NO;
+
   if(strstr(tree->a_nodes[0]->name,"*"))
     {
       /* PhyML_Printf("\n. Found outgroup taxon: %s",tree->a_nodes[0]->name); */
       tree->a_nodes[0]->s_ingrp[0]  = 0;
       tree->a_nodes[0]->s_outgrp[0] = 1;
+      has_outgrp = YES;
     }
   else
     {
@@ -8543,7 +8544,6 @@ void Get_Best_Root_Position(t_tree *tree)
       tree->a_nodes[0]->s_outgrp[0] = 0;
     }
 
-  has_outgrp = NO;
   Get_Best_Root_Position_Post(tree->a_nodes[0],tree->a_nodes[0]->v[0],&has_outgrp,tree);
   Get_Best_Root_Position_Pre(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree);
 
@@ -8552,19 +8552,19 @@ void Get_Best_Root_Position(t_tree *tree)
       eps = 1.E-10;
       s = s_max = 0.0;
       For(i,2*tree->n_otu-2)
-    {
-      For(j,3)
         {
-          s = (tree->a_nodes[i]->s_outgrp[j]+eps) / (tree->a_nodes[i]->s_ingrp[j] + eps) ;
-          /* printf("\n. [%d %d] %d %d",i,j,tree->a_nodes[i]->s_outgrp[j],tree->a_nodes[i]->s_ingrp[j]); */
-          if(s > s_max)
-        {
-          s_max = s;
-          best_edge = tree->a_nodes[i]->b[j];
+          For(j,3)
+            {
+              s = (tree->a_nodes[i]->s_outgrp[j]+eps) / (tree->a_nodes[i]->s_ingrp[j] + eps) ;
+              /* printf("\n. [%d %d] %d %d",i,j,tree->a_nodes[i]->s_outgrp[j],tree->a_nodes[i]->s_ingrp[j]); */
+              if(s > s_max)
+                {
+                  s_max = s;
+                  best_edge = tree->a_nodes[i]->b[j];
+                }
+            }
         }
-        }
-    }
-
+      
       Add_Root(best_edge,tree);
     }
 }

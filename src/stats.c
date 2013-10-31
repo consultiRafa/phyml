@@ -4634,9 +4634,18 @@ int Sum_Bits(int value, int range)
   return(sum);
 }
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 
-
-
+int Modulo (int a, int b)
+{
+   if(b < 0)
+     return Modulo(-a, -b);   
+   int ret = a % b;
+   if(ret < 0)
+     ret+=b;
+   return ret;
+}
 
 
 

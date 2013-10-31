@@ -105,5 +105,6 @@ int *Permutate(int len);
 phydbl Mantel(phydbl *x, phydbl *y, int nrow, int ncol);
 phydbl Weighted_Mean(phydbl *x, phydbl *w, int l);
 int Sum_Bits(int value, int range);
+int Modulo (int a, int b);
 
 #endif

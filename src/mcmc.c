@@ -1216,10 +1216,12 @@ void MCMC_Jump_Calibration(t_tree *tree)
   phydbl cur_lnL_proposal_density, new_lnL_proposal_density;
   int new_calib_comb_num, cur_calib_comb_num;
   phydbl ratio, alpha;
-  int i, result;
+  int i, result, dir;
   int move_num;
   int tot_num_of_calib_comb;
-  
+  int *buff_calib_num;
+  int n_pos_probs;
+
   tot_num_of_calib_comb = Number_Of_Comb(tree -> rates -> calib);
 
 
@@ -1265,8 +1267,27 @@ void MCMC_Jump_Calibration(t_tree *tree)
       cur_lnL_K = tree->rates->log_K_cur;
 
       /* new_calib_comb_num = Sample_i_With_Proba_pi(calib_prior_prob,tot_num_of_calib_comb); */
-      For(i,tot_num_of_calib_comb) uniform_prob[i] = calib_prior_prob[i] > .0 ? 1. : 0.;
-      new_calib_comb_num = Sample_i_With_Proba_pi(uniform_prob,tot_num_of_calib_comb);
+      /* For(i,tot_num_of_calib_comb) uniform_prob[i] = calib_prior_prob[i] > .0 ? 1. : 0.; */
+      /* new_calib_comb_num = Sample_i_With_Proba_pi(uniform_prob,tot_num_of_calib_comb); */
+      
+      buff_calib_num = (int *)mCalloc(tot_num_of_calib_comb,sizeof(int));
+
+      n_pos_probs = 0;
+      For(i,tot_num_of_calib_comb) 
+        if(calib_prior_prob[i] > 1.E-10)
+          {
+            buff_calib_num[n_pos_probs] = i;
+            n_pos_probs++;
+          }
+
+      int curr_pos=0;
+      while(buff_calib_num[curr_pos] != cur_calib_comb_num) { curr_pos++; }
+      u = Uni();
+      if(u < 0.5) new_calib_comb_num = buff_calib_num[Modulo(curr_pos-1,n_pos_probs)];
+      else        new_calib_comb_num = buff_calib_num[Modulo(curr_pos+1,n_pos_probs)];
+
+      Free(buff_calib_num);
+      
 
       tree -> rates -> numb_calib_chosen[new_calib_comb_num]++;
       /* printf("\n"); */
