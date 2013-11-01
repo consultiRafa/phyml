@@ -987,8 +987,6 @@ phydbl TIMES_Lk_Yule_Order(t_tree *tree)
 phydbl TIMES_Lk_Times(t_tree *tree)
 {
   
-  tree->rates->birth_rate = 4.0;
-
   #ifdef PHYTIME
   tree->rates->c_lnL_times =  TIMES_Lk_Yule_Order(tree);
   #elif SERGEII
