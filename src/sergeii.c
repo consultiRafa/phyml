@@ -581,10 +581,6 @@ void PhyTime_XML(char *xml_file)
   /* tree -> rates -> c_lnL_Hastings_ratio = 0.0; */
 
   TIMES_Set_All_Node_Priors(tree);
-  for(i = tree -> n_otu; i < 2 * tree -> n_otu -1; i++) printf("\nJUMP00 Node number:[%d] Lower bound:[%f] Upper bound:[%f] Node time:[%f].", i,
-                                                              tree -> rates -> t_prior_min[i],
-                                                              tree -> rates -> t_prior_max[i],
-                                                              tree -> rates -> nd_t[i]);  
 
   tree -> rates -> cur_comb_numb = cal_numb;
   tree -> rates -> log_K_cur = K_Constant_Prior_Times_Log(tree);
@@ -692,11 +688,12 @@ void PhyTime_XML(char *xml_file)
   MCMC_Free_MCMC(tree -> mcmc);														 				
   PhyML_Printf("\n");	
  
+  Free_Calib(tree -> rates -> calib);
+  Add_Root(tree->a_edges[0],tree);
   Free_Tree_Pars(tree);
   Free_Tree_Lk(tree);
   Free_Tree(tree);
   Free_Cseq(cdata);
-  free(cdata);
   Free_Model(mod);
   if(io -> fp_in_align)   fclose(io -> fp_in_align);
   if(io -> fp_in_tree)    fclose(io -> fp_in_tree);
@@ -707,7 +704,6 @@ void PhyTime_XML(char *xml_file)
   fclose(f);
   Free(most_likely_tree);
   Free_Input(io);
-  Free_Calib(tree -> rates -> calib);
   time(&t_end);
   Print_Time_Info(t_beg,t_end);	
 

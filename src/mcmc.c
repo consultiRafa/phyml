@@ -83,6 +83,10 @@ void MCMC(t_tree *tree)
   MCMC_Print_Param(tree->mcmc,tree);
   
 
+
+
+
+
   //////////////////
   if(tree->io->mutmap == YES)
     {
@@ -188,8 +192,6 @@ void MCMC(t_tree *tree)
       /* 	  Free(s); */
       /* 	  Exit("\n"); */
       /* 	} */
-
-
 
       u = Uni();
 
@@ -1267,27 +1269,33 @@ void MCMC_Jump_Calibration(t_tree *tree)
       cur_lnL_K = tree->rates->log_K_cur;
 
       /* new_calib_comb_num = Sample_i_With_Proba_pi(calib_prior_prob,tot_num_of_calib_comb); */
-      /* For(i,tot_num_of_calib_comb) uniform_prob[i] = calib_prior_prob[i] > .0 ? 1. : 0.; */
-      /* new_calib_comb_num = Sample_i_With_Proba_pi(uniform_prob,tot_num_of_calib_comb); */
-      
-      buff_calib_num = (int *)mCalloc(tot_num_of_calib_comb,sizeof(int));
 
-      n_pos_probs = 0;
-      For(i,tot_num_of_calib_comb) 
-        if(calib_prior_prob[i] > 1.E-10)
-          {
-            buff_calib_num[n_pos_probs] = i;
-            n_pos_probs++;
-          }
-
-      int curr_pos=0;
-      while(buff_calib_num[curr_pos] != cur_calib_comb_num) { curr_pos++; }
       u = Uni();
-      if(u < 0.5) new_calib_comb_num = buff_calib_num[Modulo(curr_pos-1,n_pos_probs)];
-      else        new_calib_comb_num = buff_calib_num[Modulo(curr_pos+1,n_pos_probs)];
-
-      Free(buff_calib_num);
-      
+      if(u < 0.5)
+        {
+          For(i,tot_num_of_calib_comb) uniform_prob[i] = calib_prior_prob[i] > .0 ? 1. : 0.;
+          new_calib_comb_num = Sample_i_With_Proba_pi(uniform_prob,tot_num_of_calib_comb);
+        }
+      else
+        {
+          buff_calib_num = (int *)mCalloc(tot_num_of_calib_comb,sizeof(int));
+          
+          n_pos_probs = 0;
+          For(i,tot_num_of_calib_comb) 
+            if(calib_prior_prob[i] > 1.E-10)
+              {
+                buff_calib_num[n_pos_probs] = i;
+                n_pos_probs++;
+              }
+          
+          int curr_pos=0;
+          while(buff_calib_num[curr_pos] != cur_calib_comb_num) { curr_pos++; }
+          u = Uni();
+          if(u < 0.5) new_calib_comb_num = buff_calib_num[Modulo(curr_pos-1,n_pos_probs)];
+          else        new_calib_comb_num = buff_calib_num[Modulo(curr_pos+1,n_pos_probs)];
+          
+          Free(buff_calib_num);
+        }
 
       tree -> rates -> numb_calib_chosen[new_calib_comb_num]++;
       /* printf("\n"); */
@@ -3010,8 +3018,8 @@ void MCMC_Init_MCMC_Struct(char *filename, option *io, t_mcmc *mcmc)
   mcmc->use_data         = YES;
   mcmc->run              = 0;
   mcmc->sample_interval  = 1E+3;
-  mcmc->chain_len        = 1E+6;
-  mcmc->chain_len_burnin = 1E+5;
+  mcmc->chain_len        = 1E+4;
+  mcmc->chain_len_burnin = 1E+3;
   mcmc->randomize        = YES;
   mcmc->norm_freq        = 1E+3;
   mcmc->max_tune         = 1.E+20;
@@ -4438,10 +4446,12 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   							      when sampling from prior) */
   for(i=mcmc->num_move_cov_rates;i<mcmc->num_move_cov_rates+(tree->mod ? 2*tree->mod->m4mod->n_h : 1);i++) mcmc->move_weight[i] = 0.5*(1./(tree->mod ? (phydbl)tree->mod->m4mod->n_h : 1));
   mcmc->move_weight[mcmc->num_move_cov_switch]            = 1.0;
-  mcmc->move_weight[mcmc->num_move_birth_rate]            = 2.0;
-  mcmc->move_weight[mcmc->num_move_updown_t_br]           = 1.0;
+  /* mcmc->move_weight[mcmc->num_move_birth_rate]            = 2.0; */
+  /* mcmc->move_weight[mcmc->num_move_updown_t_br]           = 1.0; */
+  mcmc->move_weight[mcmc->num_move_birth_rate]            = 0.0;
+  mcmc->move_weight[mcmc->num_move_updown_t_br]           = 0.0;
 #if defined (SERGEII)
-  mcmc->move_weight[mcmc->num_move_jump_calibration]      = 0.1;
+  mcmc->move_weight[mcmc->num_move_jump_calibration]      = 0.01;
 #else
   mcmc->move_weight[mcmc->num_move_jump_calibration]      = 0.0;
 #endif
