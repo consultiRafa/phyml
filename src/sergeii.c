@@ -680,9 +680,9 @@ void PhyTime_XML(char *xml_file)
   tree -> mcmc -> is_burnin = NO;
 
   MCMC(tree);   
-  /* PhyML_Printf("\n"); */
-  /* For(i,6) printf(" %d ", tree -> rates -> numb_calib_chosen[i]); */
-  /* PhyML_Printf("\n"); */
+  PhyML_Printf("\n");
+  For(i,6) printf(" %d ", tree -> rates -> numb_calib_chosen[i]);
+  PhyML_Printf("\n");
                                        															
   MCMC_Close_MCMC(tree -> mcmc);																	
   MCMC_Free_MCMC(tree -> mcmc);														 				
@@ -2579,16 +2579,16 @@ void Update_Current_Times_Down_Tree(t_node *a, t_node *d, t_tree *tree)
 
 
   t_low = MAX(t_prior_min[d -> num], nd_t[a -> num]);
-  t_up  = t_prior_max[d -> num];  
+  t_up  = t_prior_max[d -> num];
 
   //printf("\n. [1] Node number: [%d] \n", d -> num);
   if(d -> tax) return;
   else
     {    
-      if(nd_t[d -> num] > t_up || nd_t[d -> num] < t_low)
-        {
+      /* if(nd_t[d -> num] > t_up || nd_t[d -> num] < t_low) */
+      /*   { */
           nd_t[d -> num] = Uni()*(t_up - t_low) + t_low;
-        }
+        /* } */
       
       For(i,3) 
         if((d -> v[i] != d -> anc) && (d -> b[i] != tree -> e_root)) 
@@ -2619,8 +2619,7 @@ void Multiple_Time_Proposal_Density(t_node *a, t_node *d, phydbl *time_proposal_
       /* printf("\n. Low [%f] Up [%f] \n", t_low, t_up); */
 
       (*time_proposal_density) += (- LOG(t_up - t_low));
-     
-      
+           
       For(i,3) 
         if((d -> v[i] != d -> anc) && (d -> b[i] != tree -> e_root)) 
           Multiple_Time_Proposal_Density(d, d -> v[i], time_proposal_density, tree);

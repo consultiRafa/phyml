@@ -242,6 +242,9 @@ int Read_Nexus_Format(char *token, nexparm *curr_parm, option *io)
   For(i,strlen(token)) Lowercase(token+i);
 
   strcpy(curr_parm->value,token);
+
+
+  printf("\n. >> %s",curr_parm->value);
     
   if(!strcmp(curr_parm->name,"datatype"))
     {

@@ -1251,15 +1251,15 @@ align **Get_Seq(option *io)
     {
     case PHYLIP:
       {
-    io->data = Get_Seq_Phylip(io);
-    break;
+        io->data = Get_Seq_Phylip(io);
+        break;
       }
     case NEXUS:
       {
-    io->nex_com_list = Make_Nexus_Com();
-    Init_Nexus_Format(io->nex_com_list);
-    Get_Nexus_Data(io->fp_in_align,io);
-    Free_Nexus(io);
+        io->nex_com_list = Make_Nexus_Com();
+        Init_Nexus_Format(io->nex_com_list);
+        Get_Nexus_Data(io->fp_in_align,io);
+        Free_Nexus(io);
     break;
       }
     default:
@@ -1409,56 +1409,56 @@ void Get_Nexus_Data(FILE *fp, option *io)
     {
       if(!Get_Token(fp,token)) break;
 
-/*       PhyML_Printf("\n+ Token: '%s' next_token=%d cur_token=%d",token,nxt_token_t,cur_token_t); */
+      /* PhyML_Printf("\n+ Token: '%s' next_token=%d cur_token=%d",token,nxt_token_t,cur_token_t); */
 
       if(token[0] == ';')
-    {
-      curr_com    = NULL;
-      curr_parm   = NULL;
-      nxt_token_t = NEXUS_COM;
-      cur_token_t = -1;
-    }
-
-      if(nxt_token_t == NEXUS_EQUAL)
-    {
-      cur_token_t = NEXUS_VALUE;
-      nxt_token_t = NEXUS_PARM;
-      continue;
-    }
-
-      if((nxt_token_t == NEXUS_COM) && (cur_token_t != NEXUS_VALUE))
-    {
-      Find_Nexus_Com(token,&curr_com,&curr_parm,io->nex_com_list);
-      if(curr_com)
         {
-          nxt_token_t = curr_com->nxt_token_t;
-          cur_token_t = curr_com->cur_token_t;
-        }
-      if(cur_token_t != NEXUS_VALUE) continue;
-    }
-
-      if((nxt_token_t == NEXUS_PARM) && (cur_token_t != NEXUS_VALUE))
-    {
-      Find_Nexus_Parm(token,&curr_parm,curr_com);
-      if(curr_parm)
-        {
-          nxt_token_t = curr_parm->nxt_token_t;
-          cur_token_t = curr_parm->cur_token_t;
-        }
-      if(cur_token_t != NEXUS_VALUE) continue;
-    }
-
-      if(cur_token_t == NEXUS_VALUE)
-    {
-      if((curr_parm->fp)(token,curr_parm,io))  /* Read in parameter value */
-        {
-          nxt_token_t = NEXUS_PARM;
+          curr_com    = NULL;
+          curr_parm   = NULL;
+          nxt_token_t = NEXUS_COM;
           cur_token_t = -1;
         }
-    }
+      
+      if(nxt_token_t == NEXUS_EQUAL)
+        {
+          cur_token_t = NEXUS_VALUE;
+          nxt_token_t = NEXUS_PARM;
+          continue;
+        }
+      
+      if((nxt_token_t == NEXUS_COM) && (cur_token_t != NEXUS_VALUE))
+        {
+          Find_Nexus_Com(token,&curr_com,&curr_parm,io->nex_com_list);
+          if(curr_com)
+            {
+              nxt_token_t = curr_com->nxt_token_t;
+              cur_token_t = curr_com->cur_token_t;
+            }
+          if(cur_token_t != NEXUS_VALUE) continue;
+        }
+      
+      if((nxt_token_t == NEXUS_PARM) && (cur_token_t != NEXUS_VALUE))
+        {
+          Find_Nexus_Parm(token,&curr_parm,curr_com);
+          if(curr_parm)
+            {
+              nxt_token_t = curr_parm->nxt_token_t;
+              cur_token_t = curr_parm->cur_token_t;
+            }
+          if(cur_token_t != NEXUS_VALUE) continue;
+        }
+      
+      if(cur_token_t == NEXUS_VALUE)
+        {
+          if((curr_parm->fp)(token,curr_parm,io))  /* Read in parameter value */
+            {
+              nxt_token_t = NEXUS_PARM;
+              cur_token_t = -1;
+            }
+        }
     }
   while(strlen(token) > 0);
-
+  
   Free(token);
 }
 
@@ -1723,97 +1723,95 @@ align **Read_Seq_Interleaved(option *io)
       data[i]        = (align *)mCalloc(1,sizeof(align));
       data[i]->name  = (char *)mCalloc(T_MAX_NAME,sizeof(char));
       data[i]->state = (char *)mCalloc(io->init_len*io->state_len+1,sizeof(char));
-
+      
       data[i]->len       = 0;
       data[i]->is_ambigu = NULL;
-
+      
       if(!fscanf(io->fp_in_align,format,data[i]->name)) Exit("\n");
-
+      
       Check_Sequence_Name(data[i]->name);
-
+      
       if(!Read_One_Line_Seq(&data,i,io->fp_in_align))
-    {
-      end = 1;
-      if((i != io->n_otu) && (i != io->n_otu-1))
         {
+          end = 1;
+          if((i != io->n_otu) && (i != io->n_otu-1))
+            {
               PhyML_Printf("\n== i:%d n_otu:%d",i,io->n_otu);
-          PhyML_Printf("\n== Err.: problem with species %s's sequence.\n",data[i]->name);
-          PhyML_Printf("\n== Observed sequence length: %d, expected length: %d\n",data[i]->len, io->init_len * io->state_len);
-          Exit("");
+              PhyML_Printf("\n== Err.: problem with species %s's sequence.\n",data[i]->name);
+              PhyML_Printf("\n== Observed sequence length: %d, expected length: %d\n",data[i]->len, io->init_len * io->state_len);
+              Exit("");
+            }
+          break;
         }
-      break;
     }
-    }
-
+  
   if(data[0]->len == io->init_len * io->state_len) end = 1;
 
 /*   if(end) printf("\n. finished yet '%c'\n",fgetc(io->fp_in_align)); */
   if(!end)
     {
-
       end = 0;
-
       num_block = 1;
       do
-    {
-      num_block++;
-
-      /* interblock */
-      if(!fgets(line,T_MAX_LINE,io->fp_in_align)) break;
-
-      if(line[0] != 13 && line[0] != 10)
         {
-          PhyML_Printf("\n== Err.: one or more missing sequences in block %d.\n",num_block-1);
-          Exit("");
-        }
-
-      For(i,io->n_otu) if(data[i]->len != io->init_len * io->state_len) break;
-
-      if(i == io->n_otu) break;
-
-      For(i,io->n_otu)
-        {
+          num_block++;
+          
+          /* interblock */
+          if(!fgets(line,T_MAX_LINE,io->fp_in_align)) break;
+ 
+          if(line[0] != 13 && line[0] != 10)
+            {
+              PhyML_Printf("\n== Err.: one or more missing sequences in block %d.\n",num_block-1);
+              Exit("");
+            }
+          
+          For(i,io->n_otu) if(data[i]->len != io->init_len * io->state_len) break;
+          
+          if(i == io->n_otu) break;
+          
+          For(i,io->n_otu)
+            {
               /* Skip the taxon name, if any, in this interleaved block */
               fgetpos(io->fp_in_align,&curr_pos);
               if(!fscanf(io->fp_in_align,format,line))
-        {
+                {
                   PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
-          Warn_And_Exit("");
+                  Warn_And_Exit("");
                 }
               if(line && strcmp(line,data[i]->name)) fsetpos(io->fp_in_align,&curr_pos);
-
-          if(data[i]->len > io->init_len * io->state_len)
-        {
-          PhyML_Printf("\n== Observed sequence length=%d expected length=%d.\n",data[i]->len,io->init_len * io->state_len);
-          PhyML_Printf("\n== Err.: Problem with species %s's sequence.\n",data[i]->name);
-          Exit("");
-        }
-          else if(!Read_One_Line_Seq(&data,i,io->fp_in_align))
-        {
-          end = 1;
-          if((i != io->n_otu) && (i != io->n_otu-1))
-            {
-              PhyML_Printf("\n== Err.: Problem with species %s's sequence.\n",data[i]->name);
-              PhyML_Printf("\n== Observed sequence length: %d, expected length: %d.\n",data[i]->len, io->init_len * io->state_len);
-              Exit("");
+              
+              if(data[i]->len > io->init_len * io->state_len)
+                {
+                  PhyML_Printf("\n== Observed sequence length=%d expected length=%d.\n",data[i]->len,io->init_len * io->state_len);
+                  PhyML_Printf("\n== Err.: Problem with species %s's sequence.\n",data[i]->name);
+                  Exit("");
+                }
+              else if(!Read_One_Line_Seq(&data,i,io->fp_in_align))
+                {
+                  end = 1;
+                  if((i != io->n_otu) && (i != io->n_otu-1))
+                    {
+                      PhyML_Printf("\n== Err.: Problem with species %s's sequence.\n",data[i]->name);
+                      PhyML_Printf("\n== Observed sequence length: %d, expected length: %d.\n",data[i]->len, io->init_len * io->state_len);
+                      Exit("");
+                    }
+                  break;
+                }
             }
-          break;
-        }
-        }
-    }while(!end);
+        }while(!end);
     }
-
+  
   For(i,io->n_otu) data[i]->state[data[i]->len] = '\0';
 
   For(i,io->n_otu)
     {
       if(data[i]->len != io->init_len * io->state_len)
-    {
-      PhyML_Printf("\n== Check sequence '%s' length (expected length: %d, observed length: %d) [OTU %d].\n",data[i]->name,io->init_len,data[i]->len,i+1);
-      Exit("");
+        {
+          PhyML_Printf("\n== Check sequence '%s' length (expected length: %d, observed length: %d) [OTU %d].\n",data[i]->name,io->init_len,data[i]->len,i+1);
+          Exit("");
+        }
     }
-    }
-
+  
   Restrict_To_Coding_Position(data,io);
 
   Free(format);

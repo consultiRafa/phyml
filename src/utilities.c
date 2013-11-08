@@ -2674,7 +2674,7 @@ int Assign_State_With_Ambiguity(char *c, int datatype, int stepsize)
         default :
           {
         PhyML_Printf("\n. Unknown character state : '%c'\n",c[i]);
-        Warn_And_Exit("\n. Init failed (check the data type)\n");
+        Warn_And_Exit("\n. Init failed (data type supposed to be DNA)\n");
         break;
           }
         }
@@ -2711,7 +2711,7 @@ int Assign_State_With_Ambiguity(char *c, int datatype, int stepsize)
     default  :
       {
         PhyML_Printf("\n. Unknown character state : %c\n",state[0]);
-        Warn_And_Exit("\n. Init failed (check the data type)\n");
+        Warn_And_Exit("\n. Init failed (data type supposed to be amino-acids)\n");
         break;
       }
     }
@@ -2726,8 +2726,8 @@ int Assign_State_With_Ambiguity(char *c, int datatype, int stepsize)
       sprintf(format,"%%%dd",stepsize);
       if(!sscanf(c,format,state))
         {
-          PhyML_Printf("\n. Error reading character. Was expecting an integer, got '%c' instead.\n",c[0]);
-          PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+          PhyML_Printf("\n== Error reading character. Was expecting an integer, got '%c' instead.\n",c[0]);
+          PhyML_Printf("\n== Err in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
           Warn_And_Exit("");
         }
     }

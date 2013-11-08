@@ -1226,10 +1226,7 @@ void MCMC_Jump_Calibration(t_tree *tree)
 
   tot_num_of_calib_comb = Number_Of_Comb(tree -> rates -> calib);
 
-
   tree->rates->update_time_norm_const = YES;
-
-  
 
   if(tot_num_of_calib_comb > 1)
     {
@@ -1297,7 +1294,6 @@ void MCMC_Jump_Calibration(t_tree *tree)
           Free(buff_calib_num);
         }
 
-      tree -> rates -> numb_calib_chosen[new_calib_comb_num]++;
       /* printf("\n"); */
       /* printf("\n. current calibration: %d ", cur_calib_comb_num); */
       /* printf("\n"); */
@@ -1380,10 +1376,10 @@ void MCMC_Jump_Calibration(t_tree *tree)
           if(tree->mcmc->use_data) ratio += (new_lnL_data - cur_lnL_data);
           
           /* Prior ratio */
-          ratio += (new_lnL_rate - cur_lnL_rate);
-          ratio += (new_lnL_time - cur_lnL_time);
+          /* ratio += (new_lnL_rate - cur_lnL_rate); */
+          /* ratio += (new_lnL_time - cur_lnL_time); */
           ratio += (LOG(calib_prior_prob[new_calib_comb_num]) - LOG(calib_prior_prob[cur_calib_comb_num]));
-          ratio += (cur_lnL_proposal_density - new_lnL_proposal_density);
+          /* ratio += (cur_lnL_proposal_density - new_lnL_proposal_density); */
           
           ratio = EXP(ratio);
           alpha = MIN(1.,ratio);
@@ -1410,12 +1406,14 @@ void MCMC_Jump_Calibration(t_tree *tree)
               /*                                                              tree->rates->nd_t[i]); */
               TIMES_Set_All_Node_Priors(tree);
               /* printf("\n. ......................REJECTED.....................................\n"); */
+              tree -> rates -> numb_calib_chosen[cur_calib_comb_num]++;
             }
           else
             {
               tree -> rates -> cur_comb_numb = new_calib_comb_num;
               tree->mcmc->acc_move[move_num]++;
               /* printf("\n. ......................ACCEPTED.....................................\n"); */
+              tree -> rates -> numb_calib_chosen[new_calib_comb_num]++;
             }      
 
           /* for(i = tree -> n_otu; i < 2 * tree -> n_otu -1; i++) printf("\nJUMP2 Node number:[%d] Lower bound:[%f,%f] Upper bound:[%f,%f] Node time:[%f].", i, */
@@ -1432,8 +1430,6 @@ void MCMC_Jump_Calibration(t_tree *tree)
               PhyML_Printf("\n== Err. in file %s at line %d (function '%s').\n",__FILE__,__LINE__,__FUNCTION__);
               Exit("\n");      
             }
-
-
 
           tree->mcmc->run_move[move_num]++;
           Free(calib_prior_cumprob);
@@ -4462,9 +4458,13 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
 
 
 
+
+
+
+
 /*   for(i=mcmc->num_move_br_r;i<mcmc->num_move_br_r+2*tree->n_otu-2;i++) mcmc->move_weight[i] = 0.0; /\* Rates *\/ */
 /*   for(i=mcmc->num_move_nd_r;i<mcmc->num_move_nd_r+2*tree->n_otu-1;i++) mcmc->move_weight[i] = 0.0; /\* Node rates *\/ */
-/*   for(i=mcmc->num_move_nd_t;i<mcmc->num_move_nd_t+tree->n_otu-1;i++)   mcmc->move_weight[i] = (phydbl)(1./(tree->n_otu-1));  /\* Times *\/ */
+/*   for(i=mcmc->num_move_nd_t;i<mcmc->num_move_nd_t+tree->n_otu-1;i++)   mcmc->move_weight[i] = 0.0;  /\* Times *\/ */
 /*   mcmc->move_weight[mcmc->num_move_clock_r]          = 0.0; */
 /*   mcmc->move_weight[mcmc->num_move_tree_height]      = 0.0; */
 /*   mcmc->move_weight[mcmc->num_move_subtree_height]   = 0.0; */
@@ -4483,13 +4483,15 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
 /*   mcmc->move_weight[mcmc->num_move_birth_rate]       = 0.0; */
 /*   mcmc->move_weight[mcmc->num_move_updown_t_br]      = 0.0; */
 /* #if defined (SERGEII) */
-/*   mcmc->move_weight[mcmc->num_move_jump_calibration] = 0.0; */
+/*   mcmc->move_weight[mcmc->num_move_jump_calibration] = 1.0; */
 /* #else */
 /*   mcmc->move_weight[mcmc->num_move_jump_calibration] = 0.0; */
 /* #endif */
 /*   mcmc->move_weight[mcmc->num_move_geo_lambda]       = 0.0; */
 /*   mcmc->move_weight[mcmc->num_move_geo_sigma]        = 0.0; */
 /*   mcmc->move_weight[mcmc->num_move_geo_tau]          = 0.0; */
+/*   mcmc->move_weight[mcmc->num_move_geo_updown_tau_lbda]   = 0.0; */
+/*   mcmc->move_weight[mcmc->num_move_geo_updown_lbda_sigma] = 0.0; */
 
 
   sum = 0.0;
