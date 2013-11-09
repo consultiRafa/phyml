@@ -37,6 +37,7 @@ phydbl LOG_g_i(phydbl lmbd, phydbl t_slice_max, phydbl t_slice_min, phydbl t_pri
 int CombineInt(int int1, int int2);
 void Update_Current_Times_Down_Tree(t_node *a, t_node *d, t_tree *tree);
 void Multiple_Time_Proposal_Density(t_node *a, t_node *d, phydbl *time_proposal_density, t_tree *tree);
+void Jump_Calibration_Move_Pre(t_node *a, t_node *d, phydbl old_ta, phydbl *log_hastings_ratio, t_tree *tree);
 
 #endif
 

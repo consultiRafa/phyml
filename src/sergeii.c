@@ -2568,36 +2568,47 @@ int CombineInt(int int1, int int2)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Update_Current_Times_Down_Tree(t_node *a, t_node *d, t_tree *tree)
+void Jump_Calibration_Move_Pre(t_node *a, t_node *d, phydbl old_ta, phydbl *log_hastings_ratio, t_tree *tree)
 {
   int i; 
-  phydbl *t_prior_min, *t_prior_max, *nd_t, t_low, t_up;
+  phydbl *t_prior_min_new, *t_prior_max_new, t_low_new, t_up_new;
+  phydbl *t_prior_min_old, *t_prior_max_old, t_low_old, t_up_old;
+  phydbl *nd_t, old_t;
 
-  t_prior_min = tree -> rates -> t_prior_min;
-  t_prior_max = tree -> rates -> t_prior_max;
+  t_prior_min_new = tree -> rates -> t_prior_min;
+  t_prior_max_new = tree -> rates -> t_prior_max;
+
+  t_prior_min_old = tree -> rates -> t_prior_min_ori;
+  t_prior_max_old = tree -> rates -> t_prior_max_ori;
+
   nd_t = tree -> rates -> nd_t;
 
+  t_low_new = MAX(t_prior_min_new[d -> num], nd_t[a -> num]);
+  t_up_new  = t_prior_max_new[d -> num];
 
-  t_low = MAX(t_prior_min[d -> num], nd_t[a -> num]);
-  t_up  = t_prior_max[d -> num];
+  t_low_old = MAX(t_prior_min_old[d -> num], old_ta);
+  t_up_old = t_prior_max_old[d -> num];
 
-  //printf("\n. [1] Node number: [%d] \n", d -> num);
+  old_t = nd_t[d -> num];
+
   if(d -> tax) return;
   else
     {    
-      /* if(nd_t[d -> num] > t_up || nd_t[d -> num] < t_low) */
-      /*   { */
-          nd_t[d -> num] = Uni()*(t_up - t_low) + t_low;
-        /* } */
+      if(nd_t[d -> num] > t_up_new || nd_t[d -> num] < t_low_new) /* Do the jump and update the Hastings ratio */
+        {
+          nd_t[d -> num] = Uni()*(t_up_new - t_low_new) + t_low_new;
+          (*log_hastings_ratio) += LOG(t_up_new - t_low_new) - LOG(t_up_old - t_low_old);
+        }
       
       For(i,3) 
         if((d -> v[i] != d -> anc) && (d -> b[i] != tree -> e_root)) 
-          Update_Current_Times_Down_Tree(d, d -> v[i], tree);
+          Jump_Calibration_Move_Pre(d, d -> v[i], old_t, log_hastings_ratio, tree);
     }
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
 void Multiple_Time_Proposal_Density(t_node *a, t_node *d, phydbl *time_proposal_density, t_tree *tree)
 {
   int i; 

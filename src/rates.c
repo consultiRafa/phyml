@@ -39,9 +39,6 @@ phydbl RATES_Lk_Rates(t_tree *tree)
       Exit("\n");
     }
 
-  /* !!!!!!!!!!!!!!!!!!!!!!1 */
-  tree->rates->c_lnL_rates = -1.0;
-
   return tree->rates->c_lnL_rates;
 }
 

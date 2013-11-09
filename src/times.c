@@ -993,16 +993,12 @@ phydbl TIMES_Lk_Times(t_tree *tree)
   /* tree->rates->c_lnL_times = TIMES_Calib_Cond_Prob(tree); */
   /* tree->rates->c_lnL_times =  TIMES_Lk_Yule_Order(tree); */
 
-  /* !!!!!!!!!!!!!!!!!!!!!!1 */
   tree->rates->c_lnL_times =  TIMES_Lk_Yule_Order_Root_Cond(tree);
   if(isinf(tree->rates->c_lnL_times)) return(tree->rates->c_lnL_times);
   else
     {
-      /* if(tree->rates->update_time_norm_const == YES) tree->rates->log_K_cur = K_Constant_Prior_Times_Log(tree); */
-      /* tree->rates->c_lnL_times += tree->rates->log_K_cur; */
-
-      /* !!!!!!!!!!!!!!!!!!!!!!1 */
-      tree->rates->c_lnL_times = -1.0;
+      if(tree->rates->update_time_norm_const == YES) tree->rates->log_K_cur = K_Constant_Prior_Times_Log(tree);
+      tree->rates->c_lnL_times += tree->rates->log_K_cur;
     }
   #endif
 

@@ -1215,7 +1215,7 @@ void MCMC_Jump_Calibration(t_tree *tree)
   phydbl cur_lnL_rate, new_lnL_rate;
   phydbl cur_lnL_time, new_lnL_time;
   phydbl cur_lnL_K;
-  phydbl cur_lnL_proposal_density, new_lnL_proposal_density;
+  phydbl times_log_hastings_ratio;
   int new_calib_comb_num, cur_calib_comb_num;
   phydbl ratio, alpha;
   int i, result;
@@ -1242,10 +1242,6 @@ void MCMC_Jump_Calibration(t_tree *tree)
       RATES_Record_Rates(tree);
       RATES_Record_Times(tree);
       TIMES_Record_Prior_Times(tree);
-
-      cur_lnL_proposal_density = 0.0;  
-      Multiple_Time_Proposal_Density(tree -> n_root, tree -> n_root -> v[1], &cur_lnL_proposal_density, tree);
-      Multiple_Time_Proposal_Density(tree -> n_root, tree -> n_root -> v[2], &cur_lnL_proposal_density, tree);
          
       move_num = tree -> mcmc -> num_move_jump_calibration;
 
@@ -1254,7 +1250,6 @@ void MCMC_Jump_Calibration(t_tree *tree)
 
       new_lnL_data = cur_lnL_data;
       new_lnL_rate = cur_lnL_rate;
-      new_lnL_proposal_density = cur_lnL_proposal_density;
 
       ratio = 0.0;
       cur_lnL_time = tree -> rates -> c_lnL_times;
@@ -1333,13 +1328,16 @@ void MCMC_Jump_Calibration(t_tree *tree)
           /*                                                              tree -> rates -> nd_t[i]); */
 
 
-          Update_Current_Times_Down_Tree(tree -> n_root, tree -> n_root -> v[1], tree);
-          Update_Current_Times_Down_Tree(tree -> n_root, tree -> n_root -> v[2], tree);
-          new_lnL_proposal_density = 0.0;
-          Multiple_Time_Proposal_Density(tree -> n_root, tree -> n_root -> v[1], &new_lnL_proposal_density, tree);
-          Multiple_Time_Proposal_Density(tree -> n_root, tree -> n_root -> v[2], &new_lnL_proposal_density, tree);
-          
+          times_log_hastings_ratio = 0.0;  
+          Jump_Calibration_Move_Pre(tree->n_root,tree->n_root->v[1],tree->rates->nd_t[tree->n_root->num],&times_log_hastings_ratio,tree);
+          Jump_Calibration_Move_Pre(tree->n_root,tree->n_root->v[2],tree->rates->nd_t[tree->n_root->num],&times_log_hastings_ratio,tree);
 
+          /* Update_Current_Times_Down_Tree(tree -> n_root, tree -> n_root -> v[1], tree); */
+          /* Update_Current_Times_Down_Tree(tree -> n_root, tree -> n_root -> v[2], tree); */
+          /* new_lnL_proposal_density = 0.0; */
+          /* Multiple_Time_Proposal_Density(tree -> n_root, tree -> n_root -> v[1], &new_lnL_proposal_density, tree); */
+          /* Multiple_Time_Proposal_Density(tree -> n_root, tree -> n_root -> v[2], &new_lnL_proposal_density, tree); */
+          
           result = TRUE;
           
           Check_Node_Time(tree -> n_root, tree -> n_root -> v[1], &result, tree);
@@ -1376,10 +1374,10 @@ void MCMC_Jump_Calibration(t_tree *tree)
           if(tree->mcmc->use_data) ratio += (new_lnL_data - cur_lnL_data);
           
           /* Prior ratio */
-          /* ratio += (new_lnL_rate - cur_lnL_rate); */
-          /* ratio += (new_lnL_time - cur_lnL_time); */
+          ratio += (new_lnL_rate - cur_lnL_rate);
+          ratio += (new_lnL_time - cur_lnL_time);
           ratio += (LOG(calib_prior_prob[new_calib_comb_num]) - LOG(calib_prior_prob[cur_calib_comb_num]));
-          /* ratio += (cur_lnL_proposal_density - new_lnL_proposal_density); */
+          ratio += times_log_hastings_ratio;
           
           ratio = EXP(ratio);
           alpha = MIN(1.,ratio);
@@ -4445,7 +4443,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_birth_rate]            = 2.0;
   mcmc->move_weight[mcmc->num_move_updown_t_br]           = 1.0;
 #if defined (SERGEII)
-  mcmc->move_weight[mcmc->num_move_jump_calibration]      = 0.01;
+  mcmc->move_weight[mcmc->num_move_jump_calibration]      = 0.1;
 #else
   mcmc->move_weight[mcmc->num_move_jump_calibration]      = 0.0;
 #endif
