@@ -38,13 +38,6 @@ fi
 
 AM_CONDITIONAL([HAVE_PDFLATEX], test -n "$PDFLATEX")
 
-
-#AC_ARG_ENABLE([beagle],[AS_HELP_STRING([--enable-beagle],[Compile PhyML-BEAGLE])],[beagle=yes],[beagle=no])
-#if test "x$enable_beagle" = "xyes"; then
-# PKG_CHECK_MODULES(BEAGLE, hmsbeagle-1)
-#fi
-
-
 # Checks for library functions.
 AC_FUNC_MALLOC
 AC_FUNC_REALLOC
@@ -114,6 +107,9 @@ AS_IF([test "x$enable_win" = "xyes"],[CC="i586-mingw32msvc-cc"])
 
 
 AC_ARG_ENABLE([beagle], [AS_HELP_STRING([--enable-beagle], [Compute likelihoods using BEAGLE library.])], [beagle=yes],[beagle=no])
+if test "x$enable_beagle" = "xyes"; then
+   PKG_CHECK_MODULES(BEAGLE, hmsbeagle-1)
+fi
 AS_IF([test "x$enable_beagle" = "xyes"],
       [CFLAGS="${CFLAGS} ${BEAGLE_CFLAGS} ${BEAGLE_LIBS} ${ARCH_flag}"],
       [CFLAGS=${CFLAGS}])
