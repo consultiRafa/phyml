@@ -14,7 +14,7 @@ the GNU public licence. See http://www.opensource.org for details.
 #include "assert.h"
 
 #ifdef BEAGLE
-#include "libhmsbeagle-1/libhmsbeagle/beagle.h"
+#include "libhmsbeagle/beagle.h"
 #endif
 
 
