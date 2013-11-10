@@ -6,7 +6,7 @@
 #define BEAGLE_UTILS_H
 
 #include "assert.h"
-#include "libhmsbeagle-1/libhmsbeagle/beagle.h"
+#include "libhmsbeagle/beagle.h"
 #include "utilities.h"
 #define UNINITIALIZED -42
 
