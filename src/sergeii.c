@@ -2574,6 +2574,7 @@ void Jump_Calibration_Move_Pre(t_node *a, t_node *d, phydbl old_ta, phydbl *log_
   phydbl *t_prior_min_new, *t_prior_max_new, t_low_new, t_up_new;
   phydbl *t_prior_min_old, *t_prior_max_old, t_low_old, t_up_old;
   phydbl *nd_t, old_t;
+  phydbl eps = DBL_MIN;
 
   t_prior_min_new = tree -> rates -> t_prior_min;
   t_prior_max_new = tree -> rates -> t_prior_max;
@@ -2594,11 +2595,23 @@ void Jump_Calibration_Move_Pre(t_node *a, t_node *d, phydbl old_ta, phydbl *log_
   if(d -> tax) return;
   else
     {    
-      if(nd_t[d -> num] > t_up_new || nd_t[d -> num] < t_low_new) /* Do the jump and update the Hastings ratio */
-        {
+      /* if(nd_t[d -> num] > t_up_new || nd_t[d -> num] < t_low_new) /\* Hastings ratio *\/ */
+      /*   { */
+          (*log_hastings_ratio) += LOG(t_up_new - t_low_new + eps);
+        /* } */
+
+
+      /* if(nd_t[d -> num] > t_up_new || nd_t[d -> num] < t_low_new) /\* Do the jump *\/ */
+      /*   { */
           nd_t[d -> num] = Uni()*(t_up_new - t_low_new) + t_low_new;
-          (*log_hastings_ratio) += LOG(t_up_new - t_low_new) - LOG(t_up_old - t_low_old);
-        }
+        /* } */
+
+
+      /* if(nd_t[d -> num] > t_up_old || nd_t[d -> num] < t_low_old) /\* Hastings ratio *\/ */
+      /*   { */
+          (*log_hastings_ratio) -= LOG(t_up_old - t_low_old + eps);
+        /* } */
+
       
       For(i,3) 
         if((d -> v[i] != d -> anc) && (d -> b[i] != tree -> e_root)) 

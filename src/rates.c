@@ -35,7 +35,7 @@ phydbl RATES_Lk_Rates(t_tree *tree)
 
   if(isnan(tree->rates->c_lnL_rates) || isinf(tree->rates->c_lnL_rates))
     {
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
       Exit("\n");
     }
 
