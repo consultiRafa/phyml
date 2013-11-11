@@ -83,11 +83,6 @@ void MCMC(t_tree *tree)
   MCMC_Print_Param(tree->mcmc,tree);
   
 
-  /* !!!!!!!!!!!!!!!!!!!!!1 */
-  tree->rates->birth_rate = 4.0;
-
-
-
   //////////////////
   if(tree->io->mutmap == YES)
     {
@@ -4441,12 +4436,10 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   							      when sampling from prior) */
   for(i=mcmc->num_move_cov_rates;i<mcmc->num_move_cov_rates+(tree->mod ? 2*tree->mod->m4mod->n_h : 1);i++) mcmc->move_weight[i] = 0.5*(1./(tree->mod ? (phydbl)tree->mod->m4mod->n_h : 1));
   mcmc->move_weight[mcmc->num_move_cov_switch]            = 1.0;
-  /* mcmc->move_weight[mcmc->num_move_birth_rate]            = 2.0; */
-  /* mcmc->move_weight[mcmc->num_move_updown_t_br]           = 1.0; */
-  mcmc->move_weight[mcmc->num_move_birth_rate]            = 0.0;
-  mcmc->move_weight[mcmc->num_move_updown_t_br]           = 0.0;
+  mcmc->move_weight[mcmc->num_move_birth_rate]            = 2.0;
+  mcmc->move_weight[mcmc->num_move_updown_t_br]           = 1.0;
 #if defined (SERGEII)
-  mcmc->move_weight[mcmc->num_move_jump_calibration]      = 0.01;
+  mcmc->move_weight[mcmc->num_move_jump_calibration]      = 0.1;
 #else
   mcmc->move_weight[mcmc->num_move_jump_calibration]      = 0.0;
 #endif
