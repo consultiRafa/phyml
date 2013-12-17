@@ -49,6 +49,7 @@ void Free_All_Edges_Light(t_tree *mixt_tree)
       Free_Scalar_Dbl(tree->a_edges[i]->l_var);
       Free_Scalar_Dbl(tree->a_edges[i]->l_var_old);
     }
+
   do
     {
       For(i,2*tree->n_otu-1) Free_Edge(tree->a_edges[i]);

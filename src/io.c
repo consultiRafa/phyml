@@ -1834,40 +1834,40 @@ int Read_One_Line_Seq(align ***data, int num_otu, FILE *in)
 /*       if((c == EOF) || (c == '\n') || (c == '\r')) break; */
 
       if((c == 13) || (c == 10))
-    {
-/* 	  PhyML_Printf("[%d %d]\n",c,nchar); fflush(NULL); */
-      if(!nchar)
         {
+          /* 	  PhyML_Printf("[%d %d]\n",c,nchar); fflush(NULL); */
+          if(!nchar)
+            {
+              c=(char)fgetc(in);
+              continue;
+            }
+          else
+            {
+              /* 	      PhyML_Printf("break\n");  */
+              break;
+            }
+        }
+      else if(c == EOF)
+        {
+          /* 	  PhyML_Printf("EOL\n"); */
+          break;
+        }
+      else if((c == ' ') || (c == '\t') || (c == 32))
+        {
+          /* 	  PhyML_Printf("[%d]",c); */
           c=(char)fgetc(in);
           continue;
         }
-      else
-        {
-/* 	      PhyML_Printf("break\n");  */
-          break;
-        }
-    }
-      else if(c == EOF)
-    {
-/* 	  PhyML_Printf("EOL\n"); */
-      break;
-    }
-      else if((c == ' ') || (c == '\t') || (c == 32))
-    {
-/* 	  PhyML_Printf("[%d]",c); */
-      c=(char)fgetc(in);
-      continue;
-    }
-
+      
       nchar++;
       Uppercase(&c);
 
       if(c == '.')
-    {
-      c = (*data)[0]->state[(*data)[num_otu]->len];
-      if(!num_otu)
-        Warn_And_Exit("\n== Err: Symbol \".\" should not appear in the first sequence\n");
-    }
+        {
+          c = (*data)[0]->state[(*data)[num_otu]->len];
+          if(!num_otu)
+            Warn_And_Exit("\n== Err: Symbol \".\" should not appear in the first sequence\n");
+        }
       (*data)[num_otu]->state[(*data)[num_otu]->len]=c;
       (*data)[num_otu]->len++;
       c = (char)fgetc(in);
@@ -2064,84 +2064,91 @@ void Print_Site_Lk(t_tree *tree, FILE *fp)
   if(!tree->io->print_trace)
     {
       s = (char *)mCalloc(T_MAX_LINE,sizeof(char));
-
+      
       PhyML_Fprintf(fp,"Note : P(D|M) is the probability of site D given the model M (i.e., the site likelihood)\n");
       if(tree->mod->ras->n_catg > 1 || tree->mod->ras->invar)
-    PhyML_Fprintf(fp,"P(D|M,rr[x]) is the probability of site D given the model M and the relative rate\nof evolution rr[x], where x is the class of rate to be considered.\nWe have P(D|M) = \\sum_x P(x) x P(D|M,rr[x]).\n");
+        PhyML_Fprintf(fp,"P(D|M,rr[x]) is the probability of site D given the model M and the relative rate\nof evolution rr[x], where x is the class of rate to be considered.\nWe have P(D|M) = \\sum_x P(x) x P(D|M,rr[x]).\n");
       PhyML_Fprintf(fp,"\n\n");
-
+      
       sprintf(s,"Site");
       PhyML_Fprintf(fp, "%-7s",s);
       
       sprintf(s,"P(D|M)");
       PhyML_Fprintf(fp,"%-15s",s);
-
+      
       sprintf(s,"Pattern");
       PhyML_Fprintf(fp, "%-9s",s);
-
+      
       if(tree->mod->ras->n_catg > 1)
-    {
-      For(catg,tree->mod->ras->n_catg)
         {
-          sprintf(s,"P(D|M,rr[%d]=%5.4f)",catg+1,tree->mod->ras->gamma_rr->v[catg]);
+          For(catg,tree->mod->ras->n_catg)
+            {
+              sprintf(s,"P(D|M,rr[%d]=%5.4f)",catg+1,tree->mod->ras->gamma_rr->v[catg]);
+              PhyML_Fprintf(fp,"%-22s",s);
+            }
+          
+          sprintf(s,"Posterior mean");
           PhyML_Fprintf(fp,"%-22s",s);
         }
-
-      sprintf(s,"Posterior mean");
-      PhyML_Fprintf(fp,"%-22s",s);
-    }
-
-
+      
+      
       if(tree->mod->ras->invar)
-    {
-      sprintf(s,"P(D|M,rr[0]=0)");
+        {
+          sprintf(s,"P(D|M,rr[0]=0)");
+          PhyML_Fprintf(fp,"%-16s",s);
+        }
+
+      sprintf(s,"NDistinctStates");
       PhyML_Fprintf(fp,"%-16s",s);
-    }
+
       PhyML_Fprintf(fp,"\n");
+      
+      Init_Ui_Tips(tree);
 
       For(site,tree->data->init_len)
-    {
-
-
-      PhyML_Fprintf(fp,"%-7d",site+1);
-
+        {
+                    
+          PhyML_Fprintf(fp,"%-7d",site+1);
+          
 	  PhyML_Fprintf(fp,"%-15g",tree->cur_site_lk[tree->data->sitepatt[site]]);      
-
-      PhyML_Fprintf(fp,"%-9d",tree->data->sitepatt[site]);
-
-      if(tree->mod->ras->n_catg > 1)
-        {
-          For(catg,tree->mod->ras->n_catg)
-        PhyML_Fprintf(fp,"%-22g",(phydbl)EXP(tree->log_site_lk_cat[catg][tree->data->sitepatt[site]]));
-
-          postmean = .0;
-          For(catg,tree->mod->ras->n_catg)
-        postmean +=
-        tree->mod->ras->gamma_rr->v[catg] *
-        EXP(tree->log_site_lk_cat[catg][tree->data->sitepatt[site]]) *
-        tree->mod->ras->gamma_r_proba->v[catg];
-          postmean /= tree->cur_site_lk[tree->data->sitepatt[site]];
-
-          PhyML_Fprintf(fp,"%-22g",postmean);
+          
+          PhyML_Fprintf(fp,"%-9d",tree->data->sitepatt[site]);
+          
+          if(tree->mod->ras->n_catg > 1)
+            {
+              For(catg,tree->mod->ras->n_catg)
+                PhyML_Fprintf(fp,"%-22g",(phydbl)EXP(tree->log_site_lk_cat[catg][tree->data->sitepatt[site]]));
+              
+              postmean = .0;
+              For(catg,tree->mod->ras->n_catg)
+                postmean +=
+                tree->mod->ras->gamma_rr->v[catg] *
+                EXP(tree->log_site_lk_cat[catg][tree->data->sitepatt[site]]) *
+                tree->mod->ras->gamma_r_proba->v[catg];
+              postmean /= tree->cur_site_lk[tree->data->sitepatt[site]];
+              
+              PhyML_Fprintf(fp,"%-22g",postmean);
+            }
+          if(tree->mod->ras->invar)
+            {
+              if((phydbl)tree->data->invar[tree->data->sitepatt[site]] > -0.5)
+                PhyML_Fprintf(fp,"%-16g",tree->mod->e_frq->pi->v[tree->data->invar[tree->data->sitepatt[site]]]);
+              else
+                PhyML_Fprintf(fp,"%-16g",0.0);
+            }
+          
+          
+          PhyML_Fprintf(fp,"%-16d\n",Number_Of_Diff_States_One_Site(tree->data->sitepatt[site],tree));
+          
+          PhyML_Fprintf(fp,"\n");
         }
-      if(tree->mod->ras->invar)
-        {
-          if((phydbl)tree->data->invar[tree->data->sitepatt[site]] > -0.5)
-        PhyML_Fprintf(fp,"%-16g",tree->mod->e_frq->pi->v[tree->data->invar[tree->data->sitepatt[site]]]);
-          else
-        PhyML_Fprintf(fp,"%-16g",0.0);
-        }
-
-
-
-      PhyML_Fprintf(fp,"\n");
-    }
       Free(s);
+
     }
   else
     {
       For(site,tree->data->init_len)
-    PhyML_Fprintf(fp,"%.2f\t",LOG(tree->cur_site_lk[tree->data->sitepatt[site]]));
+        PhyML_Fprintf(fp,"%.2f\t",LOG(tree->cur_site_lk[tree->data->sitepatt[site]]));
       PhyML_Fprintf(fp,"\n");
     }
 }
@@ -3255,17 +3262,17 @@ void Read_Qmat(phydbl *daa, phydbl *pi, FILE *fp)
   for(i=1;i<20;i++)
     {
       For(j,19)
-    {
-/* 	  if(!fscanf(fp,"%lf",&(daa[i*20+j]))) Exit("\n"); */
-      if(!fscanf(fp,"%lf",&val))
         {
-          PhyML_Printf("\n== Rate matrix file does not appear to have a proper format. Please refer to the documentation.");
-          Exit("\n");
+          /* 	  if(!fscanf(fp,"%lf",&(daa[i*20+j]))) Exit("\n"); */
+          if(!fscanf(fp,"%lf",&val))
+            {
+              PhyML_Printf("\n== Rate matrix file does not appear to have a proper format. Please refer to the documentation.");
+              Exit("\n");
+            }
+          daa[i*20+j] = (phydbl)val;
+          daa[j*20+i] = daa[i*20+j];
+          if(j == i-1) break;
         }
-      daa[i*20+j] = (phydbl)val;
-      daa[j*20+i] = daa[i*20+j];
-      if(j == i-1) break;
-    }
     }
 
 

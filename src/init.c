@@ -1260,6 +1260,15 @@ void Init_Model(calign *data, t_mod *mod, option *io)
           }
         }
       
+
+      For(i,mod->ns) if(mod->e_frq->pi->v[i] < 1.E-10)
+        {
+          PhyML_Printf("\n. WARNING: at least one amino-acid frequency is equal to 0.0!");
+          PhyML_Printf("\n. Numerical precision issues are likely to arise...");
+          break;
+        }
+                       
+
       /*       /\* multiply the nth col of Q by the nth term of pi/100 just as in PAML *\/ */
       For(i,mod->ns) For(j,mod->ns) mod->r_mat->qmat->v[i*mod->ns+j] *= mod->e_frq->pi->v[j] / 100.0;
       

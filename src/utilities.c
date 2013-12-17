@@ -3493,148 +3493,149 @@ void Get_Bip(t_node *a, t_node *d, t_tree *tree)
   if(!d || !a || !tree)
     {
       PhyML_Printf("\n== d: %p a: %p tree: %p",d,a,tree);
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s').\n",__FILE__,__LINE__,__FUNCTION__);
       Exit("\n");
     }
 
   if(d->tax)
     {
       if(d->common)
-    {
-      d->bip_node[0] = (t_node **)mCalloc(1,sizeof(t_node *));
-      d->bip_node[0][0] = d;
-      d->bip_size[0]    = 1;
-      d->bip_size[1]    = -1;
-      d->bip_size[2]    = -1;
-
-      For(i,3)
         {
-          if(a->v[i] == d)
-        {
-          a->bip_size[i] = 0;
-          For(j,tree->n_otu)
+          d->bip_node[0] = (t_node **)mCalloc(1,sizeof(t_node *));
+          d->bip_node[0][0] = d;
+          d->bip_size[0]    = 1;
+          d->bip_size[1]    = -1;
+          d->bip_size[2]    = -1;
+          
+          For(i,3)
             {
-              if(strcmp(tree->a_nodes[j]->name,d->name))
-            {
-              a->bip_node[i] = (t_node **)realloc(a->bip_node[i],(a->bip_size[i]+1)*sizeof(t_node *));
-              a->bip_node[i][a->bip_size[i]] = tree->a_nodes[j];
-              a->bip_size[i]++;
-            }
-            }
-
-          /* Sort bipartition */
-          do
-            {
-              swapped = NO;
-              For(j,a->bip_size[i]-1)
-            {
-              if(a->bip_node[i][j]->num > a->bip_node[i][j+1]->num)
+              if(a->v[i] == d)
                 {
-                  swapped = YES;
-                  tmp                 = a->bip_node[i][j];
-                  a->bip_node[i][j]   = a->bip_node[i][j+1];
-                  a->bip_node[i][j+1] = tmp;
+                  a->bip_size[i] = 0;
+                  For(j,tree->n_otu)
+                    {
+                      if(strcmp(tree->a_nodes[j]->name,d->name))
+                        {
+                          a->bip_node[i] = (t_node **)realloc(a->bip_node[i],(a->bip_size[i]+1)*sizeof(t_node *));
+                          a->bip_node[i][a->bip_size[i]] = tree->a_nodes[j];
+                          a->bip_size[i]++;
+                        }
+                    }
+                  
+                  /* Sort bipartition */
+                  do
+                    {
+                      swapped = NO;
+                      For(j,a->bip_size[i]-1)
+                        {
+                          if(a->bip_node[i][j]->num > a->bip_node[i][j+1]->num)
+                            {
+                              swapped = YES;
+                              tmp                 = a->bip_node[i][j];
+                              a->bip_node[i][j]   = a->bip_node[i][j+1];
+                              a->bip_node[i][j+1] = tmp;
+                            }
+                        }
+                    }while(swapped == YES);
+                  
+
+                  break;
+                  
                 }
             }
-            }while(swapped == YES);
-
-          break;
-
         }
-        }
-    }
       return;
     }
   else
     {
       int k;
       int d_a;
-
+      
       d_a = -1;
-
+      
       For(i,3)
-    {
-      if(d->v[i] != a) Get_Bip(d,d->v[i],tree);
-      else if(d->v[i] == a) d_a = i;
-    }
-
+        {
+          if(d->v[i] != a) Get_Bip(d,d->v[i],tree);
+          else if(d->v[i] == a) d_a = i;
+        }
+      
       d->bip_size[d_a] = 0;
       For(i,3)
-    if(d->v[i] != a)
-      {
-        For(j,3)
+        if(d->v[i] != a)
           {
-        if(d->v[i]->v[j] == d)
-          {
-            For(k,d->v[i]->bip_size[j])
+            For(j,3)
               {
-            d->bip_node[d_a] = (t_node **)realloc(d->bip_node[d_a],(d->bip_size[d_a]+1)*sizeof(t_node *));
-            d->bip_node[d_a][d->bip_size[d_a]] = d->v[i]->bip_node[j][k];
-            d->bip_size[d_a]++;
+                if(d->v[i]->v[j] == d)
+                  {
+                    For(k,d->v[i]->bip_size[j])
+                      {
+                        d->bip_node[d_a] = (t_node **)realloc(d->bip_node[d_a],(d->bip_size[d_a]+1)*sizeof(t_node *));
+                        d->bip_node[d_a][d->bip_size[d_a]] = d->v[i]->bip_node[j][k];
+                        d->bip_size[d_a]++;
+                      }
+                    break;
+                  }
+              }
+          }
+      
+      do
+        {
+          swapped = NO;
+          For(j,d->bip_size[d_a]-1)
+            {
+              if(d->bip_node[d_a][j]->num > d->bip_node[d_a][j+1]->num)
+                {
+                  swapped = YES;
+                  tmp                   = d->bip_node[d_a][j];
+                  d->bip_node[d_a][j]   = d->bip_node[d_a][j+1];
+                  d->bip_node[d_a][j+1] = tmp;
+                }
+            }
+        }while(swapped == YES);
+      
+      
+      For(i,3)
+        if(a->v[i] == d)
+          {
+            a->bip_size[i] = 0;
+            For(j,tree->n_otu)
+              {
+                For(k,d->bip_size[d_a])
+                  {
+                    if(d->bip_node[d_a][k] == tree->a_nodes[j])
+                      break;
+                  }
+                
+                if((k == d->bip_size[d_a]) && (tree->a_nodes[j]->common))
+                  {
+                    a->bip_node[i] = (t_node **)realloc(a->bip_node[i],(a->bip_size[i]+1)*sizeof(t_node *));
+                    a->bip_node[i][a->bip_size[i]] = tree->a_nodes[j];
+                    a->bip_size[i]++;
+                  }
+              }
+            
+            do
+              {
+                swapped = NO;
+                For(j,a->bip_size[i]-1)
+                  {
+                    if(a->bip_node[i][j]->num > a->bip_node[i][j+1]->num)
+                      {
+                        swapped = YES;
+                        tmp                 = a->bip_node[i][j];
+                        a->bip_node[i][j]   = a->bip_node[i][j+1];
+                        a->bip_node[i][j+1] = tmp;
+                      }
+                  }
+              }while(swapped == YES);
+            
+            if(a->bip_size[i] != tree->n_otu - d->bip_size[d_a])
+              {
+                PhyML_Printf("%d %d \n",a->bip_size[i],tree->n_otu - d->bip_size[d_a]);
+                Warn_And_Exit("\n. Problem in counting bipartitions \n");
               }
             break;
           }
-          }
-      }
-
-      do
-    {
-      swapped = NO;
-      For(j,d->bip_size[d_a]-1)
-        {
-          if(d->bip_node[d_a][j]->num > d->bip_node[d_a][j+1]->num)
-        {
-          swapped = YES;
-          tmp                   = d->bip_node[d_a][j];
-          d->bip_node[d_a][j]   = d->bip_node[d_a][j+1];
-          d->bip_node[d_a][j+1] = tmp;
-        }
-        }
-    }while(swapped == YES);
-
-
-      For(i,3)
-    if(a->v[i] == d)
-      {
-        a->bip_size[i] = 0;
-        For(j,tree->n_otu)
-          {
-        For(k,d->bip_size[d_a])
-          {
-            if(d->bip_node[d_a][k] == tree->a_nodes[j])
-              break;
-          }
-
-        if((k == d->bip_size[d_a]) && (tree->a_nodes[j]->common))
-          {
-            a->bip_node[i] = (t_node **)realloc(a->bip_node[i],(a->bip_size[i]+1)*sizeof(t_node *));
-            a->bip_node[i][a->bip_size[i]] = tree->a_nodes[j];
-            a->bip_size[i]++;
-          }
-          }
-
-        do
-          {
-        swapped = NO;
-        For(j,a->bip_size[i]-1)
-          {
-            if(a->bip_node[i][j]->num > a->bip_node[i][j+1]->num)
-              {
-            swapped = YES;
-            tmp                 = a->bip_node[i][j];
-            a->bip_node[i][j]   = a->bip_node[i][j+1];
-            a->bip_node[i][j+1] = tmp;
-              }
-          }
-          }while(swapped == YES);
-
-        if(a->bip_size[i] != tree->n_otu - d->bip_size[d_a])
-          {
-        PhyML_Printf("%d %d \n",a->bip_size[i],tree->n_otu - d->bip_size[d_a]);
-        Warn_And_Exit("\n. Problem in counting bipartitions \n");
-          }
-        break;
-      }
     }
 }
 
@@ -3703,7 +3704,7 @@ int Compare_Bip(t_tree *tree1, t_tree *tree2, int on_existing_edges_only)
     {
       n_edges = 0;
       For(i,2*tree1->n_otu-3)
-    if(tree1->a_edges[i]->does_exist && tree2->a_edges[i]->does_exist) n_edges++;
+        if(tree1->a_edges[i]->does_exist && tree2->a_edges[i]->does_exist) n_edges++;
       n_edges -= tree1->n_otu;
     }
   else
@@ -3711,103 +3712,105 @@ int Compare_Bip(t_tree *tree1, t_tree *tree2, int on_existing_edges_only)
       n_edges = tree1->n_otu-3;
     }
 
+
   identical = 0;
   different = 0;
   For(i,2*tree1->n_otu-3)
     {
       b1 = tree1->a_edges[i];
       bip_size1 = MIN(b1->left->bip_size[b1->l_r],b1->rght->bip_size[b1->r_l]);
-
+      
       if(bip_size1 > 1 && ((on_existing_edges_only == YES && b1->does_exist) || (on_existing_edges_only == NO)))
-    {
-      For(j,2*tree2->n_otu-3)
         {
-          b2 = tree2->a_edges[j];
-          bip_size2 = MIN(b2->left->bip_size[b2->l_r],b2->rght->bip_size[b2->r_l]);
-
-          if(bip_size2 > 1 && ((on_existing_edges_only == YES && b2->does_exist) || (on_existing_edges_only == NO)))
-        {
-          if(bip_size1 == bip_size2)
+          For(j,2*tree2->n_otu-3)
             {
-              bip_size = bip_size1;
-
-              if(b1->left->bip_size[b1->l_r] == b1->rght->bip_size[b1->r_l])
-            {
-/* 			  if(b1->left->bip_name[b1->l_r][0][0] < b1->rght->bip_name[b1->r_l][0][0]) */
-              if(b1->left->bip_node[b1->l_r][0]->num < b1->rght->bip_node[b1->r_l][0]->num)
+              b2 = tree2->a_edges[j];
+              bip_size2 = MIN(b2->left->bip_size[b2->l_r],b2->rght->bip_size[b2->r_l]);
+              
+              if(bip_size2 > 1 && ((on_existing_edges_only == YES && b2->does_exist) || (on_existing_edges_only == NO)))
                 {
-/* 			      bip1 = b1->left->bip_name[b1->l_r]; */
-                  bip1 = b1->left->bip_node[b1->l_r];
+                  if(bip_size1 == bip_size2)
+                    {
+                      bip_size = bip_size1;
+                      
+                      if(b1->left->bip_size[b1->l_r] == b1->rght->bip_size[b1->r_l])
+                        {
+                          /* 			  if(b1->left->bip_name[b1->l_r][0][0] < b1->rght->bip_name[b1->r_l][0][0]) */
+                          if(b1->left->bip_node[b1->l_r][0]->num < b1->rght->bip_node[b1->r_l][0]->num)
+                            {
+                              /* 			      bip1 = b1->left->bip_name[b1->l_r]; */
+                              bip1 = b1->left->bip_node[b1->l_r];
+                            }
+                          else
+                            {
+                              /* 			      bip1 = b1->rght->bip_name[b1->r_l]; */
+                              bip1 = b1->rght->bip_node[b1->r_l];
+                            }
+                        }
+                      else if(b1->left->bip_size[b1->l_r] < b1->rght->bip_size[b1->r_l])
+                        {
+                          /* 			  bip1 = b1->left->bip_name[b1->l_r]; */
+                          bip1 = b1->left->bip_node[b1->l_r];
+                        }
+                      else
+                        {
+                          /* 			  bip1 = b1->rght->bip_name[b1->r_l]; */
+                          bip1 = b1->rght->bip_node[b1->r_l];
+                        }
+                      
+                      
+                      if(b2->left->bip_size[b2->l_r] == b2->rght->bip_size[b2->r_l])
+                        {
+                          /* 			  if(b2->left->bip_name[b2->l_r][0][0] < b2->rght->bip_name[b2->r_l][0][0]) */
+                          if(b2->left->bip_node[b2->l_r][0]->num < b2->rght->bip_node[b2->r_l][0]->num)
+                            {
+                              /* 			      bip2 = b2->left->bip_name[b2->l_r]; */
+                              bip2 = b2->left->bip_node[b2->l_r];
+                            }
+                          else
+                            {
+                              /* 			      bip2 = b2->rght->bip_name[b2->r_l]; */
+                              bip2 = b2->rght->bip_node[b2->r_l];
+                            }
+                        }
+                      else if(b2->left->bip_size[b2->l_r] < b2->rght->bip_size[b2->r_l])
+                        {
+                          /* 			  bip2 = b2->left->bip_name[b2->l_r]; */
+                          bip2 = b2->left->bip_node[b2->l_r];
+                        }
+                      else
+                        {
+                          /* 			  bip2 = b2->rght->bip_name[b2->r_l]; */
+                          bip2 = b2->rght->bip_node[b2->r_l];
+                        }
+                      
+                      if(bip_size == 1) Warn_And_Exit("\n. Problem in Compare_Bip\n");
+                      
+                      For(k,bip_size)
+                        {
+                          /* 			  if(strcmp(bip1[k],bip2[k])) break; */
+                          if(bip1[k]->num != bip2[k]->num) break;
+                        }
+                      
+                      if(k == bip_size) /* Branches b1 and b2 define the same bipartition */
+                        {
+                          b1->bip_score++;
+                          b2->bip_score++;
+                          identical++;
+                          goto out;
+                        }
+                      else
+                        {
+                          different++; // Bipartitions have identical sizes but distinct elements
+                        }
+                    }
+                  else different++; // Biparition have different sizes
                 }
-              else
-                {
-/* 			      bip1 = b1->rght->bip_name[b1->r_l]; */
-                  bip1 = b1->rght->bip_node[b1->r_l];
-                }
             }
-              else if(b1->left->bip_size[b1->l_r] < b1->rght->bip_size[b1->r_l])
-            {
-/* 			  bip1 = b1->left->bip_name[b1->l_r]; */
-              bip1 = b1->left->bip_node[b1->l_r];
-            }
-              else
-            {
-/* 			  bip1 = b1->rght->bip_name[b1->r_l]; */
-              bip1 = b1->rght->bip_node[b1->r_l];
-            }
-
-
-              if(b2->left->bip_size[b2->l_r] == b2->rght->bip_size[b2->r_l])
-            {
-/* 			  if(b2->left->bip_name[b2->l_r][0][0] < b2->rght->bip_name[b2->r_l][0][0]) */
-              if(b2->left->bip_node[b2->l_r][0]->num < b2->rght->bip_node[b2->r_l][0]->num)
-                {
-/* 			      bip2 = b2->left->bip_name[b2->l_r]; */
-                  bip2 = b2->left->bip_node[b2->l_r];
-                }
-              else
-                {
-/* 			      bip2 = b2->rght->bip_name[b2->r_l]; */
-                  bip2 = b2->rght->bip_node[b2->r_l];
-                }
-            }
-              else if(b2->left->bip_size[b2->l_r] < b2->rght->bip_size[b2->r_l])
-            {
-/* 			  bip2 = b2->left->bip_name[b2->l_r]; */
-              bip2 = b2->left->bip_node[b2->l_r];
-            }
-              else
-            {
-/* 			  bip2 = b2->rght->bip_name[b2->r_l]; */
-              bip2 = b2->rght->bip_node[b2->r_l];
-            }
-
-              if(bip_size == 1) Warn_And_Exit("\n. Problem in Compare_Bip\n");
-
-              For(k,bip_size)
-            {
-/* 			  if(strcmp(bip1[k],bip2[k])) break; */
-              if(bip1[k]->num != bip2[k]->num) break;
-            }
-
-              if(k == bip_size) /* Branches b1 and b2 define the same bipartition */
-            {
-              b1->bip_score++;
-              b2->bip_score++;
-              identical++;
-              goto out;
-            }
-              else
-            {
-              different++; // Bipartitions have identical sizes but distinct elements
-            }
-            }
-          else different++; // Biparition have different sizes
         }
-        }
-    }
     out: ;
     }
+
   return n_edges - identical;
   /* return different; */
 }
@@ -4507,24 +4510,27 @@ void Copy_Tree(t_tree *ori, t_tree *cpy)
   For(i,2*ori->n_otu-2)
     {
       For(j,3)
-    {
-      if(ori->a_nodes[i]->v[j])
         {
-          cpy->a_nodes[i]->v[j] = cpy->a_nodes[ori->a_nodes[i]->v[j]->num];
-          cpy->a_nodes[i]->l[j] = ori->a_nodes[i]->l[j];
-          cpy->a_nodes[i]->b[j] = cpy->a_edges[ori->a_nodes[i]->b[j]->num];
+          if(ori->a_nodes[i]->v[j])
+            {
+              cpy->a_nodes[i]->v[j] = cpy->a_nodes[ori->a_nodes[i]->v[j]->num];
+              cpy->a_nodes[i]->l[j] = ori->a_nodes[i]->l[j];
+              cpy->a_nodes[i]->b[j] = cpy->a_edges[ori->a_nodes[i]->b[j]->num];
+            }
+          else
+            {
+              cpy->a_nodes[i]->v[j] = NULL;
+              cpy->a_nodes[i]->b[j] = NULL;
+            }
         }
-      else
-        {
-          cpy->a_nodes[i]->v[j] = NULL;
-          cpy->a_nodes[i]->b[j] = NULL;
-        }
-    }
     }
 
   For(i,2*ori->n_otu-3)
     {
       cpy->a_edges[i]->l->v             = ori->a_edges[i]->l->v;
+      cpy->a_edges[i]->l_old->v         = ori->a_edges[i]->l_old->v;
+      cpy->a_edges[i]->l_var->v         = ori->a_edges[i]->l_var->v;
+      cpy->a_edges[i]->l_var_old->v     = ori->a_edges[i]->l_var_old->v;
       cpy->a_edges[i]->left             = cpy->a_nodes[ori->a_edges[i]->left->num];
       cpy->a_edges[i]->rght             = cpy->a_nodes[ori->a_edges[i]->rght->num];
       cpy->a_edges[i]->l_v1             = ori->a_edges[i]->l_v1;
@@ -4540,6 +4546,8 @@ void Copy_Tree(t_tree *ori, t_tree *cpy)
       cpy->a_edges[i]->p_lk_tip_idx     = ori->a_edges[i]->p_lk_tip_idx;
 #endif
     }
+
+
 
 
   For(i,ori->n_otu)
@@ -4560,6 +4568,18 @@ void Copy_Tree(t_tree *ori, t_tree *cpy)
       cpy->n_root = cpy->a_nodes[ori->n_root->num];
       Add_Root(cpy->e_root,cpy);
     }
+  else
+    {
+      cpy->a_edges[2*cpy->n_otu-3]->l->v           = ori->a_edges[2*cpy->n_otu-3]->l->v;
+      cpy->a_edges[2*cpy->n_otu-3]->l_old->v       = ori->a_edges[2*cpy->n_otu-3]->l_old->v;
+      cpy->a_edges[2*cpy->n_otu-3]->l_var->v       = ori->a_edges[2*cpy->n_otu-3]->l_var->v;
+      cpy->a_edges[2*cpy->n_otu-3]->l_var_old->v   = ori->a_edges[2*cpy->n_otu-3]->l_var_old->v;
+      cpy->a_edges[2*cpy->n_otu-2]->l->v           = ori->a_edges[2*cpy->n_otu-2]->l->v;
+      cpy->a_edges[2*cpy->n_otu-2]->l_old->v       = ori->a_edges[2*cpy->n_otu-2]->l_old->v;
+      cpy->a_edges[2*cpy->n_otu-2]->l_var->v       = ori->a_edges[2*cpy->n_otu-2]->l_var->v;
+      cpy->a_edges[2*cpy->n_otu-2]->l_var_old->v   = ori->a_edges[2*cpy->n_otu-2]->l_var_old->v;
+    }
+
 
   cpy->num_curr_branch_available = 0;
   cpy->t_beg = ori->t_beg;
@@ -5098,7 +5118,7 @@ void Reassign_Node_Nums(t_node *a, t_node *d, int *curr_ext_node, int *curr_int_
   For(i,3)
     {
       if(d->v[i] != a)
-    Reassign_Node_Nums(d,d->v[i],curr_ext_node,curr_int_node,tree);
+        Reassign_Node_Nums(d,d->v[i],curr_ext_node,curr_int_node,tree);
     }
 }
 
@@ -5114,26 +5134,26 @@ void Reassign_Edge_Nums(t_node *a, t_node *d, int *curr_br, t_tree *tree)
   For(i,3)
     if(a->v[i] == d)
       {
-    buff = tree->a_edges[*curr_br];
-    For(j,2*N_MAX_OTU-3) if(tree->a_edges[j] == a->b[i]) break;
-    if(j == 2*N_MAX_OTU-3)
-      {
-        PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
-        Warn_And_Exit("");
+        buff = tree->a_edges[*curr_br];
+        For(j,2*N_MAX_OTU-3) if(tree->a_edges[j] == a->b[i]) break;
+        if(j == 2*N_MAX_OTU-3)
+          {
+            PhyML_Printf("\n. Err. in file %s at line %d (function '%s').\n",__FILE__,__LINE__,__FUNCTION__);
+            Exit("\n");
+          }
+        tree->a_edges[*curr_br] = a->b[i];
+        tree->a_edges[j] = buff;
+        a->b[i]->num = *curr_br;
+        (*curr_br)++;
+        break;
       }
-    tree->a_edges[*curr_br] = a->b[i];
-    tree->a_edges[j] = buff;
-    a->b[i]->num = *curr_br;
-    (*curr_br)++;
-    break;
-      }
-
+  
   if(d->tax) return;
   else
     {
       For(i,3)
-    if(d->v[i] != a)
-      Reassign_Edge_Nums(d,d->v[i],curr_br,tree);
+        if(d->v[i] != a)
+          Reassign_Edge_Nums(d,d->v[i],curr_br,tree);
     }
 }
 
@@ -6059,27 +6079,23 @@ void Random_NNI(int n_moves, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-
 void Fill_Missing_Dist(matrix *mat)
 {
   int i,j;
+  
   For(i,mat->n_otu)
     {
       for(j=i+1;j<mat->n_otu;j++)
-    {
-      if(i != j)
         {
-          if(mat->dist[i][j] < .0)
-        {
-          Fill_Missing_Dist_XY(i,j,mat);
-          mat->dist[j][i] = mat->dist[i][j];
+          if(i != j)
+            {
+              if(mat->dist[i][j] < .0)
+                {
+                  Fill_Missing_Dist_XY(i,j,mat);
+                  mat->dist[j][i] = mat->dist[i][j];
+                }
+            }
         }
-        }
-    }
     }
 }
 
@@ -6104,46 +6120,46 @@ void Fill_Missing_Dist_XY(int x, int y, matrix *mat)
   For(i,mat->n_otu)
     {
       if((mat->dist[i][x] > .0) && (mat->dist[i][y] > .0))
-    {
-      For(j,mat->n_otu)
         {
-          if((mat->dist[j][x] > .0) && (mat->dist[j][y] > .0))
-        {
-          if((i != j) && (i != x) && (i != y) && (j != x) && (j != y))
+          For(j,mat->n_otu)
             {
-              S1S2[cpt][0] = MIN(mat->dist[i][x] + mat->dist[j][y] - mat->dist[i][j] , mat->dist[i][y] + mat->dist[j][x] - mat->dist[i][j]);
-              S1S2[cpt][1] = MAX(mat->dist[i][x] + mat->dist[j][y] - mat->dist[i][j] , mat->dist[i][y] + mat->dist[j][x] - mat->dist[i][j]);
-              cpt++;
+              if((mat->dist[j][x] > .0) && (mat->dist[j][y] > .0))
+                {
+                  if((i != j) && (i != x) && (i != y) && (j != x) && (j != y))
+                    {
+                      S1S2[cpt][0] = MIN(mat->dist[i][x] + mat->dist[j][y] - mat->dist[i][j] , mat->dist[i][y] + mat->dist[j][x] - mat->dist[i][j]);
+                      S1S2[cpt][1] = MAX(mat->dist[i][x] + mat->dist[j][y] - mat->dist[i][j] , mat->dist[i][y] + mat->dist[j][x] - mat->dist[i][j]);
+                      cpt++;
+                    }
+                }
             }
         }
-        }
     }
-    }
-
+  
   Qksort_Matrix(S1S2,0,0,cpt-1);
-
+  
   local_mins[0] = S1S2[0][1];
   for(i=1;i<cpt;i++) local_mins[i] = (i*local_mins[i-1] + S1S2[i][1])/(phydbl)(i+1);
-
+  
   pos_best_estimate = 0;
   min_crit = curr_crit = BIG;
-
+  
   For(i,cpt-1)
     {
       if((local_mins[i] < S1S2[i+1][0]) && (local_mins[i] > S1S2[i][0]))
-    {
-      curr_crit = Least_Square_Missing_Dist_XY(x,y,local_mins[i],mat);
-      if(curr_crit < min_crit)
         {
-          min_crit = curr_crit;
-          pos_best_estimate = i;
+          curr_crit = Least_Square_Missing_Dist_XY(x,y,local_mins[i],mat);
+          if(curr_crit < min_crit)
+            {
+              min_crit = curr_crit;
+              pos_best_estimate = i;
+            }
         }
     }
-    }
-
+  
   mat->dist[x][y] = local_mins[pos_best_estimate];
   mat->dist[y][x] = mat->dist[x][y];
-
+  
   For(i,mat->n_otu*mat->n_otu) Free(S1S2[i]);
   Free(S1S2);
   Free(local_mins);
@@ -6157,34 +6173,34 @@ phydbl Least_Square_Missing_Dist_XY(int x, int y, phydbl dxy, matrix *mat)
 {
   int i,j;
   phydbl fit;
-
+  
   fit = .0;
   For(i,mat->n_otu)
     {
       if((mat->dist[i][x] > .0) && (mat->dist[i][y] > .0))
-    {
-      For(j,mat->n_otu)
         {
-          if((mat->dist[j][x] > .0) && (mat->dist[j][y] > .0))
-        {
-          if((i != j) && (i != x) && (i != y) && (j != x) && (j != y))
+          For(j,mat->n_otu)
             {
-              if(dxy < MIN(mat->dist[i][x] + mat->dist[j][y] - mat->dist[i][j] , mat->dist[i][y] + mat->dist[j][x] - mat->dist[i][j]))
-            {
-              fit += POW((mat->dist[i][x] + mat->dist[j][y]) - (mat->dist[i][y] + mat->dist[j][x]),2);
-            }
-              else if((mat->dist[i][x] + mat->dist[j][y]) < (mat->dist[i][y] + mat->dist[j][x]))
-            {
-              fit += POW(dxy - (mat->dist[i][y] + mat->dist[j][x] - mat->dist[i][j]),2);
-            }
-              else
-            {
-              fit += POW(dxy - (mat->dist[i][x] + mat->dist[j][y] - mat->dist[i][j]),2);
-            }
+              if((mat->dist[j][x] > .0) && (mat->dist[j][y] > .0))
+                {
+                  if((i != j) && (i != x) && (i != y) && (j != x) && (j != y))
+                    {
+                      if(dxy < MIN(mat->dist[i][x] + mat->dist[j][y] - mat->dist[i][j] , mat->dist[i][y] + mat->dist[j][x] - mat->dist[i][j]))
+                        {
+                          fit += POW((mat->dist[i][x] + mat->dist[j][y]) - (mat->dist[i][y] + mat->dist[j][x]),2);
+                        }
+                      else if((mat->dist[i][x] + mat->dist[j][y]) < (mat->dist[i][y] + mat->dist[j][x]))
+                        {
+                          fit += POW(dxy - (mat->dist[i][y] + mat->dist[j][x] - mat->dist[i][j]),2);
+                        }
+                      else
+                        {
+                          fit += POW(dxy - (mat->dist[i][x] + mat->dist[j][y] - mat->dist[i][j]),2);
+                        }
+                    }
+                }
             }
         }
-        }
-    }
     }
   return fit;
 }
@@ -9146,8 +9162,8 @@ int Check_Topo_Constraints(t_tree *big_tree, t_tree *small_tree)
   if(small_tree->n_otu > big_tree->n_otu)
     {
       PhyML_Printf("\n");
-      PhyML_Printf("\n. The tree that defines the topological constraints can not");
-      PhyML_Printf("\n. display more taxa than %d",big_tree->n_otu);
+      PhyML_Printf("\n== The tree that defines the topological constraints can not");
+      PhyML_Printf("\n== display more taxa than %d",big_tree->n_otu);
       Exit("\n");
     }
 
@@ -9156,6 +9172,7 @@ int Check_Topo_Constraints(t_tree *big_tree, t_tree *small_tree)
 
   big_tree_cpy = Make_Tree_From_Scratch(big_tree->n_otu,NULL);
   Copy_Tree(big_tree,big_tree_cpy);
+
 
   Prune_Tree(big_tree_cpy,small_tree);
 
@@ -9176,12 +9193,13 @@ int Check_Topo_Constraints(t_tree *big_tree, t_tree *small_tree)
   For(i,2*big_tree_cpy->n_otu-3) big_tree_cpy->a_edges[i]->bip_score = 0;
   For(i,2*small_tree->n_otu-3) small_tree->a_edges[i]->bip_score = 0;
 
-  diffs = Compare_Bip(small_tree,big_tree_cpy,YES);
+  diffs = Compare_Bip(small_tree,big_tree_cpy,NO);
 
   /* printf("\n"); */
   /* printf("\n. %s",Write_Tree(big_tree_cpy,NO)); */
   /* printf("\n. %s",Write_Tree(small_tree,NO)); */
   /* printf("\n. diffs=%d",diffs); */
+
 
   Free_Tree(big_tree_cpy);
 
@@ -9204,6 +9222,7 @@ void Prune_Tree(t_tree *big_tree, t_tree *small_tree)
   t_node **pruned_nodes;
   t_edge **residual_edges;
 
+
   pruned_nodes   = (t_node **)mCalloc(big_tree->n_otu,sizeof(t_node *));
   residual_edges = (t_edge **)mCalloc(big_tree->n_otu,sizeof(t_edge *));
 
@@ -9211,31 +9230,32 @@ void Prune_Tree(t_tree *big_tree, t_tree *small_tree)
   For(i,big_tree->n_otu)
     {
       For(j,small_tree->n_otu)
-    if(!strcmp(small_tree->a_nodes[j]->name,big_tree->a_nodes[i]->name))
-      break;
-
+        if(!strcmp(small_tree->a_nodes[j]->name,big_tree->a_nodes[i]->name))
+          break;
+      
       if(j == small_tree->n_otu)
-    {
-      Prune_Subtree(big_tree->a_nodes[i]->v[0],
-            big_tree->a_nodes[i],
-            NULL,&(residual_edges[n_pruned_nodes]),
-            big_tree);
-
-      pruned_nodes[n_pruned_nodes] = big_tree->a_nodes[i];
-      n_pruned_nodes++;
+        {
+          Prune_Subtree(big_tree->a_nodes[i]->v[0],
+                        big_tree->a_nodes[i],
+                        NULL,&(residual_edges[n_pruned_nodes]),
+                        big_tree);
+          
+          pruned_nodes[n_pruned_nodes] = big_tree->a_nodes[i];
+          n_pruned_nodes++;
+        }
     }
-    }
-
+  
   if(!n_pruned_nodes)
     {
       Free(pruned_nodes);
       Free(residual_edges);
       return;
     }
-
+  
   Free(big_tree->t_dir);
-
+  
   big_tree->n_otu -= n_pruned_nodes;
+  
 
   curr_ext_node = 0;
   curr_int_node = big_tree->n_otu;
@@ -9243,21 +9263,23 @@ void Prune_Tree(t_tree *big_tree, t_tree *small_tree)
   For(i,big_tree->n_otu+n_pruned_nodes)
     {
       For(j,n_pruned_nodes)
-    if(!strcmp(pruned_nodes[j]->name,big_tree->a_nodes[i]->name))
-      break;
-
+        if(!strcmp(pruned_nodes[j]->name,big_tree->a_nodes[i]->name))
+          break;
+      
       if(j == n_pruned_nodes) /* That t_node still belongs to the tree */
-    {
-      Reassign_Node_Nums(big_tree->a_nodes[i],big_tree->a_nodes[i]->v[0],
-                 &curr_ext_node,&curr_int_node,big_tree);
-      break;
+        {
+          Reassign_Node_Nums(big_tree->a_nodes[i],big_tree->a_nodes[i]->v[0],
+                             &curr_ext_node,&curr_int_node,big_tree);
+          break;
+        }
     }
-    }
+  
 
   Reassign_Edge_Nums(big_tree->a_nodes[0],big_tree->a_nodes[0]->v[0],&curr_br,big_tree);
+  
 
   big_tree->t_dir = (short int *)mCalloc((2*big_tree->n_otu-2)*(2*big_tree->n_otu-2),sizeof(short int));
-
+  
   For(i,n_pruned_nodes)
     {
       Free_Edge(residual_edges[i]);
@@ -9265,10 +9287,12 @@ void Prune_Tree(t_tree *big_tree, t_tree *small_tree)
       Free_Node(pruned_nodes[i]->v[0]);
       Free_Node(pruned_nodes[i]);
     }
-
+  
   Free(pruned_nodes);
   Free(residual_edges);
+
   big_tree->a_edges[2*big_tree->n_otu-3] = big_tree->a_edges[2*(big_tree->n_otu+n_pruned_nodes)-3];
+  big_tree->a_edges[2*big_tree->n_otu-2] = big_tree->a_edges[2*(big_tree->n_otu+n_pruned_nodes)-2];
   big_tree->a_nodes[2*big_tree->n_otu-2] = big_tree->a_nodes[2*(big_tree->n_otu+n_pruned_nodes)-2];
 
 }
@@ -10589,7 +10613,6 @@ void Calculate_Number_Of_Diff_States_Pre(t_node *a, t_node *d, t_edge *b, t_tree
 
 void Calculate_Number_Of_Diff_States_Core(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 {
-
   unsigned int *ui, *ui_v1, *ui_v2;
   int sum,site,state;
   int *diff;
@@ -10722,11 +10745,179 @@ void Calculate_Number_Of_Diff_States_Core(t_node *a, t_node *d, t_edge *b, t_tre
 
 
       diff[sum-1]++;
+
     }
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+/* Returns the number of distinct states observed at a particular site */
+
+int Number_Of_Diff_States_One_Site(int site, t_tree *tree)
+{
+  t_node *init_root;
+  int n_states;
+
+  /* Init_Ui_Tips(tree); */
+
+
+  Number_Of_Diff_States_One_Site_Post(tree->a_nodes[0],
+                                      tree->a_nodes[0]->v[0],
+                                      tree->a_nodes[0]->b[0],
+                                      site,tree);
+  
+  n_states = Sum_Bits(tree->a_nodes[0]->b[0]->ui_r[site] | tree->a_nodes[0]->b[0]->ui_l[site],tree->mod->ns);
+
+
+  return(n_states);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Number_Of_Diff_States_One_Site_Post(t_node *a, t_node *d, t_edge *b, int site, t_tree *tree)
+{
+  if(d->tax) return;
+  else
+    {
+      int i;
+
+      For(i,3)
+        if(d->v[i] != a && d->b[i] != tree->e_root)
+          Number_Of_Diff_States_One_Site_Post(d,d->v[i],d->b[i],site,tree);
+
+      Number_Of_Diff_States_One_Site_Core(a,d,b,site,tree);
+    }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+int Number_Of_Diff_States_One_Site_Core(t_node *a, t_node *d, t_edge *b, int site, t_tree *tree)
+{
+  unsigned int *ui, *ui_v1, *ui_v2;
+  int sum;
+  t_node *v1, *v2;
+  
+  ui = ui_v1 = ui_v2 = NULL;
+  v1 = v2 = NULL;
+  
+  if(d == b->left)
+    {
+      v1 = (d == d->b[b->l_v1]->left)?
+        (d->b[b->l_v1]->rght):
+        (d->b[b->l_v1]->left);
+      
+      v2 = (d == d->b[b->l_v2]->left)?
+        (d->b[b->l_v2]->rght):
+        (d->b[b->l_v2]->left);
+      
+      ui = b->ui_l;
+      
+      ui_v1 = 
+        (d == d->b[b->l_v1]->left)?
+        (d->b[b->l_v1]->ui_r):
+        (d->b[b->l_v1]->ui_l);
+      
+      ui_v2 = 
+        (d == d->b[b->l_v2]->left)?
+        (d->b[b->l_v2]->ui_r):
+        (d->b[b->l_v2]->ui_l);      
+    }
+  else
+    {
+      v1 = (d == d->b[b->r_v1]->left)?
+        (d->b[b->r_v1]->rght):
+        (d->b[b->r_v1]->left);
+      
+      v2 = (d == d->b[b->r_v2]->left)?
+        (d->b[b->r_v2]->rght):
+        (d->b[b->r_v2]->left);
+      
+      ui = b->ui_r;
+      
+      ui_v1 = 
+        (d == d->b[b->r_v1]->left)?
+        (d->b[b->r_v1]->ui_r):
+        (d->b[b->r_v1]->ui_l);
+      
+      ui_v2 = 
+        (d == d->b[b->r_v2]->left)?
+        (d->b[b->r_v2]->ui_r):
+        (d->b[b->r_v2]->ui_l);      
+    }
+  
+  if(v1->tax == YES) // Check for ambiguous character state at this tip
+    {
+      sum = Sum_Bits(ui_v1[site],tree->mod->ns);
+      
+      if(sum > 1)
+        {
+          int val = ui_v1[site];
+          int pos, iter;
+          phydbl u = Uni();
+
+          // Select a state uniformly at random
+          iter = 0;
+          do
+            {
+              pos = Rand_Int(0,tree->mod->ns-1);
+              if(((val >> pos) & 1) && (u > 1./sum)) break;
+            }
+          while(iter++ < 1000);
+
+
+          if(iter == 1000) 
+            {
+              PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);      
+              Exit("\n");
+            }
+          
+          ui_v1[site] = POW(2,pos);
+        }
+    }
+
+  if(v2->tax == YES)
+    {
+      sum = Sum_Bits(ui_v2[site],tree->mod->ns);
+      if(sum > 1)
+        {
+          int val = ui_v2[site];
+          int pos, iter;
+          phydbl u = Uni();
+          
+          iter = 0;
+          do
+            {
+              pos = Rand_Int(0,tree->mod->ns-1);
+              if(((val >> pos) & 1) && (u > 1./sum)) break;
+            }
+          while(iter++ < 1000);
+          
+          if(iter == 1000)
+            {
+              PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);      
+              Exit("\n");
+            }
+          
+          ui_v2[site] = POW(2,pos);
+        }
+    }
+  
+  ui[site] = ui_v1[site] | ui_v2[site];
+      
+  sum = Sum_Bits(ui[site],tree->mod->ns);
+
+  /* printf("\n. ui_v1: %d ui_v2: %d ui: %d sum: %d",ui_v1[site],ui_v2[site],ui[site],sum); fflush(NULL); */
+  
+  if(sum-1 > tree->mod->ns-1)
+    {
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);      
+      Exit("\n");
+    }
+
+  return sum;
+}
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

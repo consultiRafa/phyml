@@ -18,8 +18,8 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int GEO_Main(int argc, char **argv)
 {
-  GEO_Simulate_Estimate(argc,argv);
-  /* GEO_Estimate(argc,argv); */
+  /* GEO_Simulate_Estimate(argc,argv); */
+  GEO_Estimate(argc,argv);
   return(1);
 }
 
@@ -1235,7 +1235,7 @@ void GEO_Optimize_Sigma(t_geo *t, t_tree *tree)
                    1.E-5,
                    1000,
                    NO,
-                   GEO_Wrap_Lk,NULL,tree,NULL);
+                   GEO_Wrap_Lk,NULL,tree,NULL,NO);
 }
 
 //////////////////////////////////////////////////////////////
@@ -1249,7 +1249,7 @@ void GEO_Optimize_Lambda(t_geo *t, t_tree *tree)
                    1.E-5,
                    1000,
                    NO,
-                   GEO_Wrap_Lk,NULL,tree,NULL);
+                   GEO_Wrap_Lk,NULL,tree,NULL,NO);
 }
 
 //////////////////////////////////////////////////////////////
@@ -1263,7 +1263,7 @@ void GEO_Optimize_Tau(t_geo *t, t_tree *tree)
                    1.E-5,
                    1000,
                    NO,
-                   GEO_Wrap_Lk,NULL,tree,NULL);
+                   GEO_Wrap_Lk,NULL,tree,NULL,NO);
 }
 
 //////////////////////////////////////////////////////////////
@@ -1758,14 +1758,13 @@ void MCMC_Geo_Updown_Lbda_Sigma(t_tree *tree)
 void GEO_Read_In_Landscape(char *file_name, t_geo *t, phydbl **ldscape, int **loc_hash, t_tree *tree)
 {
   FILE *fp;
-  char *s,*line;
+  char *s;
   phydbl longitude, lattitude;
-  int i, pos, tax,loc;
+  int tax,loc;
 
   PhyML_Printf("\n");
   PhyML_Printf("\n. Reading landscape file '%s'.\n",file_name);
 
-  line        = (char *)mCalloc(T_MAX_LINE,sizeof(char));
   s           = (char *)mCalloc(T_MAX_LINE,sizeof(char));
   (*ldscape)  = (phydbl *)mCalloc(10*t->n_dim,sizeof(phydbl));
   (*loc_hash) = (int *)mCalloc(tree->n_otu,sizeof(int));
@@ -1778,28 +1777,8 @@ void GEO_Read_In_Landscape(char *file_name, t_geo *t, phydbl **ldscape, int **lo
 
   do
     {
-      if(!fgets(line,T_MAX_LINE,fp)) break;
+      fscanf(fp,"%s",s);
 
-      // Read in taxon name
-      pos = 0;
-      do
-      {
-        while(line[pos] == ' ') pos++;
-
-        i = 0;
-        s[0] = '\0';
-        while((line[pos] != ' ') && (line[pos] != '\n') && (line[pos] != '\t'))
-          {
-            s[i] = line[pos];
-            i++;
-            pos++;
-          }
-        s[i] = '\0';
-        
-        if(line[pos] == '\n' || line[pos] == ' ') break;
-        pos++;
-      }while(1);
-      
       if(strlen(s) > 0) For(tax,tree->n_otu) if(!strcmp(tree->a_nodes[tax]->name,s)) break;
 
       if(tax == tree->n_otu)
@@ -1811,7 +1790,11 @@ void GEO_Read_In_Landscape(char *file_name, t_geo *t, phydbl **ldscape, int **lo
         }
 
       
-      sscanf(line+pos,"%lf %lf",&longitude,&lattitude);
+      /* sscanf(line+pos,"%lf %lf",&longitude,&lattitude); */
+      fscanf(fp,"%lf",&longitude);
+      fscanf(fp,"%lf",&lattitude);
+
+      printf("\n. s: %s %f %f",s,longitude,lattitude);
 
       For(loc,t->ldscape_sz)
         {
@@ -1824,17 +1807,18 @@ void GEO_Read_In_Landscape(char *file_name, t_geo *t, phydbl **ldscape, int **lo
 
       if(loc == t->ldscape_sz)
         {
-      t->ldscape_sz++;
+          t->ldscape_sz++;
           (*ldscape)[(t->ldscape_sz-1)*t->n_dim+0] = longitude;
           (*ldscape)[(t->ldscape_sz-1)*t->n_dim+1] = lattitude;
-
+          
           printf("\n. new loc: %f %f",longitude,lattitude);
-      if(!(t->ldscape_sz%10))
-        {
-          (*ldscape)  = (phydbl *)mRealloc((*ldscape),(t->ldscape_sz+10)*t->n_dim,sizeof(phydbl));
+          
+          if(!(t->ldscape_sz%10))
+            {
+              (*ldscape)  = (phydbl *)mRealloc((*ldscape),(t->ldscape_sz+10)*t->n_dim,sizeof(phydbl));
             }
         }
-
+      
       (*loc_hash)[tax] = loc;
 
     }

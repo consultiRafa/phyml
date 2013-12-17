@@ -23,7 +23,17 @@ void Optimize_Single_Param_Generic(t_tree *tree, phydbl *param, phydbl lim_inf, 
 
   lk_init = tree->c_lnL;
 
-  Generic_Brent_Lk(param,lim_inf,lim_sup,tol,n_max_iter,quickdirty,Wrap_Lk,NULL,tree,NULL,NO);
+  Generic_Brent_Lk(param,
+                   lim_inf,
+                   lim_sup,
+                   tol,
+                   n_max_iter,
+                   quickdirty,
+                   Wrap_Lk,
+                   NULL,
+                   tree,
+                   NULL,
+                   NO);
 
 
   if(tree->c_lnL < lk_init - tree->mod->s_opt->min_diff_lk_global)

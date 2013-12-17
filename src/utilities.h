@@ -1851,6 +1851,9 @@ void Calculate_Number_Of_Diff_States_Pre(t_node *a, t_node *d, t_edge *b, t_tree
 void Calculate_Number_Of_Diff_States_Core(t_node *a, t_node *d, t_edge *b, t_tree *tree);
 void Calculate_Number_Of_Diff_States(t_tree *tree);
 void Build_Distrib_Number_Of_Diff_States_Under_Model(t_tree *tree);
+int Number_Of_Diff_States_One_Site(int site, t_tree *tree);
+void Number_Of_Diff_States_One_Site_Post(t_node *a, t_node *d, t_edge *b, int site, t_tree *tree);
+int Number_Of_Diff_States_One_Site_Core(t_node *a, t_node *d, t_edge *b, int site, t_tree *tree);
 
 
 #include "xml.h"
