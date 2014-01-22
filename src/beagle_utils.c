@@ -107,12 +107,14 @@ int create_beagle_instance(t_tree *tree, int quiet)
     //Recall that in PhyML, each edge has a "left" and "right" partial vectors. Therefore,
     //in BEAGLE we have 2*num_branches number of partials.
     //BEAGLE's partials buffer = [ tax1, tax2, ..., taxN, b1Left, b2Left, b3Left,...,bMLeft, b1Rght, b2Rght, b3Rght,...,bMRght] (N taxa, M branches)
-    int num_partials  = tree->n_otu + (2*num_branches);
+    int num_partials  = 2*(tree->n_otu + num_branches); /* TODO: This does not seem correct; suspect poor indexing elsewhere */
+    													/* In update_operations, indexes range from 0 to almost 2 (n_otu + num_branches), but not all integers are used */
+        
 //    DUMP_I(tree->n_otu, num_rate_catg, num_partials, num_branches, tree->mod->ns, tree->n_pattern, tree->mod->whichmodel);
     int beagle_inst = beagleCreateInstance(
                                   tree->n_otu,                /**< Number of tip data elements (input) */
                                   num_partials,               /**< Number of partial buffer (input) */
-                                  tree->n_otu,                /**< Number of compact state representation buffers to create (input) */
+    /* PhyML uses partials */     0,              			  /**< Number of compact state representation buffers to create (input) */
                                   tree->mod->ns,              /**< Number of states in the continuous-time Markov chain (input) */
                                   tree->n_pattern,            /**< Number of site patterns to be handled by the instance (input) */
                                   1,                          /**< Number of rate matrix eigen-decomposition,state freqs, and category weight buffers*/
@@ -120,9 +122,9 @@ int create_beagle_instance(t_tree *tree, int quiet)
                                   num_rate_catg,              /**< Number of rate categories (input) */
                                   -1,                         /**< Number of scaling buffers. Unused because we use SCALING_ALWAYS */
                                   NULL,                       /**< List of potential resource on which this instance is allowed (input, NULL implies no restriction */
-                                  0,			    /**< Length of resourceList list (input) */
+                                  0,			              /**< Length of resourceList list (input) */
                                   BEAGLE_FLAG_FRAMEWORK_CPU | BEAGLE_FLAG_PROCESSOR_CPU | BEAGLE_FLAG_SCALING_ALWAYS | BEAGLE_FLAG_EIGEN_REAL | ((sizeof(float)==sizeof(phydbl)) ? BEAGLE_FLAG_PRECISION_SINGLE:BEAGLE_FLAG_PRECISION_DOUBLE),
-                                  0,                /**< Bit-flags indicating required implementation characteristics, see BeagleFlags (input) */
+                                  0,                		  /**< Bit-flags indicating required implementation characteristics, see BeagleFlags (input) */
                                   &inst_d);
     if (beagle_inst < 0){
         fprintf(stderr, "beagleCreateInstance() failed:%i\n\n",beagle_inst);
@@ -230,6 +232,9 @@ void update_beagle_partials(t_tree* tree, t_edge* b, t_node* d)
   
   
   //Create the corresponding BEAGLE operation
+  
+  // fprintf(stderr,"%d, %d, %d, ", dest_p_idx, child1_p_idx, child2_p_idx);
+  
   BeagleOperation operations[1] = {{dest_p_idx, BEAGLE_OP_NONE, BEAGLE_OP_NONE, child1_p_idx, Pij1_idx, child2_p_idx, Pij2_idx}};
   //Compute the partials
   int ret = beagleUpdatePartials(tree->b_inst, operations, 1, BEAGLE_OP_NONE);
