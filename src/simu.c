@@ -42,7 +42,7 @@ void Simu_Loop(t_tree *mixt_tree)
   do
     {
 #ifdef BEAGLE
-      tree->b_inst = create_beagle_instance(tree, tree->io->quiet);
+      tree->b_inst = create_beagle_instance(tree, tree->io->quiet, tree->io);
       //Instead of capping the rate categories at 2, just
       //give the other categories 0 weight
       if(orig_catg[n] > 2) //should we even bother?

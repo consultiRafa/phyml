@@ -1052,7 +1052,10 @@ typedef struct __Option { /*! mostly used in 'help.c' */
   int                do_alias_subpatt;
   struct __Tmcmc                *mcmc;
   struct __T_Rate              *rates;
-
+  
+#ifdef BEAGLE
+  int                 beagle_resource;
+#endif
 
 }option;
 

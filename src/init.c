@@ -562,6 +562,9 @@ void Set_Defaults_Input(option* io)
   io->codpos                     = -1;
   io->mutmap                     = NO;
   io->state_len                  = 1;
+#ifdef BEAGLE
+  io->beagle_resource            = 0;
+#endif
 
   MCMC_Init_MCMC_Struct(NULL,io,io->mcmc);
   RATES_Init_Rate_Struct(io->rates,NULL,-1);

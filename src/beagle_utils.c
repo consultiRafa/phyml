@@ -92,7 +92,7 @@ void print_beagle_instance_details(BeagleInstanceDetails *inst)
     fflush(stdout);
 }
 
-int create_beagle_instance(t_tree *tree, int quiet)
+int create_beagle_instance(t_tree *tree, int quiet, option* io)
 {
     if(UNINITIALIZED != tree->b_inst){
 //        fprintf(stdout,"\n\tWARNING: Creating a BEAGLE instance on a tree with an existing BEAGLE instance:%d\n",tree->b_inst);
@@ -110,6 +110,9 @@ int create_beagle_instance(t_tree *tree, int quiet)
     int num_partials  = 2*(tree->n_otu + num_branches); /* TODO: This does not seem correct; suspect poor indexing elsewhere */
     													/* In update_operations, indexes range from 0 to almost 2 (n_otu + num_branches), but not all integers are used */
         
+    int resourceList[1];    
+    resourceList[0] = io->beagle_resource;        
+        
 //    DUMP_I(tree->n_otu, num_rate_catg, num_partials, num_branches, tree->mod->ns, tree->n_pattern, tree->mod->whichmodel);
     int beagle_inst = beagleCreateInstance(
                                   tree->n_otu,                /**< Number of tip data elements (input) */
@@ -121,8 +124,8 @@ int create_beagle_instance(t_tree *tree, int quiet)
                                   num_branches,               /**< Number of rate matrix buffers (input) */
                                   num_rate_catg,              /**< Number of rate categories (input) */
                                   -1,                         /**< Number of scaling buffers. Unused because we use SCALING_ALWAYS */
-                                  NULL,                       /**< List of potential resource on which this instance is allowed (input, NULL implies no restriction */
-                                  0,			              /**< Length of resourceList list (input) */
+                                  resourceList,               /**< List of potential resource on which this instance is allowed (input, NULL implies no restriction */
+                                  1,			              /**< Length of resourceList list (input) */
                                   BEAGLE_FLAG_FRAMEWORK_CPU | BEAGLE_FLAG_PROCESSOR_CPU | BEAGLE_FLAG_SCALING_ALWAYS | BEAGLE_FLAG_EIGEN_REAL | ((sizeof(float)==sizeof(phydbl)) ? BEAGLE_FLAG_PRECISION_SINGLE:BEAGLE_FLAG_PRECISION_DOUBLE),
                                   0,                		  /**< Bit-flags indicating required implementation characteristics, see BeagleFlags (input) */
                                   &inst_d);

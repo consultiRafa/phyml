@@ -115,6 +115,9 @@ int Read_Command_Line(option *io, int argc, char **argv)
       {"constrained_lens",    no_argument,NULL,72},
       {"xml",                 required_argument,NULL,73},
       {"l_var",               required_argument,NULL,74},
+#ifdef BEAGLE
+	  {"beagle_resource",     required_argument,NULL,75},
+#endif
       {0,0,0,0}
     };
 
@@ -133,6 +136,13 @@ int Read_Command_Line(option *io, int argc, char **argv)
 
       switch(c)
 	{
+#ifdef BEAGLE
+	case 75:
+		{
+	    	io->beagle_resource = (int)atoi(optarg);
+	    	break;
+	    }
+#endif
 	case 74:
           {
             io->mod->l_var_sigma = String_To_Dbl(optarg);

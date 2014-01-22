@@ -7302,7 +7302,7 @@ void Best_Of_NNI_And_SPR(t_tree *tree)
       phydbl best_lnL,ori_lnL,nni_lnL,spr_lnL;
       int i;
 #ifdef BEAGLE
-      tree->b_inst = create_beagle_instance(tree, tree->io->quiet);
+      tree->b_inst = create_beagle_instance(tree, tree->io->quiet, tree->io);
 #endif
       ori_bl = (phydbl *)mCalloc(2*tree->n_otu-3,sizeof(phydbl));
       best_bl = (phydbl *)mCalloc(2*tree->n_otu-3,sizeof(phydbl));
@@ -7670,7 +7670,7 @@ char *aLRT_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
   Make_Best_Spr(tree);
 
 #ifdef BEAGLE
-  tree->b_inst = create_beagle_instance(tree, io->quiet);
+  tree->b_inst = create_beagle_instance(tree, io->quiet, io);
 #endif
 
   Set_Both_Sides(YES,tree);

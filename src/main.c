@@ -216,7 +216,7 @@ int main(int argc, char **argv)
                   else
                     {
 #ifdef BEAGLE
-                      tree->b_inst = create_beagle_instance(tree, io->quiet);
+                      tree->b_inst = create_beagle_instance(tree, io->quiet, io);
 #endif
                       //Optimize Branch lengths?
                       if(tree->mod->s_opt->opt_subst_param || tree->mod->s_opt->opt_bl) {
