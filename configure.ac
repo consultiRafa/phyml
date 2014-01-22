@@ -70,8 +70,7 @@ dnl CFLAGS="-O3 -Wfloat-equal -fomit-frame-pointer -funroll-loops"
 dnl CFLAGS="-O3 -Wfloat-equal"
 dnl CFLAGS="-g"
 
-LDFLAGS="${ARGC_flag}"
-
+LDFLAGS="${ARGC_flag}" 
 
 dnl LT_INIT
 dnl AC_PROG_LIBTOOL
@@ -111,7 +110,7 @@ if test "x$enable_beagle" = "xyes"; then
    PKG_CHECK_MODULES(BEAGLE, hmsbeagle-1)
 fi
 AS_IF([test "x$enable_beagle" = "xyes"],
-      [CFLAGS="${CFLAGS} ${BEAGLE_CFLAGS} ${BEAGLE_LIBS} ${ARCH_flag}"],
+      [CFLAGS="${CFLAGS} ${BEAGLE_CFLAGS} ${BEAGLE_LIBS} -lstdc++ ${ARCH_flag}"],
       [CFLAGS=${CFLAGS}])
 AS_IF([test "x$enable_beagle" = "xyes"], AC_DEFINE([BEAGLE],[1],[BEAGLE tag on]))
 AM_CONDITIONAL([WANT_BEAGLE], [test "$enable_beagle" = yes])
