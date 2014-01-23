@@ -8,6 +8,8 @@
 #include  <stdio.h>
 #include "beagle_utils.h"
 
+#define CLEAN_BEAGLE_API  /* Attempting to remove unnecessary communication with BEAGLE device
+
 double* int_to_double(const int* src, int num_elems)
 {
     double* dest = (double*)malloc(num_elems*sizeof(double)); if (NULL==dest) Warn_And_Exit("\n. Couldn't allocate memory.\n");
@@ -246,11 +248,13 @@ void update_beagle_partials(t_tree* tree, t_edge* b, t_node* d)
     Exit("");
   }
   //Load the computed/updated partial partials
-  ret = beagleGetPartials(tree->b_inst, dest_p_idx, BEAGLE_OP_NONE, (double*)p_lk);
-  if(ret<0){
-    fprintf(stderr, "beagleGetPartials() on instance %i failed:%i\n\n",tree->b_inst,ret);
-    Exit("");
-  }
+#ifndef CLEAN_BEAGLE_API
+   ret = beagleGetPartials(tree->b_inst, dest_p_idx, BEAGLE_OP_NONE, (double*)p_lk);
+   if(ret<0){
+     fprintf(stderr, "beagleGetPartials() on instance %i failed:%i\n\n",tree->b_inst,ret);
+     Exit("");
+   }
+#endif
   
   //    fprintf(stdout, "Updated partials:");fflush(stdout);
   //    Dump_Arr_D(p_lk, tree->mod->ras->n_catg*tree->mod->ns*tree->n_pattern);
