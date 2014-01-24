@@ -8,7 +8,7 @@
 #include  <stdio.h>
 #include "beagle_utils.h"
 
-#define CLEAN_BEAGLE_API  /* Attempting to remove unnecessary communication with BEAGLE device
+#define CLEAN_BEAGLE_API  /* Attempting to remove unnecessary communication with  BEAGLE device */
 
 double* int_to_double(const int* src, int num_elems)
 {
