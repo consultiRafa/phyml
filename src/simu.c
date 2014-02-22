@@ -56,7 +56,7 @@ void Simu_Loop(t_tree *mixt_tree)
               cat_wghts[i] = 0.0;
           }
           int ret = beagleSetCategoryWeights(tree->b_inst,0,cat_wghts);
-          if(ret<0) {fprintf(stderr, "beagleSetCategoryWeights() on instance %i failed:%i\n\n",tree->b_inst,ret);Exit(""); }
+          if(ret<0) {fprintf(stderr,"\n== beagleSetCategoryWeights() on instance %i failed:%i\n\n",tree->b_inst,ret);Exit(""); }
           tree->mod->optimizing_topology = true;
       }
 #endif
@@ -227,27 +227,25 @@ int Simu(t_tree *tree, int n_step_max)
       MIXT_Set_Alias_Subpatt(NO,tree);
 
       if(tree->c_lnL < old_loglk)
-    {
-      if((tree->mod->s_opt->print) && (!tree->io->quiet)) PhyML_Printf("\n\n. Moving backward\n");
-      if(!Mov_Backward_Topo_Bl(tree,old_loglk,tested_b,n_tested))
-        Exit("\n== Err. mov_back failed\n");
-      if(!tree->n_swap) n_neg = 0;
-
-      /* For(i,2*tree->n_otu-3) tree->a_edges[i]->l_old->v = tree->a_edges[i]->l->v;	     */
-      Record_Br_Len(tree);
-      Set_Both_Sides(YES,tree);
-      Lk(NULL,tree);
-    }
+        {
+          if((tree->mod->s_opt->print) && (!tree->io->quiet)) PhyML_Printf("\n\n. Moving backward\n");
+          if(!Mov_Backward_Topo_Bl(tree,old_loglk,tested_b,n_tested))
+            Exit("\n== Err. mov_back failed\n");
+          if(!tree->n_swap) n_neg = 0;
+          Record_Br_Len(tree);
+          Set_Both_Sides(YES,tree);
+          Lk(NULL,tree);
+        }
 
       if(step > n_step_max) break;
 
       if(tree->io->print_trace)
-    {
+        {
           char *s = Write_Tree(tree,NO);
-      PhyML_Fprintf(tree->io->fp_out_trace,"[%f]%s\n",tree->c_lnL,s); fflush(tree->io->fp_out_trace);
-      if(tree->io->print_site_lnl) Print_Site_Lk(tree,tree->io->fp_out_lk); fflush(tree->io->fp_out_lk);
+          PhyML_Fprintf(tree->io->fp_out_trace,"[%f]%s\n",tree->c_lnL,s); fflush(tree->io->fp_out_trace);
+          if(tree->io->print_site_lnl) Print_Site_Lk(tree,tree->io->fp_out_lk); fflush(tree->io->fp_out_lk);
           Free(s);
-    }
+        }
 
       if((tree->mod->s_opt->print) && (!tree->io->quiet)) Print_Lk(tree,"[Topology           ]");
 
@@ -259,11 +257,9 @@ int Simu(t_tree *tree, int n_step_max)
       Fix_All(tree);
       n_neg = 0;
       For(i,2*tree->n_otu-3)
-    if((!tree->a_edges[i]->left->tax) &&
-       (!tree->a_edges[i]->rght->tax))
-      NNI(tree,tree->a_edges[i],0);
-
-
+        if((!tree->a_edges[i]->left->tax) &&
+           (!tree->a_edges[i]->rght->tax))
+          NNI(tree,tree->a_edges[i],0);
 
       Select_Edges_To_Swap(tree,sorted_b,&n_neg);
       Sort_Edges_NNI_Score(tree,sorted_b,n_neg);
@@ -272,8 +268,7 @@ int Simu(t_tree *tree, int n_step_max)
 
       n_tested = 0;
       For(i,(int)CEIL((phydbl)n_neg*(lambda)))
-    tested_b[n_tested++] = sorted_b[i];
-
+        tested_b[n_tested++] = sorted_b[i];
 
       Make_N_Swap(tree,tested_b,0,n_tested);
 
@@ -327,72 +322,71 @@ void Simu_Pars(t_tree *tree, int n_step_max)
   do
     {
       ++step;
-
+      
       if(step > n_step_max) break;
-
+      
       each--;
-
+      
       Set_Both_Sides(YES,tree);
       Pars(NULL,tree);
-
+      
       if((tree->mod->s_opt->print) && (!tree->io->quiet))
-    {
-      Print_Pars(tree);
-      if(step > 1) (n_tested > 1)?(printf("[%4d NNIs]",n_tested)):(printf("[%4d NNI ]",n_tested));
-    }
-
-
+        {
+          Print_Pars(tree);
+          if(step > 1) (n_tested > 1)?(printf("[%4d NNIs]",n_tested)):(printf("[%4d NNI ]",n_tested));
+        }
+      
+      
       if(FABS(old_pars - tree->c_pars) < SMALL) break;
-
+      
       if((tree->c_pars > old_pars) && (step > 1))
-    {
-      if((tree->mod->s_opt->print) && (!tree->io->quiet))
-        PhyML_Printf("\n\n. Moving backward (topoLlogy) \n");
-      if(!Mov_Backward_Topo_Pars(tree,old_pars,tested_b,n_tested))
-        Exit("\n. Err: mov_back failed\n");
-      if(!tree->n_swap) n_neg = 0;
-
-
-      Set_Both_Sides(YES,tree);
-      Pars(NULL,tree);
-    }
+        {
+          if((tree->mod->s_opt->print) && (!tree->io->quiet))
+            PhyML_Printf("\n\n. Moving backward (topoLlogy) \n");
+          if(!Mov_Backward_Topo_Pars(tree,old_pars,tested_b,n_tested))
+            Exit("\n. Err: mov_back failed\n");
+          if(!tree->n_swap) n_neg = 0;
+          
+          
+          Set_Both_Sides(YES,tree);
+          Pars(NULL,tree);
+        }
       else
-    {
-
-      old_pars = tree->c_pars;
-      Fill_Dir_Table(tree);
-
-      n_neg = 0;
-      For(i,2*tree->n_otu-3)
-        if((!tree->a_edges[i]->left->tax) &&
-           (!tree->a_edges[i]->rght->tax))
-          NNI_Pars(tree,tree->a_edges[i],NO);
-
-      Select_Edges_To_Swap(tree,sorted_b,&n_neg);
-      Sort_Edges_NNI_Score(tree,sorted_b,n_neg);
-
-      n_tested = 0;
-      For(i,(int)CEIL((phydbl)n_neg*(lambda)))
-        tested_b[n_tested++] = sorted_b[i];
-
-      Make_N_Swap(tree,tested_b,0,n_tested);
-
-      n_tot_swap += n_tested;
-
-      if(n_tested > 0) n_without_swap = 0;
-      else             n_without_swap++;
-    }
+        {
+          
+          old_pars = tree->c_pars;
+          Fill_Dir_Table(tree);
+          
+          n_neg = 0;
+          For(i,2*tree->n_otu-3)
+            if((!tree->a_edges[i]->left->tax) &&
+               (!tree->a_edges[i]->rght->tax))
+              NNI_Pars(tree,tree->a_edges[i],NO);
+          
+          Select_Edges_To_Swap(tree,sorted_b,&n_neg);
+          Sort_Edges_NNI_Score(tree,sorted_b,n_neg);
+          
+          n_tested = 0;
+          For(i,(int)CEIL((phydbl)n_neg*(lambda)))
+            tested_b[n_tested++] = sorted_b[i];
+          
+          Make_N_Swap(tree,tested_b,0,n_tested);
+          
+          n_tot_swap += n_tested;
+          
+          if(n_tested > 0) n_without_swap = 0;
+          else             n_without_swap++;
+        }
       n_iter+=1.0;
     }
   while(1);
-
+  
   Free(sorted_b);
   Free(tested_b);
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void Select_Edges_To_Swap(t_tree *tree, t_edge **sorted_b, int *n_neg)
 {
@@ -406,15 +400,15 @@ void Select_Edges_To_Swap(t_tree *tree, t_edge **sorted_b, int *n_neg)
     {
       b = tree->a_edges[i];
       best_score = b->nni->score;
-
+      
       if((!b->left->tax) && (!b->rght->tax) && (b->nni->score < -tree->mod->s_opt->min_diff_lk_move))
-    {
-      Check_NNI_Scores_Around(b->left,b->rght,b,&best_score,tree);
-      Check_NNI_Scores_Around(b->rght,b->left,b,&best_score,tree);
-      if(best_score < b->nni->score) continue;
-      sorted_b[*n_neg] = b;
-      (*n_neg)++;
-    }
+        {
+          Check_NNI_Scores_Around(b->left,b->rght,b,&best_score,tree);
+          Check_NNI_Scores_Around(b->rght,b->left,b,&best_score,tree);
+          if(best_score < b->nni->score) continue;
+          sorted_b[*n_neg] = b;
+          (*n_neg)++;
+        }
     }
 }
 

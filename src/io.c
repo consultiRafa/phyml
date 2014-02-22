@@ -783,96 +783,96 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
 
 
       if(tree->n_root)
-    {
-      For(i,3)
         {
-          if((fils->v[i] != pere) && (fils->b[i] != tree->e_root))
-        R_wtree(fils,fils->v[i],available,s_tree,tree);
-          else p=i;
+          For(i,3)
+            {
+              if((fils->v[i] != pere) && (fils->b[i] != tree->e_root))
+                R_wtree(fils,fils->v[i],available,s_tree,tree);
+              else p=i;
+            }
         }
-    }
       else
-    {
-      For(i,3)
         {
-          if(fils->v[i] != pere)
-        R_wtree(fils,fils->v[i],available,s_tree,tree);
-          else p=i;
+          For(i,3)
+            {
+              if(fils->v[i] != pere)
+                R_wtree(fils,fils->v[i],available,s_tree,tree);
+              else p=i;
+            }
         }
-    }
 
       if(p < 0)
-    {
-      PhyML_Printf("\n== fils=%p root=%p root->v[2]=%p root->v[1]=%p",fils,tree->n_root,tree->n_root->v[2],tree->n_root->v[1]);
-      PhyML_Printf("\n== tree->e_root=%p fils->b[0]=%p fils->b[1]=%p fils->b[2]=%p",tree->e_root,fils->b[0],fils->b[1],fils->b[2]);
-      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
-      Exit("\n");
-    }
+        {
+          PhyML_Printf("\n== fils=%p root=%p root->v[2]=%p root->v[1]=%p",fils,tree->n_root,tree->n_root->v[2],tree->n_root->v[1]);
+          PhyML_Printf("\n== tree->e_root=%p fils->b[0]=%p fils->b[1]=%p fils->b[2]=%p",tree->e_root,fils->b[0],fils->b[1],fils->b[2]);
+          PhyML_Printf("\n== Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
+          Exit("\n");
+        }
 
       last_len = (int)strlen(*s_tree);
 
       (*s_tree)[last_len-1] = ')';
 
       if((fils->b) && (tree->write_br_lens == YES))
-    {
-      if(tree->print_boot_val)
         {
-          sprintf(*s_tree+(int)strlen(*s_tree),"%d",fils->b[p]->bip_score);
-        }
-      else if(tree->print_alrt_val)
-        {
-          sprintf(*s_tree+(int)strlen(*s_tree),"%f",fils->b[p]->ratio_test);
-        }
-
-      fflush(NULL);
-
-      (*s_tree)[(int)strlen(*s_tree)] = ':';
-
+          if(tree->print_boot_val)
+            {
+              sprintf(*s_tree+(int)strlen(*s_tree),"%d",fils->b[p]->bip_score);
+            }
+          else if(tree->print_alrt_val)
+            {
+              sprintf(*s_tree+(int)strlen(*s_tree),"%f",fils->b[p]->ratio_test);
+            }
+          
+          fflush(NULL);
+          
+          (*s_tree)[(int)strlen(*s_tree)] = ':';
+          
 #if !(defined PHYTIME || defined SERGEII)
-      if(!tree->n_root)
-        {
+          if(!tree->n_root)
+            {
               if(tree->is_mixt_tree == NO)
                 {
                   mean_len = fils->b[p]->l->v;
                 }
               else mean_len = MIXT_Get_Mean_Edge_Len(fils->b[p],tree);
-          sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,mean_len));
-        }
-      else
-        {
-          if(pere == tree->n_root)
-        {
-          phydbl root_pos = (fils == tree->n_root->v[2])?(tree->n_root_pos):(1.-tree->n_root_pos);
-
+              sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,mean_len));
+            }
+          else
+            {
+              if(pere == tree->n_root)
+                {
+                  phydbl root_pos = (fils == tree->n_root->v[2])?(tree->n_root_pos):(1.-tree->n_root_pos);
+                  
                   if(tree->is_mixt_tree == NO)
                     {
                       mean_len = tree->e_root->l->v;
                     }
                   else mean_len = MIXT_Get_Mean_Edge_Len(tree->e_root,tree);
-          sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,mean_len) * root_pos);
-        }
-          else
-        {
+                  sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,mean_len) * root_pos);
+                }
+              else
+                {
                   if(tree->is_mixt_tree == NO)
                     {
                       mean_len = fils->b[p]->l->v;
                     }
                   else mean_len = MIXT_Get_Mean_Edge_Len(fils->b[p],tree);
                   sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,mean_len));
-        }
-        }
+                }
+            }
 #else
-      if(!tree->n_root)
-        {
-          sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,fils->b[p]->l->v));
-        }
-      else
-        {
+          if(!tree->n_root)
+            {
+              sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,fils->b[p]->l->v));
+            }
+          else
+            {
 	      if(tree->rates) sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,tree->rates->cur_l[fils->num]));
-        }
+            }
 #endif
-    }
-
+        }
+      
       /* strcat(*s_tree,","); */
       (*s_tree)[(int)strlen(*s_tree)] = ',';
 

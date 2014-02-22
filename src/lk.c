@@ -1095,7 +1095,7 @@ void Update_P_Lk(t_tree *tree, t_edge *b, t_node *d)
         }
       else
         {
-      Update_P_Lk_Generic(tree,b,d);
+          Update_P_Lk_Generic(tree,b,d);
         }
     }
   else

@@ -357,11 +357,11 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   int result,counter,wei;
   void *buff;
 
-  if(tree->n_root || tree->e_root)
-    {
-      PhyML_Printf("\n== Err. in file %s at line %d\n\n",__FILE__,__LINE__);
-      Exit("");
-    }
+  /* if(tree->n_root || tree->e_root) */
+  /*   { */
+  /*     PhyML_Printf("\n== Err. in file %s at line %d (function '%s')\n\n",__FILE__,__LINE__,__FUNCTION__); */
+  /*     Exit(""); */
+  /*   } */
 
   result = 0;
 

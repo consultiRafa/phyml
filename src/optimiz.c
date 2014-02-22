@@ -573,7 +573,7 @@ void Round_Optimize(t_tree *tree, calign *data, int n_round_max)
   n_round = 0;
   each = 0;
 
-  Set_Both_Sides(YES,tree);
+  Set_Both_Sides(NO,tree); /* Only the down partial likelihoods need to be up-to-date here */
   Lk(NULL,tree);
 
   while(n_round < n_round_max)
@@ -721,16 +721,16 @@ void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tr
   if(d->tax) return;
 
   if(tree->n_root)
-  {
+    {
       For(i,3)
         {
           if(d->v[i] != a && d->b[i] != tree->e_root)
-        {
-          Update_P_Lk(tree,d->b[i],d);
-          Optimize_Br_Len_Serie_Post(d,d->v[i],d->b[i],tree);
+            {
+              Update_P_Lk(tree,d->b[i],d);
+              Optimize_Br_Len_Serie_Post(d,d->v[i],d->b[i],tree);
+            }
         }
-  }
-
+      
       For(i,3)
         if(d->v[i] == a || d->b[i] == tree->e_root) 
           Update_P_Lk(tree,d->b[i],d);

@@ -55,11 +55,13 @@ int GEO_Estimate(int argc, char **argv)
   fp = Openfile(argv[1],0); /* Open tree file  */
 
   tree = Read_Tree_File_Phylip(fp); /* Read it */
+
   Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
   Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);		
   tree->rates = RATES_Make_Rate_Struct(tree->n_otu);
   RATES_Init_Rate_Struct(tree->rates,NULL,tree->n_otu);
   Branch_To_Time(tree);
+
   tree->geo = t;
 
   GEO_Read_In_Landscape(argv[2],t,&ldscp,&loc_hash,tree);
@@ -155,9 +157,7 @@ int GEO_Simulate_Estimate(int argc, char **argv)
   t->n_dim      = 2;
   n_tax         = (int)atoi(argv[2]);
 
-
   GEO_Make_Geo_Complete(t->ldscape_sz,t->n_dim,n_tax,t);
-
   
   t->cov[0*t->n_dim+0] = t->sigma;
   t->cov[1*t->n_dim+1] = t->sigma;
@@ -185,6 +185,7 @@ int GEO_Simulate_Estimate(int argc, char **argv)
   ori_tree = Make_Tree_From_Scratch(tree->n_otu,NULL);
   Copy_Tree(tree,ori_tree);
   
+
   Random_SPRs_On_Rooted_Tree(tree);
   
   Free_Bip(ori_tree);
@@ -204,6 +205,11 @@ int GEO_Simulate_Estimate(int argc, char **argv)
   PhyML_Printf("\n. Scale: %f",scale);
   For(i,2*tree->n_otu-1) tree->rates->nd_t[i] *= scale;
   
+
+
+
+  For(i,2*tree->n_otu-1) PhyML_Printf("\n. new: %f",tree->rates->nd_t[i]);
+
 
   phydbl *tree_dist,*geo_dist;
   int j;
@@ -1777,7 +1783,7 @@ void GEO_Read_In_Landscape(char *file_name, t_geo *t, phydbl **ldscape, int **lo
 
   do
     {
-      fscanf(fp,"%s",s);
+      if(fscanf(fp,"%s",s) == EOF) break;
 
       if(strlen(s) > 0) For(tax,tree->n_otu) if(!strcmp(tree->a_nodes[tax]->name,s)) break;
 
@@ -1791,10 +1797,10 @@ void GEO_Read_In_Landscape(char *file_name, t_geo *t, phydbl **ldscape, int **lo
 
       
       /* sscanf(line+pos,"%lf %lf",&longitude,&lattitude); */
-      fscanf(fp,"%lf",&longitude);
-      fscanf(fp,"%lf",&lattitude);
+      if(fscanf(fp,"%lf",&longitude) == EOF) break;
+      if(fscanf(fp,"%lf",&lattitude) == EOF) break;
 
-      printf("\n. s: %s %f %f",s,longitude,lattitude);
+      /* printf("\n. s: %s %f %f",s,longitude,lattitude); */
 
       For(loc,t->ldscape_sz)
         {

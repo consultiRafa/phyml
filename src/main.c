@@ -138,7 +138,17 @@ int main(int argc, char **argv)
                   if(io->fp_in_constraint_tree != NULL)
                     {
                       char *s;
+
+                      PhyML_Printf("\n. Reading constraint tree file...");
+                      
                       io->cstr_tree = Read_Tree_File_Phylip(io->fp_in_constraint_tree);
+
+                      if(io->cstr_tree->n_root != NULL)
+                        {
+                          PhyML_Printf("\n== The constraint tree file must be unrooted");
+                          Exit("\n");
+                        }
+
                       s = Add_Taxa_To_Constraint_Tree(io->fp_in_constraint_tree,cdata);
                       fflush(NULL);
                       Free_Tree(tree);
@@ -148,9 +158,9 @@ int main(int argc, char **argv)
                       Check_Constraint_Tree_Taxa_Names(io->cstr_tree,cdata);
                       Alloc_Bip(io->cstr_tree);
                       Get_Bip(io->cstr_tree->a_nodes[0],
-                          io->cstr_tree->a_nodes[0]->v[0],
-                          io->cstr_tree);
-                      if(!tree->has_branch_lengths) Add_BioNJ_Branch_Lengths(tree,cdata,mod);
+                              io->cstr_tree->a_nodes[0]->v[0],
+                              io->cstr_tree);
+                      if(!tree->has_branch_lengths) Add_BioNJ_Branch_Lengths(tree,cdata,mod);                      
                     }
 
                   if(!tree) continue;
@@ -227,6 +237,7 @@ int main(int argc, char **argv)
                       }
                     }
 
+
                   if(tree->mod->gamma_mgf_bl) Optimum_Root_Position_IL_Model(tree);
 
                   Set_Both_Sides(YES,tree);
@@ -275,12 +286,11 @@ int main(int argc, char **argv)
 
                   time(&t_end);
 
-
                   Print_Fp_Out(io->fp_out_stats,t_beg,t_end,tree,
-                           io,num_data_set+1,
-                           (tree->mod->s_opt->n_rand_starts > 1)?
-                           (num_rand_tree):(num_tree),
-                                       (num_rand_tree == io->mod->s_opt->n_rand_starts-1)?(YES):(NO));
+                               io,num_data_set+1,
+                               (tree->mod->s_opt->n_rand_starts > 1)?
+                               (num_rand_tree):(num_tree),
+                               (num_rand_tree == io->mod->s_opt->n_rand_starts-1)?(YES):(NO));
 
                   if(tree->io->print_site_lnl) Print_Site_Lk(tree,io->fp_out_lk);
 
@@ -294,13 +304,13 @@ int main(int argc, char **argv)
 #ifdef BEAGLE
                   finalize_beagle_instance(tree);
 #endif
-                  if(io->fp_in_constraint_tree != NULL) Free_Tree(io->cstr_tree);
                   Free_Spr_List(tree);
                   Free_Triplet(tree->triplet_struct);
                   Free_Tree_Pars(tree);
                   Free_Tree_Lk(tree);
                   Free_Tree(tree);
                 } //Tree done
+
 
               /* Launch bootstrap analysis */
               if(mod->bootstrap)
@@ -322,6 +332,7 @@ int main(int argc, char **argv)
                       /* Launch aLRT */
                       most_likely_tree = aLRT_From_String(most_likely_tree,cdata,mod,io);
                     }
+
 
               /* Print the most likely tree in the output file */
               if(!io->quiet) PhyML_Printf("\n\n. Printing the most likely tree in file '%s'.", Basename(io->out_tree_file));
@@ -358,6 +369,7 @@ int main(int argc, char **argv)
   if(io->fp_out_stats)          fclose(io->fp_out_stats);
   if(io->fp_out_trace)          fclose(io->fp_out_trace);
 
+  if(io->fp_in_constraint_tree != NULL) Free_Tree(io->cstr_tree);
   Free_Input(io);
 
   time(&t_end);

@@ -303,7 +303,7 @@ void DR_Print_Tree_Postscript_Pre(t_node *a, t_node *d, t_edge *b, int render_na
       PhyML_Fprintf(fp,"setfont\n");
       PhyML_Fprintf(fp,"%.1f %.1f mt\n",w->xcoord[d->num]+2,w->ycoord[d->num]);
 
-      PhyML_Fprintf(fp,"(%d) show \n",b->num);
+      /* PhyML_Fprintf(fp,"(%d) show \n",b->num); */
 
       PhyML_Fprintf(fp,"%.1f %.1f mt\n",w->xcoord[d->num],w->ycoord[d->num]);
       PhyML_Fprintf(fp," /Helvetica findfont 14 scalefont\n");

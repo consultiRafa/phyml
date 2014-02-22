@@ -1125,19 +1125,19 @@ char *Add_Taxa_To_Constraint_Tree(FILE *fp, calign *cdata)
   For(i,cdata->n_otu)
     {
       For(j,tree->n_otu)
-    {
-      if(!strcmp(tree->a_nodes[j]->name,cdata->c_seq[i]->name))
-        break;
-    }
-
+        {
+          if(!strcmp(tree->a_nodes[j]->name,cdata->c_seq[i]->name))
+            break;
+        }
+      
       if(j == tree->n_otu)
-    {
-      strcat(long_line,",");
-      strcat(long_line,cdata->c_seq[i]->name);
+        {
+          strcat(long_line,",");
+          strcat(long_line,cdata->c_seq[i]->name);
+        }
+      
     }
-
-    }
-
+  
   strcat(long_line,");");
 
   Free_Tree(tree);
@@ -2853,6 +2853,9 @@ void Bootstrap(t_tree *tree)
       boot_tree->n_pattern          = boot_tree->data->crunch_len;
       boot_tree->io->print_site_lnl = 0;
       boot_tree->io->print_trace    = 0;
+      boot_tree->n_root             = NULL;
+      boot_tree->e_root             = NULL;
+
 
       Set_Both_Sides(YES,boot_tree);
 
@@ -9191,7 +9194,7 @@ int Check_Topo_Constraints(t_tree *big_tree, t_tree *small_tree)
   Get_Bip(big_tree_cpy->a_nodes[0],big_tree_cpy->a_nodes[0]->v[0],big_tree_cpy);
 
   For(i,2*big_tree_cpy->n_otu-3) big_tree_cpy->a_edges[i]->bip_score = 0;
-  For(i,2*small_tree->n_otu-3) small_tree->a_edges[i]->bip_score = 0;
+  For(i,2*small_tree->n_otu-3)   small_tree->a_edges[i]->bip_score = 0;
 
   diffs = Compare_Bip(small_tree,big_tree_cpy,NO);
 
@@ -9817,7 +9820,7 @@ void Random_SPRs_On_Rooted_Tree(t_tree *tree)
 
       if(err == YES)
         {
-          PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+          PhyML_Printf("\n== Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
           Exit("\n");
         }
 
@@ -10755,10 +10758,7 @@ void Calculate_Number_Of_Diff_States_Core(t_node *a, t_node *d, t_edge *b, t_tre
 
 int Number_Of_Diff_States_One_Site(int site, t_tree *tree)
 {
-  t_node *init_root;
   int n_states;
-
-  /* Init_Ui_Tips(tree); */
 
 
   Number_Of_Diff_States_One_Site_Post(tree->a_nodes[0],
