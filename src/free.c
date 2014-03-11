@@ -385,9 +385,7 @@ void Free_Tree_Lk(t_tree *mixt_tree)
       For(i,3) Free(tree->log_lks_aLRT[i]);
       Free(tree->log_lks_aLRT);
 
-      For(i,MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes))
-        Free(tree->log_site_lk_cat[i]);
-      Free(tree->log_site_lk_cat);
+      Free(tree->unscaled_site_lk_cat);
 
       For(i,2*tree->n_otu-3) Free_Edge_Lk(tree->a_edges[i]);
 

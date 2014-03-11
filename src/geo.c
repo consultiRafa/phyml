@@ -206,11 +206,6 @@ int GEO_Simulate_Estimate(int argc, char **argv)
   For(i,2*tree->n_otu-1) tree->rates->nd_t[i] *= scale;
   
 
-
-
-  For(i,2*tree->n_otu-1) PhyML_Printf("\n. new: %f",tree->rates->nd_t[i]);
-
-
   phydbl *tree_dist,*geo_dist;
   int j;
   
@@ -358,6 +353,7 @@ phydbl *GEO_MCMC(t_tree *tree)
   t->tau   = 1.0;
   t->lbda  = 1.0;
   t->sigma = 1.0;
+  t->dum   = 1.0;
 
   tree->mcmc->chain_len = 1.E+8;
   tree->mcmc->sample_interval = 50;
@@ -372,6 +368,7 @@ phydbl *GEO_MCMC(t_tree *tree)
   tree->mcmc->start_ess[tree->mcmc->num_move_geo_sigma]  = YES;
   tree->mcmc->start_ess[tree->mcmc->num_move_geo_lambda] = YES;
   tree->mcmc->start_ess[tree->mcmc->num_move_geo_tau]    = YES;
+  tree->mcmc->start_ess[tree->mcmc->num_move_geo_dum]    = YES;
 
   n_vars = 10;
   res = (phydbl *)mCalloc(tree->mcmc->chain_len / tree->mcmc->sample_interval * n_vars,sizeof(phydbl));
@@ -382,6 +379,7 @@ phydbl *GEO_MCMC(t_tree *tree)
     {
       MCMC_Geo_Lbda(tree);
       MCMC_Geo_Tau(tree);
+      MCMC_Geo_Dum(tree);
       MCMC_Geo_Loc(tree);
 
       t->update_fmat = YES;
@@ -426,22 +424,33 @@ phydbl *GEO_MCMC(t_tree *tree)
           /*        tree->mcmc->acc_rate[tree->mcmc->num_move_geo_sigma], */
           /*        tree->mcmc->tune_move[tree->mcmc->num_move_geo_sigma]); */
                  
-          PhyML_Printf("\n. Run %6d Sigma: %12f [%4.0f] Lambda: %12f [%4.0f] Tau: %12f [%4.0f] LogLk: %12f x: %12f y:%12f",
-                       tree->mcmc->run,
+          /* PhyML_Printf("\n. Run %6d Sigma: %12f [%4.0f] Lambda: %12f [%4.0f] Tau: %12f [%4.0f] Dum: %12f [%4.0f] LogLk: %12f x: %12f y:%12f", */
+          /*              tree->mcmc->run, */
 
-                       t->sigma,
-                       tree->mcmc->ess[tree->mcmc->num_move_geo_sigma],
+          /*              t->sigma, */
+          /*              tree->mcmc->ess[tree->mcmc->num_move_geo_sigma], */
 
-                       t->lbda,
-                       tree->mcmc->ess[tree->mcmc->num_move_geo_lambda],
+          /*              t->lbda, */
+          /*              tree->mcmc->ess[tree->mcmc->num_move_geo_lambda], */
 
-                       t->tau,
-                       tree->mcmc->ess[tree->mcmc->num_move_geo_tau],
+          /*              t->tau, */
+          /*              tree->mcmc->ess[tree->mcmc->num_move_geo_tau], */
 
-                       t->c_lnL,
+          /*              t->dum, */
+          /*              tree->mcmc->ess[tree->mcmc->num_move_geo_dum], */
+
+          /*              t->c_lnL, */
                        
-                       t->ldscape[t->loc[tree->n_root->num]*t->n_dim+0],
-                       t->ldscape[t->loc[tree->n_root->num]*t->n_dim+1]);
+          /*              t->ldscape[t->loc[tree->n_root->num]*t->n_dim+0], */
+          /*              t->ldscape[t->loc[tree->n_root->num]*t->n_dim+1]); */
+
+
+          PhyML_Printf("\n%12f %12f %12f %12f",
+                       t->sigma,
+                       t->lbda,
+                       t->tau,
+                       t->dum);
+
 
           rand_loc = Rand_Int(0,t->ldscape_sz-1);
 
@@ -694,7 +703,7 @@ void GEO_Update_Rmat(t_node *n, t_geo *t, t_tree *tree)
       For(j,t->ldscape_sz)
         {
           lbda_j = ((t->occup[n->num*t->ldscape_sz + j]==0) ? (1.0) : (t->lbda));
-          t->r_mat[i*t->ldscape_sz+j] = t->f_mat[i*t->ldscape_sz+j] * lbda_j * t->tau;          
+          t->r_mat[i*t->ldscape_sz+j] = t->f_mat[i*t->ldscape_sz+j] * lbda_j * t->tau * t->dum;          
         }
     }
 }
@@ -975,7 +984,7 @@ t_tree *GEO_Simulate(t_geo *t, int n_otu)
       R += 
         t->f_mat[t->loc[tree->n_root->num]*t->ldscape_sz+i] * 
         ((occup[i] == 0) ? (1.0) : (t->lbda)) * 
-        t->tau;
+        t->tau * t->dum;
     }
 
   do
@@ -1000,7 +1009,7 @@ t_tree *GEO_Simulate(t_geo *t, int n_otu)
           p_mig[i] = 
             t->f_mat[dep*t->ldscape_sz+i] * 
             ((occup[i] == 0) ? (1.0) : (t->lbda)) * 
-            t->tau;
+            t->tau * t->dum;
 
           sum += p_mig[i];
         }      
@@ -1051,7 +1060,7 @@ t_tree *GEO_Simulate(t_geo *t, int n_otu)
                     occup[i] *
                     t->f_mat[i*t->ldscape_sz+j] * 
                     ((occup[j] == 0) ? (1.0) : (t->lbda)) *
-                    t->tau;
+                    t->tau * t->dum;
                 }
             }
         }
@@ -1069,7 +1078,7 @@ t_tree *GEO_Simulate(t_geo *t, int n_otu)
               p_branch[i] +=
                 t->f_mat[dep*t->ldscape_sz+j] * 
                 ((occup[j] == 0) ? (1.0) : (t->lbda)) * 
-                t->tau / R;
+                t->tau * t->dum / R;
 
               /* printf("\n. %f %f %f %f", */
               /*        R, */
@@ -1300,7 +1309,9 @@ void GEO_Init_Geo_Struct(t_geo *t)
   t->min_tau      = 1.E-3;
   t->max_tau      = 1.E+3;
 
-  t->tau          = 1.0;
+  t->dum          = 1.0;
+  t->min_dum      = 1.E-3;
+  t->max_dum      = 1.E+3;
 
   t->n_dim        = 2;
   t->ldscape_sz   = 1;
@@ -1546,8 +1557,7 @@ void GEO_Get_Sigma_Max(t_geo *t)
   mean_dist /= t->ldscape_sz*(t->ldscape_sz-1)/2.;
   inv_mean_dist = 1./mean_dist;
   
-
-  PhyML_Printf("\n. mean_dist = %f",mean_dist);
+  PhyML_Printf("\n. Mean distance between locations: %f",mean_dist);
 
   sigma_a = t->min_sigma; sigma_b = 1.0; sigma_c = t->max_sigma;
   /* sigma_a = t->min_sigma; sigma_b = 1.0; sigma_c = 10.; */

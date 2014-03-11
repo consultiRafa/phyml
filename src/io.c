@@ -2053,7 +2053,7 @@ void Print_Site_Lk(t_tree *tree, FILE *fp)
   int site;
   int catg;
   char *s;
-  phydbl postmean;
+  phydbl postmean,sum;
 
   if(!tree->io->print_site_lnl)
     {
@@ -2117,15 +2117,26 @@ void Print_Site_Lk(t_tree *tree, FILE *fp)
           if(tree->mod->ras->n_catg > 1)
             {
               For(catg,tree->mod->ras->n_catg)
-                PhyML_Fprintf(fp,"%-22g",(phydbl)EXP(tree->log_site_lk_cat[catg][tree->data->sitepatt[site]]));
-              
+                {                  
+                  PhyML_Fprintf(fp,"%-22g",tree->unscaled_site_lk_cat[catg*tree->n_pattern + tree->data->sitepatt[site]]);
+                }
+                  
               postmean = .0;
               For(catg,tree->mod->ras->n_catg)
                 postmean +=
                 tree->mod->ras->gamma_rr->v[catg] *
-                EXP(tree->log_site_lk_cat[catg][tree->data->sitepatt[site]]) *
+                tree->unscaled_site_lk_cat[catg*tree->n_pattern + tree->data->sitepatt[site]] *
                 tree->mod->ras->gamma_r_proba->v[catg];
-              postmean /= tree->cur_site_lk[tree->data->sitepatt[site]];
+
+              sum = .0;
+              For(catg,tree->mod->ras->n_catg)
+                {
+                  sum +=
+                    tree->unscaled_site_lk_cat[catg*tree->n_pattern + tree->data->sitepatt[site]] *
+                    tree->mod->ras->gamma_r_proba->v[catg];
+                }
+
+              postmean /= sum;
               
               PhyML_Fprintf(fp,"%-22g",postmean);
             }
@@ -2138,7 +2149,7 @@ void Print_Site_Lk(t_tree *tree, FILE *fp)
             }
           
           
-          PhyML_Fprintf(fp,"%-16d\n",Number_Of_Diff_States_One_Site(tree->data->sitepatt[site],tree));
+          PhyML_Fprintf(fp,"%-16d",Number_Of_Diff_States_One_Site(tree->data->sitepatt[site],tree));
           
           PhyML_Fprintf(fp,"\n");
         }

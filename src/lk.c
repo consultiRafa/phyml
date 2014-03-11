@@ -813,8 +813,19 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
           tree->cur_site_lk[site] = EXP(log_site_lk);
         }
       
-      For(catg,tree->mod->ras->n_catg) tree->log_site_lk_cat[catg][site] = LOG(tree->site_lk_cat[catg]) - (phydbl)LOG2 * fact_sum_scale;
-      
+      For(catg,tree->mod->ras->n_catg) 
+        {
+          tree->unscaled_site_lk_cat[catg*tree->n_pattern + site] = tree->site_lk_cat[catg];
+
+          if(isinf(tree->unscaled_site_lk_cat[catg*tree->n_pattern + site]) || 
+             isnan(tree->unscaled_site_lk_cat[catg*tree->n_pattern + site]))
+            {
+              PhyML_Printf("\n== Err. in file %s at line %d (function '%s')",__FILE__,__LINE__,__FUNCTION__);
+              Exit("\n");
+            }
+        }
+
+
       if(isinf(log_site_lk) || isnan(log_site_lk))
         {
           PhyML_Printf("\n== Site = %d",site);
@@ -875,10 +886,11 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
     }
   else
     {
+      // TO DO: what about the part of the likelihood coming from invariable sites???? 
       site_lk = .0;
       For(catg,tree->mod->ras->n_catg)
         site_lk +=
-        EXP(tree->log_site_lk_cat[catg][site])*
+        tree->unscaled_site_lk_cat[catg*tree->n_pattern + site]* // what if unscaled_site_lk_cat can be nan or inf...
         tree->mod->ras->gamma_r_proba->v[catg];
       
       tree->cur_site_lk[site] = site_lk;
@@ -3136,14 +3148,14 @@ void Sample_Ancestral_Seq(int mutmap, int fromprior, t_tree *tree)
     {
       /* Sample the rate class from its posterior density */
       For(j,tree->mod->ras->n_catg)
-    {
-      if(fromprior == NO)
-        probs[j] =
-          EXP(tree->log_site_lk_cat[j][i])*
-          tree->mod->ras->gamma_r_proba->v[j];
-      else
-        probs[j] = tree->mod->ras->gamma_r_proba->v[j];
-    }
+        {
+          if(fromprior == NO)
+            probs[j] =
+              tree->unscaled_site_lk_cat[j*tree->n_pattern+i]*
+              tree->mod->ras->gamma_r_proba->v[j];
+          else
+            probs[j] = tree->mod->ras->gamma_r_proba->v[j];
+        }
 
 
       /* Scale probas. */

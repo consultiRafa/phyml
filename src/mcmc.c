@@ -623,6 +623,7 @@ void MCMC_Geo_Lbda(t_tree *mixt_tree)
   tree = mixt_tree;
   do
     {
+
       MCMC_Single_Param_Generic(&(tree->geo->lbda),
                                 mixt_tree->geo->min_lbda,
                                 mixt_tree->geo->max_lbda,
@@ -661,6 +662,31 @@ void MCMC_Geo_Tau(t_tree *mixt_tree)
     }
   while(tree);
 }
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void MCMC_Geo_Dum(t_tree *mixt_tree)
+{
+  t_tree *tree;
+
+  tree = mixt_tree;
+  do
+    {
+      MCMC_Single_Param_Generic(&(tree->geo->dum),
+                                mixt_tree->geo->min_dum,
+                                mixt_tree->geo->max_dum,
+                                mixt_tree->mcmc->num_move_geo_dum,
+                                NULL,&(mixt_tree->geo->c_lnL),
+                                NULL,GEO_Wrap_Lk,
+                                mixt_tree->mcmc->move_type[mixt_tree->mcmc->num_move_geo_dum],
+                                NO,NULL,mixt_tree,NULL);
+
+      tree = tree->next;
+    }
+  while(tree);
+}
+
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -4304,6 +4330,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->num_move_geo_tau               = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_geo_updown_tau_lbda   = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_geo_updown_lbda_sigma = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_geo_dum               = mcmc->n_moves; mcmc->n_moves += 1;
 
   mcmc->run_move           = (int *)mCalloc(mcmc->n_moves,sizeof(int));
   mcmc->acc_move           = (int *)mCalloc(mcmc->n_moves,sizeof(int));
@@ -4356,6 +4383,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   strcpy(mcmc->move_name[mcmc->num_move_geo_tau],"geo_tau");
   strcpy(mcmc->move_name[mcmc->num_move_geo_updown_tau_lbda],"geo_updown_tau_lbda");
   strcpy(mcmc->move_name[mcmc->num_move_geo_updown_lbda_sigma],"geo_updown_lbda_sigma");
+  strcpy(mcmc->move_name[mcmc->num_move_geo_dum],"geo_dum");
 
   
   if(tree->rates->model_log_rates == YES)
@@ -4386,6 +4414,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_type[mcmc->num_move_geo_tau] = MCMC_MOVE_SCALE_THORNE;
   mcmc->move_type[mcmc->num_move_geo_updown_tau_lbda] = MCMC_MOVE_SCALE_THORNE;
   mcmc->move_type[mcmc->num_move_geo_updown_lbda_sigma] = MCMC_MOVE_SCALE_THORNE;
+  mcmc->move_type[mcmc->num_move_geo_dum] = MCMC_MOVE_SCALE_THORNE;
 
   /* We start with small tuning parameter values in order to have inflated ESS
      for clock_r */
@@ -4448,6 +4477,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_geo_tau]               = 1.0;
   mcmc->move_weight[mcmc->num_move_geo_updown_tau_lbda]   = 1.0;
   mcmc->move_weight[mcmc->num_move_geo_updown_lbda_sigma] = 1.0;
+  mcmc->move_weight[mcmc->num_move_geo_dum]               = 1.0;
 
 
 
@@ -4537,6 +4567,7 @@ void MCMC_Copy_To_New_Param_Val(t_mcmc *mcmc, t_tree *tree)
   mcmc->new_param_val[mcmc->num_move_geo_tau]    = tree->geo ? tree->geo->tau   : -1.;
   mcmc->new_param_val[mcmc->num_move_geo_lambda] = tree->geo ? tree->geo->lbda  : -1.;
   mcmc->new_param_val[mcmc->num_move_geo_sigma]  = tree->geo ? tree->geo->sigma : -1.;
+  mcmc->new_param_val[mcmc->num_move_geo_dum]    = tree->geo ? tree->geo->dum   : -1.;
 
 
   For(i,2*tree->n_otu-2)

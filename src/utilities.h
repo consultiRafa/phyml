@@ -591,21 +591,23 @@ typedef struct __Tree{
   int                           write_br_lens;
   int                                 *mutmap; /*! Mutational map */
 
-  phydbl                              init_lnL;
-  phydbl                              best_lnL; /*! highest value of the loglikelihood found so far */
-  int                                best_pars; /*! highest value of the parsimony found so far */
-  phydbl                                 c_lnL; /*! loglikelihood */
-  phydbl                               old_lnL; /*! old loglikelihood */
-  phydbl                     sum_min_sum_scale; /*! common factor of scaling factors */
-  phydbl                         *c_lnL_sorted; /*! used to compute c_lnL by adding sorted terms to minimize CPU errors */
-  phydbl                        *cur_site_lk; /*! vector of loglikelihoods at individual sites */
-  phydbl                        *old_site_lk; /*! vector of likelihoods at individual sites */
-  phydbl                     **log_site_lk_cat; /*! loglikelihood at individual sites and for each class of rate*/
-  phydbl                          *site_lk_cat; /*! loglikelihood at a single site and for each class of rate*/
-  phydbl                       unconstraint_lk; /*! unconstrained (or multinomial) likelihood  */
-  phydbl                        **log_lks_aLRT; /*! used to compute several branch supports */
-  phydbl                            n_root_pos; /*! position of the root on its t_edge */
-  phydbl                                  size; /*! tree size */
+  phydbl                             init_lnL;
+  phydbl                             best_lnL; /*! highest value of the loglikelihood found so far */
+  int                               best_pars; /*! highest value of the parsimony found so far */
+  phydbl                                c_lnL; /*! loglikelihood */
+  phydbl                              old_lnL; /*! old loglikelihood */
+  phydbl                    sum_min_sum_scale; /*! common factor of scaling factors */
+  phydbl                        *c_lnL_sorted; /*! used to compute c_lnL by adding sorted terms to minimize CPU errors */
+  phydbl                         *cur_site_lk; /*! vector of loglikelihoods at individual sites */
+  phydbl                         *old_site_lk; /*! vector of likelihoods at individual sites */
+
+  phydbl                *unscaled_site_lk_cat; /*! partially scaled site likelihood at individual sites */
+
+  phydbl                         *site_lk_cat; /*! loglikelihood at a single site and for each class of rate*/
+  phydbl                      unconstraint_lk; /*! unconstrained (or multinomial) likelihood  */
+  phydbl                       **log_lks_aLRT; /*! used to compute several branch supports */
+  phydbl                           n_root_pos; /*! position of the root on its t_edge */
+  phydbl                                 size; /*! tree size */
   int                              *site_pars;
   int                                  c_pars;
   int                               *step_mat;
@@ -1413,6 +1415,7 @@ typedef struct __Tmcmc {
   int num_move_geo_lambda;
   int num_move_geo_sigma;
   int num_move_geo_tau;
+  int num_move_geo_dum;
   int num_move_geo_updown_tau_lbda;
   int num_move_geo_updown_lbda_sigma;
 
@@ -1584,6 +1587,11 @@ typedef struct __Phylogeo{
   phydbl                tau; // overall migration rate parameter
   phydbl            min_tau;
   phydbl            max_tau;
+
+  phydbl                dum; // dummy parameter use to assess non-identifiability issues
+  phydbl            min_dum;
+  phydbl            max_dum;
+
 
 }t_geo;
 

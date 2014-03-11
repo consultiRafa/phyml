@@ -3059,7 +3059,6 @@ void Optimize_Free_Rate_Weights(t_tree *tree, int fast, int verbose)
   phydbl lk_before, lk_after;
 
 
-
   if(tree->mod->s_opt->first_opt_free_mixt_rates == YES)
     {
       /* tree->mod->s_opt->opt_alpha     = YES; */

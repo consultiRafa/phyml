@@ -950,7 +950,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
                 {
                   if(tree->mod->ras->parent_class_number == rate_class)
                     {
-                      mixt_tree->log_site_lk_cat[rate_class][site] +=
+                      mixt_tree->unscaled_site_lk_cat[rate_class*mixt_tree->n_pattern + site] +=
                         // TO DO: add correct weight here
                         LOG(mixt_tree->site_lk_cat[mixt_class]) -
                         (phydbl)LOG2 * fact_sum_scale;
