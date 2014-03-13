@@ -584,14 +584,11 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
   phydbl log_site_lk;
   phydbl site_lk_cat/*rate specific site lk*/, site_lk, inv_site_lk;
   int fact_sum_scale;
-  phydbl max_sum_scale,min_sum_scale;
   phydbl sum;
   int catg/*Index of the current rate classes*/,ns/*size of the state-space*/,k,l,site/*index of the current site in the MSA*/;
   int dim1,dim2,dim3;
-  int *sum_scale_left_cat,*sum_scale_rght_cat;
   int exponent;
   int num_prec_issue;
-  phydbl tmp;
 
 #ifdef BEAGLE
   dim1 = tree->n_pattern * tree->mod->ns;
@@ -607,10 +604,8 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
   site            = tree->curr_site;
   ns              = tree->mod->ns;
 
-  sum_scale_left_cat = b->sum_scale_left_cat;
-  sum_scale_rght_cat = b->sum_scale_rght_cat;
 
-  /* Skip this if no tree traveral was required, i.e. likelihood is already up to date */
+  /* Skip this if no tree traveral was required, i.e. likelihood in each class of the mixture is already up to date */
   if(tree->mod->s_opt->skip_tree_traversal == NO)
     {
       /* Actual likelihood calculation */
@@ -677,230 +672,145 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
                     }
                 }
             }
-          
-          
+                    
           tree->site_lk_cat[catg] = site_lk_cat;
           
           //      fprintf(stdout,"[%d,%d,%d]site_lk_cat:%e,e.frq:%f,edge:%d,tax:%d\n",catg,site,state,site_lk_cat,tree->mod->e_frq->pi->v[state],b->num,b->rght->tax);fflush(stdout);
           
-        }//site likelihood for all rate classes
+        }//site likelihood for all rate classes          
+      Pull_Scaling_Factors(site,b,tree);
+    }
+
+  fact_sum_scale = tree->fact_sum_scale[site];
+
+  //Likelihood of the site; is the sum of the individual rate specific likelihoods
+  site_lk = .0;
+  For(catg,tree->mod->ras->n_catg)
+    {
+      site_lk +=
+        tree->unscaled_site_lk_cat[catg*tree->n_pattern + site]* 
+        tree->mod->ras->gamma_r_proba->v[catg]; //density
+    }
+  
+  if(tree->mod->ras->invar == YES)
+    {
+      num_prec_issue = NO;
+      inv_site_lk = Invariant_Lk(fact_sum_scale,site,&num_prec_issue,tree);
       
-      if(tree->apply_lk_scaling == YES)
+      if(num_prec_issue == YES) // inv_site_lk >> site_lk
         {
-          max_sum_scale =   (phydbl)BIG;
-          min_sum_scale =  -(phydbl)BIG;
-          
-          For(catg,tree->mod->ras->n_catg)
-            {
-              sum_scale_left_cat[catg] =
-                (b->sum_scale_left)?
-                (b->sum_scale_left[catg*tree->n_pattern+site]):
-                (0.0);
-              
-              sum_scale_rght_cat[catg] =
-                (b->sum_scale_rght)?
-                (b->sum_scale_rght[catg*tree->n_pattern+site]):
-                (0.0);
-              
-              sum = sum_scale_left_cat[catg] + sum_scale_rght_cat[catg];
-              
-              if(sum < .0)
-                {
-                  printf("\n== tree: %s\n",Write_Tree(tree,NO));
-                  PhyML_Printf("\n== b->num = %d  sum = %G root ? %d",sum,b->num,b == tree->e_root);
-                  PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
-                  Exit("\n");
-                }
-              
-              tmp = sum + ((phydbl)LOGBIG - LOG(tree->site_lk_cat[catg]))/(phydbl)LOG2;
-              if(tmp < max_sum_scale) max_sum_scale = tmp; /* min of the maxs */
-              
-              tmp = sum + ((phydbl)LOGSMALL - LOG(tree->site_lk_cat[catg]))/(phydbl)LOG2;
-              if(tmp > min_sum_scale) min_sum_scale = tmp; /* max of the mins */
-              
-            }
-          
-          if(min_sum_scale > max_sum_scale)
-            {
-              /* PhyML_Printf("\n== Numerical precision issue alert."); */
-              /* PhyML_Printf("\n== min_sum_scale = %G max_sum_scale = %G",min_sum_scale,max_sum_scale); */
-              /* PhyML_Printf("\n== Err in file %s at line %d\n\n",__FILE__,__LINE__); */
-              /* Warn_And_Exit("\n"); */
-              min_sum_scale = max_sum_scale;
-            }
-          
-          fact_sum_scale = (int)((max_sum_scale + min_sum_scale) / 2);
-          
-          
-          /* fact_sum_scale = (int)(max_sum_scale / 2); */
-          
-          /* Apply scaling factors */
-          For(catg,tree->mod->ras->n_catg)
-            {
-              exponent = -(sum_scale_left_cat[catg]+sum_scale_rght_cat[catg])+fact_sum_scale;
-              site_lk_cat = tree->site_lk_cat[catg];
-              Rate_Correction(exponent,&site_lk_cat,tree);
-              tree->site_lk_cat[catg] = site_lk_cat;
-            }
-        }
-      else // No scaling of lk
-        {
-          fact_sum_scale = 0;
-        }
-      
-      
-      //Likelihood of the site; is the sum of the individual rate specific likelihoods
-      site_lk = .0;
-      For(catg,tree->mod->ras->n_catg)
-        {
-          site_lk +=
-            tree->site_lk_cat[catg] *
-            tree->mod->ras->gamma_r_proba->v[catg]; //density
-        }
-      
-      if(tree->mod->ras->invar == YES)
-        {
-          num_prec_issue = NO;
-          inv_site_lk = Invariant_Lk(&fact_sum_scale,site,&num_prec_issue,tree);
-          
-          if(num_prec_issue == YES) // inv_site_lk >> site_lk
-            {
-              site_lk = inv_site_lk * tree->mod->ras->pinvar->v;
-            }
-          else
-            {
-              site_lk = site_lk * (1. - tree->mod->ras->pinvar->v) + inv_site_lk * tree->mod->ras->pinvar->v;
-            }
-        }
-      
-      log_site_lk = LOG(site_lk) - (phydbl)LOG2 * fact_sum_scale; // log_site_lk =  log(site_lk_scaled / 2^(left_subtree+right_subtree))
-      
-      int piecewise_exponent;
-      phydbl multiplier;
-      if(fact_sum_scale >= 0)
-        {
-          tree->cur_site_lk[site] = site_lk;
-          exponent = -fact_sum_scale;
-          do
-            {
-              piecewise_exponent = MAX(exponent,-63);
-              multiplier = 1. / (phydbl)((unsigned long long)(1) << -piecewise_exponent);
-              tree->cur_site_lk[site] *= multiplier;
-              exponent -= piecewise_exponent;
-            }
-          while(exponent != 0);
+          site_lk = inv_site_lk * tree->mod->ras->pinvar->v;
         }
       else
         {
-          //In some cases fact_sum_scale can be negative. If you rescale the partials of two independent subtrees and make some of
-          //these numbers large in order to avoid underflow, then there is a chance that when multiplied them together you will
-          //get an overflow, in which case fact_sum_scale can become negative.
-          
-          tree->cur_site_lk[site] = site_lk;
-          exponent = fact_sum_scale;
-          do
-            {
-              piecewise_exponent = MIN(exponent,63);
-              multiplier = (phydbl)((unsigned long long)(1) << piecewise_exponent);
-              tree->cur_site_lk[site] *= multiplier;
-              exponent -= piecewise_exponent;
-            }
-          while(exponent != 0);
-        }
-      
-      if(isinf(site_lk) || isnan(site_lk))
+          site_lk = site_lk * (1. - tree->mod->ras->pinvar->v) + inv_site_lk * tree->mod->ras->pinvar->v;
+        }          
+    }
+  
+  log_site_lk = LOG(site_lk) - (phydbl)LOG2 * fact_sum_scale; // log_site_lk =  log(site_lk_scaled / 2^(left_subtree+right_subtree))      
+  
+  // Calculation of the site likelihood (using the scaling factors)...
+  int piecewise_exponent;
+  phydbl multiplier;
+  if(fact_sum_scale >= 0)
+    {
+      tree->cur_site_lk[site] = site_lk;
+      exponent = -fact_sum_scale;
+      do
         {
-          tree->cur_site_lk[site] = EXP(log_site_lk);
+          piecewise_exponent = MAX(exponent,-63);
+          multiplier = 1. / (phydbl)((unsigned long long)(1) << -piecewise_exponent);
+          tree->cur_site_lk[site] *= multiplier;
+          exponent -= piecewise_exponent;
         }
-      
-      For(catg,tree->mod->ras->n_catg) 
-        {
-          tree->unscaled_site_lk_cat[catg*tree->n_pattern + site] = tree->site_lk_cat[catg];
-
-          if(isinf(tree->unscaled_site_lk_cat[catg*tree->n_pattern + site]) || 
-             isnan(tree->unscaled_site_lk_cat[catg*tree->n_pattern + site]))
-            {
-              PhyML_Printf("\n== Err. in file %s at line %d (function '%s')",__FILE__,__LINE__,__FUNCTION__);
-              Exit("\n");
-            }
-        }
-
-
-      if(isinf(log_site_lk) || isnan(log_site_lk))
-        {
-          PhyML_Printf("\n== Site = %d",site);
-          PhyML_Printf("\n== Invar = %d",tree->data->invar[site]);
-          PhyML_Printf("\n== Mixt = %d",tree->is_mixt_tree);
-          PhyML_Printf("\n== Lk = %G log(Lk) = %f < %G",site_lk,log_site_lk,-BIG);
-          For(catg,tree->mod->ras->n_catg) PhyML_Printf("\n== rr=%f p=%f",tree->mod->ras->gamma_rr->v[catg],tree->mod->ras->gamma_r_proba->v[catg]);
-          PhyML_Printf("\n== Pinv = %G",tree->mod->ras->pinvar->v);
-          PhyML_Printf("\n== Bl mult = %G",tree->mod->br_len_multiplier->v);
-          PhyML_Printf("\n== fact_sum_scale = %d",fact_sum_scale);
-          PhyML_Printf("\n== n_catg: %d",tree->mod->ras->n_catg);
-
-          if(tree->mod->whichmodel == GTR || tree->mod->whichmodel == CUSTOM)
-            {
-              int i,j;
-              PhyML_Printf("\n== Rate matrix\n");
-              For(i,tree->mod->ns)
-                {
-                  For(j,tree->mod->ns)
-                    {
-                      PhyML_Printf("%12G ",i,tree->mod->r_mat->qmat->v[i*4+j]); 
-                    }
-                  PhyML_Printf("\n");
-                }
-              fflush(NULL);
-
-              PhyML_Printf("\n== Relative rates\n");
-              For(i,tree->mod->ns*(tree->mod->ns-1)/2)
-                {
-                  PhyML_Printf("\n== rr[%3d]: %12G %12G",i,tree->mod->r_mat->rr->v[i],tree->mod->r_mat->rr_val->v[i]); 
-                }
-              fflush(NULL);
-
-            }
-
-          
-          
-          /* int i; */
-          /* For(i,2*tree->n_otu-3) */
-          /* 	{ */
-          /* 	  PhyML_Printf("\n. b%3d->l->v = %f %f [%G] %f %f %f %f [%s]",i, */
-          /* 		       tree->a_edges[i]->l->v, */
-          /* 		       tree->a_edges[i]->gamma_prior_mean, */
-          /* 		       tree->a_edges[i]->gamma_prior_var, */
-          /* 		       tree->rates->nd_t[tree->a_edges[i]->left->num], */
-          /* 		       tree->rates->nd_t[tree->a_edges[i]->rght->num], */
-          /* 		       tree->rates->br_r[tree->a_edges[i]->left->num], */
-          /* 		       tree->rates->br_r[tree->a_edges[i]->rght->num], */
-          /* 		       tree->a_edges[i] == tree->e_root ? "YES" : "NO"); */
-          /* 	  fflush(NULL); */
-          
-          /* 	} */
-          
-          Print_Site(tree->data,site,tree->n_otu,"\n",tree->mod->io->state_len,stdout);
-          PhyML_Printf("\n== Err. in file %s at line %d (function '%s')",__FILE__,__LINE__,__FUNCTION__);
-          Exit("\n");
-        }
+      while(exponent != 0);
     }
   else
     {
-      // TO DO: what about the part of the likelihood coming from invariable sites???? 
-      site_lk = .0;
-      For(catg,tree->mod->ras->n_catg)
-        site_lk +=
-        tree->unscaled_site_lk_cat[catg*tree->n_pattern + site]* // what if unscaled_site_lk_cat can be nan or inf...
-        tree->mod->ras->gamma_r_proba->v[catg];
+      //In some cases fact_sum_scale can be negative. If you rescale the partials of two independent subtrees and make some of
+          //these numbers large in order to avoid underflow, then there is a chance that when multiplied them together you will
+          //get an overflow, in which case fact_sum_scale can become negative.
       
       tree->cur_site_lk[site] = site_lk;
-      log_site_lk = LOG(site_lk);
+      exponent = fact_sum_scale;
+      do
+        {
+          piecewise_exponent = MIN(exponent,63);
+          multiplier = (phydbl)((unsigned long long)(1) << piecewise_exponent);
+          tree->cur_site_lk[site] *= multiplier;
+          exponent -= piecewise_exponent;
+        }
+      while(exponent != 0);
     }
   
-  /* Multiply log likelihood by the number of times this site pattern is found in the data */
+  // ... or using the log-likelihood
+  if(isinf(site_lk) || isnan(site_lk))
+    {
+      tree->cur_site_lk[site] = EXP(log_site_lk);
+    }
+  
+  if(isinf(log_site_lk) || isnan(log_site_lk))
+    {
+      PhyML_Printf("\n== Site = %d",site);
+      PhyML_Printf("\n== Invar = %d",tree->data->invar[site]);
+      PhyML_Printf("\n== Mixt = %d",tree->is_mixt_tree);
+      PhyML_Printf("\n== Lk = %G log(Lk) = %f < %G",site_lk,log_site_lk,-BIG);
+      For(catg,tree->mod->ras->n_catg) PhyML_Printf("\n== rr=%f p=%f",tree->mod->ras->gamma_rr->v[catg],tree->mod->ras->gamma_r_proba->v[catg]);
+      PhyML_Printf("\n== Pinv = %G",tree->mod->ras->pinvar->v);
+      PhyML_Printf("\n== Bl mult = %G",tree->mod->br_len_multiplier->v);
+      PhyML_Printf("\n== fact_sum_scale = %d",fact_sum_scale);
+      PhyML_Printf("\n== n_catg: %d",tree->mod->ras->n_catg);
+      
+      if(tree->mod->whichmodel == GTR || tree->mod->whichmodel == CUSTOM)
+        {
+          int i,j;
+          PhyML_Printf("\n== Rate matrix\n");
+          For(i,tree->mod->ns)
+            {
+              For(j,tree->mod->ns)
+                {
+                  PhyML_Printf("%12G ",i,tree->mod->r_mat->qmat->v[i*4+j]); 
+                }
+              PhyML_Printf("\n");
+            }
+          fflush(NULL);
+          
+          PhyML_Printf("\n== Relative rates\n");
+          For(i,tree->mod->ns*(tree->mod->ns-1)/2)
+            {
+              PhyML_Printf("\n== rr[%3d]: %12G %12G",i,tree->mod->r_mat->rr->v[i],tree->mod->r_mat->rr_val->v[i]); 
+            }
+          fflush(NULL);
+          
+        }
+      
+      /* int i; */
+      /* For(i,2*tree->n_otu-3) */
+      /* 	{ */
+      /* 	  PhyML_Printf("\n. b%3d->l->v = %f %f [%G] %f %f %f %f [%s]",i, */
+      /* 		       tree->a_edges[i]->l->v, */
+      /* 		       tree->a_edges[i]->gamma_prior_mean, */
+      /* 		       tree->a_edges[i]->gamma_prior_var, */
+      /* 		       tree->rates->nd_t[tree->a_edges[i]->left->num], */
+      /* 		       tree->rates->nd_t[tree->a_edges[i]->rght->num], */
+      /* 		       tree->rates->br_r[tree->a_edges[i]->left->num], */
+      /* 		       tree->rates->br_r[tree->a_edges[i]->rght->num], */
+      /* 		       tree->a_edges[i] == tree->e_root ? "YES" : "NO"); */
+      /* 	  fflush(NULL); */
+      
+      /* 	} */
+      
+      Print_Site(tree->data,site,tree->n_otu,"\n",tree->mod->io->state_len,stdout);
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s')",__FILE__,__LINE__,__FUNCTION__);
+      Exit("\n");
+    }
+
+
+/* Multiply log likelihood by the number of times this site pattern is found in the data */
   tree->c_lnL_sorted[site] = tree->data->wght[site]*log_site_lk;
   
   tree->c_lnL += tree->data->wght[site]*log_site_lk;
+
 
   return log_site_lk;
 }
@@ -1018,7 +928,7 @@ void Rate_Correction(int exponent, phydbl *site_lk_cat, t_tree *tree)
 //////////////////////////////////////////////////////////////
 
 // Returns the scaled likelihood for invariable sites
-phydbl Invariant_Lk(int *fact_sum_scale, int site, int *num_prec_issue, t_tree *tree)
+phydbl Invariant_Lk(int fact_sum_scale, int site, int *num_prec_issue, t_tree *tree)
 {
   int exponent,piecewise_exponent;
   phydbl multiplier;
@@ -1038,7 +948,7 @@ phydbl Invariant_Lk(int *fact_sum_scale, int site, int *num_prec_issue, t_tree *
 
           if(tree->apply_lk_scaling == YES)
             {
-              exponent = (*fact_sum_scale);
+              exponent = fact_sum_scale;
               do
                 {
                   piecewise_exponent = MIN(exponent,63);
@@ -1053,7 +963,7 @@ phydbl Invariant_Lk(int *fact_sum_scale, int site, int *num_prec_issue, t_tree *
           if(isinf(inv_site_lk)) // P(D|r=0) >> P(D|r>0) => assume P(D) = P(D|r=0)P(r=0)
             {
               int i;
-              PhyML_Printf("\n== fact_sum_scale: %d",*fact_sum_scale);              
+              PhyML_Printf("\n== fact_sum_scale: %d",fact_sum_scale);              
               PhyML_Printf("\n== pi: %f",tree->mod->e_frq->pi->v[tree->data->invar[site]]);              
               For(i,tree->mod->ns) PhyML_Printf("\n== pi %d: %f",i,tree->mod->e_frq->pi->v[i]);
               PhyML_Printf("\n== Numerical precision issue alert.");
@@ -3831,6 +3741,100 @@ void ML_Ancestral_Sequences_One_Node(t_node *mixt_d, t_tree *mixt_tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+// Returns the value of fact_sum_scale, the part of the scaling factors
+// that is common to all classes of the mixture and scale the 
+// likelihood for each mixture (using the part of the scaling
+// factors that is class-specific)
+
+void Pull_Scaling_Factors(int site,
+                          t_edge *b,
+                          t_tree *tree)
+{
+  int catg;
+  int *sum_scale_left_cat,*sum_scale_rght_cat;
+  int exponent;
+  phydbl max_sum_scale,min_sum_scale;
+  phydbl sum,tmp;
+  phydbl site_lk_cat;
+
+  sum_scale_left_cat = b->sum_scale_left_cat;
+  sum_scale_rght_cat = b->sum_scale_rght_cat;
+
+  if(tree->apply_lk_scaling == YES)
+    {
+      max_sum_scale =   (phydbl)BIG;
+      min_sum_scale =  -(phydbl)BIG;
+      
+      For(catg,tree->mod->ras->n_catg)
+        {
+          sum_scale_left_cat[catg] =
+            (b->sum_scale_left)?
+            (b->sum_scale_left[catg*tree->n_pattern+site]):
+            (0.0);
+          
+          sum_scale_rght_cat[catg] =
+            (b->sum_scale_rght)?
+            (b->sum_scale_rght[catg*tree->n_pattern+site]):
+            (0.0);
+          
+          sum = sum_scale_left_cat[catg] + sum_scale_rght_cat[catg];
+          
+          if(sum < .0)
+            {
+              printf("\n== tree: %s\n",Write_Tree(tree,NO));
+              PhyML_Printf("\n== b->num = %d  sum = %G root ? %d",sum,b->num,b == tree->e_root);
+              PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
+              Exit("\n");
+            }
+          
+          tmp = sum + ((phydbl)LOGBIG - LOG(tree->site_lk_cat[catg]))/(phydbl)LOG2;
+          if(tmp < max_sum_scale) max_sum_scale = tmp; /* min of the maxs */
+          
+          tmp = sum + ((phydbl)LOGSMALL - LOG(tree->site_lk_cat[catg]))/(phydbl)LOG2;
+          if(tmp > min_sum_scale) min_sum_scale = tmp; /* max of the mins */
+          
+        }
+      
+      if(min_sum_scale > max_sum_scale)
+        {
+          /* PhyML_Printf("\n== Numerical precision issue alert."); */
+          /* PhyML_Printf("\n== min_sum_scale = %G max_sum_scale = %G",min_sum_scale,max_sum_scale); */
+          /* PhyML_Printf("\n== Err in file %s at line %d\n\n",__FILE__,__LINE__); */
+          /* Warn_And_Exit("\n"); */
+          min_sum_scale = max_sum_scale;
+        }
+      
+      tree->fact_sum_scale[site] = (int)((max_sum_scale + min_sum_scale) / 2);
+      
+      
+      /* fact_sum_scale = (int)(max_sum_scale / 2); */
+      
+      /* Apply scaling factors */
+      For(catg,tree->mod->ras->n_catg)
+        {
+          exponent = -(sum_scale_left_cat[catg]+sum_scale_rght_cat[catg])+tree->fact_sum_scale[site];
+          site_lk_cat = tree->site_lk_cat[catg];
+          Rate_Correction(exponent,&site_lk_cat,tree);
+          tree->site_lk_cat[catg] = site_lk_cat;
+        }
+    }
+  else // No scaling of lk
+    {
+      tree->fact_sum_scale[site] = 0;
+    }
+  
+  For(catg,tree->mod->ras->n_catg) 
+    {
+      tree->unscaled_site_lk_cat[catg*tree->n_pattern + site] = tree->site_lk_cat[catg];
+      
+      if(isinf(tree->unscaled_site_lk_cat[catg*tree->n_pattern + site]) || 
+         isnan(tree->unscaled_site_lk_cat[catg*tree->n_pattern + site]))
+        {
+          PhyML_Printf("\n== Err. in file %s at line %d (function '%s')",__FILE__,__LINE__,__FUNCTION__);
+          Exit("\n");
+        }
+    }
+}
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

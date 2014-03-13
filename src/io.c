@@ -2067,15 +2067,26 @@ void Print_Site_Lk(t_tree *tree, FILE *fp)
       
       PhyML_Fprintf(fp,"Note : P(D|M) is the probability of site D given the model M (i.e., the site likelihood)\n");
       if(tree->mod->ras->n_catg > 1 || tree->mod->ras->invar)
-        PhyML_Fprintf(fp,"P(D|M,rr[x]) is the probability of site D given the model M and the relative rate\nof evolution rr[x], where x is the class of rate to be considered.\nWe have P(D|M) = \\sum_x P(x) x P(D|M,rr[x]).\n");
+        {
+          PhyML_Fprintf(fp,"P*(D|M,rr[x]) is the scaled probability of site D given the model M and the relative rate\n");
+          PhyML_Fprintf(fp,"of evolution rr[x], where x is the class of rate to be considered.\n");
+          PhyML_Fprintf(fp,"The actual conditional probability is given by P*(D|M,rr[x])/2^F, where\n");
+          PhyML_Fprintf(fp,"F is the scaling factor (see column 'Scaler').\n");
+          PhyML_Fprintf(fp,"For invariant sites, P(D|M,rr[0]=0) is the actual conditional probability\n");
+          PhyML_Fprintf(fp,"(i.e., it is not scaled).\n");
+        }
+
       PhyML_Fprintf(fp,"\n\n");
-      
+          
       sprintf(s,"Site");
       PhyML_Fprintf(fp, "%-7s",s);
       
       sprintf(s,"P(D|M)");
       PhyML_Fprintf(fp,"%-15s",s);
       
+      sprintf(s,"Scaler");
+      PhyML_Fprintf(fp,"%-7s",s);
+
       sprintf(s,"Pattern");
       PhyML_Fprintf(fp, "%-9s",s);
       
@@ -2083,8 +2094,8 @@ void Print_Site_Lk(t_tree *tree, FILE *fp)
         {
           For(catg,tree->mod->ras->n_catg)
             {
-              sprintf(s,"P(D|M,rr[%d]=%5.4f)",catg+1,tree->mod->ras->gamma_rr->v[catg]);
-              PhyML_Fprintf(fp,"%-22s",s);
+              sprintf(s,"P*(D|M,rr[%d]=%5.4f)",catg+1,tree->mod->ras->gamma_rr->v[catg]);
+              PhyML_Fprintf(fp,"%-23s",s);
             }
           
           sprintf(s,"Posterior mean");
@@ -2111,6 +2122,8 @@ void Print_Site_Lk(t_tree *tree, FILE *fp)
           PhyML_Fprintf(fp,"%-7d",site+1);
           
 	  PhyML_Fprintf(fp,"%-15g",tree->cur_site_lk[tree->data->sitepatt[site]]);      
+
+	  PhyML_Fprintf(fp,"%-7d",tree->fact_sum_scale[tree->data->sitepatt[site]]);      
           
           PhyML_Fprintf(fp,"%-9d",tree->data->sitepatt[site]);
           
@@ -2118,7 +2131,7 @@ void Print_Site_Lk(t_tree *tree, FILE *fp)
             {
               For(catg,tree->mod->ras->n_catg)
                 {                  
-                  PhyML_Fprintf(fp,"%-22g",tree->unscaled_site_lk_cat[catg*tree->n_pattern + tree->data->sitepatt[site]]);
+                  PhyML_Fprintf(fp,"%-23g",tree->unscaled_site_lk_cat[catg*tree->n_pattern + tree->data->sitepatt[site]]);
                 }
                   
               postmean = .0;
@@ -2140,6 +2153,7 @@ void Print_Site_Lk(t_tree *tree, FILE *fp)
               
               PhyML_Fprintf(fp,"%-22g",postmean);
             }
+
           if(tree->mod->ras->invar)
             {
               if((phydbl)tree->data->invar[tree->data->sitepatt[site]] > -0.5)

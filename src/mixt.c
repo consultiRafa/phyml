@@ -925,7 +925,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
               tree->apply_lk_scaling = YES;
 
               /*! 'tree' will give the correct state frequencies (as opposed to mixt_tree */
-              inv_site_lk = Invariant_Lk(&fact_sum_scale,site,&num_prec_issue,tree);
+              inv_site_lk = Invariant_Lk(fact_sum_scale,site,&num_prec_issue,tree);
 
               if(num_prec_issue == YES) // inv_site_lk >> site_lk
                 {

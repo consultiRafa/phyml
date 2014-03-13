@@ -605,6 +605,7 @@ typedef struct __Tree{
 
   phydbl                         *site_lk_cat; /*! loglikelihood at a single site and for each class of rate*/
   phydbl                      unconstraint_lk; /*! unconstrained (or multinomial) likelihood  */
+  int                         *fact_sum_scale;
   phydbl                       **log_lks_aLRT; /*! used to compute several branch supports */
   phydbl                           n_root_pos; /*! position of the root on its t_edge */
   phydbl                                 size; /*! tree size */
