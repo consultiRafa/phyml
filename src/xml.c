@@ -692,7 +692,7 @@ int XML_Validate_Attr_Int(char *target, int num, ...)
   sc_target = To_Lower_String(target);
 
   va_start(args,num);           
-  For(i,num)
+  For(i,num+1)
     {
       s = va_arg(args, char *); 
       sc_s = To_Lower_String(s);
@@ -705,7 +705,7 @@ int XML_Validate_Attr_Int(char *target, int num, ...)
     }
   va_end(args);
 
-  if(i == num) 
+  if(i == num+1) 
     {
       i = -1;
       PhyML_Printf("\n== Attribute value '%s' is not valid",target);

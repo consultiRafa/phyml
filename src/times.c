@@ -920,7 +920,7 @@ phydbl TIMES_Lk_Yule_Order(t_tree *tree)
   phydbl lbda;
   phydbl *tp_min,*tp_max;
   phydbl lower_bound,upper_bound;
-  phydbl root_height;
+  /* phydbl root_height; */
 
   tp_min = tree->rates->t_prior_min;
   tp_max = tree->rates->t_prior_max;
@@ -931,7 +931,7 @@ phydbl TIMES_Lk_Yule_Order(t_tree *tree)
   lbda = tree->rates->birth_rate;
   lower_bound = -1.;
   upper_bound = -1.;
-  root_height = FABS(tree->rates->nd_t[tree->n_root->num]);
+  /* root_height = FABS(tree->rates->nd_t[tree->n_root->num]); */
 
   /*! Adapted from  Equation (6) in T. Stadler's Systematic Biology, 2012 paper with
       sampling fraction set to 1 and death rate set to 0. Dropped the 1/(n-1) scaling 

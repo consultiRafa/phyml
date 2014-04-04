@@ -100,7 +100,7 @@ int GEO_Estimate(int argc, char **argv)
 
   PhyML_Printf("\n. Init loglk: %f",tree->geo->c_lnL);
 
-  DR_Draw_Tree("essai.ps",tree);
+  /* DR_Draw_Tree("essai.ps",tree); */
 
   GEO_MCMC(tree);
 
@@ -334,7 +334,7 @@ phydbl *GEO_MCMC(t_tree *tree)
 
   tree->mcmc = MCMC_Make_MCMC_Struct();
   MCMC_Complete_MCMC(tree->mcmc,tree);
-  
+
   tree->mcmc->io               = NULL;
   tree->mcmc->is               = NO;
   tree->mcmc->use_data         = YES;
@@ -362,8 +362,6 @@ phydbl *GEO_MCMC(t_tree *tree)
 
   GEO_Update_Occup(t,tree);
   GEO_Lk(t,tree);
-
-  PhyML_Printf("\n. Init loglk: %f",t->c_lnL);
   
   tree->mcmc->start_ess[tree->mcmc->num_move_geo_sigma]  = YES;
   tree->mcmc->start_ess[tree->mcmc->num_move_geo_lambda] = YES;
@@ -373,13 +371,15 @@ phydbl *GEO_MCMC(t_tree *tree)
   n_vars = 10;
   res = (phydbl *)mCalloc(tree->mcmc->chain_len / tree->mcmc->sample_interval * n_vars,sizeof(phydbl));
 
+  PhyML_Printf("\n. Run  Sigma [ESS] Lambda [ESS] Tau [ESS] Dummy [ESS] LogLk");
+
 
   tree->mcmc->run = 0;
   do
     {
       MCMC_Geo_Lbda(tree);
       MCMC_Geo_Tau(tree);
-      MCMC_Geo_Dum(tree);
+      /* MCMC_Geo_Dum(tree); */
       MCMC_Geo_Loc(tree);
 
       t->update_fmat = YES;
@@ -424,32 +424,29 @@ phydbl *GEO_MCMC(t_tree *tree)
           /*        tree->mcmc->acc_rate[tree->mcmc->num_move_geo_sigma], */
           /*        tree->mcmc->tune_move[tree->mcmc->num_move_geo_sigma]); */
                  
-          /* PhyML_Printf("\n. Run %6d Sigma: %12f [%4.0f] Lambda: %12f [%4.0f] Tau: %12f [%4.0f] Dum: %12f [%4.0f] LogLk: %12f x: %12f y:%12f", */
-          /*              tree->mcmc->run, */
+          PhyML_Printf("\n. %6d  %12f %4.0f %12f %4.0f %12f %4.0f %12f %4.0f %12f",
+                       tree->mcmc->run,
 
-          /*              t->sigma, */
-          /*              tree->mcmc->ess[tree->mcmc->num_move_geo_sigma], */
-
-          /*              t->lbda, */
-          /*              tree->mcmc->ess[tree->mcmc->num_move_geo_lambda], */
-
-          /*              t->tau, */
-          /*              tree->mcmc->ess[tree->mcmc->num_move_geo_tau], */
-
-          /*              t->dum, */
-          /*              tree->mcmc->ess[tree->mcmc->num_move_geo_dum], */
-
-          /*              t->c_lnL, */
-                       
-          /*              t->ldscape[t->loc[tree->n_root->num]*t->n_dim+0], */
-          /*              t->ldscape[t->loc[tree->n_root->num]*t->n_dim+1]); */
-
-
-          PhyML_Printf("\n%12f %12f %12f %12f",
                        t->sigma,
+                       tree->mcmc->ess[tree->mcmc->num_move_geo_sigma],
+
                        t->lbda,
+                       tree->mcmc->ess[tree->mcmc->num_move_geo_lambda],
+
                        t->tau,
-                       t->dum);
+                       tree->mcmc->ess[tree->mcmc->num_move_geo_tau],
+
+                       t->dum,
+                       tree->mcmc->ess[tree->mcmc->num_move_geo_dum],
+
+                       t->c_lnL);
+
+
+          /* PhyML_Printf("\n%12f %12f %12f %12f", */
+          /*              t->sigma, */
+          /*              t->lbda, */
+          /*              t->tau, */
+          /*              t->dum); */
 
 
           rand_loc = Rand_Int(0,t->ldscape_sz-1);
@@ -1194,7 +1191,7 @@ t_tree *GEO_Simulate(t_geo *t, int n_otu)
 
   /* printf("\n. %s ",Write_Tree(tree,NO)); */
 
-  DR_Draw_Tree("essai.ps",tree);
+  /* DR_Draw_Tree("essai.ps",tree); */
 
   /* For(i,tree->n_otu) */
   /*   printf("\n. %4s %4d [%5.2f %5.2f]",tree->a_nodes[i]->name, */
@@ -1826,9 +1823,7 @@ void GEO_Read_In_Landscape(char *file_name, t_geo *t, phydbl **ldscape, int **lo
           t->ldscape_sz++;
           (*ldscape)[(t->ldscape_sz-1)*t->n_dim+0] = longitude;
           (*ldscape)[(t->ldscape_sz-1)*t->n_dim+1] = lattitude;
-          
-          printf("\n. new loc: %f %f",longitude,lattitude);
-          
+                    
           if(!(t->ldscape_sz%10))
             {
               (*ldscape)  = (phydbl *)mRealloc((*ldscape),(t->ldscape_sz+10)*t->n_dim,sizeof(phydbl));

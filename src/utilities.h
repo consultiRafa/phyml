@@ -72,7 +72,7 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define GT 5
 
 #define RR_MIN 0.01
-#define RR_MAX 50.0
+#define RR_MAX 200.0
 
 #define MCMC_MOVE_RANDWALK_UNIFORM       0
 #define MCMC_MOVE_LOG_RANDWALK_UNIFORM   1

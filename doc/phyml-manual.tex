@@ -84,6 +84,7 @@ the GNU public licence. See http://www.opensource.org for details.
 \begin{itemize}
 \item { St\'ephane Guindon} and { Olivier Gascuel} conceived the original PhyML algorithm.
 \item { St\'ephane Guindon} conceived the PhyTime method.
+\item { St\'ephane Guindon, David Welch and Louis Ranjard} conceived the PhyloGeo method.
 \item { St\'ephane Guindon, Wim Hordjik} and { Olivier Gascuel} conceived the SPR-based tree search algorithm.
 \item { Maria Anisimova} and { Olivier Gascuel} conceived the aLRT method for branch support.
 \item { St\'ephane Guindon, Franck Lethiec}, Jean-Francois Dufayard and Vincent Lefort implemented PhyML.
@@ -2367,6 +2368,87 @@ An earlier article also described some of the methods implemented in PhyTime:
     Biology and Evolution}, 2010,
 27(8):1768:81.
 \end{itemize}
+
+
+
+\subsection{PhyloGeo}\index{PhyloGeo} PhyloGeo is  a program that implements the
+competition-dispersal phylogeography model described in Ranjard, Welch, Paturel and Guindon
+``Modelling competition  and  dispersal in a statistical phylogeographic framework''. Accepted for
+publication in {\it Systematic Biology}.
+
+It implements a  Markov Chain Monte Carlo  approach that samples from the  posterior distribution of
+the three  parameters of  interest in this  model, namely  the competition intensity  $\lambda$, the
+dispersal  bias parameter  $\sigma$ and  the overal  dispersal rate  $\tau$. The  data consist  in a
+phylogeny with node heights proportional to their ages and geographical locations for evety taxon in
+this tree.
+
+\subsubsection{Installing PhyloGeo}
+
+Compiling PhyloGeo is straightforward on Unix-like  machines (i.e., linux and MacOS systems). PhyloGeo
+is not readily available for Windows machines but  compilation should be easy on this system too. In
+the `phyml' directory, where the `src/'  and `doc/' directories stand, enter the following commands:
+{\setlength{\baselineskip}{0.5\baselineskip}
+\begin{verbatim}
+./configure --enable-geo;
+make clean;
+make;
+\end{verbatim} } This set of commands generates  a binary file called \x{phylogeo} which can be found
+  in the `src/' directory.
+
+\subsubsection{Running PhyloGeo} PhyloGeo takes as input a rooted tree file in Newick format and a tree
+with geographical locations for all the tips of the phylogeny. Here is an example of valid tree and
+the corresponding spatial locations just below:
+
+
+\begin{scriptsize}
+\begin{Verbatim}[frame=single, label=Valid PhyloGeo input tree, samepage=true, baselinestretch=0.5]
+(((unicaA:1.30202,unicaB:1.30202):1.34596,(((nitidaC:0.94617,(nitidaA:0.31497,
+nitidaB:0.31497):0.63120):0.18955,(((mauiensisA:0.00370,mauiensisB:0.00370):0.20068,
+(pilimauiensisA:0.05151,pilimauiensisB:0.05151):0.15287):0.78769,(brunneaA:0.10582,
+brunneaB:0.10582):0.88625):0.14365):0.80126,(((molokaiensisA:0.03728,
+molokaiensisB:0.03728):0.71371,(deplanataA:0.01814,deplanataB:0.01814):0.73285):0.34764,
+((parvulaA:0.20487,parvulaB:0.20487):0.40191,(kauaiensisA:0.24276,
+kauaiensisB:0.24276):0.36401):0.49186):0.83835):0.71099):1.38043,
+(nihoaA:0.05673,nihoaB:0.05673):3.97168);
+\end{Verbatim}
+
+\begin{Verbatim}[frame=single, label=Valid PhyloGeo spatial location file, samepage=true, baselinestretch=0.5]
+nihoaA                  23.062222	161.926111
+nihoaB                  23.062222	161.926111
+kauaiensisA             22.0644445	159.5455555
+kauaiensisB             22.0644445	159.5455555
+unicaA                  21.436875	158.0524305
+unicaB                  21.436875	158.0524305
+parvulaA                21.436875	158.0524305
+parvulaB                21.436875	158.0524305
+molokaiensisA           20.90532	156.6499
+molokaiensisB           20.90532	156.6499
+deplanataA              20.90532	156.6499
+deplanataB              20.90532	156.6499
+brunneaA                20.90532	156.6499
+brunneaB                20.90532	156.6499
+mauiensisA              20.90532	156.6499
+mauiensisB              20.90532	156.6499
+pilimauiensisA          20.90532	156.6499
+pilimauiensisB          20.90532	156.6499
+nitidaA                 19.7362	        155.6069
+nitidaB                 19.7362	        155.6069
+nitidaC                 19.7362	        155.6069
+\end{Verbatim}
+\end{scriptsize}
+
+In order to run PhyloGeo, enter the following command: \x{./phylogeo ./tree\_file
+  ./spatial\_location\_file > phylogeo\_output}.
+PhyloGeo will then print out the sampled values of the model parameters in the file
+\x{phylogeo\_output}. This file can then be used to generate the marginal posterior densities of the
+model parameters. In particular, evidence for competition corresponds to value of $\lambda$ smaller
+than 1.0. Please see the original article for more information on how to interpret the model
+parameters.
+
+\subsubsection{Citing PhyloGeo}\label{sec:citephylogeo}
+
+Ranjard, L., Welch D., Paturel M. and Guindon S. ``Modelling competition  and  dispersal in a
+statistical phylogeographic framework''. 2014. Systematic Biology.
 
 
 \section{Recommendations on program usage}\label{sec:progusage}

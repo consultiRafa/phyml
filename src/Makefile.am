@@ -42,7 +42,7 @@ bin_PROGRAMS = sergeii
 PROG = SERGEII
 else
 if WANT_GEO
-bin_PROGRAMS = geo
+bin_PROGRAMS = phylogeo
 PROG = GEO
 else
 if WANT_EVOLVE
@@ -395,7 +395,7 @@ mixt.c mixt.h
 evolve_LDADD = -lm 
 else
 if WANT_GEO
-geo_SOURCES = main.c\
+phylogeo_SOURCES = main.c\
 utilities.c  utilities.h\
 optimiz.c  optimiz.h\
 lk.c  lk.h\
@@ -425,7 +425,7 @@ init.c init.h\
 xml.c xml.h\
 mixt.c mixt.h\
 geo.c geo.h
-geo_LDADD = -lm 
+phylogeo_LDADD = -lm 
 else
 if WANT_CHECKPOINT
 checkpoint_SOURCES = main.c\

@@ -2888,7 +2888,7 @@ void Optimize_Free_Rate(t_tree *mixt_tree, int verbose)
               phydbl **x;
               x = (phydbl **)mCalloc(2*tree->n_otu-3 + 2*tree->mod->ras->n_catg,sizeof(phydbl *));
               pos = 0;
-
+              
               lk_before = tree->c_lnL;
 
               /* For(i,2*tree->n_otu-3) x[pos++] = &(tree->a_edges[i]->l->v); */
@@ -2907,6 +2907,7 @@ void Optimize_Free_Rate(t_tree *mixt_tree, int verbose)
                               &Return_Abs_Lk,
                               &Num_Derivative_Several_Param_Nonaligned,
                               &Lnsrch_Nonaligned,&failed);
+
 
               /* For(i,2*tree->n_otu-3 + 2*tree->mod->ras->n_catg) *(x[i]) = EXP(*(x[i])); */
               For(i,2*tree->mod->ras->n_catg) *(x[i]) = EXP(MIN(1.E+2,*(x[i])));
