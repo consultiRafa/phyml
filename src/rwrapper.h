@@ -18,6 +18,7 @@ the GNU public licence. See http://www.opensource.org for details.
 #include "utilities.h"
 #include "rates.h"
 #include "eigen.h"
+#include "io.h"
 #include "stats.h"
 #include "tiporder.h"
 
@@ -37,7 +38,10 @@ the GNU public licence. See http://www.opensource.org for details.
 /* void RWRAPPER_Dmu2_And_Mu1(double *mu1, double *mu2, double *dt1, double *dt2, double *a, double *b, double *lexp, double *dens); */
 /* void RWRAPPER_Rnorm_Trunc(phydbl *mean, phydbl *sd, phydbl *min, phydbl *max, phydbl *res); */
 /* void  RWRAPPER_Cholesky_Decomp(double *A, int *dim); */
-/* void RWRAPPER_Log_Dnorm(phydbl *x, phydbl *mean, phydbl *sd,  phydbl *res); */
-void RWRAPPER_Min_Number_Of_Tip_Permut(char **tree_file_name, char **coord_file_name, phydbl *res);
+/* void RWRAPPER_Min_Number_Of_Tip_Permut(char **tree_file_name, char **coord_file_name, phydbl *res); */
+void RWRAPPER_Log_Dnorm(phydbl *x, phydbl *mean, phydbl *sd,  phydbl *res);
+void RWRAPPER_Integrated_Geometric_Brownian_Bridge_Mean(phydbl *T, phydbl *A, phydbl *B, phydbl *u, phydbl *mean);
+void RWRAPPER_Integrated_Geometric_Brownian_Bridge_Var(phydbl *T, phydbl *A, phydbl *B, phydbl *u, phydbl *var);
+
 
 #endif

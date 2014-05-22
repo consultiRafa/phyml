@@ -633,10 +633,10 @@ void Set_Defaults_Model(t_mod *mod)
 
 
 #if !(defined PHYTIME || defined SERGEII)
-  /* mod->l_min = 1.E-8; */
-  /* mod->l_max = 100.0; */
-  mod->l_min = 1.E-4;
-  mod->l_max = 2.0;
+  mod->l_min = 1.E-8;
+  mod->l_max = 100.0;
+  /* mod->l_min = 1.E-4; */
+  /* mod->l_max = 2.0; */
 #else
   mod->l_min = 1.E-8;
   mod->l_max = 2.0;

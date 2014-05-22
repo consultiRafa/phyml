@@ -2942,6 +2942,7 @@ void Optimize_Free_Rate_Rr(t_tree *tree, int fast, int verbose)
 
   lk_before = tree->c_lnL;
 
+
   if(tree->prev == NULL && tree->next == NULL)
     {
       int i;

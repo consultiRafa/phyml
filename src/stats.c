@@ -3970,7 +3970,7 @@ void Integrated_Brownian_Bridge_Moments(phydbl x_beg, phydbl x_end,
 i.e., X(t) is a Brownian bridge starting at 0 at t=0 and stopping
 at 0 at t=T. X'(t) starts at X'(t)=A at t=0 and stops at X'(t)=B at
 t=T. This function calculates the mean and variance of 
-Z(T) = 1/T \int_0^T exp(X'(t)) dt. It uses a 10th order approximation
+Z(T) = 1/T \int_0^T exp(X'(t)) dt. It uses a 13th order approximation
 to exp(X) = 1 + X + (1/2!)X^2 + ... (1/10!)X^10
 */
 
@@ -4207,7 +4207,7 @@ phydbl t1369 = -0.71204290560e11 * t285 * u * T - 0.8638755840e10 * t75 * t70 * 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
- void Integrated_Geometric_Brownian_Bridge_Var(phydbl T, phydbl A, phydbl B, phydbl u, phydbl *var)
+void Integrated_Geometric_Brownian_Bridge_Var(phydbl T, phydbl A, phydbl B, phydbl u, phydbl *var)
  { 
 phydbl t2 = exp(0.2e1 * A);
 phydbl t3 = A * A;

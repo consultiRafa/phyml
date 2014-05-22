@@ -2079,7 +2079,7 @@ void Print_Site_Lk(t_tree *tree, FILE *fp)
       PhyML_Fprintf(fp,"\n\n");
           
       sprintf(s,"Site");
-      PhyML_Fprintf(fp, "%-7s",s);
+      PhyML_Fprintf(fp, "%-12s",s);
       
       sprintf(s,"P(D|M)");
       PhyML_Fprintf(fp,"%-15s",s);
@@ -2119,7 +2119,7 @@ void Print_Site_Lk(t_tree *tree, FILE *fp)
       For(site,tree->data->init_len)
         {
                     
-          PhyML_Fprintf(fp,"%-7d",site+1);
+          PhyML_Fprintf(fp,"%-12d",site+1);
           
 	  PhyML_Fprintf(fp,"%-15g",tree->cur_site_lk[tree->data->sitepatt[site]]);      
 

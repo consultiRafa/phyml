@@ -32,6 +32,7 @@ the GNU public licence. See http://www.opensource.org for details.
 #include "draw.h"
 #include "rates.h"
 #include "mcmc.h"
+#include "io.h"
 #include "stats.h"
 
 void TIPO_Get_Tips_Y_Rank(t_tree *tree);
