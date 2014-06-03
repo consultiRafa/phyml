@@ -42,5 +42,6 @@ phydbl Get_Lambda_F84(phydbl *pi, phydbl *kappa);
 void Update_Eigen(t_mod *mod);
 void Update_RAS(t_mod *mod);
 void Update_Efrq(t_mod *mod);
+void PMat_MGF_Gamma(phydbl *Pij, phydbl shape, phydbl scale, phydbl scaling_fact, t_mod *mod);
 
 #endif

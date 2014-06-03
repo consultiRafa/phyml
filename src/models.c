@@ -1059,6 +1059,60 @@ void Switch_From_M4mod_To_Mod(t_mod *mod)
 //////////////////////////////////////////////////////////////
 
 
+void PMat_MGF_Gamma(phydbl *Pij, phydbl shape, phydbl scale, phydbl scaling_fact, t_mod *mod)
+{
+  int dim;
+  int i,j,k;
+  phydbl *uexpt,*imbd;
+
+  dim = mod->eigen->size;
+  uexpt = mod->eigen->r_e_vect_im;
+  imbd  = mod->eigen->e_val_im;
+
+  /* Get the eigenvalues of Q (not the exponentials) */
+  For(i,dim) imbd[i]  = LOG(mod->eigen->e_val[i]);
+
+  /* Multiply them by the scaling factor */
+  For(i,dim) imbd[i]  *= scaling_fact;
+
+  For(i,dim) imbd[i] *= -scale;
+  For(i,dim) imbd[i] += 1.0;
+  For(i,dim) imbd[i]  = POW(imbd[i],-shape);
+
+  For(i,dim) For(k,dim) uexpt[i*dim+k] = mod->eigen->r_e_vect[i*dim+k] * imbd[k];
+
+  For(i,dim) For(k,dim) Pij[dim*i+k] = .0;
+
+  For(i,dim)
+    {
+      For(j,dim)
+	{
+	  For(k,dim)
+	    {
+	      Pij[dim*i+j] += (uexpt[i*dim+k] * mod->eigen->l_e_vect[k*dim+j]);
+	    }
+	  if(Pij[dim*i+j] < SMALL_PIJ) Pij[dim*i+j] = SMALL_PIJ;
+	}
+    }
+
+  /* printf("\n. shape = %G scale = %G %f",shape,scale,Pij[1]); */
+  /* printf("\n. Pij: %f",Pij[1]); */
+
+  /* printf("\n. Pmat"); */
+  /* For(i,dim) */
+  /*   { */
+  /*     printf("\n"); */
+  /*     For(j,dim) */
+  /* 	{ */
+  /* 	  printf("%12f ",Pij[i*dim+j]); */
+  /* 	} */
+  /*   } */
+  /* Exit("\n"); */
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 void Switch_From_Mod_To_M4mod(t_mod *mod)
 {
   int i;

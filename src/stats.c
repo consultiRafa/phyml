@@ -3781,67 +3781,6 @@ phydbl *Rnorm_Multid_Trunc_Constraint(phydbl *mu, phydbl *cov, phydbl *min, phyd
 //////////////////////////////////////////////////////////////
 
 
-void PMat_MGF_Gamma(phydbl *Pij, phydbl shape, phydbl scale, phydbl scaling_fact, t_mod *mod)
-{
-  int dim;
-  int i,j,k;
-  phydbl *uexpt,*imbd;
-
-  dim = mod->eigen->size;
-  uexpt = mod->eigen->r_e_vect_im;
-  imbd  = mod->eigen->e_val_im;
-
-  /* Get the eigenvalues of Q (not the exponentials) */
-  For(i,dim) imbd[i]  = LOG(mod->eigen->e_val[i]);
-
-  /* Multiply them by the scaling factor */
-  For(i,dim) imbd[i]  *= scaling_fact;
-
-  For(i,dim) imbd[i] *= -scale;
-  For(i,dim) imbd[i] += 1.0;
-  For(i,dim) imbd[i]  = POW(imbd[i],-shape);
-
-  For(i,dim) For(k,dim) uexpt[i*dim+k] = mod->eigen->r_e_vect[i*dim+k] * imbd[k];
-
-  For(i,dim) For(k,dim) Pij[dim*i+k] = .0;
-
-  For(i,dim)
-    {
-      For(j,dim)
-	{
-	  For(k,dim)
-	    {
-	      Pij[dim*i+j] += (uexpt[i*dim+k] * mod->eigen->l_e_vect[k*dim+j]);
-	    }
-	  if(Pij[dim*i+j] < SMALL_PIJ) Pij[dim*i+j] = SMALL_PIJ;
-	}
-    }
-
-  /* printf("\n. shape = %f scale = %f",shape,scale); */
-  /* printf("\n. Qmat"); */
-  /* For(i,dim) */
-  /*   { */
-  /*     printf("\n"); */
-  /*     For(j,dim) */
-  /* 	{ */
-  /* 	  printf("%12f ",mod->qmat[i*dim+j]); */
-  /* 	} */
-  /*   } */
-
-  /* printf("\n. Pmat"); */
-  /* For(i,dim) */
-  /*   { */
-  /*     printf("\n"); */
-  /*     For(j,dim) */
-  /* 	{ */
-  /* 	  printf("%12f ",Pij[i*dim+j]); */
-  /* 	} */
-  /*   } */
-  /* Exit("\n"); */
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
 
 
 void Integrated_Brownian_Bridge_Moments(phydbl x_beg, phydbl x_end, 
@@ -4183,14 +4122,14 @@ phydbl t1369 = -0.71204290560e11 * t285 * u * T - 0.8638755840e10 * t75 * t70 * 
  /* printf("\n. Taylor: %f",*mean); */
  
  /*  /\* C(int(exp((B-A)*s/T+(1/2)*u*(T-s)*s/T), s = 0 .. T)) *\/ */
- /*  /\* Correct but numerically unstable dur to EXP(TOO BIG)*\/ */
+ /*  /\* Correct but numerically unstable due to EXP(TOO BIG) *\/ */
 
  /* *mean = */
- /*   SQRT(0.2e1) *  */
- /*   SQRT(0.3141592654e1) *  */
- /*   EXP((double) ((4 * B * B - 8 * B * A + 4 * B * u * T + 4 * A * A - 4 * A * u * T + u * u * T * T) / u / T) / 0.8e1) *  */
- /*   (-erf(SQRT(0.2e1) * (double) (-2 * B + 2 * A - u * T) / (double) T * pow((double) (u / T), -0.1e1 / 0.2e1) / 0.4e1)  */
- /*    +erf(SQRT(0.2e1) * (double) (u *  T - 2 * B + 2 * A) / (double) T * pow((double) (u / T), -0.1e1 / 0.2e1) / 0.4e1))*  */
+ /*   SQRT(0.2e1) * */
+ /*   SQRT(0.3141592654e1) * */
+ /*   EXP((double) ((4 * B * B - 8 * B * A + 4 * B * u * T + 4 * A * A - 4 * A * u * T + u * u * T * T) / u / T) / 0.8e1) * */
+ /*   (-erf(SQRT(0.2e1) * (double) (-2 * B + 2 * A - u * T) / (double) T * pow((double) (u / T), -0.1e1 / 0.2e1) / 0.4e1) */
+ /*    +erf(SQRT(0.2e1) * (double) (u *  T - 2 * B + 2 * A) / (double) T * pow((double) (u / T), -0.1e1 / 0.2e1) / 0.4e1))* */
  /*   pow((double) (u / T), -0.1e1 / 0.2e1) / 0.2e1; */
  
  /* *mean /= T; */

@@ -968,15 +968,39 @@ phydbl TIMES_Lk_Yule_Order(t_tree *tree)
       if(n->tax == NO)
         {
           loglk  += (loglbda - lbda * FABS(t[j]));
-          loglk -= LOG(EXP(-lbda*lower_bound) - EXP(-lbda*upper_bound)); // incorporate calibration boundaries here.
-    
+          loglk -= LOG(EXP(-lbda*lower_bound) - EXP(-lbda*upper_bound)); // incorporate calibration boundaries here.    
         }
+      
+      if(isinf(loglk) || isnan(loglk))
+        {
+          /* PhyML_Printf("\n. Lower bound: %f",lower_bound); */
+          /* PhyML_Printf("\n. Upper bound: %f",upper_bound); */
+          /* PhyML_Printf("\n. tf: %f tp_max: %f tp_min: %f ",tf[j],tp_max[j],tp_min[j]); */
+          /* PhyML_Printf("\n. exp1: %f",EXP(-lbda*lower_bound)); */
+          /* PhyML_Printf("\n. exp2: %f",EXP(-lbda*upper_bound)); */
+          /* PhyML_Printf("\n. diff: %f",EXP(-lbda*lower_bound) - EXP(-lbda*upper_bound)); */
+          /* Exit("\n"); */
+          return(-INFINITY);
+        }      
     }
 
   lower_bound = MAX(FABS(tf[tree->n_root->num]),FABS(tp_max[tree->n_root->num]));
   upper_bound = FABS(tp_min[tree->n_root->num]);
   loglk += LOG(2) + loglbda - 2.*lbda * FABS(t[tree->n_root->num]);
   loglk -= LOG(EXP(-2.*lbda*lower_bound) - EXP(-2.*lbda*upper_bound));
+
+  if(isinf(loglk) || isnan(loglk))
+    {
+      /* PhyML_Printf("\n. * Lower bound: %f",lower_bound); */
+      /* PhyML_Printf("\n. * Upper bound: %f",upper_bound); */
+      /* PhyML_Printf("\n. * tf: %f tp_max: %f tp_min: %f",tf[tree->n_root->num],tp_max[tree->n_root->num],tp_min[tree->n_root->num]); */
+      /* PhyML_Printf("\n. * exp1: %f",EXP(-2.*lbda*lower_bound)); */
+      /* PhyML_Printf("\n. * exp2: %f",EXP(-2.*lbda*upper_bound)); */
+      /* PhyML_Printf("\n. * diff: %f",EXP(-2.*lbda*lower_bound) - EXP(-2.*lbda*upper_bound)); */
+      /* Exit("\n"); */
+      return(-INFINITY);
+    }
+
 
   return(loglk);
 }
@@ -1635,12 +1659,22 @@ phydbl TIMES_Lk_Yule_Order_Root_Cond(t_tree *tree)
           loglk  += (loglbda - lbda * FABS(t[j]));
           loglk -= LOG(EXP(-lbda*lower_bound) - EXP(-lbda*upper_bound)); // incorporate calibration boundaries here.    
         }
+
+        if(isinf(loglk) || isnan(loglk))
+          {
+            PhyML_Printf("\n. Lower bound: %f",lower_bound);
+            PhyML_Printf("\n. Upper bound: %f",upper_bound);
+            PhyML_Printf("\n. tf: %f tp_max: %f tp_min: %f root: %f",tf[j],tp_max[j],tp_min[j],root_height);
+            Exit("\n");
+          }
+
     }
 
   /* lower_bound = MAX(FABS(tf[tree->n_root->num]),FABS(tp_max[tree->n_root->num])); */
   /* upper_bound = FABS(tp_min[tree->n_root->num]); */
   /* loglk += LOG(2) + loglbda - 2.*lbda * FABS(t[tree->n_root->num]); */
   /* loglk -= LOG(EXP(-2.*lbda*lower_bound) - EXP(-2.*lbda*upper_bound)); */
+
 
   return(loglk);
 }

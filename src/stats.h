@@ -92,7 +92,6 @@ phydbl *Hessian_Seo(t_tree *tree);
 void Integrated_Brownian_Bridge_Moments(phydbl x_beg, phydbl x_end, 
 					phydbl y_beg, phydbl y_end, 
 					phydbl sd, phydbl *mean, phydbl *var);
-void PMat_MGF_Gamma(phydbl *Pij, phydbl shape, phydbl scale, phydbl scaling_fact, t_mod *mod);
 void Integrated_Geometric_Brownian_Bridge_Moments(phydbl T, phydbl A, phydbl B, phydbl u, phydbl *mean, phydbl *var);
 void Integrated_Geometric_Brownian_Bridge_Mean(phydbl T, phydbl A, phydbl B, phydbl u, phydbl *mean);
 void Integrated_Geometric_Brownian_Bridge_Var(phydbl T, phydbl A, phydbl B, phydbl u, phydbl *mean);
