@@ -228,8 +228,7 @@ int TIMES_main(int argc, char **argv)
 		      /* Force the exact likelihood score */
 		      user_lk_approx = tree->io->lk_approx;
 		      tree->io->lk_approx = EXACT;
-		      
-                      
+		                            
                       /* printf("\n. Lk: %f",Lk(NULL,tree)); */
                       /* Exit("\n"); */
 
@@ -273,12 +272,8 @@ int TIMES_main(int argc, char **argv)
 		      PhyML_Printf("\n. p(data|model) [approx] ~ %.2f",tree->c_lnL);
 
 		      tree->io->lk_approx = user_lk_approx;
-
-
-
 		    }
-		  
-		      
+
 		  tree->rates->model = io->rates->model;		  
 		  PhyML_Printf("\n. Selected model '%s'",RATES_Get_Model_Name(io->rates->model));
 		  if(tree->rates->model == GUINDON) tree->mod->gamma_mgf_bl = YES;
@@ -292,7 +287,8 @@ int TIMES_main(int argc, char **argv)
 		  MCMC_Copy_MCMC_Struct(tree->io->mcmc,tree->mcmc,"phytime");
 		  MCMC_Complete_MCMC(tree->mcmc,tree);
 		  tree->mcmc->is_burnin = NO;
-		  MCMC(tree);
+		  tree->mod->ras->sort_rate_classes = YES;
+                  MCMC(tree);
 		  MCMC_Close_MCMC(tree->mcmc);
 		  MCMC_Free_MCMC(tree->mcmc);
                   Add_Root(tree->a_edges[0],tree);

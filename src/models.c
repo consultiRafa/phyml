@@ -1,6 +1,6 @@
 /*
 
-PHYML :  a program that  computes maximum likelihood  phyLOGenies from
+PhyML :  a program that  computes maximum likelihood  phyLOGenies from
 DNA or AA homoLOGous sequences
 
 Copyright (C) Stephane Guindon. Oct 2003 onward
@@ -794,30 +794,29 @@ void Update_RAS(t_mod *mod)
   else
     {
 
-#if (defined PHYTIME)
 
-      Qksort(mod->ras->gamma_r_proba_unscaled->v,NULL,0,mod->ras->n_catg-1); // Unscaled class frequencies sorted in increasing order
-
-      // Update class frequencies
-      For(i,mod->ras->n_catg)
+      if(mod->ras->sort_rate_classes == YES)
         {
-          if(!i)
-            mod->ras->gamma_r_proba->v[i] =
-              mod->ras->gamma_r_proba_unscaled->v[i] /  (mod->ras->gamma_r_proba_unscaled->v[mod->ras->n_catg-1]) ;
-          else
-            mod->ras->gamma_r_proba->v[i] =
-              (mod->ras->gamma_r_proba_unscaled->v[i] - mod->ras->gamma_r_proba_unscaled->v[i-1]) /
-          (mod->ras->gamma_r_proba_unscaled->v[mod->ras->n_catg-1]) ;
+          Qksort(mod->ras->gamma_r_proba_unscaled->v,NULL,0,mod->ras->n_catg-1); // Unscaled class frequencies sorted in increasing order
+
+          // Update class frequencies
+          For(i,mod->ras->n_catg)
+            {
+              if(!i)
+                mod->ras->gamma_r_proba->v[i] =
+                  mod->ras->gamma_r_proba_unscaled->v[i] /  (mod->ras->gamma_r_proba_unscaled->v[mod->ras->n_catg-1]) ;
+              else
+                mod->ras->gamma_r_proba->v[i] =
+                  (mod->ras->gamma_r_proba_unscaled->v[i] - mod->ras->gamma_r_proba_unscaled->v[i-1]) /
+                  (mod->ras->gamma_r_proba_unscaled->v[mod->ras->n_catg-1]) ;
+            }
         }
-
-#else
-
-      sum = 0.0;
-      For(i,mod->ras->n_catg) sum += mod->ras->gamma_r_proba_unscaled->v[i];
-      For(i,mod->ras->n_catg) mod->ras->gamma_r_proba->v[i] = mod->ras->gamma_r_proba_unscaled->v[i] / sum;
-
-
-#endif
+      else
+        {
+          sum = 0.0;
+          For(i,mod->ras->n_catg) sum += mod->ras->gamma_r_proba_unscaled->v[i];
+          For(i,mod->ras->n_catg) mod->ras->gamma_r_proba->v[i] = mod->ras->gamma_r_proba_unscaled->v[i] / sum;
+        }
 
       do
         {

@@ -847,6 +847,8 @@ typedef struct __RAS {
                                         consuming part of the likelihood calculation). This is where
                                         'skip_rate_category' comes in handy. */
 
+  short int      sort_rate_classes; /*! When doing MCMC moves on rate classes, one needs to have the rate classes sorted */
+
   struct __RAS               *next;
   struct __RAS               *prev;
 

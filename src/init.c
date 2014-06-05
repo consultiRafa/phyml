@@ -584,6 +584,8 @@ void Init_Rmat(t_rmat *rmat)
 
 void Set_Defaults_Model(t_mod *mod)
 {
+  Set_Defaults_Ras(mod->ras);
+
   strcpy(mod->modelname->s,"HKY85");
   strcpy(mod->custom_mod_string->s,"000000");
   mod->next                    = NULL;
@@ -593,23 +595,18 @@ void Set_Defaults_Model(t_mod *mod)
   mod->r_mat                   = NULL;
   mod->e_frq                   = NULL;
   mod->whichmodel              = HKY85;
-  mod->ras->n_catg             = 4;
   mod->n_mixt_classes          = 0;
   mod->mod_num                 = 0;
   mod->update_eigen            = NO;
   mod->is_mixt_mod             = NO;
-  mod->ras->normalise_rr       = YES;
-
+  
   mod->kappa->v                = 4.0;
-  mod->ras->alpha->v           = 1.0;
   mod->lambda->v               = 1.0;
-  mod->ras->pinvar->v          = 0.0;
   mod->l_var_sigma             = 1.E-2;
   mod->e_frq_weight->v         = 1.0;
   mod->r_mat_weight->v         = 1.0;
 
   mod->bootstrap               = 0;
-  mod->ras->invar              = NO;
   mod->ns                      = 4;
   mod->use_m4mod               = NO;
   mod->ras->gamma_median       = NO;
@@ -622,14 +619,8 @@ void Set_Defaults_Model(t_mod *mod)
 
   mod->io                       = NULL;
   mod->log_l                    = NO;
-  mod->ras->free_mixt_rates     = NO;
   mod->gamma_mgf_bl             = NO;
   mod->br_len_multiplier->v     = 1.0;
-
-
-  mod->ras->parent_class_number = 0;
-  mod->ras->init_r_proba        = YES;
-  mod->ras->init_rr             = YES;
 
 
 #if !(defined PHYTIME || defined SERGEII)
@@ -644,8 +635,23 @@ void Set_Defaults_Model(t_mod *mod)
 
   mod->l_var_min  = mod->l_min;
   mod->l_var_max  = mod->l_max;
+}
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 
+void Set_Defaults_Ras(t_ras *ras)
+{
+  ras->n_catg              = 4;
+  ras->normalise_rr        = YES;
+  ras->pinvar->v           = 0.0;
+  ras->alpha->v            = 1.0;
+  ras->invar               = NO;
+  ras->free_mixt_rates     = NO;
+  ras->parent_class_number = 0;
+  ras->init_r_proba        = YES;
+  ras->init_rr             = YES;
+  ras->sort_rate_classes   = NO;
 }
 
 //////////////////////////////////////////////////////////////

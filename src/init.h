@@ -57,5 +57,6 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu);
 void Init_Rmat(t_rmat *rmat);
 void Init_MGF_Bl(t_tree *tree);
 int Init_Qmat_FLU(phydbl *daa, phydbl *pi);
+void Set_Defaults_Ras(t_ras *ras);
 
 #endif

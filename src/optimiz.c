@@ -1,6 +1,6 @@
 /*
 
-PHYML :  a program that  computes maximum likelihood  phyLOGenies from
+PhyML :  a program that  computes maximum likelihood  phyLOGenies from
 DNA or AA homoLOGous sequences
 
 Copyright (C) Stephane Guindon. Oct 2003 onward
@@ -823,7 +823,6 @@ void Optimiz_All_Free_Param(t_tree *tree, int verbose)
   Optimize_Rmat_Weights(tree,verbose);
   Optimize_Efrq_Weights(tree,verbose);
   Optimize_Free_Rate(tree,verbose);
-
 
   if(tree->mod->use_m4mod)
     {
@@ -3097,7 +3096,6 @@ void Optimize_Free_Rate_Weights(t_tree *tree, int fast, int verbose)
       tree->mod->ras->free_rate_mr->v = 100.;
       For(i,2*tree->n_otu-1) tree->a_edges[i]->l->v /= (wm * tree->mod->ras->free_rate_mr->v);
     }
-
 
   /* BFGS returns negative values sometimes: need to log-transform?... to do... */
   /* int failed = NO; */
