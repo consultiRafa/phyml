@@ -178,7 +178,7 @@ void DR_Print_Tree_Postscript_Pre(t_node *a, t_node *d, t_edge *b, int render_na
   phydbl min,max,step,val;
   
   min = 0.0;
-  max = 4.;
+  max = 5.;
   
   step = (max-min)/13.;
   
@@ -186,7 +186,8 @@ void DR_Print_Tree_Postscript_Pre(t_node *a, t_node *d, t_edge *b, int render_na
   /* val = tree->rates->mean_r[d->num]; */
   /* val = tree->rates->has_survived[d->num]; */
   /* if(val > 0.5) {R=1.; G=.0; B=0.;} */
-  val = 0.;
+  val = tree->geo->ldscape[tree->geo->loc[d->num]*tree->geo->n_dim+0] + 2.5;
+  /* val = 0.; */
   
   if(val <= min+1.*step)
     {R=.0; G=1.; B=1.;}
@@ -216,9 +217,22 @@ void DR_Print_Tree_Postscript_Pre(t_node *a, t_node *d, t_edge *b, int render_na
     {R=1.; G=.0; B=0.;}
 
 
-  R = 0.; G = 0.; B = 0.;
+  /* R = 0.; G = 0.; B = 0.; */
 
-  PhyML_Fprintf(fp,"%.1f %.1f lt\n",w->xcoord[a->num],w->ycoord[d->num]);
+  PhyML_Fprintf(fp,"2 setlinewidth\n");
+  /* PhyML_Fprintf(fp,"%.1f %.1f lt\n",w->xcoord[a->num],w->ycoord[d->num]); */
+  /* PhyML_Fprintf(fp,"%.1f %.1f lt\n",w->xcoord[d->num],w->ycoord[d->num]); */
+
+  phydbl xa = w->xcoord[a->num];
+  phydbl xd = MIN(w->xcoord[a->num] + 5,w->xcoord[d->num]);
+  phydbl ya = w->ycoord[a->num];
+  phydbl yd = w->ycoord[d->num];
+  
+  PhyML_Fprintf(fp,"%.1f %.1f %.1f %.1f %.1f %.1f ct\n",
+                xa + (xd-xa)/2.,(ya+yd)/2.,
+                xd - (xd-xa)/5.,yd,
+                xd,yd);
+  
   PhyML_Fprintf(fp,"%.1f %.1f lt\n",w->xcoord[d->num],w->ycoord[d->num]);
 
   /* PhyML_Fprintf(fp,"%.1f %.1f %.1f %.1f %.1f %.1f ct\n", */
@@ -245,7 +259,7 @@ void DR_Print_Tree_Postscript_Pre(t_node *a, t_node *d, t_edge *b, int render_na
     {
       PhyML_Fprintf(fp,"stroke\n");
       PhyML_Fprintf(fp,"0 setgray\n");
-      PhyML_Fprintf(fp,"0.1 setlinewidth\n");
+      PhyML_Fprintf(fp,"2 setlinewidth\n");
       PhyML_Fprintf(fp,"np %.1f %.1f 1 0 360 arc cp\n",w->xcoord[d->num],w->ycoord[d->num]);
       PhyML_Fprintf(fp,"%.1f %.1f %.1f sc fill\n",R,G,B);
 /*       PhyML_Fprintf(fp,"%f setgray fill\n",greylevel); */
@@ -256,7 +270,7 @@ void DR_Print_Tree_Postscript_Pre(t_node *a, t_node *d, t_edge *b, int render_na
       PhyML_Fprintf(fp,"setfont\n");
       PhyML_Fprintf(fp,"%.1f %.1f mt\n",w->xcoord[d->num]+2,w->ycoord[d->num]-6);
       /* PhyML_Fprintf(fp,"(%d) show \n",d->num); */
-      PhyML_Fprintf(fp,"(%s) show \n",d->name);
+      /* PhyML_Fprintf(fp,"(%s) show \n",d->name); */
       PhyML_Fprintf(fp," /Helvetica findfont 14 scalefont\n");
       PhyML_Fprintf(fp,"setfont\n");
 
@@ -266,9 +280,9 @@ void DR_Print_Tree_Postscript_Pre(t_node *a, t_node *d, t_edge *b, int render_na
       PhyML_Fprintf(fp,"setfont\n");
 
 #if (defined GEO)
-      PhyML_Fprintf(fp,"([%4.4f,%4.4f]) show \n",
-                    tree->geo->ldscape[tree->geo->loc[d->num]*tree->geo->n_dim+0],
-                    tree->geo->ldscape[tree->geo->loc[d->num]*tree->geo->n_dim+1]);
+      /* PhyML_Fprintf(fp,"([%4.4f,%4.4f]) show \n", */
+      /*               tree->geo->ldscape[tree->geo->loc[d->num]*tree->geo->n_dim+0], */
+      /*               tree->geo->ldscape[tree->geo->loc[d->num]*tree->geo->n_dim+1]); */
 #endif
 
      
@@ -293,7 +307,7 @@ void DR_Print_Tree_Postscript_Pre(t_node *a, t_node *d, t_edge *b, int render_na
     {
       PhyML_Fprintf(fp,"stroke\n");
       PhyML_Fprintf(fp,"0 setgray\n");
-      PhyML_Fprintf(fp,"0.1 setlinewidth\n");
+      PhyML_Fprintf(fp,"2 setlinewidth\n");
       PhyML_Fprintf(fp,"np %.1f %.1f 1 0 360 arc cp\n",w->xcoord[d->num],w->ycoord[d->num]);
       PhyML_Fprintf(fp,"%.1f %.1f %.1f sc fill\n",R,G,B);
 /*       PhyML_Fprintf(fp,"%f setgray fill\n",greylevel); */
@@ -315,9 +329,9 @@ void DR_Print_Tree_Postscript_Pre(t_node *a, t_node *d, t_edge *b, int render_na
       PhyML_Fprintf(fp,"setfont\n");
 
 #if (defined GEO)
-      PhyML_Fprintf(fp,"([%4.4f,%4.4f]) show \n",
-                    tree->geo->ldscape[tree->geo->loc[d->num]*tree->geo->n_dim+0],
-                    tree->geo->ldscape[tree->geo->loc[d->num]*tree->geo->n_dim+1]);
+      /* PhyML_Fprintf(fp,"([%4.4f,%4.4f]) show \n", */
+      /*               tree->geo->ldscape[tree->geo->loc[d->num]*tree->geo->n_dim+0], */
+      /*               tree->geo->ldscape[tree->geo->loc[d->num]*tree->geo->n_dim+1]); */
 #endif      
 
 

@@ -18,8 +18,8 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int GEO_Main(int argc, char **argv)
 {
-  /* GEO_Simulate_Estimate(argc,argv); */
-  GEO_Estimate(argc,argv);
+  GEO_Simulate_Estimate(argc,argv);
+  /* GEO_Estimate(argc,argv); */
   return(1);
 }
 
@@ -140,7 +140,7 @@ int GEO_Simulate_Estimate(int argc, char **argv)
 
   seed = getpid();
   /* seed = 15520; */
-  seed = 5023;
+  /* seed = 5023; */
   printf("\n. Seed = %d",seed);
   srand(seed);
 
@@ -172,11 +172,14 @@ int GEO_Simulate_Estimate(int argc, char **argv)
   
   PhyML_Printf("\n. sigma max: %f threshold: %f",t->max_sigma,t->sigma_thresh);
   
-  t->tau   = Uni()*(t->max_tau/100.-t->min_tau*10.)  + t->min_tau*10.;
-  t->lbda  = EXP(Uni()*(LOG(t->max_lbda/100.)-LOG(t->min_lbda*10.))  + LOG(t->min_lbda*10.));
-  t->sigma = Uni()*(t->max_sigma-t->min_sigma) + t->min_sigma;
+  /* t->tau   = Uni()*(t->max_tau/100.-t->min_tau*10.)  + t->min_tau*10.; */
+  /* t->lbda  = EXP(Uni()*(LOG(t->max_lbda/100.)-LOG(t->min_lbda*10.))  + LOG(t->min_lbda*10.)); */
+  /* t->sigma = Uni()*(t->max_sigma-t->min_sigma) + t->min_sigma; */
 
-    
+  t->lbda  = 1.;
+  t->sigma = 0.3;
+  t->tau   = 1.;
+  
   PhyML_Fprintf(fp,"\n# SigmaTrue\t SigmaThresh\t LbdaTrue\t TauTrue\txTrue\t yTrue\t xRand\t yRand\t RF\t Sigma5\t Sigma50\t Sigma95\t ProbSigmaInfThresh\t Lbda5\t Lbda50\t Lbda95\t ProbLbdaInf1\t Tau5\t Tau50\t Tau95\t X5\t X50\t X95\t Y5\t Y50\t Y95\t RandX5\t RandX50\t RandX95\t RandY5\t RandY50\t RandY95\t Mantel\t");
   PhyML_Fprintf(fp,"\n");
   
@@ -185,7 +188,6 @@ int GEO_Simulate_Estimate(int argc, char **argv)
   ori_tree = Make_Tree_From_Scratch(tree->n_otu,NULL);
   Copy_Tree(tree,ori_tree);
   
-
   Random_SPRs_On_Rooted_Tree(tree);
   
   Free_Bip(ori_tree);
@@ -1191,7 +1193,7 @@ t_tree *GEO_Simulate(t_geo *t, int n_otu)
 
   /* printf("\n. %s ",Write_Tree(tree,NO)); */
 
-  /* DR_Draw_Tree("essai.ps",tree); */
+  DR_Draw_Tree("essai.ps",tree);
 
   /* For(i,tree->n_otu) */
   /*   printf("\n. %4s %4d [%5.2f %5.2f]",tree->a_nodes[i]->name, */
@@ -1224,7 +1226,8 @@ void GEO_Simulate_Coordinates(int n, t_geo *t)
   For(i,n)
     {
       t->ldscape[i*t->n_dim+0] = -width/2. + Uni()*width;
-      t->ldscape[i*t->n_dim+1] = -width/2. + Uni()*width;
+      /* t->ldscape[i*t->n_dim+1] = -width/2. + Uni()*width; */
+      t->ldscape[i*t->n_dim+1] = width/2.;
     }
 
 
