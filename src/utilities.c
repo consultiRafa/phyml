@@ -1207,6 +1207,7 @@ void Share_Lk_Struct(t_tree *t_full, t_tree *t_empt)
   t_empt->triplet_struct       = t_full->triplet_struct;
   t_empt->log_lks_aLRT         = t_full->log_lks_aLRT;
   t_empt->site_lk_cat          = t_full->site_lk_cat;
+  t_empt->fact_sum_scale       = t_full->fact_sum_scale;
 
   For(i,2*n_otu-3)
     {

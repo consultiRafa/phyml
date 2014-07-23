@@ -3806,8 +3806,7 @@ void Pull_Scaling_Factors(int site,
         }
       
       tree->fact_sum_scale[site] = (int)((max_sum_scale + min_sum_scale) / 2);
-      
-      
+            
       /* fact_sum_scale = (int)(max_sum_scale / 2); */
       
       /* Apply scaling factors */
