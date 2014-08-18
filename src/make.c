@@ -1289,7 +1289,54 @@ void Make_Efrq_Weight(t_tree *mixt_tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+t_migrep_event *Make_Migrep_Event(t_node *n, phydbl time)
+{
+  t_migrep_event *new;
+  new = (t_migrep_event *)mCalloc(1,sizeof(t_migrep_event));
+  return(new);
+}
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+t_geo *GEO_Make_Geo_Basic()
+{
+  t_geo *t;
+  t = (t_geo *)mCalloc(1,sizeof(t_geo));
+  return(t);  
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void GEO_Make_Geo_Complete(int ldscape_sz, int n_dim, int n_tax, t_geo *t)
+{
+
+  // F matrix
+  t->f_mat = (phydbl *)mCalloc(ldscape_sz*ldscape_sz,sizeof(phydbl));
+
+  // R matrix
+  t->r_mat = (phydbl *)mCalloc(ldscape_sz*ldscape_sz,sizeof(phydbl));
+
+  // Occupation vectors: one vector for each node
+  t->occup = (int *)mCalloc((2*n_tax-1)*ldscape_sz,sizeof(int));
+
+  // Locations
+  t->ldscape = (phydbl *)mCalloc((ldscape_sz*n_dim),sizeof(phydbl));
+
+  // Lineage locations
+  t->idx_loc = (int *)mCalloc((int)(2*n_tax-1),sizeof(int));
+
+  // Sorted node heights
+  t->sorted_nd = (t_node **)mCalloc((int)(2*n_tax-1),sizeof(t_node *));
+
+  // Covariance matrix
+  t->cov = (phydbl *)mCalloc((int)(n_dim*n_dim),sizeof(phydbl));
+
+  // gives the location occupied beneath each node in the tree
+  t->idx_loc_beneath = (int *)mCalloc((int)(2*n_tax-1)*ldscape_sz,sizeof(int));
+}
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

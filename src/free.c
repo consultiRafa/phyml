@@ -1140,3 +1140,17 @@ void Free_Calib(t_cal *cal)
   Free(cal);
 }
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Free_Geo(t_geo *t)
+{
+  Free(t->f_mat);
+  Free(t->r_mat);
+  Free(t->occup);
+  Free(t->idx_loc);
+  Free(t->ldscape);
+  Free(t->sorted_nd);
+  Free(t->cov);
+  Free(t->idx_loc_beneath);
+}

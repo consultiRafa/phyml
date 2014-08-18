@@ -484,13 +484,13 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	  }
 	case 34 :
 	  {
-	    io->mod->m4mod->use_cov_alpha = 1;
-	    io->mod->m4mod->use_cov_free  = 0;
+	    io->mod->m4mod->use_cov_alpha = YES;
+	    io->mod->m4mod->use_cov_free  = NO;
 	    
 	    if(!strcmp(optarg,"e") || !strcmp(optarg,"E") ||
 	       !strcmp(optarg,"estimated") || !strcmp(optarg,"ESTIMATED"))
 	      {
-		io->mod->s_opt->opt_cov_alpha = 1;
+		io->mod->s_opt->opt_cov_alpha = YES;
 		io->mod->m4mod->alpha         = 1.0;
 	      }
 	    else

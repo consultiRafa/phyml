@@ -162,6 +162,7 @@ void Simu_Loop(t_tree *mixt_tree)
   Set_Both_Sides(YES,mixt_tree);
   Lk(NULL,mixt_tree);
   mixt_tree->best_lnL = mixt_tree->c_lnL;
+  PhyML_Printf("\n. Current value of log-likelihood: %f",mixt_tree->c_lnL);
 
   int n_tot_moves = 0;
   do
@@ -248,7 +249,6 @@ int Simu(t_tree *tree, int n_step_max)
         }
 
       if((tree->mod->s_opt->print) && (!tree->io->quiet)) Print_Lk(tree,"[Topology           ]");
-
 
 /*       if(((tree->c_lnL > old_loglk) && (FABS(old_loglk-tree->c_lnL) < tree->mod->s_opt->min_diff_lk_local)) || (n_without_swap > it_lim_without_swap)) break; */
       if((FABS(old_loglk-tree->c_lnL) < tree->mod->s_opt->min_diff_lk_global) || (n_without_swap > it_lim_without_swap)) break;

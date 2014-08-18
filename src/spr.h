@@ -86,6 +86,8 @@ int Check_Spr_Move_Validity(t_spr *this_spr_move, t_tree *tree);
 void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree);
 void Spr_Pars(t_tree *tree);
 void SPR_Shuffle(t_tree *tree);
+void Sort_Spr_List_Depth(t_tree *tree);
+void Sort_Spr_List_LnL(t_tree *tree);
 
 
 

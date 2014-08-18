@@ -63,5 +63,7 @@ t_rate *RATES_Make_Rate_Struct(int n_otu);
 t_cal *Make_Calib();
 void Make_Efrq_Weight(t_tree *mixt_tree);
 void Make_Rmat_Weight(t_tree *mixt_tree);
+t_geo *GEO_Make_Geo_Basic();
+void GEO_Make_Geo_Complete(int ldscape_sz,int n_dim,int n_tax,t_geo *t);
 
 #endif

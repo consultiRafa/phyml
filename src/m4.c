@@ -34,7 +34,7 @@ int M4_main(int argc, char **argv)
   int rc;
   rc = MPI_Init(&argc,&argv);
   if (rc != MPI_SUCCESS) {
-    PhyML_Printf("\n. Error starting MPI program. Terminating.\n");
+    PhyML_Printf("\n== Err. starting MPI program. Terminating.\n");
     MPI_Abort(MPI_COMM_WORLD, rc);
   }
   MPI_Comm_size(MPI_COMM_WORLD,&Global_numTask);
@@ -85,7 +85,7 @@ int M4_main(int argc, char **argv)
 	  if(cdata) Check_Ambiguities(cdata,io->datatype,io->state_len);
 	  else
 	    {
-	      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+	      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
 	      Warn_And_Exit("");
 	    }
 

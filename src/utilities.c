@@ -81,14 +81,14 @@ void Make_Edge_Dirs(t_edge *b, t_node *a, t_node *d, t_tree *tree)
   if(a == b->rght)
     {
       PhyML_Printf("\n== a->num = %3d ; d->num = %3d",a->num,d->num);
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Exit("\n");
     }
 
   if(d == b->left)
     {
       PhyML_Printf("\n== a->num = %3d ; d->num = %3d",a->num,d->num);
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Exit("\n");
     }
 
@@ -4616,7 +4616,7 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
 
   if(a->tax)
     {
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Exit("\n");
     }
 
@@ -4670,6 +4670,7 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
           buff_p_lk_tip        = b1->p_lk_tip_r;
           b1->p_lk_tip_r       = b2->p_lk_tip_l;
           b2->p_lk_tip_l       = buff_p_lk_tip;
+
 #ifdef BEAGLE
           temp                 = b1->p_lk_rght_idx;
           b1->p_lk_rght_idx    = b2->p_lk_left_idx;
@@ -4850,7 +4851,7 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
 #ifdef DEBUG
   if(i == 3)
     {
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
 #endif
@@ -4865,7 +4866,7 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
 #ifdef DEBUG
   if(i == 3)
     {
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
 #endif
@@ -4881,6 +4882,7 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
 
   if(target)   (*target)   = b1;
   if(residual) (*residual) = b2;
+
 
   if(tree->n_root)
     {
@@ -4923,6 +4925,7 @@ void Graft_Subtree(t_edge *target, t_node *link, t_edge *residual, t_tree *tree)
   unsigned int *buff_ui;
   t_edge *b_up;
 
+
   dir_v1 = dir_v2 = -1;
   b_up = NULL;
   For(i,3)
@@ -4934,6 +4937,7 @@ void Graft_Subtree(t_edge *target, t_node *link, t_edge *residual, t_tree *tree)
         }
       else b_up = link->b[i];
     }
+  
 
 #ifdef BEAGLE
   int temp;
@@ -4951,6 +4955,7 @@ void Graft_Subtree(t_edge *target, t_node *link, t_edge *residual, t_tree *tree)
       buff_p_lk_tip                = residual->p_lk_tip_r;
       residual->p_lk_tip_r         = target->p_lk_tip_r;
       target->p_lk_tip_r           = buff_p_lk_tip;
+
 #ifdef BEAGLE
       temp                         = residual->p_lk_rght_idx;
       residual->p_lk_rght_idx      = target->p_lk_rght_idx;
@@ -4960,6 +4965,7 @@ void Graft_Subtree(t_edge *target, t_node *link, t_edge *residual, t_tree *tree)
       residual->p_lk_tip_idx       = target->p_lk_tip_idx;
       target->p_lk_tip_idx         = temp;
 #endif
+
       buff_scale                   = residual->sum_scale_rght;
       residual->sum_scale_rght     = target->sum_scale_rght;
       target->sum_scale_rght       = buff_scale;
@@ -4996,11 +5002,13 @@ void Graft_Subtree(t_edge *target, t_node *link, t_edge *residual, t_tree *tree)
       buff_p_lk_tip                = residual->p_lk_tip_r;
       residual->p_lk_tip_r         = target->p_lk_tip_l;
       target->p_lk_tip_l           = buff_p_lk_tip;
+
 #ifdef BEAGLE
       temp                         = residual->p_lk_rght_idx;
       residual->p_lk_rght_idx      = target->p_lk_left_idx;
       target->p_lk_left_idx        = temp;
 #endif
+
       buff_scale                   = residual->sum_scale_rght;
       residual->sum_scale_rght     = target->sum_scale_left;
       target->sum_scale_left       = buff_scale;
@@ -5045,7 +5053,11 @@ void Graft_Subtree(t_edge *target, t_node *link, t_edge *residual, t_tree *tree)
   residual->left  = link;
   residual->rght  = v2;
 
-  (v1 == target->left)?(target->rght = link):(target->left = link);
+
+  if(v1 == target->left)
+    target->rght = link;
+  else 
+    target->left = link;
 
   link->v[dir_v1] = v1;
   link->b[dir_v1] = target;
@@ -6913,7 +6925,7 @@ void Evolve(calign *data, t_mod *mod, t_tree *tree)
       data->wght[site] = 1;
     }
   data->crunch_len = data->init_len;
-  /* Print_CSeq(stdout,NO,data); */
+  Print_CSeq(stdout,NO,data);
   For(i,2*tree->n_otu-3) tree->a_edges[i]->l->v = orig_l[i];
   Free(orig_l);
 
@@ -7545,18 +7557,27 @@ t_tree *Dist_And_BioNJ(calign *cdata, t_mod *mod, option *io)
   t_tree *tree;
   matrix *mat;
 
-  if(!io->quiet) PhyML_Printf("\n. Computing pairwise distances...");
+  if(mod->s_opt->random_input_tree == NO)
+    {
+      if(!io->quiet) PhyML_Printf("\n. Computing pairwise distances...");
 
-  mat = ML_Dist(cdata,mod);
-  Fill_Missing_Dist(mat);
+      mat = ML_Dist(cdata,mod);
+      Fill_Missing_Dist(mat);
 
-  if(!io->quiet) PhyML_Printf("\n\n. Building BioNJ tree...");
-
-  mat->tree = Make_Tree_From_Scratch(cdata->n_otu,cdata);
-
-  Bionj(mat);
-  tree      = mat->tree;
-  tree->mat = mat;
+      if(!io->quiet) PhyML_Printf("\n\n. Building BioNJ tree...");
+      
+      mat->tree = Make_Tree_From_Scratch(cdata->n_otu,cdata);
+      
+      Bionj(mat);
+      
+      tree      = mat->tree;
+      tree->mat = mat;
+    }
+  else
+    {
+      tree = Make_Tree_From_Scratch(cdata->n_otu,cdata);
+      tree->mat = NULL;
+    }
 
   return tree;
 }
@@ -8791,43 +8812,43 @@ void Scale_Node_Heights_Post(t_node *a, t_node *d, phydbl K, phydbl floor, int *
   if(d->tax)
     {
       if(!(tree->rates->nd_t[d->num] > floor))
-    {
-      /* Scaling does not change the node height here
-         but, in theory this tip is among the scaled
-         nodes. Therefore needs to count it in for
-         working out correct Hastings ratios
-      */
-      /* *n_nodes = *n_nodes+1; */
-    }
+        {
+          /* Scaling does not change the node height here
+             but, in theory this tip is among the scaled
+             nodes. Therefore needs to count it in for
+             working out correct Hastings ratios
+          */
+          /* *n_nodes = *n_nodes+1; */
+        }
       return;
     }
   else
     {
       int i;
-
+      
       /* It is tempting to set floor = tree->rates->t_prior_max[d->num]; but
-     it then becomes possible for nodes with different floor values
-     to have their orders interverted (i.e., ancestor below descendant)
+         it then becomes possible for nodes with different floor values
+         to have their orders interverted (i.e., ancestor below descendant)
       */
       if(!(tree->rates->nd_t[d->num] > floor))
-    {
-      tree->rates->nd_t[d->num] = K*(tree->rates->nd_t[d->num]-floor)+floor;
-      *n_nodes = *n_nodes+1;
-    }
-
+        {
+          tree->rates->nd_t[d->num] = K*(tree->rates->nd_t[d->num]-floor)+floor;
+          *n_nodes = *n_nodes+1;
+        }
+      
       if(tree->rates->nd_t[d->num] < tree->rates->nd_t[a->num])
-    {
-      PhyML_Printf("\n. K = %f floor = %f t_prior_max(a) = %f t_prior_max(d) = %f a->t = %f d->t %f",
-               K,floor,tree->rates->t_prior_max[a->num],tree->rates->t_prior_max[d->num],
-               tree->rates->nd_t[a->num],tree->rates->nd_t[d->num]);
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
-      Warn_And_Exit("");
-    }
-
+        {
+          PhyML_Printf("\n. K = %f floor = %f t_prior_max(a) = %f t_prior_max(d) = %f a->t = %f d->t %f",
+                       K,floor,tree->rates->t_prior_max[a->num],tree->rates->t_prior_max[d->num],
+                       tree->rates->nd_t[a->num],tree->rates->nd_t[d->num]);
+          PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+          Warn_And_Exit("");
+        }
+      
       For(i,3)
-    if(d->v[i] != a && d->b[i] != tree->e_root)
-      Scale_Node_Heights_Post(d,d->v[i],K,floor,n_nodes,tree);
-
+        if(d->v[i] != a && d->b[i] != tree->e_root)
+          Scale_Node_Heights_Post(d,d->v[i],K,floor,n_nodes,tree);
+      
     }
 }
 

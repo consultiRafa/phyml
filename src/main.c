@@ -56,7 +56,7 @@ int main(int argc, char **argv)
   int rc;
   rc = MPI_Init(&argc,&argv);
   if (rc != MPI_SUCCESS) {
-    PhyML_Printf("\n== Err starting MPI program. Terminating.\n");
+    PhyML_Printf("\n== Err. starting MPI program. Terminating.\n");
     MPI_Abort(MPI_COMM_WORLD, rc);
   }
   MPI_Comm_size(MPI_COMM_WORLD,&Global_numTask);
@@ -88,7 +88,7 @@ int main(int argc, char **argv)
 
   if(io->n_trees == 0 && io->in_tree == 2)
     {
-      PhyML_Printf("\n. The input tree file does not provide a tree in valid format.");
+      PhyML_Printf("\n== Err.: the input tree file does not provide a tree in valid format.");
       Exit("\n");
     }
 
@@ -209,8 +209,6 @@ int main(int argc, char **argv)
                     }
 #endif
 
-
-
 #ifdef PHYML
                   if(io->in_tree == 1) Spr_Pars(tree);
 
@@ -263,7 +261,7 @@ int main(int argc, char **argv)
 
 #elif defined EVOLVE
                   Evolve(tree->data,tree->mod,tree);
-                  Exit("\n");
+                  Exit("\n. Exiting 'evolve'\n");
 #endif
 
 

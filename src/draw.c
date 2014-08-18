@@ -186,7 +186,7 @@ void DR_Print_Tree_Postscript_Pre(t_node *a, t_node *d, t_edge *b, int render_na
   /* val = tree->rates->mean_r[d->num]; */
   /* val = tree->rates->has_survived[d->num]; */
   /* if(val > 0.5) {R=1.; G=.0; B=0.;} */
-  val = tree->geo->ldscape[tree->geo->loc[d->num]*tree->geo->n_dim+0] + 2.5;
+  val = tree->geo->ldscape[tree->geo->idx_loc[d->num]*tree->geo->n_dim+0] + 2.5;
   /* val = 0.; */
   
   if(val <= min+1.*step)

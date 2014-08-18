@@ -1567,9 +1567,9 @@ typedef struct __Phylogeo{
   phydbl             *r_mat; // R matrix. Gives the rates of migrations between locations. See article.
   phydbl             *f_mat; // F matrix. See article.
   int                *occup; // Vector giving the number of lineages that occupy each location
-  phydbl           *ldscape; // Coordinates of the locations
-  int                  *loc; // Location for each lineage
-  int          *loc_beneath; // Gives the location occupied beneath each node in the tree
+  phydbl           *ldscape; // Coordinates of locations observed at the sampled tips
+  int              *idx_loc; // Index of location for each lineage
+  int      *idx_loc_beneath; // Gives the index of location occupied beneath each node in the tree
   int            ldscape_sz; // Landscape size: number of locations
   int                 n_dim; // Dimension of the data (e.g., longitude + lattitude -> n_dim = 2)
   int           update_fmat;
@@ -1599,6 +1599,24 @@ typedef struct __Phylogeo{
 }t_geo;
 
 /*!********************************************************/
+// Structure for one of the migration/reproduction event involved in Etheridge-Barton model
+typedef struct __Migrep_Event{
+  struct __Migrep    *next; // next (i.e., more recent) event 
+  struct __Migrep    *prev; // previous (i.e., more ancient) event
+  struct __Node  *n_target; // which is the node located at the bottom of the branch affected by the event
+  phydbl              time; // time of that event
+  phydbl            center; // center of the migrep disk
+  phydbl            radius; // radius of the migrep disk 
+}t_migrep_event;
+
+/*!********************************************************/
+// Structure for the Etheridge-Barton migration/reproduction model
+typedef struct __Migrep_Model{
+  struct __Migrep_Event *first_event; // first migrep event 
+  phydbl                      lambda; // rate at which events occur
+  phydbl                          mu; // per-capita and per event death probability
+}t_migrep_model;
+
 /*!********************************************************/
 /*!********************************************************/
 /*!********************************************************/

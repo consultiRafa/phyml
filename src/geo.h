@@ -18,8 +18,6 @@ the GNU public licence.  See http://www.opensource.org for details.
 #include "utilities.h"
 
 int GEO_Main(int argc, char **argv);
-t_geo *GEO_Make_Geo_Basic();
-void GEO_Make_Geo_Complete(int ldscape_sz,int n_dim,int n_tax,t_geo *t);
 void Free_Geo(t_geo *t);
 void GEO_Update_Fmat(t_geo *t);
 void GEO_Update_Sorted_Nd(t_geo *t,t_tree *tree);

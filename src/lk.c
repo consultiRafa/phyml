@@ -1682,90 +1682,90 @@ void Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
     }
 
       if(tree->mod->use_m4mod)
-    {
-      ambiguity_check_v1 = YES;
-      ambiguity_check_v2 = YES;
-    }
+        {
+          ambiguity_check_v1 = YES;
+          ambiguity_check_v2 = YES;
+        }
 
       if(p_lk_loc[site] < site)
-    {
-      Copy_P_Lk(p_lk,p_lk_loc[site],site,tree);
-      Copy_Scale(sum_scale,p_lk_loc[site],site,tree);
-    }
+        {
+          Copy_P_Lk(p_lk,p_lk_loc[site],site,tree);
+          Copy_Scale(sum_scale,p_lk_loc[site],site,tree);
+        }
       else
-    {
-      /* For all the rate classes */
-      For(catg,tree->mod->ras->n_catg)
         {
-          smallest_p_lk  =  BIG;
-
-          /* For all the state at node d */
-          For(i,tree->mod->ns)
-        {
-          p1_lk1 = .0;
-
+          /* For all the rate classes */
+          For(catg,tree->mod->ras->n_catg)
+            {
+              smallest_p_lk  =  BIG;
+              
+              /* For all the state at node d */
+              For(i,tree->mod->ns)
+                {
+                  p1_lk1 = .0;
+                  
                   if(n_v1)
                     {
-          /* n_v1 is a tip */
-          if((n_v1->tax) && (!tree->mod->s_opt->greedy))
-            {
-              if(ambiguity_check_v1 == NO)
-            {
-              /* For the (non-ambiguous) state at node n_v1 */
-              p1_lk1 = Pij1[catg*dim3+i*dim2+state_v1];
-            }
-              else
-            {
-              /* For all the states at node n_v1 */
-              p0  = Pij1[catg*dim3+i*dim2+ 0] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+ 0];
-              p1  = Pij1[catg*dim3+i*dim2+ 1] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+ 1];
-              p2  = Pij1[catg*dim3+i*dim2+ 2] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+ 2];
-              p3  = Pij1[catg*dim3+i*dim2+ 3] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+ 3];
-              p4  = Pij1[catg*dim3+i*dim2+ 4] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+ 4];
-              p5  = Pij1[catg*dim3+i*dim2+ 5] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+ 5];
-              p6  = Pij1[catg*dim3+i*dim2+ 6] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+ 6];
-              p7  = Pij1[catg*dim3+i*dim2+ 7] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+ 7];
-              p8  = Pij1[catg*dim3+i*dim2+ 8] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+ 8];
-              p9  = Pij1[catg*dim3+i*dim2+ 9] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+ 9];
-              p10 = Pij1[catg*dim3+i*dim2+10] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+10];
-              p11 = Pij1[catg*dim3+i*dim2+11] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+11];
-              p12 = Pij1[catg*dim3+i*dim2+12] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+12];
-              p13 = Pij1[catg*dim3+i*dim2+13] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+13];
-              p14 = Pij1[catg*dim3+i*dim2+14] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+14];
-              p15 = Pij1[catg*dim3+i*dim2+15] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+15];
-              p16 = Pij1[catg*dim3+i*dim2+16] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+16];
-              p17 = Pij1[catg*dim3+i*dim2+17] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+17];
-              p18 = Pij1[catg*dim3+i*dim2+18] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+18];
-              p19 = Pij1[catg*dim3+i*dim2+19] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+19];
-              p1_lk1 = p0+p1+p2+p3+p4+p5+p6+p7+p8+p9+p10+p11+p12+p13+p14+p15+p16+p17+p18+p19;
-            }
-            }
-          /* n_v1 is an internal node */
-          else
-            {
-              /* For the states at node n_v1 */
-              p0  = Pij1[catg*dim3+i*dim2+ 0] * (phydbl)p_lk_v1[site*dim1+catg*dim2+ 0];
-              p1  = Pij1[catg*dim3+i*dim2+ 1] * (phydbl)p_lk_v1[site*dim1+catg*dim2+ 1];
-              p2  = Pij1[catg*dim3+i*dim2+ 2] * (phydbl)p_lk_v1[site*dim1+catg*dim2+ 2];
-              p3  = Pij1[catg*dim3+i*dim2+ 3] * (phydbl)p_lk_v1[site*dim1+catg*dim2+ 3];
-              p4  = Pij1[catg*dim3+i*dim2+ 4] * (phydbl)p_lk_v1[site*dim1+catg*dim2+ 4];
-              p5  = Pij1[catg*dim3+i*dim2+ 5] * (phydbl)p_lk_v1[site*dim1+catg*dim2+ 5];
-              p6  = Pij1[catg*dim3+i*dim2+ 6] * (phydbl)p_lk_v1[site*dim1+catg*dim2+ 6];
-              p7  = Pij1[catg*dim3+i*dim2+ 7] * (phydbl)p_lk_v1[site*dim1+catg*dim2+ 7];
-              p8  = Pij1[catg*dim3+i*dim2+ 8] * (phydbl)p_lk_v1[site*dim1+catg*dim2+ 8];
-              p9  = Pij1[catg*dim3+i*dim2+ 9] * (phydbl)p_lk_v1[site*dim1+catg*dim2+ 9];
-              p10 = Pij1[catg*dim3+i*dim2+10] * (phydbl)p_lk_v1[site*dim1+catg*dim2+10];
-              p11 = Pij1[catg*dim3+i*dim2+11] * (phydbl)p_lk_v1[site*dim1+catg*dim2+11];
-              p12 = Pij1[catg*dim3+i*dim2+12] * (phydbl)p_lk_v1[site*dim1+catg*dim2+12];
-              p13 = Pij1[catg*dim3+i*dim2+13] * (phydbl)p_lk_v1[site*dim1+catg*dim2+13];
-              p14 = Pij1[catg*dim3+i*dim2+14] * (phydbl)p_lk_v1[site*dim1+catg*dim2+14];
-              p15 = Pij1[catg*dim3+i*dim2+15] * (phydbl)p_lk_v1[site*dim1+catg*dim2+15];
-              p16 = Pij1[catg*dim3+i*dim2+16] * (phydbl)p_lk_v1[site*dim1+catg*dim2+16];
-              p17 = Pij1[catg*dim3+i*dim2+17] * (phydbl)p_lk_v1[site*dim1+catg*dim2+17];
-              p18 = Pij1[catg*dim3+i*dim2+18] * (phydbl)p_lk_v1[site*dim1+catg*dim2+18];
-              p19 = Pij1[catg*dim3+i*dim2+19] * (phydbl)p_lk_v1[site*dim1+catg*dim2+19];
-              p1_lk1 = p0+p1+p2+p3+p4+p5+p6+p7+p8+p9+p10+p11+p12+p13+p14+p15+p16+p17+p18+p19;
-            }
+                      /* n_v1 is a tip */
+                      if((n_v1->tax) && (!tree->mod->s_opt->greedy))
+                        {
+                          if(ambiguity_check_v1 == NO)
+                            {
+                              /* For the (non-ambiguous) state at node n_v1 */
+                              p1_lk1 = Pij1[catg*dim3+i*dim2+state_v1];
+                            }
+                          else
+                            {
+                              /* For all the states at node n_v1 */
+                              p0  = Pij1[catg*dim3+i*dim2+ 0] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+ 0];
+                              p1  = Pij1[catg*dim3+i*dim2+ 1] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+ 1];
+                              p2  = Pij1[catg*dim3+i*dim2+ 2] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+ 2];
+                              p3  = Pij1[catg*dim3+i*dim2+ 3] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+ 3];
+                              p4  = Pij1[catg*dim3+i*dim2+ 4] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+ 4];
+                              p5  = Pij1[catg*dim3+i*dim2+ 5] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+ 5];
+                              p6  = Pij1[catg*dim3+i*dim2+ 6] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+ 6];
+                              p7  = Pij1[catg*dim3+i*dim2+ 7] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+ 7];
+                              p8  = Pij1[catg*dim3+i*dim2+ 8] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+ 8];
+                              p9  = Pij1[catg*dim3+i*dim2+ 9] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+ 9];
+                              p10 = Pij1[catg*dim3+i*dim2+10] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+10];
+                              p11 = Pij1[catg*dim3+i*dim2+11] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+11];
+                              p12 = Pij1[catg*dim3+i*dim2+12] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+12];
+                              p13 = Pij1[catg*dim3+i*dim2+13] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+13];
+                              p14 = Pij1[catg*dim3+i*dim2+14] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+14];
+                              p15 = Pij1[catg*dim3+i*dim2+15] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+15];
+                              p16 = Pij1[catg*dim3+i*dim2+16] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+16];
+                              p17 = Pij1[catg*dim3+i*dim2+17] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+17];
+                              p18 = Pij1[catg*dim3+i*dim2+18] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+18];
+                              p19 = Pij1[catg*dim3+i*dim2+19] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+19];
+                              p1_lk1 = p0+p1+p2+p3+p4+p5+p6+p7+p8+p9+p10+p11+p12+p13+p14+p15+p16+p17+p18+p19;
+                            }
+                        }
+                      /* n_v1 is an internal node */
+                      else
+                        {
+                          /* For the states at node n_v1 */
+                          p0  = Pij1[catg*dim3+i*dim2+ 0] * (phydbl)p_lk_v1[site*dim1+catg*dim2+ 0];
+                          p1  = Pij1[catg*dim3+i*dim2+ 1] * (phydbl)p_lk_v1[site*dim1+catg*dim2+ 1];
+                          p2  = Pij1[catg*dim3+i*dim2+ 2] * (phydbl)p_lk_v1[site*dim1+catg*dim2+ 2];
+                          p3  = Pij1[catg*dim3+i*dim2+ 3] * (phydbl)p_lk_v1[site*dim1+catg*dim2+ 3];
+                          p4  = Pij1[catg*dim3+i*dim2+ 4] * (phydbl)p_lk_v1[site*dim1+catg*dim2+ 4];
+                          p5  = Pij1[catg*dim3+i*dim2+ 5] * (phydbl)p_lk_v1[site*dim1+catg*dim2+ 5];
+                          p6  = Pij1[catg*dim3+i*dim2+ 6] * (phydbl)p_lk_v1[site*dim1+catg*dim2+ 6];
+                          p7  = Pij1[catg*dim3+i*dim2+ 7] * (phydbl)p_lk_v1[site*dim1+catg*dim2+ 7];
+                          p8  = Pij1[catg*dim3+i*dim2+ 8] * (phydbl)p_lk_v1[site*dim1+catg*dim2+ 8];
+                          p9  = Pij1[catg*dim3+i*dim2+ 9] * (phydbl)p_lk_v1[site*dim1+catg*dim2+ 9];
+                          p10 = Pij1[catg*dim3+i*dim2+10] * (phydbl)p_lk_v1[site*dim1+catg*dim2+10];
+                          p11 = Pij1[catg*dim3+i*dim2+11] * (phydbl)p_lk_v1[site*dim1+catg*dim2+11];
+                          p12 = Pij1[catg*dim3+i*dim2+12] * (phydbl)p_lk_v1[site*dim1+catg*dim2+12];
+                          p13 = Pij1[catg*dim3+i*dim2+13] * (phydbl)p_lk_v1[site*dim1+catg*dim2+13];
+                          p14 = Pij1[catg*dim3+i*dim2+14] * (phydbl)p_lk_v1[site*dim1+catg*dim2+14];
+                          p15 = Pij1[catg*dim3+i*dim2+15] * (phydbl)p_lk_v1[site*dim1+catg*dim2+15];
+                          p16 = Pij1[catg*dim3+i*dim2+16] * (phydbl)p_lk_v1[site*dim1+catg*dim2+16];
+                          p17 = Pij1[catg*dim3+i*dim2+17] * (phydbl)p_lk_v1[site*dim1+catg*dim2+17];
+                          p18 = Pij1[catg*dim3+i*dim2+18] * (phydbl)p_lk_v1[site*dim1+catg*dim2+18];
+                          p19 = Pij1[catg*dim3+i*dim2+19] * (phydbl)p_lk_v1[site*dim1+catg*dim2+19];
+                          p1_lk1 = p0+p1+p2+p3+p4+p5+p6+p7+p8+p9+p10+p11+p12+p13+p14+p15+p16+p17+p18+p19;
+                        }
                     }
                   else
                     {
@@ -1955,67 +1955,67 @@ matrix *ML_Dist(calign *data, t_mod *mod)
 
 
       for(k=j+1;k<data->n_otu;k++)
-    {
-
-      tmpdata->c_seq[1]       = data->c_seq[k];
-      tmpdata->c_seq[1]->name = data->c_seq[k]->name;
-
-      twodata = Compact_Cdata(tmpdata,mod->io);
-
-      Check_Ambiguities(twodata,mod->io->datatype,mod->io->state_len);
-
-      Hide_Ambiguities(twodata);
-
-      init = mat->dist[j][k];
-
-      if((init > DIST_MAX-SMALL) || (init < .0)) init = 0.1;
-
-      d_max = init;
-
-      For(i,mod->ns*mod->ns) F[i]=.0;
-      len = 0;
-      For(l,twodata->c_seq[0]->len)
         {
-          state0 = Assign_State(twodata->c_seq[0]->state+l*mod->io->state_len,mod->io->datatype,mod->io->state_len);
-          state1 = Assign_State(twodata->c_seq[1]->state+l*mod->io->state_len,mod->io->datatype,mod->io->state_len);
 
-          if((state0 > -1) && (state1 > -1))
-        {
-          F[mod->ns*state0+state1] += twodata->wght[l];
-          len += (int)twodata->wght[l];
+          tmpdata->c_seq[1]       = data->c_seq[k];
+          tmpdata->c_seq[1]->name = data->c_seq[k]->name;
+          
+          twodata = Compact_Cdata(tmpdata,mod->io);
+          
+          Check_Ambiguities(twodata,mod->io->datatype,mod->io->state_len);
+          
+          Hide_Ambiguities(twodata);
+          
+          init = mat->dist[j][k];
+          
+          if((init > DIST_MAX-SMALL) || (init < .0)) init = 0.1;
+          
+          d_max = init;
+          
+          For(i,mod->ns*mod->ns) F[i]=.0;
+          len = 0;
+          For(l,twodata->c_seq[0]->len)
+            {
+              state0 = Assign_State(twodata->c_seq[0]->state+l*mod->io->state_len,mod->io->datatype,mod->io->state_len);
+              state1 = Assign_State(twodata->c_seq[1]->state+l*mod->io->state_len,mod->io->datatype,mod->io->state_len);
+              
+              if((state0 > -1) && (state1 > -1))
+                {
+                  F[mod->ns*state0+state1] += twodata->wght[l];
+                  len += (int)twodata->wght[l];
+                }
+            }
+          if(len > .0) {For(i,mod->ns*mod->ns) F[i] /= (phydbl)len;}
+          
+          sum = 0.;
+          For(i,mod->ns*mod->ns) sum += F[i];
+          
+          
+          /* if(sum < .001) d_max = -1.; */
+          if(sum < .001) d_max = init;
+          else if((sum > 1. - .001) && (sum < 1. + .001)) Opt_Dist_F(&(d_max),F,mod);
+          else
+            {
+              PhyML_Printf("\n== sum = %f\n",sum);
+              PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
+              Exit("");
+            }
+          
+          if(d_max >= DIST_MAX) d_max = DIST_MAX;
+          
+          
+          /* Do not correct for dist < BL_MIN, otherwise Fill_Missing_Dist
+           *  will not be called
+           */
+          mat->dist[j][k] = d_max;
+          mat->dist[k][j] = mat->dist[j][k];
+          Free_Cseq(twodata);
         }
-        }
-      if(len > .0) {For(i,mod->ns*mod->ns) F[i] /= (phydbl)len;}
-
-      sum = 0.;
-      For(i,mod->ns*mod->ns) sum += F[i];
-
-
-      /* if(sum < .001) d_max = -1.; */
-      if(sum < .001) d_max = init;
-      else if((sum > 1. - .001) && (sum < 1. + .001)) Opt_Dist_F(&(d_max),F,mod);
-      else
-        {
-          PhyML_Printf("\n== sum = %f\n",sum);
-          PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
-          Exit("");
-        }
-
-      if(d_max >= DIST_MAX) d_max = DIST_MAX;
-
-
-      /* Do not correct for dist < BL_MIN, otherwise Fill_Missing_Dist
-       *  will not be called
-       */
-      mat->dist[j][k] = d_max;
-      mat->dist[k][j] = mat->dist[j][k];
-      Free_Cseq(twodata);
     }
-    }
-
+  
   mod->ras->n_catg = n_catg;
-
-
+  
+  
   Free(tmpdata->ambigu);
   Free(tmpdata->b_frq);
   Free(tmpdata->c_seq);
