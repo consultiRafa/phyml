@@ -4776,7 +4776,7 @@ void SPR_Shuffle(t_tree *mixt_tree)
 
       Optimize_Br_Len_Serie(mixt_tree);
 
-      mixt_tree->annealing_temp -= 1.;
+      mixt_tree->annealing_temp -= 2.;
       if(mixt_tree->annealing_temp < 0.0) mixt_tree->annealing_temp = 0.0;
 
       printf("\n. Temperature: %f",mixt_tree->annealing_temp);
