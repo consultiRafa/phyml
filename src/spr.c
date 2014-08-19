@@ -4743,7 +4743,7 @@ void SPR_Shuffle(t_tree *mixt_tree)
 
       /* PhyML_Printf("\n. Current likelihood: %f",mixt_tree->c_lnL); */
 
-      if(++n_random_cycles == 5) break;
+      if(++n_random_cycles == 3) break;
     }
   while(1);
 
