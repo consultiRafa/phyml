@@ -145,6 +145,7 @@ void Init_Tree(t_tree *tree, int n_otu)
   tree->apply_lk_scaling          = YES;
   tree->dp                        = 0;
   tree->ignore_root               = YES;
+  tree->annealing_temp            = 5.;
 #ifdef BEAGLE
   tree->b_inst                    = UNINITIALIZED;
 #endif

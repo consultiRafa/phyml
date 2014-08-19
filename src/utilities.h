@@ -600,6 +600,7 @@ typedef struct __Tree{
   phydbl                        *c_lnL_sorted; /*! used to compute c_lnL by adding sorted terms to minimize CPU errors */
   phydbl                         *cur_site_lk; /*! vector of loglikelihoods at individual sites */
   phydbl                         *old_site_lk; /*! vector of likelihoods at individual sites */
+  phydbl                       annealing_temp; /*! annealing temperature in simulated annealing optimization algo */
 
   phydbl                *unscaled_site_lk_cat; /*! partially scaled site likelihood at individual sites */
 
