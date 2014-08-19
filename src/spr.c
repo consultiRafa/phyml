@@ -4714,36 +4714,16 @@ void SPR_Shuffle(t_tree *mixt_tree)
   mixt_tree->mod->s_opt->max_depth_path    = mixt_tree->n_otu;
   mixt_tree->mod->s_opt->spr_lnL           = NO;
 
-  /* n_random_cycles = 1; */
-  /* do */
-  /*   { */
-  /*     PhyML_Printf("\n\n. Randomization round: %d\n",n_random_cycles); */
-
-  /*     Random_Spr(1,mixt_tree); */
-
-  /*     Set_Both_Sides(YES,mixt_tree); */
-  /*     Lk(NULL,mixt_tree); */
-  /*     Pars(NULL,mixt_tree); */
-  /*     Record_Br_Len(mixt_tree); */
-
-  /*     mixt_tree->n_improvements = 0; */
-  /*     mixt_tree->max_spr_depth  = 0; */
-  /*     mixt_tree->best_pars      = mixt_tree->c_pars; */
-  /*     mixt_tree->best_lnL       = mixt_tree->c_lnL; */
-
-  /*     lk_old = mixt_tree->c_lnL; */
-  /*     Spr(UNLIKELY,mixt_tree); */
-
-  /*     Optimiz_All_Free_Param(mixt_tree,(mixt_tree->io->quiet)?(0):(mixt_tree->mod->s_opt->print)); */
-
-  /*     Optimize_Br_Len_Serie(mixt_tree); */
-  /*     PhyML_Printf("\n. Current likelihood: %f",mixt_tree->c_lnL); */
-  /*   } */
-  /* while(++n_random_cycles < 5); */
-
-
+  n_random_cycles = 0;
   do
     {
+      PhyML_Printf("\n\n. Randomization round: %d\n",n_random_cycles);
+
+      if(!(n_random_cycles%2))
+        {
+          Random_Spr((int)mixt_tree->n_otu/10,mixt_tree);
+        }
+
       Set_Both_Sides(YES,mixt_tree);
       Lk(NULL,mixt_tree);
       Pars(NULL,mixt_tree);
@@ -4761,10 +4741,36 @@ void SPR_Shuffle(t_tree *mixt_tree)
 
       Optimize_Br_Len_Serie(mixt_tree);
 
-      if(mixt_tree->n_improvements < 20 || mixt_tree->max_spr_depth  < 5 ||
-     (FABS(lk_old-mixt_tree->c_lnL) < 1.)) break;
+      /* PhyML_Printf("\n. Current likelihood: %f",mixt_tree->c_lnL); */
+
+      if(++n_random_cycles == 5) break;
     }
   while(1);
+
+
+  /* do */
+  /*   { */
+  /*     Set_Both_Sides(YES,mixt_tree); */
+  /*     Lk(NULL,mixt_tree); */
+  /*     Pars(NULL,mixt_tree); */
+  /*     Record_Br_Len(mixt_tree); */
+
+  /*     mixt_tree->n_improvements = 0; */
+  /*     mixt_tree->max_spr_depth  = 0; */
+  /*     mixt_tree->best_pars      = mixt_tree->c_pars; */
+  /*     mixt_tree->best_lnL       = mixt_tree->c_lnL; */
+
+  /*     lk_old = mixt_tree->c_lnL; */
+  /*     Spr(UNLIKELY,mixt_tree); */
+
+  /*     Optimiz_All_Free_Param(mixt_tree,(mixt_tree->io->quiet)?(0):(mixt_tree->mod->s_opt->print)); */
+
+  /*     Optimize_Br_Len_Serie(mixt_tree); */
+
+  /*     if(mixt_tree->n_improvements < 20 || mixt_tree->max_spr_depth  < 5 || */
+  /*        (FABS(lk_old-mixt_tree->c_lnL) < 1.)) break; */
+  /*   } */
+  /* while(1); */
 
 
   if(mixt_tree->mod->s_opt->print && (!mixt_tree->io->quiet))
