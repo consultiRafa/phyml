@@ -4777,12 +4777,13 @@ void SPR_Shuffle(t_tree *mixt_tree)
       Optimize_Br_Len_Serie(mixt_tree);
 
       mixt_tree->annealing_temp -= 2.;
-      if(mixt_tree->annealing_temp < 0.0) mixt_tree->annealing_temp = 0.0;
+
+
+      if((mixt_tree->n_improvements < 20 || mixt_tree->max_spr_depth  < 5 || (FABS(lk_old-mixt_tree->c_lnL) < 1.)) &&
+         (mixt_tree->annealing_temp < 0.0)) break;
 
       printf("\n. Temperature: %f",mixt_tree->annealing_temp);
 
-      if((mixt_tree->n_improvements < 20 || mixt_tree->max_spr_depth  < 5 || (FABS(lk_old-mixt_tree->c_lnL) < 1.)) &&
-         (mixt_tree->annealing_temp < 2)) break;
     }
   while(1);
 
