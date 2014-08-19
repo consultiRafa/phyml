@@ -4545,11 +4545,13 @@ void Random_Spr(int n_moves, t_tree *tree)
 
   For(i,n_moves)
     {
-      br_pulled = (int)((phydbl)rand()/RAND_MAX * (2*tree->n_otu-3-1));
+      /* br_pulled = (int)((phydbl)rand()/RAND_MAX * (2*tree->n_otu-3-1)); */
+      br_pulled = Rand_Int(0,2*tree->n_otu-3-1);
       
       do
         {
-          br_target = (int)((phydbl)rand()/RAND_MAX * (2*tree->n_otu-3-1));
+          /* br_target = (int)((phydbl)rand()/RAND_MAX * (2*tree->n_otu-3-1)); */
+          br_target = Rand_Int(0,2*tree->n_otu-3-1);
         }
       while(br_target == br_pulled);
 
@@ -4719,10 +4721,7 @@ void SPR_Shuffle(t_tree *mixt_tree)
     {
       PhyML_Printf("\n\n. Randomization round: %d\n",n_random_cycles);
 
-      if(!(n_random_cycles%2))
-        {
-          Random_Spr((int)mixt_tree->n_otu/10,mixt_tree);
-        }
+      if(!(n_random_cycles%2)) Random_Spr((int)mixt_tree->n_otu/10,mixt_tree);
 
       Set_Both_Sides(YES,mixt_tree);
       Lk(NULL,mixt_tree);
@@ -4737,15 +4736,18 @@ void SPR_Shuffle(t_tree *mixt_tree)
       lk_old = mixt_tree->c_lnL;
       Spr(UNLIKELY,mixt_tree);
 
-      Optimiz_All_Free_Param(mixt_tree,(mixt_tree->io->quiet)?(0):(mixt_tree->mod->s_opt->print));
+      /* Optimiz_All_Free_Param(mixt_tree,(mixt_tree->io->quiet)?(0):(mixt_tree->mod->s_opt->print)); */
 
-      Optimize_Br_Len_Serie(mixt_tree);
+      /* Optimize_Br_Len_Serie(mixt_tree); */
 
       /* PhyML_Printf("\n. Current likelihood: %f",mixt_tree->c_lnL); */
 
-      if(++n_random_cycles == 3) break;
+      if(++n_random_cycles == 5) break;
     }
   while(1);
+
+  Optimiz_All_Free_Param(mixt_tree,(mixt_tree->io->quiet)?(0):(mixt_tree->mod->s_opt->print));  
+  Optimize_Br_Len_Serie(mixt_tree);
 
 
   /* do */
