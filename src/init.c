@@ -701,13 +701,9 @@ void Set_Defaults_Optimiz(t_opt *s_opt)
   s_opt->spr_lnL              = NO;
   s_opt->min_depth_path       = 0;
 
-  /* s_opt->max_depth_path       = 20; */
-  /* s_opt->deepest_path         = 20; */
-  /* s_opt->max_delta_lnL_spr    = 50.; */
-
-  s_opt->max_depth_path       = 200;
-  s_opt->deepest_path         = 200;
-  s_opt->max_delta_lnL_spr    = 500.;
+  s_opt->max_depth_path       = 20;
+  s_opt->deepest_path         = 20;
+  s_opt->max_delta_lnL_spr    = 50.;
 
   s_opt->br_len_in_spr        = 10;
   s_opt->opt_free_mixt_rates  = YES;
