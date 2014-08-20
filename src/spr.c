@@ -4360,7 +4360,7 @@ int Try_One_Spr_Move_Triple(t_spr *move, t_tree *tree)
       if(move->depth_path > tree->max_spr_depth) tree->max_spr_depth = move->depth_path;
 
       tree->n_improvements++;
-      tree->best_lnL = tree->c_lnL;
+      if(tree->c_lnL > tree->best_lnL) tree->best_lnL = tree->c_lnL;
       Record_Br_Len(tree);
 
       if(move->depth_path > tree->mod->s_opt->deepest_path)
@@ -4754,7 +4754,8 @@ void SPR_Shuffle(t_tree *mixt_tree)
   /* while(1); */
 
 
-  Random_Spr(mixt_tree->n_otu,mixt_tree);
+  /* Random_Spr(mixt_tree->n_otu,mixt_tree); */
+  tree->annealing_temp = 10.;
   do
     {
       Set_Both_Sides(YES,mixt_tree);
