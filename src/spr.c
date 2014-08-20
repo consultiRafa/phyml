@@ -4755,7 +4755,7 @@ void SPR_Shuffle(t_tree *mixt_tree)
 
 
   /* Random_Spr(mixt_tree->n_otu,mixt_tree); */
-  tree->annealing_temp = 10.;
+  mixt_tree->annealing_temp = 10.;
   do
     {
       Set_Both_Sides(YES,mixt_tree);
