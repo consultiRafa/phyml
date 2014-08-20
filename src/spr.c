@@ -4753,10 +4753,8 @@ void SPR_Shuffle(t_tree *mixt_tree)
   /*   } */
   /* while(1); */
 
-  Optimiz_All_Free_Param(mixt_tree,(mixt_tree->io->quiet)?(0):(mixt_tree->mod->s_opt->print));  
-  Optimize_Br_Len_Serie(mixt_tree);
 
-
+  Random_Spr(mixt_tree->n_otu,mixt_tree);
   do
     {
       Set_Both_Sides(YES,mixt_tree);
@@ -4777,7 +4775,6 @@ void SPR_Shuffle(t_tree *mixt_tree)
       Optimize_Br_Len_Serie(mixt_tree);
 
       mixt_tree->annealing_temp -= 2.;
-
 
       if((mixt_tree->n_improvements < 20 || mixt_tree->max_spr_depth  < 5 || (FABS(lk_old-mixt_tree->c_lnL) < 1.)) &&
          (mixt_tree->annealing_temp < 0.0)) break;
