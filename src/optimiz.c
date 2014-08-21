@@ -2357,9 +2357,9 @@ int Optimiz_Alpha_And_Pinv(t_tree *mixt_tree, int verbose)
 
 
 phydbl Generic_Brent_Lk(phydbl *param, phydbl ax, phydbl cx, phydbl tol,
-            int n_iter_max, int quickdirty,
-            phydbl (*obj_func)(t_edge *,t_tree *,supert_tree *),
-            t_edge *branch, t_tree *tree, supert_tree *stree, int logt)
+                        int n_iter_max, int quickdirty,
+                        phydbl (*obj_func)(t_edge *,t_tree *,supert_tree *),
+                        t_edge *branch, t_tree *tree, supert_tree *stree, int logt)
 {
   int iter;
   phydbl a,b,d,etemp,fu,fv,fw,fx,p,q,r,tol1,tol2,u,v,w,x,xm;
@@ -2377,22 +2377,20 @@ phydbl Generic_Brent_Lk(phydbl *param, phydbl ax, phydbl cx, phydbl tol,
   fw=fv=fx=fu=-(*obj_func)(branch,tree,stree);
   if(logt == YES) (*param) = LOG(*param);
   init_lnL = -fw;
-//  DUMP_D(init_lnL);
 
   /* PhyML_Printf("\n. %p %p %p init_lnL = %f a=%f b=%f c=%f",branch,tree,stree,init_lnL,ax,bx,cx); */
-
+  
   for(iter=1;iter<=BRENT_IT_MAX;iter++)
     {
       xm=0.5*(a+b);
       tol2=2.0*(tol1=tol*x+BRENT_ZEPS);
-
+      
       if((fu > init_lnL + tol) && (quickdirty))
         {
           (*param) = x;
           if(logt == YES) (*param) = EXP(MIN(1.E+2,*param));
           fu = (*obj_func)(branch,tree,stree);
           if(logt == YES) (*param) = LOG(*param);
-    /* 	  Exit("\n"); */
           return fu;
         }
 

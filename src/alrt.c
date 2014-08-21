@@ -245,72 +245,71 @@ int Compute_Likelihood_Ratio_Test(t_edge *tested_edge, t_tree *tree)
   if((tested_edge->nni->lk0 > tested_edge->nni->lk1) && (tested_edge->nni->lk0 > tested_edge->nni->lk2))
     {
       if(tested_edge->nni->lk1 < tested_edge->nni->lk2)
-    {
-      //lk0 > lk2 > lk1
-      tested_edge->alrt_statistic = 2*(tested_edge->nni->lk0 - tested_edge->nni->lk2);
-    }
+        {
+          //lk0 > lk2 > lk1
+          tested_edge->alrt_statistic = 2*(tested_edge->nni->lk0 - tested_edge->nni->lk2);
+        }
       else
-    {
-      //lk0 > lk1 >= lk2
-      tested_edge->alrt_statistic = 2*(tested_edge->nni->lk0 - tested_edge->nni->lk1);
-    }
-
+        {
+          //lk0 > lk1 >= lk2
+          tested_edge->alrt_statistic = 2*(tested_edge->nni->lk0 - tested_edge->nni->lk1);
+        }
+      
       if (tested_edge->alrt_statistic < 0.0)
-    {
-      tested_edge->alrt_statistic = 0.0;
-      tested_edge->ratio_test = 0.0;
-    }
+        {
+          tested_edge->alrt_statistic = 0.0;
+          tested_edge->ratio_test = 0.0;
+        }
       else
-    {
-      //aLRT statistic is valid, compute the branch support
-      if (tree->io->ratio_test == ALRTCHI2)
         {
-          tested_edge->ratio_test = Statistics_To_Probabilities(tested_edge->alrt_statistic);
+          //aLRT statistic is valid, compute the branch support
+          if (tree->io->ratio_test == ALRTCHI2)
+            {
+              tested_edge->ratio_test = Statistics_To_Probabilities(tested_edge->alrt_statistic);
+            }
+          else if(tree->io->ratio_test == MINALRTCHI2SH)
+            {
+              phydbl sh_support;
+              phydbl param_support;
+              
+              sh_support    = Statistics_To_SH(tree);
+              param_support = Statistics_To_Probabilities(tested_edge->alrt_statistic);
+              
+              if(sh_support < param_support) tested_edge->ratio_test = sh_support;
+              else                           tested_edge->ratio_test = param_support;
+            }
+          
+          else if(tree->io->ratio_test == ALRTSTAT)
+            {
+              tested_edge->ratio_test=tested_edge->alrt_statistic;
+            }
+          else if(tree->io->ratio_test == SH)
+            {
+              tested_edge->ratio_test = Statistics_To_SH(tree);
+            }
+          else if(tree->io->ratio_test == ABAYES)
+            {
+              phydbl Kp0,Kp1,Kp2,logK;
+              
+              logK = 1. - MAX(MAX(tested_edge->nni->lk0,tested_edge->nni->lk1),tested_edge->nni->lk2);
+              
+              Kp0 = EXP(tested_edge->nni->lk0+logK);
+              Kp1 = EXP(tested_edge->nni->lk1+logK);
+              Kp2 = EXP(tested_edge->nni->lk2+logK);
+              tested_edge->ratio_test = Kp0/(Kp0+Kp1+Kp2);              
+            }
         }
-      else if(tree->io->ratio_test == MINALRTCHI2SH)
-        {
-          phydbl sh_support;
-          phydbl param_support;
-
-          sh_support    = Statistics_To_SH(tree);
-          param_support = Statistics_To_Probabilities(tested_edge->alrt_statistic);
-
-          if(sh_support < param_support) tested_edge->ratio_test = sh_support;
-          else                           tested_edge->ratio_test = param_support;
-        }
-
-      else if(tree->io->ratio_test == ALRTSTAT)
-        {
-          tested_edge->ratio_test=tested_edge->alrt_statistic;
-        }
-      else if(tree->io->ratio_test == SH)
-        {
-          tested_edge->ratio_test = Statistics_To_SH(tree);
-        }
-      else if(tree->io->ratio_test == ABAYES)
-        {
-          phydbl Kp0,Kp1,Kp2,logK;
-
-          logK = 1. - MAX(MAX(tested_edge->nni->lk0,tested_edge->nni->lk1),tested_edge->nni->lk2);
-
-          Kp0 = EXP(tested_edge->nni->lk0+logK);
-          Kp1 = EXP(tested_edge->nni->lk1+logK);
-          Kp2 = EXP(tested_edge->nni->lk2+logK);
-          tested_edge->ratio_test = Kp0/(Kp0+Kp1+Kp2);
-
-        }
-    }
     }
   //statistic is not valid, give the negative statistics if wished, or a zero support.
   else if((tested_edge->nni->lk1 > tested_edge->nni->lk0) && (tested_edge->nni->lk1 > tested_edge->nni->lk2))
     {
-/*       tested_edge->ratio_test = 2*(tested_edge->nni->lk0-tested_edge->nni->lk1); */
+      /*       tested_edge->ratio_test = 2*(tested_edge->nni->lk0-tested_edge->nni->lk1); */
       tested_edge->ratio_test = 0.0;
       if(tree->io->ratio_test > 1) tested_edge->alrt_statistic = 0.0;
     }
   else if((tested_edge->nni->lk2 > tested_edge->nni->lk0) && (tested_edge->nni->lk2 > tested_edge->nni->lk1))
     {
-/*       tested_edge->ratio_test = 2*(tested_edge->nni->lk0-tested_edge->nni->lk2); */
+      /*       tested_edge->ratio_test = 2*(tested_edge->nni->lk0-tested_edge->nni->lk2); */
       tested_edge->ratio_test = 0.0;
       if(tree->io->ratio_test > 1) tested_edge->alrt_statistic = 0.0;
     }
@@ -364,7 +363,6 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   lk_init            = tree->c_lnL;
   lk_temp            = UNLIKELY;
   b_fcus->nni->score = .0;
-
   lk0 = lk1 = lk2    = UNLIKELY;
   v1 = v2 = v3 = v4  = NULL;
 
@@ -440,8 +438,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   //until no significative improvement is detected
   
   lk0 = tree->c_lnL;
-  //  Print_All_Edge_PMats(tree);
-  //  Print_All_Edge_Likelihoods(tree);
+
   buff = (t_tree *)tree;
   do
     {
@@ -460,8 +457,6 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   while(tree);
 
   tree = (t_tree *)buff;
-//  Print_All_Edge_PMats(tree);
-//  Print_All_Edge_Likelihoods(tree);
   /*! Go back to initial branch lengths */
   MIXT_Set_Lengths_Of_This_Edge(len_e1,e1,tree);
   MIXT_Set_Lengths_Of_This_Edge(len_e2,e2,tree);
@@ -528,7 +523,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
       l_infa  = 10.;
       l_infb  = MAX(0.0,tree->mod->l_min/b_fcus->l->v);
       lk_temp = Br_Len_Brent(l_infb,l_infa,b_fcus,tree);
-            
+      
       For(i,3)
         if(b_fcus->rght->v[i] != b_fcus->left)
           {
@@ -550,10 +545,10 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
     }
   while(FABS(lk_temp-lk1) > tree->mod->s_opt->min_diff_lk_global);
   /*! until no significative improvement is detected */
-  
+
   lk1 = tree->c_lnL;
-  
-  /*! save likelihood of each sites, in order to compute branch supports */
+
+  /*! record likelihood of each site, in order to compute branch supports */
   
   buff = (t_tree *)tree;
   do
@@ -572,13 +567,9 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
     }
   while(tree);
   tree = (t_tree *)buff;
-  
-  //  Print_All_Edge_PMats(tree);
-  //  Print_All_Edge_Likelihoods(tree);
-  /*! undo the swap */
+      
+
   Swap(v3,b_fcus->left,b_fcus->rght,v2,tree);
-  //  Print_All_Edge_PMats(tree);
-  //  Print_All_Edge_Likelihoods(tree);
   /*! Go back to initial branch lengths */
   MIXT_Set_Lengths_Of_This_Edge(len_e1,e1,tree);
   MIXT_Set_Lengths_Of_This_Edge(len_e2,e2,tree);
@@ -608,8 +599,6 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
     
   /*! do the second possible swap */
   Swap(v2,b_fcus->left,b_fcus->rght,v4,tree);
-  //  Print_All_Edge_PMats(tree);
-  //  Print_All_Edge_Likelihoods(tree);
   Set_Both_Sides(YES,tree);
   MIXT_Set_Alias_Subpatt(YES,tree);
   Update_P_Lk(tree,b_fcus,b_fcus->left);
@@ -630,7 +619,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   do
     {
       lk2 = lk_temp;
-            
+      
       For(i,3)
         if(b_fcus->left->v[i] != b_fcus->rght)
           {
@@ -666,11 +655,11 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
         if(b_fcus->rght->v[i] != b_fcus->left)
           {
             Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
-
+            
             l_infa  = 10.;
             l_infb  = MAX(0.0,tree->mod->l_min/b_fcus->rght->b[i]->l->v);
             lk_temp = Br_Len_Brent(l_infb,l_infa,b_fcus->rght->b[i],tree);
-                        
+            
             if(lk_temp < lk2 - tree->mod->s_opt->min_diff_lk_local)
               {
                 Set_Both_Sides(YES,tree);
@@ -681,16 +670,16 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
                 PhyML_Printf("\n== Err. in file %s at line %d",__FILE__,__LINE__);
                 Exit("\n");
               }
-      }
-
+          }
+      
       Update_P_Lk(tree,b_fcus,b_fcus->rght);
-
+      
     }
   while(FABS(lk_temp-lk2) > tree->mod->s_opt->min_diff_lk_global);
   //until no significative improvement is detected
 
   lk2 = tree->c_lnL;
-
+    
   /*! save likelihood of each sites, in order to compute branch supports */
   buff = (t_tree *)tree;
   do

@@ -122,7 +122,7 @@ int main(int argc, char **argv)
               For(num_rand_tree,io->mod->s_opt->n_rand_starts)
                 {
                   if((io->mod->s_opt->random_input_tree) && (io->mod->s_opt->topo_search != NNI_MOVE))
-                    if(!io->quiet) PhyML_Printf("\n. [Random start %3d/%3d]\n",num_rand_tree+1,io->mod->s_opt->n_rand_starts);
+                    if(!io->quiet) PhyML_Printf("\n\n. [Random start %3d/%3d]",num_rand_tree+1,io->mod->s_opt->n_rand_starts);
 
                   Init_Model(cdata,mod,io);
 
