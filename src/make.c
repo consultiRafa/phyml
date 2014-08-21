@@ -422,6 +422,7 @@ t_tree *Make_Tree_From_Scratch(int n_otu, calign *data)
       Copy_Tax_Names_To_Tip_Labels(tree,data);
       tree->data = data;
     }
+
 #ifdef BEAGLE
   //offset the branch's partial indices because BEAGLE insists on first storing the tips/taxa
   int num_branches = 2*tree->n_otu-1;
@@ -1350,3 +1351,7 @@ t_geo_coord *GEO_Make_Geo_Coord(int dim)
   t->lonlat = (phydbl *)mCalloc(dim,sizeof(phydbl));
   return(t);
 }
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
