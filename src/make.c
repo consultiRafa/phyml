@@ -1312,6 +1312,7 @@ t_geo *GEO_Make_Geo_Basic()
 
 void GEO_Make_Geo_Complete(int ldscape_sz, int n_dim, int n_tax, t_geo *t)
 {
+  int i;
 
   // F matrix
   t->f_mat = (phydbl *)mCalloc(ldscape_sz*ldscape_sz,sizeof(phydbl));
@@ -1321,9 +1322,6 @@ void GEO_Make_Geo_Complete(int ldscape_sz, int n_dim, int n_tax, t_geo *t)
 
   // Occupation vectors: one vector for each node
   t->occup = (int *)mCalloc((2*n_tax-1)*ldscape_sz,sizeof(int));
-
-  // Locations
-  t->ldscape = (phydbl *)mCalloc((ldscape_sz*n_dim),sizeof(phydbl));
 
   // Lineage locations
   t->idx_loc = (int *)mCalloc((int)(2*n_tax-1),sizeof(int));
@@ -1336,7 +1334,19 @@ void GEO_Make_Geo_Complete(int ldscape_sz, int n_dim, int n_tax, t_geo *t)
 
   // gives the location occupied beneath each node in the tree
   t->idx_loc_beneath = (int *)mCalloc((int)(2*n_tax-1)*ldscape_sz,sizeof(int));
+
+  // Locations
+  t->coord_loc = (t_geo_coord **)mCalloc(ldscape_sz,sizeof(t_geo_coord *));
+  For(i,ldscape_sz) t->coord_loc[i] = GEO_Make_Geo_Coord();
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+t_geo_coord *GEO_Make_Geo_Coord(int dim)
+{
+  t_geo_coord *t;
+  t = (t_geo_coord *)mCalloc(1,sizeof(t_geo_coord));
+  t->lonlat = (phydbl *)mCalloc(dim,sizeof(phydbl));
+  return(t);
+}

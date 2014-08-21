@@ -34,7 +34,7 @@ int GEO_Estimate(int argc, char **argv)
   t_tree *tree;
   phydbl *ldscp;
   int *loc_hash;
-  int i;
+  int i,j;
   phydbl *probs;
   phydbl sum;
 
@@ -68,7 +68,15 @@ int GEO_Estimate(int argc, char **argv)
   
   GEO_Make_Geo_Complete(t->ldscape_sz,t->n_dim,tree->n_otu,t);
     
-  For(i,t->ldscape_sz*t->n_dim) t->ldscape[i] = ldscp[i];
+  j = 0;
+  For(i,t->ldscape_sz) 
+    {
+      t->coord_loc[i]->lonlat[0] = ldscp[j];
+      t->coord_loc[i]->lonlat[1] = ldscp[j+1];      
+      PhyML_Printf("\n. Location %d: %13f %13f",i+1,t->coord_loc[i]->lonlat[0],t->coord_loc[i]->lonlat[1]);
+      j+=2;
+    }
+
   For(i,tree->n_otu) t->idx_loc[i] = loc_hash[i];
 
   t->cov[0*t->n_dim+0] = t->sigma;
@@ -220,11 +228,16 @@ int GEO_Simulate_Estimate(int argc, char **argv)
     {
       For(j,tree->n_otu)
         {
+          /* geo_dist[i*tree->n_otu+j] = */
+          /*   FABS(t->ldscape[t->idx_loc[i]*t->n_dim+0] - */
+          /*        t->ldscape[t->idx_loc[j]*t->n_dim+0])+ */
+          /*   FABS(t->ldscape[t->idx_loc[i]*t->n_dim+1] - */
+          /*        t->ldscape[t->idx_loc[j]*t->n_dim+1]); */
           geo_dist[i*tree->n_otu+j] =
-            FABS(t->ldscape[t->idx_loc[i]*t->n_dim+0] -
-                 t->ldscape[t->idx_loc[j]*t->n_dim+0])+
-            FABS(t->ldscape[t->idx_loc[i]*t->n_dim+1] -
-                 t->ldscape[t->idx_loc[j]*t->n_dim+1]);
+            FABS(t->coord_loc[t->idx_loc[i]]->lonlat[0] -
+                 t->coord_loc[t->idx_loc[j]]->lonlat[0])+
+            FABS(t->coord_loc[t->idx_loc[i]]->lonlat[1] -
+                 t->coord_loc[t->idx_loc[j]]->lonlat[1]);
 
         }
     }
@@ -242,20 +255,24 @@ int GEO_Simulate_Estimate(int argc, char **argv)
                t->sigma,
                t->lbda,
                t->tau,
-               t->ldscape[t->idx_loc[tree->n_root->num]*t->n_dim+0],
-               t->ldscape[t->idx_loc[tree->n_root->num]*t->n_dim+1],
-               t->ldscape[rand_loc*t->n_dim+0],
-               t->ldscape[rand_loc*t->n_dim+1]);
+               /* t->ldscape[t->idx_loc[tree->n_root->num]*t->n_dim+0], */
+               /* t->ldscape[t->idx_loc[tree->n_root->num]*t->n_dim+1], */
+               /* t->ldscape[rand_loc*t->n_dim+0], */
+               /* t->ldscape[rand_loc*t->n_dim+1]); */
+               t->coord_loc[t->idx_loc[tree->n_root->num]]->lonlat[0],
+               t->coord_loc[t->idx_loc[tree->n_root->num]]->lonlat[1],
+               t->coord_loc[rand_loc]->lonlat[0],
+               t->coord_loc[rand_loc]->lonlat[1]);
 
   PhyML_Fprintf(fp,"%f\t %f\t %f\t %f\t %f\t %f\t %f\t %f\t %f\t",
                 t->sigma,
                 t->sigma_thresh,
                 t->lbda,
                 t->tau,
-                t->ldscape[t->idx_loc[tree->n_root->num]*t->n_dim+0],
-                t->ldscape[t->idx_loc[tree->n_root->num]*t->n_dim+1],
-                t->ldscape[rand_loc*t->n_dim+0],
-                t->ldscape[rand_loc*t->n_dim+1],
+                t->coord_loc[t->idx_loc[tree->n_root->num]]->lonlat[0],
+                t->coord_loc[t->idx_loc[tree->n_root->num]]->lonlat[1],
+                t->coord_loc[rand_loc]->lonlat[0],
+                t->coord_loc[rand_loc]->lonlat[1],
                 rf);
 
   GEO_Get_Locations_Beneath(t,tree);
@@ -458,11 +475,15 @@ phydbl *GEO_MCMC(t_tree *tree)
           res[2 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = t->tau; 
           res[3 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = t->c_lnL; 
                     
-          res[4 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = t->ldscape[t->idx_loc[tree->n_root->num]*t->n_dim+0];
-          res[5 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = t->ldscape[t->idx_loc[tree->n_root->num]*t->n_dim+1];
+          /* res[4 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = t->ldscape[t->idx_loc[tree->n_root->num]*t->n_dim+0]; */
+          /* res[5 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = t->ldscape[t->idx_loc[tree->n_root->num]*t->n_dim+1]; */
+          res[4 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = t->coord_loc[t->idx_loc[tree->n_root->num]]->lonlat[0];
+          res[5 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = t->coord_loc[t->idx_loc[tree->n_root->num]]->lonlat[1];
 
-          res[6 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = t->ldscape[rand_loc*t->n_dim+0];
-          res[7 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = t->ldscape[rand_loc*t->n_dim+1];
+          /* res[6 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = t->ldscape[rand_loc*t->n_dim+0]; */
+          /* res[7 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = t->ldscape[rand_loc*t->n_dim+1]; */
+          res[6 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = t->coord_loc[rand_loc*t->n_dim]->lonlat[0];
+          res[7 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = t->coord_loc[rand_loc*t->n_dim]->lonlat[1];
         }
 
       tree->mcmc->run++;
@@ -506,11 +527,11 @@ void GEO_Update_Fmat(t_geo *t)
   // Fill in F matrix;
   for(i=0;i<t->ldscape_sz;i++)
     {
-      loc1 = t->ldscape + i*t->n_dim;
+      loc1 = t->coord_loc[i]->lonlat;
 
       for(j=i;j<t->ldscape_sz;j++)
         {
-          loc2 = t->ldscape + j*t->n_dim;
+          loc2 = t->coord_loc[j]->lonlat;
 
           t->f_mat[i*t->ldscape_sz+j] = .0;
 
@@ -1172,11 +1193,11 @@ void GEO_Simulate_Coordinates(int n, t_geo *t)
 
   For(i,n)
     {
-      t->ldscape[i*t->n_dim+0] = -width/2. + Uni()*width;
-      /* t->ldscape[i*t->n_dim+1] = -width/2. + Uni()*width; */
-      t->ldscape[i*t->n_dim+1] = width/2.;
+      /* t->ldscape[i*t->n_dim+0] = -width/2. + Uni()*width; */
+      /* t->ldscape[i*t->n_dim+1] = width/2.; */
+      t->coord_loc[i*t->n_dim]->lonlat[0] = -width/2. + Uni()*width;
+      t->coord_loc[i*t->n_dim]->lonlat[1] = width/2.;
     }
-
 
   /* t->ldscape[0*t->n_dim+0] = 0.0; */
   /* t->ldscape[0*t->n_dim+1] = 0.0; */
@@ -1496,8 +1517,10 @@ void GEO_Get_Sigma_Max(t_geo *t)
           /* if(dist > mean_dist) mean_dist = dist; */
           /* dist = POW(t->ldscape[i*t->n_dim+1] - t->ldscape[j*t->n_dim+1],1); */
           /* if(dist > mean_dist) mean_dist = dist; */
-          mean_dist += FABS(t->ldscape[i*t->n_dim+0] - t->ldscape[j*t->n_dim+0]);
-          mean_dist += FABS(t->ldscape[i*t->n_dim+1] - t->ldscape[j*t->n_dim+1]);
+          /* mean_dist += FABS(t->ldscape[i*t->n_dim+0] - t->ldscape[j*t->n_dim+0]); */
+          /* mean_dist += FABS(t->ldscape[i*t->n_dim+1] - t->ldscape[j*t->n_dim+1]); */
+          mean_dist += FABS(t->coord_loc[i]->lonlat[0] - t->coord_loc[j]->lonlat[0]);
+          mean_dist += FABS(t->coord_loc[i]->lonlat[1] - t->coord_loc[j]->lonlat[1]);
         }
     }
   

@@ -74,5 +74,6 @@ void Free_Calib(t_cal *cal);
 void Free_Edge_Lk_Left(t_edge *b);
 void Free_Edge_Lk_Rght(t_edge *b);
 void Free_Geo(t_geo *t);
+void Free_Geo_Coord(t_geo_coord *t);
 
 #endif

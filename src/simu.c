@@ -43,11 +43,11 @@ void Simu_Loop(t_tree *mixt_tree)
     }
   while(mixt_tree->c_lnL > lk_old + mixt_tree->mod->s_opt->min_diff_lk_local);
 
-  do
-    {
-      Round_Optimize(mixt_tree,mixt_tree->data,ROUND_MAX);
-      if(!Check_NNI_Five_Branches(mixt_tree)) break;
-    }while(1);
+  /* do */
+  /*   { */
+  /*     Round_Optimize(mixt_tree,mixt_tree->data,ROUND_MAX); */
+  /*     if(!Check_NNI_Five_Branches(mixt_tree)) break; */
+  /*   }while(1); */
   /*****************************/
 
   if((mixt_tree->mod->s_opt->print) &&

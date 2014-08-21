@@ -1145,12 +1145,24 @@ void Free_Calib(t_cal *cal)
 
 void Free_Geo(t_geo *t)
 {
+  int i;
   Free(t->f_mat);
   Free(t->r_mat);
   Free(t->occup);
   Free(t->idx_loc);
-  Free(t->ldscape);
   Free(t->sorted_nd);
   Free(t->cov);
   Free(t->idx_loc_beneath);
+  For(i,t->ldscape_sz) Free_Geo_Coord(t->coord_loc[i]);
+  Free(t->coord_loc);
+  Free(t);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Free_Geo_Coord(t_geo_coord *t)
+{
+  Free(t->lonlat);
+  Free(t);
 }

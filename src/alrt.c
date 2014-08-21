@@ -75,67 +75,67 @@ int Check_NNI_Five_Branches(t_tree *tree)
 
               //Look for possible NNI to do, and check if it is the best one
               switch(result)
-            {
-            case 1 : /* lk1 > lk0 > lk2 */
-              {
-                if((tree->a_edges[i]->nni->lk0 - tree->a_edges[i]->nni->lk1) < best_gain)
+                {
+                case 1 : /* lk1 > lk0 > lk2 */
                   {
-                better_found = 1;
-                best_edge    = i;
-                best_gain    = tree->a_edges[i]->nni->lk0-tree->a_edges[i]->nni->lk1;
-                best_config  = 1;
+                    if((tree->a_edges[i]->nni->lk0 - tree->a_edges[i]->nni->lk1) < best_gain)
+                      {
+                        better_found = 1;
+                        best_edge    = i;
+                        best_gain    = tree->a_edges[i]->nni->lk0-tree->a_edges[i]->nni->lk1;
+                        best_config  = 1;
+                      }
+                    break;
                   }
-                break;
-              }
-            case 2 : /* lk2 > lk0 > lk1 */
-              {
-                if((tree->a_edges[i]->nni->lk0 - tree->a_edges[i]->nni->lk2) < best_gain)
+                case 2 : /* lk2 > lk0 > lk1 */
                   {
-                better_found = 1;
-                best_edge    = i;
-                best_gain    = tree->a_edges[i]->nni->lk0-tree->a_edges[i]->nni->lk2;
-                best_config  = 2;
+                    if((tree->a_edges[i]->nni->lk0 - tree->a_edges[i]->nni->lk2) < best_gain)
+                      {
+                        better_found = 1;
+                        best_edge    = i;
+                        best_gain    = tree->a_edges[i]->nni->lk0-tree->a_edges[i]->nni->lk2;
+                        best_config  = 2;
+                      }
+                    break;
                   }
-                break;
-              }
-            case 3 : /* lk1 > lk2 > lk0 */
-              {
-                if((tree->a_edges[i]->nni->lk2 - tree->a_edges[i]->nni->lk1) < best_gain)
+                case 3 : /* lk1 > lk2 > lk0 */
                   {
-                better_found = 1;
-                best_edge    = i;
-                best_gain    = tree->a_edges[i]->nni->lk2-tree->a_edges[i]->nni->lk1;
-                best_config  = 1;
+                    if((tree->a_edges[i]->nni->lk2 - tree->a_edges[i]->nni->lk1) < best_gain)
+                      {
+                        better_found = 1;
+                        best_edge    = i;
+                        best_gain    = tree->a_edges[i]->nni->lk2-tree->a_edges[i]->nni->lk1;
+                        best_config  = 1;
+                      }
+                    break;
                   }
-                break;
-              }
-            case 4 : /* lk2 > lk1 > lk0 */
-              {
-                if((tree->a_edges[i]->nni->lk1 - tree->a_edges[i]->nni->lk2) < best_gain)
+                case 4 : /* lk2 > lk1 > lk0 */
                   {
-                better_found = 1;
-                best_edge    = i;
-                best_gain    = tree->a_edges[i]->nni->lk1-tree->a_edges[i]->nni->lk2;
-                best_config  = 2;
+                    if((tree->a_edges[i]->nni->lk1 - tree->a_edges[i]->nni->lk2) < best_gain)
+                      {
+                        better_found = 1;
+                        best_edge    = i;
+                        best_gain    = tree->a_edges[i]->nni->lk1-tree->a_edges[i]->nni->lk2;
+                        best_config  = 2;
+                      }
+                    break;
                   }
-                break;
-              }
-            default : /* lk2 = lk1 = lk0 */
-              {
-                if(best_gain > .0) best_gain = .0;
-                break;
-              }
-            }
+                default : /* lk2 = lk1 = lk0 */
+                  {
+                    if(best_gain > .0) best_gain = .0;
+                    break;
+                  }
+                }
             }
         }
-
+      
       if((tree->c_lnL < init_lnL - tree->mod->s_opt->min_diff_lk_local) || (tree->c_lnL > init_lnL + tree->mod->s_opt->min_diff_lk_local))
         {
           PhyML_Printf("\n\n== tree->c_lnL = %f init_lnL = %f.",tree->c_lnL,init_lnL);
-          PhyML_Printf("\n== Err in file %s at line %d\n\n.\n",__FILE__,__LINE__);
+          PhyML_Printf("\n== Err. in file %s at line %d\n\n.\n",__FILE__,__LINE__);
           Warn_And_Exit("\n");
         }
-
+      
       //Don't do any NNI if the user doesn't want to optimize topology
       if(!tree->mod->s_opt->opt_topo) better_found = 0;
 /*       if(FABS(best_gain) <= tree->mod->s_opt->min_diff_lk_move) better_found = 0; */

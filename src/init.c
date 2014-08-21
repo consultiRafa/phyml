@@ -682,8 +682,11 @@ void Set_Defaults_Optimiz(t_opt *s_opt)
   s_opt->steph_spr            = YES;
   s_opt->user_state_freq      = NO;
 
-  s_opt->min_diff_lk_local    = 1.E-04;
-  s_opt->min_diff_lk_global   = 1.E-03;
+  /* s_opt->min_diff_lk_local    = 1.E-04; */
+  /* s_opt->min_diff_lk_global   = 1.E-03; */
+  /* s_opt->min_diff_lk_move     = 1.E-02; */
+  s_opt->min_diff_lk_local    = 1.E-02;
+  s_opt->min_diff_lk_global   = 1.E-02;
   s_opt->min_diff_lk_move     = 1.E-02;
 
   s_opt->p_moves_to_examine   = 0.15;
@@ -1047,7 +1050,6 @@ void Init_Model(calign *data, t_mod *mod, option *io)
   if(mod->s_opt->opt_alpha)  mod->ras->alpha->v  = 1.0;
   if(mod->s_opt->opt_pinvar) mod->ras->pinvar->v = 0.2;
   
-
   if(io->datatype == NT) /* Nucleotides */
     {
       /* init for nucleotides */

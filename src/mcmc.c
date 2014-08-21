@@ -705,7 +705,7 @@ void MCMC_Geo_Loc(t_tree *tree)
 
   rec_loc = (int *)mCalloc(2*tree->n_otu-1,sizeof(int));
 
-  For(i,2*tree->n_otu-1) rec_loc[i] = tree->geo->loc[i];
+  For(i,2*tree->n_otu-1) rec_loc[i] = tree->geo->idx_loc[i];
 
   // Choose an internal node (including the root) at random 
   target = Rand_Int(tree->n_otu,2*tree->n_otu-2); 
@@ -718,10 +718,10 @@ void MCMC_Geo_Loc(t_tree *tree)
       probs = (phydbl *)mCalloc(tree->geo->ldscape_sz,sizeof(phydbl));
 
       sum = 0.0;
-      For(i,tree->geo->ldscape_sz) sum += tree->geo->loc_beneath[tree->n_root->num * tree->geo->ldscape_sz + i];
-      For(i,tree->geo->ldscape_sz) probs[i] = tree->geo->loc_beneath[tree->n_root->num * tree->geo->ldscape_sz + i]/sum;
+      For(i,tree->geo->ldscape_sz) sum += tree->geo->idx_loc_beneath[tree->n_root->num * tree->geo->ldscape_sz + i];
+      For(i,tree->geo->ldscape_sz) probs[i] = tree->geo->idx_loc_beneath[tree->n_root->num * tree->geo->ldscape_sz + i]/sum;
       
-      tree->geo->loc[tree->n_root->num] = Sample_i_With_Proba_pi(probs,tree->geo->ldscape_sz);      
+      tree->geo->idx_loc[tree->n_root->num] = Sample_i_With_Proba_pi(probs,tree->geo->ldscape_sz);      
 
       Free(probs);
     }
@@ -741,7 +741,7 @@ void MCMC_Geo_Loc(t_tree *tree)
 
   if(u > alpha) /* Reject */
     {
-      For(i,2*tree->n_otu-1) tree->geo->loc[i] = rec_loc[i];
+      For(i,2*tree->n_otu-1) tree->geo->idx_loc[i] = rec_loc[i];
       tree->geo->c_lnL = GEO_Lk(tree->geo,tree); // TO DO: you only need to update the occupation vector here...
     }
 

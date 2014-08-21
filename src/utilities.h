@@ -1564,16 +1564,16 @@ typedef struct __Calibration {
 /*!********************************************************/
 
 typedef struct __Phylogeo{
-  phydbl               *cov; // Covariance of migrations (n_dim x n_dim)
-  phydbl             *r_mat; // R matrix. Gives the rates of migrations between locations. See article.
-  phydbl             *f_mat; // F matrix. See article.
-  int                *occup; // Vector giving the number of lineages that occupy each location
-  phydbl           *ldscape; // Coordinates of locations observed at the sampled tips
-  int              *idx_loc; // Index of location for each lineage
-  int      *idx_loc_beneath; // Gives the index of location occupied beneath each node in the tree
-  int            ldscape_sz; // Landscape size: number of locations
-  int                 n_dim; // Dimension of the data (e.g., longitude + lattitude -> n_dim = 2)
-  int           update_fmat;
+  phydbl                    *cov; // Covariance of migrations (n_dim x n_dim)
+  phydbl                  *r_mat; // R matrix. Gives the rates of migrations between locations. See article.
+  phydbl                  *f_mat; // F matrix. See article.
+  int                     *occup; // Vector giving the number of lineages that occupy each location
+  int                   *idx_loc; // Index of location for each lineage
+  int           *idx_loc_beneath; // Gives the index of location occupied beneath each node in the tree
+  int                 ldscape_sz; // Landscape size: number of locations
+  int                      n_dim; // Dimension of the data (e.g., longitude + lattitude -> n_dim = 2)
+  int                update_fmat;
+  struct __Geo_Coord **coord_loc; // Coordinates of the observed locations
 
   phydbl              sigma; // Dispersal parameter
   phydbl          min_sigma;
@@ -1619,6 +1619,14 @@ typedef struct __Migrep_Model{
 }t_migrep_model;
 
 /*!********************************************************/
+
+typedef struct __Geo_Coord{
+  phydbl *lonlat; // longitude-latitude vector
+  int dim;
+}t_geo_coord;
+
+
+
 /*!********************************************************/
 /*!********************************************************/
 /*!********************************************************/
