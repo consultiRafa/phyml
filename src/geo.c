@@ -18,8 +18,8 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int GEO_Main(int argc, char **argv)
 {
-  GEO_Simulate_Estimate(argc,argv);
-  /* GEO_Estimate(argc,argv); */
+  /* GEO_Simulate_Estimate(argc,argv); */
+  GEO_Estimate(argc,argv);
   return(1);
 }
 
@@ -68,6 +68,7 @@ int GEO_Estimate(int argc, char **argv)
   
   GEO_Make_Geo_Complete(t->ldscape_sz,t->n_dim,tree->n_otu,t);
     
+  
   j = 0;
   For(i,t->ldscape_sz) 
     {
@@ -154,7 +155,6 @@ int GEO_Simulate_Estimate(int argc, char **argv)
 
   t = GEO_Make_Geo_Basic();
   GEO_Init_Geo_Struct(t);
-
 
   /* t->tau        = 3.0; */
   /* t->lbda       = 0.02; */
@@ -482,8 +482,8 @@ phydbl *GEO_MCMC(t_tree *tree)
 
           /* res[6 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = t->ldscape[rand_loc*t->n_dim+0]; */
           /* res[7 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = t->ldscape[rand_loc*t->n_dim+1]; */
-          res[6 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = t->coord_loc[rand_loc*t->n_dim]->lonlat[0];
-          res[7 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = t->coord_loc[rand_loc*t->n_dim]->lonlat[1];
+          res[6 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = t->coord_loc[rand_loc]->lonlat[0];
+          res[7 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = t->coord_loc[rand_loc]->lonlat[1];
         }
 
       tree->mcmc->run++;
@@ -1195,8 +1195,8 @@ void GEO_Simulate_Coordinates(int n, t_geo *t)
     {
       /* t->ldscape[i*t->n_dim+0] = -width/2. + Uni()*width; */
       /* t->ldscape[i*t->n_dim+1] = width/2.; */
-      t->coord_loc[i*t->n_dim]->lonlat[0] = -width/2. + Uni()*width;
-      t->coord_loc[i*t->n_dim]->lonlat[1] = width/2.;
+      t->coord_loc[i]->lonlat[0] = -width/2. + Uni()*width;
+      t->coord_loc[i]->lonlat[1] = width/2.;
     }
 
   /* t->ldscape[0*t->n_dim+0] = 0.0; */
@@ -1421,7 +1421,6 @@ void GEO_Randomize_Locations(t_node *n, t_geo *t, t_tree *tree)
       For(i,3)
         if(n->v[i] != n->anc && n->b[i] != tree->e_root) 
           GEO_Randomize_Locations(n->v[i],t,tree);
-
     }
 }
 
@@ -1440,8 +1439,6 @@ void GEO_Get_Locations_Beneath(t_geo *t, t_tree *tree)
         t->idx_loc_beneath[tree->n_root->v[1]->num*t->ldscape_sz+i] +
         t->idx_loc_beneath[tree->n_root->v[2]->num*t->ldscape_sz+i];      
     }
-
-
 }
 
 //////////////////////////////////////////////////////////////
@@ -1821,12 +1818,8 @@ void GEO_Read_In_Landscape(char *file_name, t_geo *t, phydbl **ldscape, int **lo
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
-
-
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

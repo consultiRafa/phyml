@@ -3686,8 +3686,6 @@ void Speed_Spr_Loop(t_tree *tree)
   SPR_Shuffle(tree);
   Set_Both_Sides(YES,tree);
   Lk(NULL,tree);
-
-  Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->mod->s_opt->print));
   tree->best_lnL = tree->c_lnL;
 
   /*****************************/
@@ -3731,16 +3729,16 @@ void Speed_Spr_Loop(t_tree *tree)
   /*****************************/
 
 
-  /*****************************/
-  lk_old = UNLIKELY;
-  do
-    {
-      lk_old = tree->c_lnL;
-      if(!Simu(tree,10)) break;
-      Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->mod->s_opt->print));
-    }
-  while(FABS(lk_old - tree->c_lnL) > tree->mod->s_opt->min_diff_lk_local);
-  /*****************************/
+  /* /\*****************************\/ */
+  /* lk_old = UNLIKELY; */
+  /* do */
+  /*   { */
+  /*     lk_old = tree->c_lnL; */
+  /*     if(!Simu(tree,10)) break; */
+  /*     Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->mod->s_opt->print)); */
+  /*   } */
+  /* while(FABS(lk_old - tree->c_lnL) > tree->mod->s_opt->min_diff_lk_local); */
+  /* /\*****************************\/ */
 
 
   /*****************************/
@@ -3748,7 +3746,8 @@ void Speed_Spr_Loop(t_tree *tree)
     {
       Round_Optimize(tree,tree->data,ROUND_MAX);
       if(!Check_NNI_Five_Branches(tree)) break;
-    }while(1);
+    }
+  while(1);
   /*****************************/
 
 /*   if((tree->mod->s_opt->print) && (!tree->io->quiet)) PhyML_Printf("\n"); */
@@ -4749,8 +4748,6 @@ void SPR_Shuffle(t_tree *mixt_tree)
       if((mixt_tree->n_improvements < 20 || mixt_tree->max_spr_depth  < 5 || (FABS(lk_old-mixt_tree->c_lnL) < 1.)) &&
          (mixt_tree->annealing_temp < 0.0)) break;
 
-      printf("\n. Temperature: %f",mixt_tree->annealing_temp);
-
     }
   while(1);
 
@@ -4758,8 +4755,7 @@ void SPR_Shuffle(t_tree *mixt_tree)
 
   if(mixt_tree->mod->s_opt->print && (!mixt_tree->io->quiet))
     {
-      PhyML_Printf("\n\n. End of refining stage...\n. The log-likelihood might now decrease and then increase again...");
-      PhyML_Printf("\n. Current value of log-likelihood: %f\n",mixt_tree->c_lnL);
+      PhyML_Printf("\n\n. End of refining stage...\n");
     }
 
   /*! Go back to the original data structure, with potentially more

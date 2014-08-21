@@ -22,9 +22,6 @@ the GNU public licence.  See http://www.opensource.org for details.
 void Simu_Loop(t_tree *mixt_tree)
 {
   phydbl lk_old;
-  int *orig_catg;
-  int n;
-  t_tree *tree,**tree_list;
 
   SPR_Shuffle(mixt_tree);
 
@@ -43,12 +40,12 @@ void Simu_Loop(t_tree *mixt_tree)
     }
   while(mixt_tree->c_lnL > lk_old + mixt_tree->mod->s_opt->min_diff_lk_local);
 
-  /* do */
-  /*   { */
-  /*     Round_Optimize(mixt_tree,mixt_tree->data,ROUND_MAX); */
-  /*     if(!Check_NNI_Five_Branches(mixt_tree)) break; */
-  /*   }while(1); */
-  /*****************************/
+  do
+    {
+      Round_Optimize(mixt_tree,mixt_tree->data,ROUND_MAX);
+      if(!Check_NNI_Five_Branches(mixt_tree)) break;
+    }
+  while(1);
 
   if((mixt_tree->mod->s_opt->print) &&
      (!mixt_tree->io->quiet)) PhyML_Printf("\n");

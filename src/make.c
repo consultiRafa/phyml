@@ -1337,7 +1337,7 @@ void GEO_Make_Geo_Complete(int ldscape_sz, int n_dim, int n_tax, t_geo *t)
 
   // Locations
   t->coord_loc = (t_geo_coord **)mCalloc(ldscape_sz,sizeof(t_geo_coord *));
-  For(i,ldscape_sz) t->coord_loc[i] = GEO_Make_Geo_Coord();
+  For(i,ldscape_sz) t->coord_loc[i] = GEO_Make_Geo_Coord(n_dim);
 }
 
 //////////////////////////////////////////////////////////////
