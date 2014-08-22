@@ -1226,7 +1226,7 @@ void Make_Efrq_Weight(t_tree *mixt_tree)
 
   tree = mixt_tree;
   do
-                {
+    {
       if(tree->is_mixt_tree == YES) tree = tree->next;
       tree->mod->e_frq_weight = NULL;
       tree = tree->next;
@@ -1291,7 +1291,7 @@ void Make_Efrq_Weight(t_tree *mixt_tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-t_migrep_event *Make_Migrep_Event(t_node *n, phydbl time)
+t_migrep_event *MIGREP_Make_Migrep_Event(t_node *n, phydbl time)
 {
   t_migrep_event *new;
   new = (t_migrep_event *)mCalloc(1,sizeof(t_migrep_event));
@@ -1355,3 +1355,9 @@ t_geo_coord *GEO_Make_Geo_Coord(int dim)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+t_migrep_model *MIGREP_Make_Migrep_Model()
+{
+  t_migrep_model *t;
+  t = (t_migrep_model *)mCalloc(1,sizeof(t_migrep_model));
+  return(t);
+}

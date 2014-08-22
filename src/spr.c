@@ -3710,23 +3710,23 @@ void Speed_Spr_Loop(t_tree *tree)
   /*****************************/
 
 
-  /*****************************/
-  if(tree->io->datatype == NT)
-    {
-      lk_old = UNLIKELY;
-      tree->mod->s_opt->max_delta_lnL_spr = 20.;
-      tree->mod->s_opt->max_depth_path    = 10;
-      tree->mod->s_opt->spr_lnL           = YES;
-      do
-        {
-          lk_old = tree->c_lnL;
-          Speed_Spr(tree,1);
-          if(tree->n_improvements) Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->mod->s_opt->print));
-          if((!tree->n_improvements) || (FABS(lk_old-tree->c_lnL) < 1.)) break;
-        }
-      while(1);
-    }
-  /*****************************/
+  /* /\*****************************\/ */
+  /* if(tree->io->datatype == NT) */
+  /*   { */
+  /*     lk_old = UNLIKELY; */
+  /*     tree->mod->s_opt->max_delta_lnL_spr = 20.; */
+  /*     tree->mod->s_opt->max_depth_path    = 10; */
+  /*     tree->mod->s_opt->spr_lnL           = YES; */
+  /*     do */
+  /*       { */
+  /*         lk_old = tree->c_lnL; */
+  /*         Speed_Spr(tree,1); */
+  /*         if(tree->n_improvements) Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->mod->s_opt->print)); */
+  /*         if((!tree->n_improvements) || (FABS(lk_old-tree->c_lnL) < 1.)) break; */
+  /*       } */
+  /*     while(1); */
+  /*   } */
+  /* /\*****************************\/ */
 
 
   /*****************************/
