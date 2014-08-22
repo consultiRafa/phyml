@@ -58,5 +58,6 @@ void Init_Rmat(t_rmat *rmat);
 void Init_MGF_Bl(t_tree *tree);
 int Init_Qmat_FLU(phydbl *daa, phydbl *pi);
 void Set_Defaults_Ras(t_ras *ras);
+void GEO_Init_Coord(t_geo_coord *t, int n_dim);
 
 #endif
