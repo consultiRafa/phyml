@@ -1170,7 +1170,7 @@ void Free_Geo_Coord(t_geo_coord *t)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Free_Migrep_Event(t_migrep_event *t)
+void Free_Migrep_Evt(t_migrep_evt *t)
 {
   Free_Geo_Coord(t->centr);
   Free(t);

@@ -1291,10 +1291,10 @@ void Make_Efrq_Weight(t_tree *mixt_tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-t_migrep_event *MIGREP_Make_Migrep_Event(int n_dim)
+t_migrep_evt *MIGREP_Make_Migrep_Event(int n_dim)
 {
-  t_migrep_event *new;
-  new = (t_migrep_event *)mCalloc(1,sizeof(t_migrep_event));
+  t_migrep_evt *new;
+  new = (t_migrep_evt *)mCalloc(1,sizeof(t_migrep_evt));
   new->centr = GEO_Make_Geo_Coord(n_dim);
   return(new);
 }
@@ -1356,10 +1356,10 @@ t_geo_coord *GEO_Make_Geo_Coord(int dim)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-t_migrep_model *MIGREP_Make_Migrep_Model()
+t_migrep_mod *MIGREP_Make_Migrep_Model()
 {
-  t_migrep_model *t;
-  t = (t_migrep_model *)mCalloc(1,sizeof(t_migrep_model));
+  t_migrep_mod *t;
+  t = (t_migrep_mod *)mCalloc(1,sizeof(t_migrep_mod));
   return(t);
 }
 

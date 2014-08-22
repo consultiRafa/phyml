@@ -415,6 +415,9 @@ typedef struct __Node {
   int                                rank;
   int                            rank_max;
 
+
+  struct __Geo_Coord               *coord; /*! Spatial coordinates */
+
 }t_node;
 
 
@@ -1608,7 +1611,7 @@ typedef struct __Migrep_Event{
   phydbl               time; // time of that event
   struct __Geo_Coord *centr; // center of the migrep disk
   phydbl             radius; // radius of the migrep disk 
-}t_migrep_event;
+}t_migrep_evt;
 
 /*!********************************************************/
 // Structure for the Etheridge-Barton migration/reproduction model
@@ -1616,13 +1619,17 @@ typedef struct __Migrep_Model{
   struct __Migrep_Event *first_event; // first migrep event 
   phydbl                      lambda; // rate at which events occur
   phydbl                          mu; // per-capita and per event death probability
-}t_migrep_model;
+}t_migrep_mod;
 
 /*!********************************************************/
 
 typedef struct __Geo_Coord{
   phydbl *lonlat; // longitude-latitude vector
   int dim;
+  phydbl time;
+  struct __Node        *nd;
+  struct __Geo_Coord *prev;
+  struct __Geo_Coord *next;
 }t_geo_coord;
 
 

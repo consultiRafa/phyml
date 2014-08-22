@@ -75,5 +75,5 @@ void Free_Edge_Lk_Left(t_edge *b);
 void Free_Edge_Lk_Rght(t_edge *b);
 void Free_Geo(t_geo *t);
 void Free_Geo_Coord(t_geo_coord *t);
-
+void Free_Migrep_Evt(t_migrep_evt *t);
 #endif
