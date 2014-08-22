@@ -416,7 +416,7 @@ typedef struct __Node {
   int                            rank_max;
 
 
-  struct __Geo_Coord               *coord; /*! Spatial coordinates */
+  struct __Migrep_Event       *migrep_evt; /*! Spatial coordinates */
 
 }t_node;
 
@@ -1605,12 +1605,11 @@ typedef struct __Phylogeo{
 /*!********************************************************/
 // Structure for one of the migration/reproduction event involved in Etheridge-Barton model
 typedef struct __Migrep_Event{
-  struct __Migrep     *next; // next (i.e., more recent) event 
-  struct __Migrep     *prev; // previous (i.e., more ancient) event
-  struct __Node   *n_target; // which is the node located at the bottom of the branch affected by the event
-  phydbl               time; // time of that event
-  struct __Geo_Coord *centr; // center of the migrep disk
-  phydbl             radius; // radius of the migrep disk 
+  struct __Migrep      *next; // next (i.e., more recent) event 
+  struct __Migrep      *prev; // previous (i.e., more ancient) event
+  struct __Node    *n_target; // which is the node located at the bottom of the branch affected by the event
+  struct __Geo_Coord  *coord; // coordinate of the event
+  phydbl                time; // time of that event
 }t_migrep_evt;
 
 /*!********************************************************/
@@ -1619,6 +1618,8 @@ typedef struct __Migrep_Model{
   struct __Migrep_Event *first_event; // first migrep event 
   phydbl                      lambda; // rate at which events occur
   phydbl                          mu; // per-capita and per event death probability
+  struct __Geo_Coord          *centr; // center of the migrep disk
+  phydbl                      radius; // radius of the migrep disk 
 }t_migrep_mod;
 
 /*!********************************************************/
@@ -1626,10 +1627,6 @@ typedef struct __Migrep_Model{
 typedef struct __Geo_Coord{
   phydbl *lonlat; // longitude-latitude vector
   int dim;
-  phydbl time;
-  struct __Node        *nd;
-  struct __Geo_Coord *prev;
-  struct __Geo_Coord *next;
 }t_geo_coord;
 
 

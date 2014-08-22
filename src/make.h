@@ -65,8 +65,8 @@ void Make_Efrq_Weight(t_tree *mixt_tree);
 void Make_Rmat_Weight(t_tree *mixt_tree);
 t_geo *GEO_Make_Geo_Basic();
 void GEO_Make_Geo_Complete(int ldscape_sz,int n_dim,int n_tax,t_geo *t);
-t_geo_coord *GEO_Make_Geo_Coord();
+t_geo_coord *GEO_Make_Geo_Coord(int n_dim);
 t_migrep_mod *MIGREP_Make_Migrep_Model();
-t_migrep_evt *MIGREP_Make_Migrep_Event();
+t_migrep_evt *MIGREP_Make_Migrep_Event(int n_dim);
 
 #endif

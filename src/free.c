@@ -1172,6 +1172,6 @@ void Free_Geo_Coord(t_geo_coord *t)
 
 void Free_Migrep_Evt(t_migrep_evt *t)
 {
-  Free_Geo_Coord(t->centr);
+  Free_Geo_Coord(t->coord);
   Free(t);
 }
