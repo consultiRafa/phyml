@@ -3690,25 +3690,16 @@ void Speed_Spr_Loop(t_tree *tree)
 
   /*****************************/
   lk_old = UNLIKELY;
-  /* tree->mod->s_opt->max_depth_path    = 2*tree->n_otu-3; */
   tree->mod->s_opt->max_depth_path    = tree->n_otu;
-  tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(0.):(0.);
-  /* tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(10.):(0.); */
-  /* tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(10.):(10.); */
-  /* tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(50.):(0.); */
-  /* tree->mod->s_opt->max_depth_path    = 5; */
+  tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(5.):(0.);
   tree->mod->s_opt->spr_lnL           = NO;
   do
     {
       lk_old = tree->c_lnL;
       Speed_Spr(tree,1);
       if(tree->n_improvements) Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->mod->s_opt->print));
-      /* if((tree->io->datatype == NT) && ((tree->max_spr_depth < 4 && tree->n_improvements < 10) || (FABS(lk_old-tree->c_lnL) < 1.))) break; */
-      /* if((tree->io->datatype == AA) && ((tree->max_spr_depth < 4 && tree->n_improvements < 1)  || (FABS(lk_old-tree->c_lnL) < 1.))) break; */
-      /* if((tree->io->datatype == NT) && (tree->n_improvements < (int)(tree->n_otu/10) || (FABS(lk_old-tree->c_lnL) < 1.))) break; */
-      /* if((tree->io->datatype == AA) && ((tree->max_spr_depth < 4 && tree->n_improvements < 1)  || (FABS(lk_old-tree->c_lnL) < 1.))) break; */
       if((tree->io->datatype == NT) && (!tree->n_improvements || (FABS(lk_old-tree->c_lnL) < 1.))) break;
-      if((tree->io->datatype == AA) && ((tree->max_spr_depth < 4 && tree->n_improvements < 1)  || (FABS(lk_old-tree->c_lnL) < 1.))) break;
+      if((tree->io->datatype == AA) && ((tree->max_spr_depth < 4 && !tree->n_improvements)  || (FABS(lk_old-tree->c_lnL) < 1.))) break;
     }
   while(1);
   /*****************************/
@@ -3732,16 +3723,16 @@ void Speed_Spr_Loop(t_tree *tree)
   /*   } */
   /* /\*****************************\/ */
 
-  /* /\*****************************\/ */
-  /* lk_old = UNLIKELY; */
-  /* do */
-  /*   { */
-  /*     lk_old = tree->c_lnL; */
-  /*     if(!Simu(tree,10)) break; */
-  /*     Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->mod->s_opt->print)); */
-  /*   } */
-  /* while(FABS(lk_old - tree->c_lnL) > tree->mod->s_opt->min_diff_lk_local); */
-  /* /\*****************************\/ */
+  /*****************************/
+  lk_old = UNLIKELY;
+  do
+    {
+      lk_old = tree->c_lnL;
+      if(!Simu(tree,10)) break;
+      Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->mod->s_opt->print));
+    }
+  while(FABS(lk_old - tree->c_lnL) > tree->mod->s_opt->min_diff_lk_local);
+  /*****************************/
 
 
   /*****************************/
