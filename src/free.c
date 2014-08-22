@@ -1166,3 +1166,12 @@ void Free_Geo_Coord(t_geo_coord *t)
   Free(t->lonlat);
   Free(t);
 }
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Free_Migrep_Event(t_migrep_event *t)
+{
+  Free_Geo_Coord(t->centr);
+  Free(t);
+}

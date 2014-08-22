@@ -1602,12 +1602,12 @@ typedef struct __Phylogeo{
 /*!********************************************************/
 // Structure for one of the migration/reproduction event involved in Etheridge-Barton model
 typedef struct __Migrep_Event{
-  struct __Migrep    *next; // next (i.e., more recent) event 
-  struct __Migrep    *prev; // previous (i.e., more ancient) event
-  struct __Node  *n_target; // which is the node located at the bottom of the branch affected by the event
-  phydbl              time; // time of that event
-  phydbl            center; // center of the migrep disk
-  phydbl            radius; // radius of the migrep disk 
+  struct __Migrep     *next; // next (i.e., more recent) event 
+  struct __Migrep     *prev; // previous (i.e., more ancient) event
+  struct __Node   *n_target; // which is the node located at the bottom of the branch affected by the event
+  phydbl               time; // time of that event
+  struct __Geo_Coord *centr; // center of the migrep disk
+  phydbl             radius; // radius of the migrep disk 
 }t_migrep_event;
 
 /*!********************************************************/
