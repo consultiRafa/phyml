@@ -316,7 +316,7 @@ nni *Make_NNI()
 
 t_node *Make_Node_Light(int num)
 {
-  t_node *n;
+ t_node *n;
 
   n           = (t_node *)mCalloc(1,sizeof(t_node));
   n->v        = (t_node **)mCalloc(3,sizeof(t_node *));
@@ -1342,35 +1342,44 @@ t_geo_coord *GEO_Make_Geo_Coord(int dim)
   t_geo_coord *t;
   t = (t_geo_coord *)mCalloc(1,sizeof(t_geo_coord));
   t->lonlat = (phydbl *)mCalloc(dim,sizeof(phydbl));
+  t->id = (char *)mCalloc(T_MAX_ID_COORD,sizeof(char));
   return(t);
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-t_migrep_mod *MIGREP_Make_Migrep_Model()
+t_migrep_mod *MIGREP_Make_Migrep_Model(int dim)
 {
   t_migrep_mod *t;
   t = (t_migrep_mod *)mCalloc(1,sizeof(t_migrep_mod));
+  t->lim = GEO_Make_Geo_Coord(dim);
   return(t);
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-t_migrep_evt *MIGREP_Make_Migrep_Event(int n_dim)
+t_disk_evt *MIGREP_Make_Disk_Event(int n_dim)
 {
-  t_migrep_evt *t;
-  t = (t_migrep_evt *)mCalloc(1,sizeof(t_migrep_evt));
-  t->coord = GEO_Make_Geo_Coord(n_dim);
+  t_disk_evt *t;
+  t = (t_disk_evt *)mCalloc(1,sizeof(t_disk_evt));
+  t->centr = GEO_Make_Geo_Coord(n_dim);
+  t->id = (char *)mCalloc(T_MAX_ID_DISK,sizeof(char));
   return(t);
 }
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
+t_lindisk_nd *MIGREP_Make_Lindisk_Node(int n_dim)
+{
+  t_lindisk_nd *t;
+  t = (t_lindisk_nd *)mCalloc(1,sizeof(t_lindisk_nd));
+  t->coord     = GEO_Make_Geo_Coord(n_dim);
+  t->cpy_coord = GEO_Make_Geo_Coord(n_dim);
+  return(t);
+}
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

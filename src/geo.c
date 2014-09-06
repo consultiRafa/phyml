@@ -392,7 +392,6 @@ phydbl *GEO_MCMC(t_tree *tree)
 
   PhyML_Printf("\n. Run  Sigma [ESS] Lambda [ESS] Tau [ESS] Dummy [ESS] LogLk");
 
-
   tree->mcmc->run = 0;
   do
     {
@@ -497,8 +496,6 @@ phydbl *GEO_MCMC(t_tree *tree)
       if(tree->mcmc->ess[tree->mcmc->num_move_geo_sigma] > 1000. &&
          tree->mcmc->ess[tree->mcmc->num_move_geo_tau]   > 1000. &&
          tree->mcmc->ess[tree->mcmc->num_move_geo_lambda]> 1000.) break;
-
-
     }
   while(tree->mcmc->run < tree->mcmc->chain_len);
 

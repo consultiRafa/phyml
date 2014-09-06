@@ -3698,31 +3698,11 @@ void Speed_Spr_Loop(t_tree *tree)
       lk_old = tree->c_lnL;
       Speed_Spr(tree,1);
       if(tree->n_improvements) Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->mod->s_opt->print));
-      /* if((tree->io->datatype == NT) && (!tree->n_improvements || (FABS(lk_old-tree->c_lnL) < 1.))) break; */
-      /* if((tree->io->datatype == AA) && ((tree->max_spr_depth < 4 && !tree->n_improvements)  || (FABS(lk_old-tree->c_lnL) < 1.))) break; */
       if(!tree->n_improvements || FABS(lk_old-tree->c_lnL) < 1.) break;
     }
   while(1);
   /*****************************/
 
-
-  /* /\*****************************\/ */
-  /* if(tree->io->datatype == NT) */
-  /*   { */
-  /*     lk_old = UNLIKELY; */
-  /*     tree->mod->s_opt->max_delta_lnL_spr = 20.; */
-  /*     tree->mod->s_opt->max_depth_path    = 10; */
-  /*     tree->mod->s_opt->spr_lnL           = YES; */
-  /*     do */
-  /*       { */
-  /*         lk_old = tree->c_lnL; */
-  /*         Speed_Spr(tree,1); */
-  /*         if(tree->n_improvements) Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->mod->s_opt->print)); */
-  /*         if((!tree->n_improvements) || (FABS(lk_old-tree->c_lnL) < 1.)) break; */
-  /*       } */
-  /*     while(1); */
-  /*   } */
-  /* /\*****************************\/ */
 
   /*****************************/
   lk_old = UNLIKELY;
@@ -4658,7 +4638,7 @@ void Spr_Pars(t_tree *tree)
 void SPR_Shuffle(t_tree *mixt_tree)
 {
   phydbl lk_old;
-  int *orig_catg,n,n_random_cycles;
+  int *orig_catg,n;
   t_tree *tree,**tree_list;
 
   if(mixt_tree->mod->s_opt->print) PhyML_Printf("\n\n. Refining the tree...\n");
@@ -4745,7 +4725,7 @@ void SPR_Shuffle(t_tree *mixt_tree)
       if((mixt_tree->n_improvements < 20 || mixt_tree->max_spr_depth  < 5 || (FABS(lk_old-mixt_tree->c_lnL) < 1.)) &&
          (Are_Equal(mixt_tree->annealing_temp,0.0,1.E-6))) break;
       
-      PhyML_Printf("\n. Temperature: %f",mixt_tree->annealing_temp);
+      /* PhyML_Printf("\n. Temperature: %f",mixt_tree->annealing_temp); */
 
     }
   while(1);

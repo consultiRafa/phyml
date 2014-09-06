@@ -28,6 +28,10 @@ the GNU public licence. See http://www.opensource.org for details.
 #include <float.h>
 #include <stdbool.h>
 
+#ifdef MIGREP
+#include <gtk/gtk.h>
+#endif
+
 extern int n_sec1;
 extern int n_sec2;
 
@@ -36,10 +40,16 @@ extern int n_sec2;
 #define PointGamma(prob,alpha,beta)  PointChi2(prob,2.0*(alpha))/(2.0*(beta))
 #define SHFT2(a,b,c)                 (a)=(b);(b)=(c);
 #define SHFT3(a,b,c,d)               (a)=(b);(b)=(c);(c)=(d);
-#define MAX(a,b)                     ((a)>(b)?(a):(b))
-#define MIN(a,b)                     ((a)<(b)?(a):(b))
 #define SIGN(a,b)                    ((b) > 0.0 ? fabs(a) : -fabs(a))
 #define SHFT(a,b,c,d)                (a)=(b);(b)=(c);(c)=(d);
+
+#ifndef MAX
+#define MAX(a,b)                     ((a)>(b)?(a):(b))
+#endif
+
+#ifndef MIN
+#define MIN(a,b)                     ((a)<(b)?(a):(b))
+#endif
 
 #define READ  0
 #define WRITE 1
@@ -71,6 +81,9 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define CT 4
 #define GT 5
 
+#define WINDOW_WIDTH  500
+#define WINDOW_HEIGHT 500
+
 #define RR_MIN 0.01
 #define RR_MAX 200.0
 
@@ -87,6 +100,8 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define T_MAX_NEX_COM   100
 #define N_MAX_NEX_PARM  50
 #define T_MAX_TOKEN     200
+#define T_MAX_ID_COORD  5
+#define T_MAX_ID_DISK   5
 
 #define N_MAX_MIXT_CLASSES 1000
 
@@ -114,14 +129,26 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define  PHYLIP 0
 #define  NEXUS  1
 
+#ifndef YES
 #define  YES 1
-#define  NO  0
+#endif
 
+#ifndef NO
+#define  NO  0
+#endif
+
+#ifndef TRUE
 #define  TRUE  1
+#endif
+
+#ifndef FALSE
 #define  FALSE 0
+#endif
 
 #define  ON  1
 #define  OFF 0
+
+#define SMALL_DBL 1.E-20
 
 #define  NT 0 /*! nucleotides */
 #define  AA 1 /*! amino acids */
@@ -416,7 +443,7 @@ typedef struct __Node {
   int                            rank_max;
 
 
-  struct __Migrep_Event       *migrep_evt; /*! Spatial coordinates */
+  struct __Lineage_Loc       *lineage_loc; /*! Spatial coordinates */
 
 }t_node;
 
@@ -564,6 +591,8 @@ typedef struct __Tree{
   struct __Tmcmc                        *mcmc;
   struct __Triplet            *triplet_struct;
   struct __Phylogeo                      *geo;
+  struct __Migrep_Model                 *mmod;
+  struct __Disk_Event                   *devt;
 
   int                            is_mixt_tree;
   int                                tree_num; /*! tree number. Used for mixture models */
@@ -651,6 +680,9 @@ typedef struct __Tree{
   int                                  b_inst; /*! The BEAGLE instance id associated with this tree. */
 #endif
 
+#ifdef MIGREP
+  GtkWidget                        *draw_area;
+#endif
 }t_tree;
 
 /*!********************************************************/
@@ -1425,11 +1457,12 @@ typedef struct __Tmcmc {
   int num_move_geo_dum;
   int num_move_geo_updown_tau_lbda;
   int num_move_geo_updown_lbda_sigma;
+  int num_move_migrep_lbda;
+  int num_move_migrep_mu;
+  int num_move_migrep_rad;
 
-  int         nd_t_digits;
+  int nd_t_digits;
   int *monitor;
-
-
 
   char *out_filename;
 
@@ -1603,35 +1636,64 @@ typedef struct __Phylogeo{
 }t_geo;
 
 /*!********************************************************/
-// Structure for one of the migration/reproduction event involved in Etheridge-Barton model
-typedef struct __Migrep_Event{
-  struct __Migrep      *next; // next (i.e., more recent) event 
-  struct __Migrep      *prev; // previous (i.e., more ancient) event
-  struct __Node    *n_target; // which is the node located at the bottom of the branch affected by the event
-  struct __Geo_Coord  *coord; // coordinate of the event
-  phydbl                time; // time of that event
-}t_migrep_evt;
-
-/*!********************************************************/
 // Structure for the Etheridge-Barton migration/reproduction model
 typedef struct __Migrep_Model{
-  struct __Migrep_Event *first_event; // first migrep event 
-  phydbl                      lambda; // rate at which events occur
+  int                          n_dim;
+
+  phydbl                        lbda; // rate at which events occur
+  phydbl                    min_lbda; // min of rate at which events occur
+  phydbl                    max_lbda; // max of rate at which events occur
+
   phydbl                          mu; // per-capita and per event death probability
-  struct __Geo_Coord          *centr; // center of the migrep disk
-  phydbl                      radius; // radius of the migrep disk 
+  phydbl                      min_mu; // min of per-capita and per event death probability
+  phydbl                      max_mu; // max of per-capita and per event death probability
+
+  phydbl                         rad; // radius of the migrep disk 
+  phydbl                     min_rad; // min of radius of the migrep disk 
+  phydbl                     max_rad; // max of radius of the migrep disk 
+
+  phydbl                       c_lnL; // current value of log-likelihood 
+
+  struct __Geo_Coord            *lim; // max longitude and lattitude (the min are both set to zero)                       
 }t_migrep_mod;
+
+/*!********************************************************/
+
+typedef struct __Disk_Event{
+  struct __Geo_Coord           *centr;
+  phydbl                         time;
+  struct __Disk_Event           *next;
+  struct __Disk_Event           *prev;
+  struct __Lindisk_Node  **lindisk_nd;
+  int                    n_lindisk_nd;
+  struct __Migrep_Model         *mmod;
+  char                            *id;
+  struct __Node                   *nd;
+}t_disk_evt;
 
 /*!********************************************************/
 
 typedef struct __Geo_Coord{
   phydbl *lonlat; // longitude-latitude vector
-  int dim;
+  int        dim;
+  char       *id;
 }t_geo_coord;
 
-
-
 /*!********************************************************/
+
+typedef struct __Lindisk_Node{
+  struct __Disk_Event     *devt;
+  struct __Lindisk_Node   *left;
+  struct __Lindisk_Node   *rght;
+  struct __Lindisk_Node   *next;
+  struct __Lindisk_Node   *prev;
+  struct __Geo_Coord     *coord; 
+  struct __Geo_Coord *min_coord; 
+  struct __Geo_Coord *max_coord; 
+  struct __Geo_Coord *cpy_coord; 
+  short int              is_hit;
+}t_lindisk_nd;
+
 /*!********************************************************/
 /*!********************************************************/
 
@@ -1918,7 +1980,15 @@ int Number_Of_Diff_States_One_Site_Core(t_node *a, t_node *d, t_edge *b, int sit
 #include "make.h"
 #include "nexus.h"
 #include "init.h"
+#include "mcmc.h"
+
+#ifdef GEO
 #include "geo.h"
+#endif
+
+#ifdef MIGREP
+#include "migrep.h"
+#endif
 
 #ifdef MPI
 #include "mpi_boot.h"

@@ -4586,10 +4586,59 @@ int Modulo (int a, int b)
    return ret;
 }
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 
+void Runif_Disk(phydbl *sampled_x, phydbl *sampled_y, phydbl centrx, phydbl centry, phydbl radius)
+{
+  phydbl r,theta;
+  
+  r     = Uni();
+  theta = Uni()*2.*PI;
 
+  (*sampled_x) = SQRT(r)*COS(theta);
+  (*sampled_y) = SQRT(r)*SIN(theta);
+  
+  (*sampled_x) *= radius;
+  (*sampled_y) *= radius;
 
+  (*sampled_x) += centrx;
+  (*sampled_y) += centry;
 
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Random_String(char *s, int len)
+{
+  int i;
+  For(i,len) s[i] = Rand_Int(97,121);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+int *Random_Permut(int n)
+{
+  int *permut;
+  int i,j;
+  int tmp;
+
+  permut = (int *)mCalloc(n,sizeof(int));
+
+  For(i,n) permut[i] = i;
+  
+  For(i,n-1)
+    {
+      j = Rand_Int(i,n-1);
+      tmp = permut[i];
+      permut[i] = permut[j];
+      permut[j] = tmp;      
+    }
+
+  return(permut);
+}
 
 
 

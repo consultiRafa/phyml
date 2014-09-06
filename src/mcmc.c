@@ -10,13 +10,10 @@ the GNU public licence. See http://www.opensource.org for details.
 
 */
 
-
-
 #include "mcmc.h"
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void MCMC(t_tree *tree)
 {
@@ -458,7 +455,7 @@ void MCMC_Single_Param_Generic(phydbl *val,
     {
       *val = new_val;
   
-      RATES_Update_Cur_Bl(tree);
+      if(tree->rates) RATES_Update_Cur_Bl(tree);
             
       if(_log == YES) ratio += (cur_lnval - new_lnval);
       
@@ -587,8 +584,7 @@ void MCMC_Clock_R(t_tree *mixt_tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if defined(GEO)
-
+#ifdef GEO
 // Sample dispersal parameter from a phylogeo model
 void MCMC_Geo_Sigma(t_tree *mixt_tree)
 {
@@ -611,10 +607,12 @@ void MCMC_Geo_Sigma(t_tree *mixt_tree)
     }
   while(tree);
 }
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#ifdef GEO
 // Sample competition parameter from a phylogeo model
 void MCMC_Geo_Lbda(t_tree *mixt_tree)
 {
@@ -637,10 +635,12 @@ void MCMC_Geo_Lbda(t_tree *mixt_tree)
     }
   while(tree);
 }
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#ifdef GEO
 // Sample global migration rate parameter from a phylogeo model
 void MCMC_Geo_Tau(t_tree *mixt_tree)
 {
@@ -662,10 +662,12 @@ void MCMC_Geo_Tau(t_tree *mixt_tree)
     }
   while(tree);
 }
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#ifdef GEO
 void MCMC_Geo_Dum(t_tree *mixt_tree)
 {
   t_tree *tree;
@@ -686,11 +688,12 @@ void MCMC_Geo_Dum(t_tree *mixt_tree)
     }
   while(tree);
 }
-
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#ifdef GEO
 void MCMC_Geo_Loc(t_tree *tree)
 {
   int target;
@@ -746,9 +749,7 @@ void MCMC_Geo_Loc(t_tree *tree)
     }
 
   Free(rec_loc);
-
 }
-
 #endif
 
 //////////////////////////////////////////////////////////////
@@ -4331,6 +4332,9 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->num_move_geo_updown_tau_lbda   = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_geo_updown_lbda_sigma = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_geo_dum               = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_migrep_lbda           = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_migrep_mu             = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_migrep_rad            = mcmc->n_moves; mcmc->n_moves += 1;
 
   mcmc->run_move           = (int *)mCalloc(mcmc->n_moves,sizeof(int));
   mcmc->acc_move           = (int *)mCalloc(mcmc->n_moves,sizeof(int));
@@ -4384,9 +4388,11 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   strcpy(mcmc->move_name[mcmc->num_move_geo_updown_tau_lbda],"geo_updown_tau_lbda");
   strcpy(mcmc->move_name[mcmc->num_move_geo_updown_lbda_sigma],"geo_updown_lbda_sigma");
   strcpy(mcmc->move_name[mcmc->num_move_geo_dum],"geo_dum");
-
+  strcpy(mcmc->move_name[mcmc->num_move_migrep_lbda],"migrep_lbda");
+  strcpy(mcmc->move_name[mcmc->num_move_migrep_mu],"migrep_mu");
+  strcpy(mcmc->move_name[mcmc->num_move_migrep_rad],"migrep_rad");
   
-  if(tree->rates->model_log_rates == YES)
+  if(tree->rates && tree->rates->model_log_rates == YES)
     for(i=mcmc->num_move_br_r;i<mcmc->num_move_br_r+2*tree->n_otu-2;i++) mcmc->move_type[i] = MCMC_MOVE_RANDWALK_NORMAL;  
   else
     for(i=mcmc->num_move_br_r;i<mcmc->num_move_br_r+2*tree->n_otu-2;i++) mcmc->move_type[i] = MCMC_MOVE_SCALE_THORNE;  
@@ -4415,6 +4421,9 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_type[mcmc->num_move_geo_updown_tau_lbda] = MCMC_MOVE_SCALE_THORNE;
   mcmc->move_type[mcmc->num_move_geo_updown_lbda_sigma] = MCMC_MOVE_SCALE_THORNE;
   mcmc->move_type[mcmc->num_move_geo_dum] = MCMC_MOVE_SCALE_THORNE;
+  mcmc->move_type[mcmc->num_move_migrep_lbda] = MCMC_MOVE_SCALE_THORNE;
+  mcmc->move_type[mcmc->num_move_migrep_mu] = MCMC_MOVE_SCALE_THORNE;
+  mcmc->move_type[mcmc->num_move_migrep_rad] = MCMC_MOVE_SCALE_THORNE;
 
   /* We start with small tuning parameter values in order to have inflated ESS
      for clock_r */
@@ -4805,8 +4814,173 @@ void MCMC_Read_Param_Vals(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#ifdef MIGREP
+void MCMC_Migrep_Lbda(t_tree *mixt_tree)
+{
+  t_tree *tree;
+
+  tree = mixt_tree;
+  do
+    {
+      MCMC_Single_Param_Generic(&(tree->mmod->lbda),
+                                tree->mmod->min_lbda,
+                                tree->mmod->max_lbda,
+                                mixt_tree->mcmc->num_move_migrep_lbda,
+                                NULL,&(mixt_tree->mmod->c_lnL),
+                                NULL,MIGREP_Wrap_Lk,
+                                mixt_tree->mcmc->move_type[mixt_tree->mcmc->num_move_migrep_lbda],
+                                NO,NULL,mixt_tree,NULL);
+      tree = tree->next;
+    }
+  while(tree);
+}
+#endif
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+#ifdef MIGREP
+void MCMC_Migrep_Mu(t_tree *mixt_tree)
+{
+  t_tree *tree;
+
+  tree = mixt_tree;
+  do
+    {
+      MCMC_Single_Param_Generic(&(tree->mmod->mu),
+                                tree->mmod->min_mu,
+                                tree->mmod->max_mu,
+                                mixt_tree->mcmc->num_move_migrep_mu,
+                                NULL,&(mixt_tree->mmod->c_lnL),
+                                NULL,MIGREP_Wrap_Lk,
+                                mixt_tree->mcmc->move_type[mixt_tree->mcmc->num_move_migrep_mu],
+                                NO,NULL,mixt_tree,NULL);
+      tree = tree->next;
+    }
+  while(tree);
+}
+#endif
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+#ifdef MIGREP
+void MCMC_Migrep_Radius(t_tree *mixt_tree)
+{
+  t_tree *tree;
+
+  tree = mixt_tree;
+  do
+    {
+      MCMC_Single_Param_Generic(&(tree->mmod->rad),
+                                tree->mmod->min_rad,
+                                tree->mmod->max_rad,
+                                mixt_tree->mcmc->num_move_migrep_rad,
+                                NULL,&(mixt_tree->mmod->c_lnL),
+                                NULL,MIGREP_Wrap_Lk,
+                                mixt_tree->mcmc->move_type[mixt_tree->mcmc->num_move_migrep_rad],
+                                NO,NULL,mixt_tree,NULL);
+      tree = tree->next;
+    }
+  while(tree);
+}
+#endif 
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+#ifdef MIGREP
+void MCMC_Migrep_Slice(t_tree *tree)
+{
+  t_disk_evt *devt,*start,*end;
+  phydbl t_min,t_max,t_sampled;
+  int *permut;
+  phydbl cur_lnL, new_lnL;
+  int j;
+  phydbl ratio, alpha, u;
+
+  cur_lnL = tree->devt->mmod->c_lnL;
+  new_lnL = UNLIKELY;
+  devt    = tree->devt;
+
+  while(devt->prev) devt = devt->prev;
+
+  t_min = devt->time;
+  t_max = 0.0; // won't work for serially sampled data 
+  
+  // Uniform sampling of a time between 0 and the time 
+  // of the root node
+  t_sampled = Uni()*(t_max - t_min) + t_min;
+
+
+  // Find the first disk event just after sampled time
+  while(devt != NULL && devt->time < t_sampled) devt = devt->next;
+  
+  if(devt == NULL) return;
+
+  // Make sure this disk event is not a coalescent event
+  while(devt->nd != NULL) 
+    {
+      if(devt->next == NULL) return; // Reached the bottom of the tree.
+      devt = devt->next;
+    }
+
+  start = devt;
+  while(devt->nd == NULL && devt->next != NULL) devt = devt->next;
+  end = devt;
+
+  if(start == end) return;
+
+  /* printf("\n. Start disk name: %s at %f end disk: %s at %f", */
+  /*        start->id, */
+  /*        start->time, */
+  /*        end->id, */
+  /*        end->time); */
+
+  
+  devt = start;
+  while(devt != end)
+    {
+      For(j,devt->n_lindisk_nd)
+        {
+          MIGREP_Copy_Coord(devt->lindisk_nd[j]->coord,
+                            devt->lindisk_nd[j]->cpy_coord);
+        }
+      devt = devt->next;
+    }
+
+  MIGREP_New_Traj(start,end,tree);
+  
+  /* Exit("\n"); */
+
+  new_lnL = MIGREP_Lk(devt,devt->mmod);
+
+  ratio = (new_lnL - cur_lnL);
+  ratio = exp(ratio);
+  alpha = MIN(1.,ratio);
+  u = Uni();
+  
+  if(u > alpha) // Reject
+    {
+      devt = start;
+      while(devt != end)
+        {
+          For(j,devt->n_lindisk_nd)
+            {
+              MIGREP_Copy_Coord(devt->lindisk_nd[j]->cpy_coord,
+                                devt->lindisk_nd[j]->coord);
+            }
+          devt = devt->next;
+        }
+      tree->mmod->c_lnL = cur_lnL; 
+    }
+  else
+    {
+      /* printf("\n. Accept"); */
+    }
+  /* Free(permut); */
+}
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

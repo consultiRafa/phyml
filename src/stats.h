@@ -105,5 +105,8 @@ phydbl Mantel(phydbl *x, phydbl *y, int nrow, int ncol);
 phydbl Weighted_Mean(phydbl *x, phydbl *w, int l);
 int Sum_Bits(int value, int range);
 int Modulo (int a, int b);
+void Runif_Disk(phydbl *sampled_x, phydbl *sampled_y, phydbl centrx, phydbl centry, phydbl radius);
+void Random_String(char *s, int len);
+int *Random_Permut(int n);
 
 #endif

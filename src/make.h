@@ -67,6 +67,7 @@ t_geo *GEO_Make_Geo_Basic();
 void GEO_Make_Geo_Complete(int ldscape_sz,int n_dim,int n_tax,t_geo *t);
 t_geo_coord *GEO_Make_Geo_Coord(int n_dim);
 t_migrep_mod *MIGREP_Make_Migrep_Model();
-t_migrep_evt *MIGREP_Make_Migrep_Event(int n_dim);
+t_disk_evt *MIGREP_Make_Disk_Event(int n_dim);
+t_lindisk_nd *MIGREP_Make_Lindisk_Node(int n_dim);
 
 #endif

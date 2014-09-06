@@ -16,6 +16,7 @@ AC_CANONICAL_HOST
 
 AC_PROG_CC([gcc])
 
+
 # Checks for libraries.
 AC_CHECK_LIB([m], [log])
 
@@ -84,6 +85,7 @@ AS_IF([test "x$enable_debug" = "xyes"],
       [CFLAGS="-Wall -O2 ${MSSE} -fomit-frame-pointer -funroll-loops ${ARCH_flag}"])
 
 
+
 AC_ARG_ENABLE([gprof],
               [AS_HELP_STRING([--enable-gprof],
                               [Remove optimization options and add profiling informations.])])
@@ -106,9 +108,7 @@ AS_IF([test "x$enable_win" = "xyes"],[CC="i586-mingw32msvc-cc"])
 
 
 AC_ARG_ENABLE([beagle], [AS_HELP_STRING([--enable-beagle], [Compute likelihoods using BEAGLE library.])], [beagle=yes],[beagle=no])
-if test "x$enable_beagle" = "xyes"; then
-   PKG_CHECK_MODULES(BEAGLE, hmsbeagle-1)
-fi
+AS_IF([test "x$enable_beagle" = "xyes"],[PKG_CHECK_MODULES(BEAGLE, hmsbeagle-1)])
 AS_IF([test "x$enable_beagle" = "xyes"],
       [CFLAGS="${CFLAGS} ${BEAGLE_CFLAGS} ${BEAGLE_LIBS} -lstdc++ ${ARCH_flag}"],
       [CFLAGS=${CFLAGS}])
@@ -189,6 +189,21 @@ if test "$checkpoint" = yes; then
 fi
 
 
+AC_ARG_ENABLE([migrep],[AS_HELP_STRING([--enable-migrep],[Compile migrep])],[migrep=yes],[migrep=no])
+AM_CONDITIONAL([WANT_MIGREP], [test "$migrep" = yes])
+if test "$migrep" = yes; then
+   AC_DEFINE([MIGREP],[1],[MIGREP tag on])
+fi
+dnl AS_IF([test "x$enable_migrep" = "xyes"],
+dnl       [CFLAGS="-I/usr/include/cairo ${ARCH_flag}"],
+dnl       [CFLAGS="-Wall -O2 ${MSSE} -fomit-frame-pointer -funroll-loops ${ARCH_flag}"])
+AS_IF([test "x$enable_migrep" = "xyes"],[PKG_CHECK_MODULES([GTK], [gtk+-3.0])])
+AS_IF([test "x$enable_migrep" = "xyes"],[PKG_CHECK_MODULES([CAIRO], [cairo])])
+AS_IF([test "x$enable_migrep" = "xyes"],[CFLAGS="${CFLAGS} -Wpedantic `pkg-config --cflags --libs gtk+-3.0` ${ARCH_flag}"])
+
+
+dnl AM_PATH_GTK_3_0(,,AC_MSG_ERROR(windoe-default needs GTK+-3))
+
 if test "$phytime" = no; then
 if test "$tiporder" = no; then
 if test "$part" = no; then
@@ -200,7 +215,9 @@ if test "$sergeii" = no; then
 if test "$geo" = no; then
 if test "$evolve" = no; then
 if test "$checkpoint" = no; then
+if test "$migrep" = no; then
    AC_DEFINE([PHYML],[1],[PHYML tag on])
+fi
 fi
 fi
 fi

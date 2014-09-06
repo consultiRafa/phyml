@@ -3290,16 +3290,57 @@ void M4_Init_Model(m4 *m4mod, calign *data, t_mod *mod)
 void GEO_Init_Coord(t_geo_coord *t, int n_dim)
 {
   t->dim = n_dim;
+  Random_String(t->id,3);
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
+void MIGREP_Init_Disk_Event(t_disk_evt *t)
+{
+  t->prev         = NULL;
+  t->next         = NULL;
+  t->mmod         = NULL;
+  t->nd           = NULL;
+  Random_String(t->id,3);
+}
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void MIGREP_Init_Migrep_Mod(t_migrep_mod *t, int n_dim)
+{
+  t->n_dim    = n_dim;
+
+  t->lbda     = 0.1;
+  t->min_lbda = 1.E-6;
+  t->max_lbda = 1.E+2;
+
+  t->mu       = 0.1;
+  t->min_mu   = 0.0;
+  t->max_mu   = 1.0;
+
+  t->rad      = 0.3;
+  t->min_rad  = 1.E-6;
+  t->max_rad  = 10.;
+
+  t->c_lnL    = UNLIKELY;
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void MIGREP_Init_Lindisk_Node(t_lindisk_nd *t, int n_dim)
+{
+  t->devt   = NULL;
+  t->left   = NULL;
+  t->rght   = NULL;
+  t->prev   = NULL;
+  t->next   = NULL;
+  t->is_hit = NO;
+  GEO_Init_Coord(t->coord,    n_dim);
+  GEO_Init_Coord(t->cpy_coord,n_dim);
+}
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
