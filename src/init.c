@@ -518,6 +518,7 @@ void Set_Defaults_Input(option* io)
   io->fp_out_boot_tree           = NULL;
   io->fp_out_boot_stats          = NULL;
   io->fp_out_stats               = NULL;
+  io->fp_out_ancestral           = NULL;
   io->long_tax_names             = NULL;
   io->short_tax_names            = NULL;
   io->lon                        = NULL;
@@ -566,6 +567,7 @@ void Set_Defaults_Input(option* io)
 #ifdef BEAGLE
   io->beagle_resource            = 0;
 #endif
+  io->ancestral                  = NO;
 
   MCMC_Init_MCMC_Struct(NULL,io,io->mcmc);
   RATES_Init_Rate_Struct(io->rates,NULL,-1);

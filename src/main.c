@@ -246,11 +246,9 @@ int main(int argc, char **argv)
                   Get_Tree_Size(tree);
                   PhyML_Printf("\n\n. Log likelihood of the current tree: %f.",tree->c_lnL);
 
-                          //
-                          /* ML_Ancestral_Sequences(tree); */
-                          //
-
-
+                          
+                  if(tree->io->ancestral == YES) ML_Ancestral_Sequences(tree);
+                  
                   /* Build_Distrib_Number_Of_Diff_States_Under_Model(tree); */
                   /* Exit("\n"); */
 

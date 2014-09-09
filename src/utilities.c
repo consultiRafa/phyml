@@ -2359,22 +2359,22 @@ int Is_Ambigu(char *state, int datatype, int stepsize)
   if(datatype == NT)
     {
       For(i,stepsize)
-    {
-      switch(state[i])
         {
-        case 'A' : case 'C' : case 'G' : case 'T' : case 'U' : { val=NO; break; }
-        default : { val=YES; break; }
+          switch(state[i])
+            {
+            case 'A' : case 'C' : case 'G' : case 'T' : case 'U' : { val=NO; break; }
+            default : { val=YES; break; }
+            }
+          if(val == YES) break;
         }
-      if(val == YES) break;
-    }
     }
   else if(datatype == AA)
     {
       switch(state[0])
-    {
-    case 'X' : case '?' : case '-' : case '.' : {val=YES; break; }
-    default : { val=NO; break; }
-    }
+        {
+        case 'X' : case '?' : case '-' : case '.' : {val=YES; break; }
+        default : { val=NO; break; }
+        }
     }
   else if(datatype == GENERIC)
     {
@@ -2383,7 +2383,7 @@ int Is_Ambigu(char *state, int datatype, int stepsize)
       if(i == stepsize) val = NO;
       else              val = YES;
     }
-
+  
   return val;
 }
 
@@ -2578,7 +2578,6 @@ int Assign_State(char *c, int datatype, int stepsize)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 char Reciproc_Assign_State(int i_state, int datatype)
 {
 
@@ -2586,52 +2585,52 @@ char Reciproc_Assign_State(int i_state, int datatype)
     {
       i_state = i_state%4;
       switch(i_state)
-    {
-    case 0 :   {return 'A';  break;}
-    case 1 :   {return 'C';  break;}
-    case 2 :   {return 'G';  break;}
-    case 3 :   {return 'T';  break;}
-    default  :
-      {
-        PhyML_Printf("\n. i_state = %d",i_state);
-        PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
-        Warn_And_Exit("");
-        break;
-      }
-    }
+        {
+        case 0 :   {return 'A';  break;}
+        case 1 :   {return 'C';  break;}
+        case 2 :   {return 'G';  break;}
+        case 3 :   {return 'T';  break;}
+        default  :
+          {
+            PhyML_Printf("\n. i_state = %d",i_state);
+            PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+            Warn_And_Exit("");
+            break;
+          }
+        }
     }
   else if(datatype == AA)
     {
       i_state = i_state%20;
       switch(i_state)
-    {
-    case 0  : {return 'A' ; break;}
-    case 1  : {return 'R' ; break;}
-    case 2  : {return 'N' ; break;}
-    case 3  : {return 'D' ; break;}
-    case 4  : {return 'C' ; break;}
-    case 5  : {return 'Q' ; break;}
-    case 6  : {return 'E' ; break;}
-    case 7  : {return 'G' ; break;}
-    case 8  : {return 'H' ; break;}
-    case 9  : {return 'I' ; break;}
-    case 10 : {return 'L';  break;}
-    case 11 : {return 'K';  break;}
-    case 12 : {return 'M';  break;}
-    case 13 : {return 'F';  break;}
-    case 14 : {return 'P';  break;}
-    case 15 : {return 'S';  break;}
-    case 16 : {return 'T';  break;}
-    case 17 : {return 'W';  break;}
-    case 18 : {return 'Y';  break;}
-    case 19 : {return 'V';  break;}
-    default  :
-      {
-        PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
-        Warn_And_Exit("");
-        break;
-      }
-    }
+        {
+        case 0  : {return 'A' ; break;}
+        case 1  : {return 'R' ; break;}
+        case 2  : {return 'N' ; break;}
+        case 3  : {return 'D' ; break;}
+        case 4  : {return 'C' ; break;}
+        case 5  : {return 'Q' ; break;}
+        case 6  : {return 'E' ; break;}
+        case 7  : {return 'G' ; break;}
+        case 8  : {return 'H' ; break;}
+        case 9  : {return 'I' ; break;}
+        case 10 : {return 'L';  break;}
+        case 11 : {return 'K';  break;}
+        case 12 : {return 'M';  break;}
+        case 13 : {return 'F';  break;}
+        case 14 : {return 'P';  break;}
+        case 15 : {return 'S';  break;}
+        case 16 : {return 'T';  break;}
+        case 17 : {return 'W';  break;}
+        case 18 : {return 'Y';  break;}
+        case 19 : {return 'V';  break;}
+        default  :
+          {
+            PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+            Warn_And_Exit("");
+            break;
+          }
+        }
     }
   else if(datatype == GENERIC)
     {

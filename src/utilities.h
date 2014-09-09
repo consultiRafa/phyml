@@ -171,7 +171,7 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define  N_MAX_OPTIONS        100
 
 
-#define  T_MAX_FILE           500
+#define  T_MAX_FILE           200
 #define  T_MAX_LINE       2000000
 #define  T_MAX_NAME           100
 #define  T_MAX_ID              20
@@ -1039,6 +1039,10 @@ typedef struct __Option { /*! mostly used in 'help.c' */
   char                  *out_ps_file; /*! name of the file in which tree(s) is(are) written */
   FILE                    *fp_out_ps;
 
+  char           *out_ancestral_file; /*! name of the file containing the ancestral sequences */
+  FILE             *fp_out_ancestral; /*! pointer to the file containing the ancestral sequences */
+
+  char                     *out_file; /*! name of the output file */
 
   char              *clade_list_file;
 
@@ -1098,6 +1102,7 @@ typedef struct __Option { /*! mostly used in 'help.c' */
   int                 beagle_resource;
 #endif
 
+  int                       ancestral;
 }option;
 
 /*!********************************************************/

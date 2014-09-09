@@ -697,6 +697,7 @@ void Free_Input(option *io)
       Free(io->in_align_file);
       Free(io->in_tree_file);
       Free(io->in_constraint_tree_file);
+      Free(io->out_file);
       Free(io->out_tree_file);
       Free(io->out_trees_file);
       Free(io->out_boot_tree_file);
@@ -705,6 +706,7 @@ void Free_Input(option *io)
       Free(io->out_lk_file);
       Free(io->out_ps_file);
       Free(io->out_trace_file);
+      Free(io->out_ancestral_file);
       Free(io->nt_or_cd);
       Free(io->run_id_string);
       Free(io->clade_list_file);

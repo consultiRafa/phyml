@@ -2189,16 +2189,16 @@ void Print_Seq(FILE *fp, align **data, int n_otu)
   For(i,n_otu)
     {
       For(j,20)
-    {
-      if(j<(int)strlen(data[i]->name))
+        {
+          if(j<(int)strlen(data[i]->name))
             fputc(data[i]->name[j],fp);
-      else fputc(' ',fp);
-    }
-/*       PhyML_Printf("%10d  ",i); */
+          else fputc(' ',fp);
+        }
+      /*       PhyML_Printf("%10d  ",i); */
       For(j,data[i]->len)
-    {
-      PhyML_Fprintf(fp,"%c",data[i]->state[j]);
-    }
+        {
+          PhyML_Fprintf(fp,"%c",data[i]->state[j]);
+        }
       PhyML_Fprintf(fp,"\n");
     }
 }
@@ -2236,14 +2236,14 @@ void Print_CSeq(FILE *fp, int compressed, calign *cdata)
     }
 
       if(compressed == YES) /* Print out compressed sequences */
-    PhyML_Fprintf(fp,"%s",cdata->c_seq[i]->state);
+        PhyML_Fprintf(fp,"%s",cdata->c_seq[i]->state);
       else /* Print out uncompressed sequences */
-    {
-      For(j,cdata->init_len)
         {
-          PhyML_Fprintf(fp,"%c",cdata->c_seq[i]->state[cdata->sitepatt[j]]);
+          For(j,cdata->init_len)
+            {
+              PhyML_Fprintf(fp,"%c",cdata->c_seq[i]->state[cdata->sitepatt[j]]);
+            }
         }
-    }
       PhyML_Fprintf(fp,"\n");
     }
   PhyML_Fprintf(fp,"\n");
@@ -2340,7 +2340,6 @@ void Print_Dist(matrix *mat)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Print_Node(t_node *a, t_node *d, t_tree *tree)
 {
   int i;
@@ -2360,13 +2359,13 @@ void Print_Node(t_node *a, t_node *d, t_tree *tree)
   For(i,3) if(a->v[i] == d)
     {
       if(a->b[i])
-    {
-      PhyML_Printf("Branch num = %3d%c (%3d %3d) %f",
-               a->b[i]->num,a->b[i]==tree->e_root?'*':' ',a->b[i]->left->num,
-               a->b[i]->rght->num,a->b[i]->l->v);
-      if(a->b[i]->left->tax) PhyML_Printf(" WARNING LEFT->TAX!");
-      break;
-    }
+        {
+          PhyML_Printf("Branch num = %3d%c (%3d %3d) %f",
+                       a->b[i]->num,a->b[i]==tree->e_root?'*':' ',a->b[i]->left->num,
+                       a->b[i]->rght->num,a->b[i]->l->v);
+          if(a->b[i]->left->tax) PhyML_Printf(" WARNING LEFT->TAX!");
+          break;
+        }
     }
   PhyML_Printf("\n");
 
@@ -2374,6 +2373,40 @@ void Print_Node(t_node *a, t_node *d, t_tree *tree)
   else
     For(i,3)
       if(d->v[i] != a && d->b[i] != tree->e_root) Print_Node(d,d->v[i],tree);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Print_Node_Brief(t_node *a, t_node *d, t_tree *tree, FILE *fp)
+{
+  int i;
+  int dir;
+
+  dir = -1;
+  For(i,3) if(a->v[i] == d) {dir = i; break;}
+
+  PhyML_Fprintf(fp,"\n");
+  PhyML_Fprintf(fp,"Node nums: %3d %3d  (dir:%3d)",
+               a->num,d->num,dir);
+
+  PhyML_Fprintf(fp,"\tnames = '%10s' '%10s' ; ",a->name,d->name);
+  For(i,3) if(a->v[i] == d)
+    {
+      if(a->b[i])
+        {
+          PhyML_Fprintf(fp,"Branch num = %3d%c (%3d %3d) length:%10f",
+                       a->b[i]->num,a->b[i]==tree->e_root?'*':' ',a->b[i]->left->num,
+                       a->b[i]->rght->num,a->b[i]->l->v);
+          if(a->b[i]->left->tax) PhyML_Printf(" WARNING LEFT->TAX!");
+          break;
+        }
+    }
+
+  if(d->tax) return;
+  else
+    For(i,3)
+      if(d->v[i] != a && d->b[i] != tree->e_root) Print_Node_Brief(d,d->v[i],tree,fp);
 }
 
 //////////////////////////////////////////////////////////////
@@ -4153,12 +4186,12 @@ void Print_Data_Structure(int final, FILE *fp, t_tree *mixt_tree)
 
       tree = mixt_tree;
       do
-    {
+        {
           if(tree->is_mixt_tree) tree = tree->next;
-
+          
           PhyML_Fprintf(fp,"\n");
-      PhyML_Fprintf(fp,"\n. Mixture class %d",class+1);
-
+          PhyML_Fprintf(fp,"\n. Mixture class %d",class+1);
+          
           if(mixt_tree->mod->ras->n_catg > 1)
             {
               PhyML_Fprintf(fp,"\n   Relative substitution rate:\t%12f",mixt_tree->mod->ras->gamma_rr->v[tree->mod->ras->parent_class_number]);
@@ -4166,7 +4199,7 @@ void Print_Data_Structure(int final, FILE *fp, t_tree *mixt_tree)
               PhyML_Fprintf(fp,"\n   Rate class number:\t\t%12d",tree->mod->ras->parent_class_number);
             }
 
-      PhyML_Fprintf(fp,"\n   Substitution model:\t\t%12s",tree->mod->modelname->s);
+          PhyML_Fprintf(fp,"\n   Substitution model:\t\t%12s",tree->mod->modelname->s);
 
           if(tree->mod->whichmodel == CUSTOM)
             PhyML_Fprintf(fp,"\n   Substitution model code:\t%12s",tree->mod->custom_mod_string->s);
@@ -4602,6 +4635,7 @@ void PhyML_XML(char *xml_filename)
       strcpy(io->run_id_string,s);
     }
 
+  strcpy(io->out_file,outputfile);
   strcpy(io->out_tree_file,outputfile);
   if(io->append_run_ID) { strcat(io->out_tree_file,"_"); strcat(io->out_tree_file,io->run_id_string); }
   strcat(io->out_tree_file,"_phyml_tree");
