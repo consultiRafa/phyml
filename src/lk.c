@@ -3525,6 +3525,8 @@ void ML_Ancestral_Sequences(t_tree *tree)
 {
   int i;
 
+  PhyML_Printf("\n. %s \n",Write_Tree(tree,NO));
+
   PhyML_Printf("\n\n. Estimating ancestral sequences...");
 
   strcpy(tree->io->out_ancestral_file,tree->io->out_file);

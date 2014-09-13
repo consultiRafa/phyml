@@ -3256,24 +3256,23 @@ void M4_Init_Model(m4 *m4mod, calign *data, t_mod *mod)
   mod->ns = m4mod->n_o * m4mod->n_h;
 
   For(i,m4mod->n_o) m4mod->o_fq[i] = mod->e_frq->pi->v[i]; /*! At that stage, the mod->pi vector as been initialized
-                                 under a standard non covarion type of model. Use these
-                                 frequencies as they have been set according to the
-                                 nucleotide substitution model chosen (e.g., 1/4 for JC69). !*/
+                                                             under a standard non covarion type of model. Use these
+                                                             frequencies as they have been set according to the
+                                                             nucleotide substitution model chosen (e.g., 1/4 for JC69). !*/
   For(i,(int)(m4mod->n_h)) m4mod->multipl[i] = 1.;
-
+  
   ct = 0;
   For(i,m4mod->n_o-1)
     {
       for(j=i+1;j<m4mod->n_o;j++)
-    {
-      m4mod->o_rr[ct] = MAX(mod->r_mat->qmat->v[i*m4mod->n_o+j],1.E-5);
-      ct++;
-    }
+        {
+          m4mod->o_rr[ct] = MAX(mod->r_mat->qmat->v[i*m4mod->n_o+j],1.E-5);
+          ct++;
+        }
     }
 
   For(i,(int)(m4mod->n_h*(m4mod->n_h-1)/2)) m4mod->h_rr[i] = 1.;
   fq = (phydbl)(1./m4mod->n_h);
-
 
   if(mod->s_opt->opt_cov_delta) m4mod->delta = 1.0;
   if(mod->s_opt->opt_cov_alpha) m4mod->alpha = 1.0;
@@ -3332,14 +3331,14 @@ void MIGREP_Init_Migrep_Mod(t_migrep_mod *t, int n_dim)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void MIGREP_Init_Lindisk_Node(t_lindisk_nd *t, int n_dim)
+void MIGREP_Init_Lindisk_Node(t_lindisk_nd *t, t_disk_evt *devt, int n_dim)
 {
-  t->devt   = NULL;
-  t->left   = NULL;
-  t->rght   = NULL;
-  t->prev   = NULL;
-  t->next   = NULL;
-  t->is_hit = NO;
+  t->devt    = devt;
+  t->prev    = NULL;
+  t->next    = NULL;  
+  t->is_hit  = NO;
+  t->is_coal = NO;
+  t->n_next  = 0;
   GEO_Init_Coord(t->coord,    n_dim);
   GEO_Init_Coord(t->cpy_coord,n_dim);
 }

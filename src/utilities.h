@@ -81,8 +81,8 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define CT 4
 #define GT 5
 
-#define WINDOW_WIDTH  500
-#define WINDOW_HEIGHT 500
+#define WINDOW_WIDTH  1000
+#define WINDOW_HEIGHT 1000
 
 #define RR_MIN 0.01
 #define RR_MAX 200.0
@@ -1669,8 +1669,9 @@ typedef struct __Disk_Event{
   phydbl                         time;
   struct __Disk_Event           *next;
   struct __Disk_Event           *prev;
-  struct __Lindisk_Node  **lindisk_nd;
-  int                    n_lindisk_nd;
+  struct __Lindisk_Node      **ldsk_a; // array of lindisk nodes corresponding to this disk event
+  int                        n_ldsk_a; // size of ldsk_a
+  struct __Lindisk_Node         *ldsk;
   struct __Migrep_Model         *mmod;
   char                            *id;
   struct __Node                   *nd;
@@ -1688,15 +1689,15 @@ typedef struct __Geo_Coord{
 
 typedef struct __Lindisk_Node{
   struct __Disk_Event     *devt;
-  struct __Lindisk_Node   *left;
-  struct __Lindisk_Node   *rght;
-  struct __Lindisk_Node   *next;
+  struct __Lindisk_Node  **next;
   struct __Lindisk_Node   *prev;
   struct __Geo_Coord     *coord; 
   struct __Geo_Coord *min_coord; 
   struct __Geo_Coord *max_coord; 
   struct __Geo_Coord *cpy_coord; 
   short int              is_hit;
+  short int             is_coal;
+  int                    n_next;
 }t_lindisk_nd;
 
 /*!********************************************************/

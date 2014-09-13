@@ -1078,9 +1078,9 @@ void MCMC_One_Time(t_node *a, t_node *d, int traversal, t_tree *tree)
 
   if(t_min > t_max) 
     {
-      PhyML_Printf("\n. t_min = %f t_max = %f",t_min,t_max);
-      PhyML_Printf("\n. prior_min = %f prior_max = %f",tree->rates->t_prior_min[d->num],tree->rates->t_prior_max[d->num]);
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== t_min = %f t_max = %f",t_min,t_max);
+      PhyML_Printf("\n== prior_min = %f prior_max = %f",tree->rates->t_prior_min[d->num],tree->rates->t_prior_max[d->num]);
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       /* Exit("\n"); */
     }
  
@@ -4941,10 +4941,10 @@ void MCMC_Migrep_Slice(t_tree *tree)
   devt = start;
   while(devt != end)
     {
-      For(j,devt->n_lindisk_nd)
+      For(j,devt->n_ldsk_a)
         {
-          MIGREP_Copy_Coord(devt->lindisk_nd[j]->coord,
-                            devt->lindisk_nd[j]->cpy_coord);
+          MIGREP_Copy_Coord(devt->ldsk_a[j]->coord,
+                            devt->ldsk_a[j]->cpy_coord);
         }
       devt = devt->next;
     }
@@ -4965,10 +4965,10 @@ void MCMC_Migrep_Slice(t_tree *tree)
       devt = start;
       while(devt != end)
         {
-          For(j,devt->n_lindisk_nd)
+          For(j,devt->n_ldsk_a)
             {
-              MIGREP_Copy_Coord(devt->lindisk_nd[j]->cpy_coord,
-                                devt->lindisk_nd[j]->coord);
+              MIGREP_Copy_Coord(devt->ldsk_a[j]->cpy_coord,
+                                devt->ldsk_a[j]->coord);
             }
           devt = devt->next;
         }
@@ -4985,12 +4985,329 @@ void MCMC_Migrep_Slice(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
+#ifdef MIGREP
+void MCMC_Migrep_Triplet(t_tree *tree)
+{
+  phydbl cur_lnL, new_lnL;
+  phydbl ratio, alpha, u;
+  t_disk_evt **devt_bkup,*devt,**devt_new_left,**devt_new_rght;
+  t_lindisk_nd *ldsk_select,*ldsk_left,*ldsk_rght,*ldsk_up,*ldsk,*new_coal_ldsk;
+  phydbl t_min,t_max,t_sampled;
+  int i,j,dir,n_coal,n_rm_disk,min_n_disk,n_new_disk_left,n_new_disk_rght,dir_up_select;
+  phydbl max_dist;
+  
+  cur_lnL     = tree->devt->mmod->c_lnL;
+  new_lnL     = UNLIKELY;
+  devt_bkup   = NULL;
+  devt        = NULL;
+  ldsk_select = NULL;
+  ldsk_left   = NULL;
+  ldsk_rght   = NULL;
+  ldsk_up     = NULL;
+  ldsk        = NULL;
+  
+  devt = tree->devt;
+  while(devt->prev) devt = devt->prev;
+  
+  n_coal = 0;
+  do
+    {
+      if(devt->ldsk && devt->ldsk->is_coal == YES && devt->prev != NULL)
+        {
+          if(!n_coal) devt_bkup = (t_disk_evt **)mCalloc(1,sizeof(t_disk_evt *));
+          else        devt_bkup = (t_disk_evt **)mRealloc(devt_bkup,n_coal+1,sizeof(t_disk_evt *));
+          devt_bkup[n_coal] = devt;
+          n_coal++;
+        }
+      devt = devt->next;      
+    }
+  while(devt);
+
+  if(n_coal == 0) return; // only coalescent event is root node
+
+  i = Rand_Int(0,n_coal-1);
+  ldsk_select = devt_bkup[i]->ldsk;
+  Free(devt_bkup);
+  printf("\n. select: %s",ldsk_select->coord->id);
+  fflush(NULL);
+
+
+  // Find the closest coalescent node towards the top
+  ldsk_up = MIGREP_Prev_Coal_Lindisk(ldsk_select->prev);
+  
+  if(ldsk_up == NULL)
+    {
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+      Exit("\n");
+    }
+  
+  // Which direction leads from ldsk_up to ldsk_select?
+  dir_up_select = MIGREP_Get_Next_Direction(ldsk_select,ldsd_up);
+
+  dir = Rand_Int(0,ldsk_select->n_next-1);
+  printf("\n. dir1: %d",dir); fflush(NULL);
+
+  // Find the closest coalescent node towards the bottom left
+  ldsk_left = MIGREP_Next_Coal_Lindisk(ldsk_select->next[dir]);
+
+  if(ldsk_left == NULL)
+    {
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+      Exit("\n");
+    }
+
+  do
+    {
+      // Find the closest coalescent node towards the bottom right
+      dir = Rand_Int(0,ldsk_select->n_next-1);
+      printf("\n. dir2: %d",dir); fflush(NULL);
+      ldsk_rght = MIGREP_Next_Coal_Lindisk(ldsk_select->next[dir]);
+    }
+  while(ldsk_rght == ldsk_left);
+
+  if(ldsk_rght == NULL)
+    {
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+      Exit("\n");
+    }
+
+  printf("\n. up: %s left: %s rght: %s",
+         ldsk_up->coord->id,
+         ldsk_left->coord->id,
+         ldsk_rght->coord->id);
+  fflush(NULL);
+  
+  n_rm_disk = 0;  
+
+  ldsk = ldsk_left->prev;
+  while(ldsk != ldsk_select)
+    {
+      if(n_rm_disk == 0) devt_bkup = (t_disk_evt **)mCalloc(1,sizeof(t_disk_evt *));
+      else               devt_bkup = (t_disk_evt **)mRealloc(devt_bkup,n_rm_disk+1,sizeof(t_disk_evt *));
+      devt_bkup[n_rm_disk] = ldsk->devt;
+      n_rm_disk++;
+      ldsk = ldsk->prev;
+    }
+
+  ldsk = ldsk_rght->prev;
+  while(ldsk != ldsk_select)
+    {
+      if(n_rm_disk == 0) devt_bkup = (t_disk_evt **)mCalloc(1,sizeof(t_disk_evt *));
+      else               devt_bkup = (t_disk_evt **)mRealloc(devt_bkup,n_rm_disk+1,sizeof(t_disk_evt *));
+      devt_bkup[n_rm_disk] = ldsk->devt;
+      n_rm_disk++;
+      ldsk = ldsk->prev;
+    }
+
+
+  ldsk = ldsk_select;
+  while(ldsk != ldsk_up)
+    {
+      if(n_rm_disk == 0) devt_bkup = (t_disk_evt **)mCalloc(1,sizeof(t_disk_evt *));
+      else               devt_bkup = (t_disk_evt **)mRealloc(devt_bkup,n_rm_disk+1,sizeof(t_disk_evt *));
+      devt_bkup[n_rm_disk] = ldsk->devt;
+      n_rm_disk++;
+      ldsk = ldsk->prev;
+    }
+
+
+  For(i,n_rm_disk) MIGREP_Remove_Devt(devt_bkup[i]);
+
+
+  // Up to here, we've remove all the disks where a jump occured on the
+  // path between ldsk_left and ldsk_select, ldsk_rght and ldsk_select 
+  // and ldsk_up and ldsk_select. We now turn to adding new disks
+
+  // Minimum number of disks between ldsk_left and ldsk_up
+  max_dist = -1.;
+  For(i,tree->mmod->n_dim)
+    {
+      if(FABS(ldsk_left->coord->lonlat[i] - ldsk_up->coord->lonlat[i]) > max_dist)
+        max_dist = FABS(ldsk_left->coord->lonlat[i] - ldsk_up->coord->lonlat[i]);
+    }
+  min_n_disk = (int)(max_dist / (2. * tree->mmod->rad));
+
+  printf("\n. min_n_disk left: %d [%f]",min_n_disk,max_dist);
+  fflush(NULL);
+
+  // How many disk along the new path between ldsk_left and ldsk_up
+  n_new_disk_left = Rand_Int(min_n_disk,min_n_disk+10);
+  
+  // Make new disks to create a new path between ldsk_left and ldsk_up
+  devt_new_left = (t_disk_evt **)mCalloc(n_new_disk_left,sizeof(t_disk_evt *));
+  For(i,n_new_disk_left) devt_new_left[i] = MIGREP_Make_Disk_Event(tree->mmod->n_dim);
+
+  // Times of these new disks
+  For(i,n_new_disk_left) 
+    devt_new_left[i]->time = 
+    Uni()*(ldsk_left->devt->time - ldsk_up->devt->time) + 
+    ldsk_up->devt->time;
+  
+  devt = tree->devt;
+
+  // Insert these events
+  For(i,n_new_disk_left)
+    {
+      while(devt->prev) devt = devt->prev;
+      while(devt->time < devt_new_left[i]->time) devt = devt->next;
+      devt_new_left[i]->prev = devt->prev;
+      devt_new_left[i]->next = devt;
+      MIGREP_Insert_Devt(devt_new_left[i]);
+    }
+
+  // Sort these events by ascending order of their times
+  For(i,n_new_disk_left-1)
+    {
+      for(j=i-1;j<n_new_disk_left;j++)
+        {
+          if(devt_new_left[j]->time > devt_new_left[i]->time)
+            {
+              devt             = devt_new_left[i];
+              devt_new_left[i] = devt_new_left[j];
+              devt_new_left[j] = devt;
+            }
+        }
+    }
+
+  For(i,n_new_disk_left)
+    {
+      printf("\n. devt_new_left: %f",devt_new_left[i]->time); fflush(NULL);
+    }
+
+  // Add new lindisks to the new disk events and connect them
+  For(i,n_new_disk_left) 
+    {
+      devt_new_left[i]->ldsk = MIGREP_Make_Lindisk_Node(tree->mmod->n_dim);
+      MIGREP_Init_Lindisk_Node(devt_new_left[i]->ldsk,devt_new_left[i],tree->mmod);
+      if(!i) 
+        {
+          MIGREP_Make_New_Lindisk_Next(devt_new_left[i]->ldsk);
+          devt_new_left[i]->ldsk->next[0] = ldsk_left;
+          ldsk_left->prev                 = devt_new_left[i]->ldsk;
+        }
+      else
+        {
+          MIGREP_Make_New_Lindisk_Next(devt_new_left[i]->ldsk);
+          devt_new_left[i]->ldsk->next[0] = devt_new_left[i-1]->ldsk;
+          devt_new_left[i-1]->ldsk->prev  = devt_new_left[i]->ldsk;
+        }
+    }
+  ldsk_up->next[dir_up_select] = devt_new_left[n_new_disk_left-1]->ldsk;
+
+  // Generate a trajectory
+  MIGREP_One_New_Traj(ldsk_left,ldsk_up);
+
+
+
+  // Select the disk that 'receives' the new coalescent node
+  new_coal_ldsk = devt_new_left[Rand_Int(0,n_new_disk_left-1)]->ldsk;
+  new_coal_ldsk->ldsk->is_coal = YES;
+
+  // Minimum number of disks between ldsk_rght and new_coal_ldsk
+  max_dist = -1.;
+  For(i,tree->mmod->n_dim)
+    {
+      if(FABS(ldsk_rght->coord->lonlat[i] - new_coal_ldsk->coord->lonlat[i]) > max_dist)
+        max_dist = FABS(ldsk_rght->coord->lonlat[i] - new_coal_ldsk->coord->lonlat[i]);
+    }
+  min_n_disk = (int)(max_dist / (2. * tree->mmod->rad));
+
+  printf("\n. min_n_disk rght: %d [%f]",min_n_disk,max_dist);
+  fflush(NULL);
+
+  // How many disks along the new path between ldsk_rght and new_coal_ldsk
+  n_new_disk_rght = Rand_Int(min_n_disk,min_n_disk+10);
+  
+  // Make new disks to create a new path between ldsk_rght and new_coal_ldsk
+  devt_new_rght = (t_disk_evt **)mRealloc(n_new_disk_rght,sizeof(t_disk_evt *));
+  For(i,n_new_disk_rght) devt_new_rght[i] = MIGREP_Make_Disk_Event(tree->mmod->n_dim);
+
+  // Times of these new disks
+  For(i,n_new_disk_rght) 
+    devt_new_rght[i]->time = 
+      Uni()*(ldsk_rght->devt->time - new_coal_ldsk->devt->time) + 
+      new_coal_ldsk->devt->time;
+  
+  devt = tree->devt;
+
+  // Insert these events
+  For(i,n_new_disk_rght) 
+    {
+      while(devt->prev) devt = devt->prev;
+      while(devt->time < devt_new_rght[i]->time) devt = devt->next;
+      devt_new_rght[i]->prev = devt->prev;
+      devt_new_rght[i]->next = devt;
+      MIGREP_Insert_Devt(devt_new_rght[i]);
+    }
+
+  // Sort these events by ascending order of their times
+  For(i,n_new_disk_rght-1)
+    {
+      for(j=i-1;j<n_new_disk_rght;j++)
+        {
+          if(devt_new_rght[j]->time > devt_new_rght[i]->time)
+            {
+              devt             = devt_new_rght[i];
+              devt_new_rght[i] = devt_new_rght[j];
+              devt_new_rght[j] = devt;
+            }
+        }
+    }
+
+  For(i,n_new_disk_rght)
+    {
+      printf("\n. devt_new_rght: %f",devt_new_rght[i]->time); fflush(NULL);
+    }
+
+  // Add new lindisks to the new disk events and connect them
+  For(i,n_new_disk_rght) 
+    {
+      devt_new_rght[i]->ldsk = MIGREP_Make_Lindisk_Node(tree->mmod->n_dim);
+      MIGREP_Init_Lindisk_Node(devt_new_rght[i]->ldsk,devt_new_rght[i],tree->mmod);
+      if(!i) 
+        {
+          devt_new_rght[i]->ldsk->next[0] = ldsk_rght;
+          ldsk_rght->prev                 = devt_new_rght[i]->ldsk;
+        }
+      else
+        {
+          devt_new_rght[i]->ldsk->next[0] = devt_new_rght[i-1]->ldsk;
+          devt_new_rght[i-1]->ldsk->prev  = devt_new_rght[i]->ldsk;
+        }
+    }
+  new_coal_ldsk->next[1] = devt_new_left[n_new_disk_left-1]->ldsk;
+
+  // Generate a trajectory
+  MIGREP_One_New_Traj(ldsk_rght,new_coal_ldsk);
+
+  system("sleep 1000");
+
+
+}
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 

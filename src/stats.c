@@ -84,7 +84,7 @@ phydbl Uni()
 }
 
 /*********************************************************************/
-
+// Return a uniform draw u s.t., min <= u <= max
 int Rand_Int(int min, int max)
 {
 /*   phydbl u;   */

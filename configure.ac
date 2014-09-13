@@ -84,8 +84,6 @@ AS_IF([test "x$enable_debug" = "xyes"],
       [CFLAGS="-ansi -pedantic -Wall -std=c99 -O0 -g"],
       [CFLAGS="-Wall -O2 ${MSSE} -fomit-frame-pointer -funroll-loops ${ARCH_flag}"])
 
-
-
 AC_ARG_ENABLE([gprof],
               [AS_HELP_STRING([--enable-gprof],
                               [Remove optimization options and add profiling informations.])])
@@ -104,7 +102,7 @@ AM_CONDITIONAL([WANT_MPI], [test "x$enable_mpi" = "xyes"])
 AC_ARG_ENABLE([win],
               [AS_HELP_STRING([--enable-win],
                               [Compile with mingw instead of gcc.])])
-AS_IF([test "x$enable_win" = "xyes"],[CC="i586-mingw32msvc-cc"])
+AS_IF([test "x$enable_win" = "xyes"],[CC="i686-w64-mingw32-gcc"])
 
 
 AC_ARG_ENABLE([beagle], [AS_HELP_STRING([--enable-beagle], [Compute likelihoods using BEAGLE library.])], [beagle=yes],[beagle=no])
