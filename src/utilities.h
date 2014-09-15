@@ -81,8 +81,8 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define CT 4
 #define GT 5
 
-#define WINDOW_WIDTH  1000
-#define WINDOW_HEIGHT 1000
+#define WINDOW_WIDTH  800
+#define WINDOW_HEIGHT 800
 
 #define RR_MIN 0.01
 #define RR_MAX 200.0

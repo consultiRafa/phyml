@@ -1385,7 +1385,7 @@ t_lindisk_nd *MIGREP_Make_Lindisk_Node(int n_dim)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void *MIGREP_Make_New_Lindisk_Next(t_lindisk_nd *t)
+void *MIGREP_Make_Lindisk_Next(t_lindisk_nd *t)
 {
   if(t->n_next == 0)
     t->next = (t_lindisk_nd **)mCalloc(1,sizeof(t_lindisk_nd *));
