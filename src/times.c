@@ -57,6 +57,7 @@ int TIMES_main(int argc, char **argv)
   most_likely_tree = NULL;
 
   io = (option *)Get_Input(argc,argv);
+
   r_seed = (io->r_seed < 0)?(time(NULL)):(io->r_seed);
   /* !!!!!!!!!!!!!!!!!!!!!!!! */
   /* r_seed = 1289246338; */

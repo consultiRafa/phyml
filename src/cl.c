@@ -1079,7 +1079,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
 		strcpy(io->out_tree_file,optarg);
 #ifdef PHYML
 		strcat(io->out_tree_file,"_phyml_tree");
-#elif(MC)
+#elif(PHYTIME)
 		strcat(io->out_tree_file,"_mc_tree");
 #elif(M4)
 		strcat(io->out_tree_file,"_m4_tree");
@@ -1088,7 +1088,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
 		strcpy(io->out_stats_file,optarg);
 #ifdef PHYML
 		strcat(io->out_stats_file,"_phyml_stats");
-#elif(MC)
+#elif(PHYTIME)
 		strcat(io->out_stats_file,"_mc_stats");
 #elif(M4)
 		strcat(io->out_stats_file,"_m4_stats");
@@ -1348,8 +1348,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
     }
   
 
-  
-
+ 
   if(io->mod->use_m4mod == NO)
     {
       io->mod->s_opt->opt_cov_delta      = 0;
@@ -1380,6 +1379,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
       io->fp_out_trace = Openfile(io->out_trace_file,1);
     }
   
+
   if(io->mod->s_opt->random_input_tree)
     {
       strcpy(io->out_trees_file,io->in_align_file);
@@ -1428,11 +1428,19 @@ int Read_Command_Line(option *io, int argc, char **argv)
       io->mod->s_opt->opt_kappa = 0;
     }
   
-  if(io->datatype == AA && io->mod->whichmodel == CUSTOMAA && !io->mod->fp_aa_rate_mat)
+
+if(io->datatype == AA && io->mod->whichmodel == CUSTOMAA && !io->mod->fp_aa_rate_mat)
     {
       PhyML_Printf("\n== Custom model option with amino-acid requires you to specify a rate matrix file through the '--aa_rate_file' option.\n");
       Exit("\n");
     }
+  
+ if(!strcmp(io->out_tree_file,io->in_align_file) ||
+    !strcmp(io->out_stats_file,io->in_align_file))
+   {
+     PhyML_Printf("\n== Err. in file %s at line %d (function '%s').\n",__FILE__,__LINE__,__FUNCTION__);
+     Exit("\n");      
+   }
 
   io->fp_out_tree  = Openfile(io->out_tree_file,writemode);
   io->fp_out_stats = Openfile(io->out_stats_file,writemode);
@@ -1443,6 +1451,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
       io->mod->s_opt->opt_rr = 1;
     }
   
+
   return 1;
 }
 
