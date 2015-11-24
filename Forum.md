@@ -1,0 +1,1 @@
+PhyML now has a discussion forum: http://groups.google.com/group/phyml-forum
